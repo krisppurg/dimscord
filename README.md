@@ -11,7 +11,10 @@ Why Dimscord?
  ## FAQ:
  What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
- 
+
+ Where is the documentation for the library?
+  * The docs will be out soon or later.
+
 ## Notes:
  * This library is 90% finished (estimate).
  * When running your discord bot you would need to define `-d:ssl` e.g. `nim c -r -d:ssl yourfilename.nim`
@@ -20,19 +23,15 @@ Why Dimscord?
 
  * Voice support will be added on later.
 
-
- Where is the documentation for the library?
-  * The docs will be out soon or later.
-
 ## How to install Dimscord:
 ### Step 1: Install Nim
 
  You can use [choosenim](https://github.com/dom96/choosenim) or you could download it from [Nim's website](https://nim-lang.org/install.html)
 
  ### Step 2: Install Dimscord
-Do `nimble install dimscord` or `git clone https://github.com/dexelon/dimscord`
+Do `nimble install dimscord` or `git clone https://github.com/krisppurg/dimscord`
 
-You will need at least Nim 0.1.0 to install dimscord
+You will need at least Nim 1.0.0 to install dimscord
  
  ### Step 3: Enjoy.
 Stay up-to-date with the latest Dimscord release and stuff.
@@ -59,5 +58,5 @@ cl.events.message_create = proc (s: Shard, m: Message) = #  Add Event Handler fo
             description: ?"This is a cool embed",
             color: ?5)
 
-waitFor cl.startSession(compress_payloads=true)
+waitFor cl.startSession(compress=true)
 ```

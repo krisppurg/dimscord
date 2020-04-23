@@ -913,6 +913,7 @@ proc newGuild*(data: JsonNode): Guild =
     if data.hasKey("voice_states") and data["voice_states"].elems.len > 0:
         for vs in data["voice_states"].elems:
             let state = newVoiceState(vs)
+
             result.members[vs["user_id"].str].voice_state = some(state)
             result.voice_states.add(vs["user_id"].str, state)
 

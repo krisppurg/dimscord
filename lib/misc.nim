@@ -53,4 +53,3 @@ proc `@`*(u: User, nick: bool = false): string =
 #         cl.cache.users[gid] = 
 #     let everyone = c.permission_overwrites[gid]
 #     for ow in c.permission_overwrites.values:
-#        

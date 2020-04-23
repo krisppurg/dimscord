@@ -306,6 +306,7 @@ proc identify(s: Shard) {.async.} =
 
         if s.client.intents.len > 0:
             var intent = 0
+
             for itent in s.client.intents:
                 intent = intent or itent
             payload["intents"] = %intent

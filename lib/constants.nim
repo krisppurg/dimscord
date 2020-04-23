@@ -70,7 +70,7 @@ const
     mfaNone* = 0
     mfaElevated* = 1
 
-    vlNone* = 0 # this is like the nandos spicy sauce sauce flavour kind of.
+    vlNone* = 0
     vlLow* = 1
     vlMedium* = 2
     vlHigh* = 3

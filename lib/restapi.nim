@@ -391,6 +391,7 @@ proc createGuildChannel*(api: RestApi, guild_id: string, name: string, kind: int
             payload["user_limit"] = %get(user_limit)
         if permission_overwrites.isSome:
             var perms: seq[JsonNode] = @[]
+
             for ow in get(permission_overwrites):
                 perms.add(%ow)
                 payload["permission_overwrites"] = %perms

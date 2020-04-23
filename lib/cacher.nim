@@ -1,4 +1,5 @@
 import objects, tables, constants, options
+
 type
     CacheTable* = ref object ## An object that has properties of stored things
         preferences*: CacheTablePrefs

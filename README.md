@@ -1,5 +1,5 @@
 
-# <img src="assets/logo.png" width="42px" height="32px"/>  Dimscord
+# <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
 A Discord Bot & REST Library for Nim.
 
 Why Dimscord?

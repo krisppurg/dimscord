@@ -101,7 +101,7 @@ proc newGatewayLimiter(limit: int, interval: int): GatewayLimiter =
         reset: int(getTime().utc.toTime.toUnix + interval)
     )
 
-proc newDiscordClient*(token: string; debug: bool = false;
+proc newDiscordClient*(token: string; rest_mode: bool = true; debug: bool = false;
             cache_users: bool = true; cache_guilds: bool = true;
             cache_guild_channels: bool = true; cache_dm_channels: bool = true): DiscordClient =
     ## Construct a client.
@@ -109,6 +109,7 @@ proc newDiscordClient*(token: string; debug: bool = false;
         token: token,
         api: newRestApi(token = if token.startsWith("Bot "): token else: "Bot " & token),
         shard: 1,
+        restMode: rest_mode,
         debug: debug,
         cache: newCacheTable(cache_users, cache_guilds, cache_guild_channels, cache_dm_channels),
         events: Events(

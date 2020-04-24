@@ -1,4 +1,4 @@
-import lib/[gateway, restapi, constants, objects, cacher, misc], options
+import dimscord/[gateway, restapi, constants, objects, cacher, misc], options
 
 export gateway, restapi, constants, objects, cacher, misc
 

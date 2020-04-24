@@ -4,9 +4,9 @@ A Discord Bot & REST Library for Nim.
 
 Why Dimscord?
  * It is a bit more straightforward.
- * Nim is a good programming language and I believe that Nim should stand a chance on having a good discord library.
+ * Nim is a good programming language and I believe that Nim should stand a chance on having a good enough discord library.
  * It has REST mode feature.
- * The other nim discord library has bunch of issues in code and also terms of behaviour for the discord api.
+ * The other nim discord library has bunch of issues and also the way of handling.
  
  ## FAQ:
  What is Nim?

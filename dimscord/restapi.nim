@@ -8,7 +8,7 @@ type
     DiscordFile* = ref object ## A Discord file. It's a special type.
         name*: string
         body*: string
-    AllowedMentions = ref object ## An object of allowed mentions
+    AllowedMentions* = ref object ## An object of allowed mentions
         parse*: seq[string] ## The values should be "roles", "users", "everyone"
         roles*: seq[string]
         users*: seq[string]

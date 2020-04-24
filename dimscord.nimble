@@ -4,7 +4,6 @@ version       = "0.0.9"
 author        = "KrispPurg"
 description   = "A Discord Bot & REST Library."
 license       = "MIT"
-srcDir        = "lib"
 
 # Dependencies
 

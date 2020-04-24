@@ -1,0 +1,11 @@
+{
+    "url":"https://github.com/KrispPurg/dimscord",
+    "files":[
+       "\\lib\\restapi.nim",
+       "\\lib\\cacher.nim",
+       "\\lib\\objects.nim",
+       "\\lib\\misc.nim",
+       "\\lib\\gateway.nim",
+       "\\lib\\constants.nim"
+    ]
+}

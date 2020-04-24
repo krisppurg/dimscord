@@ -753,6 +753,20 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                     cl.cache.users.del(member.user.id)
 
             cl.events.guild_member_remove(s, guild, member)
+        of "GUILD_BAN_ADD":
+            var guild = Guild(id: data["guild_id"].str)
+            let user = newUser(data["user"])
+            if cl.cache.preferences.cache_guilds:
+                guild = cl.cache.guilds[guild.id]
+            
+            cl.events.guild_ban_add(s, guild, user)
+        of "GUILD_BAN_REMOVE":
+            var guild = Guild(id: data["guild_id"].str)
+            let user = newUser(data["user"])
+            if cl.cache.preferences.cache_guilds:
+                guild = cl.cache.guilds[guild.id]
+            
+            cl.events.guild_ban_add(s, guild, user)
         of "GUILD_UPDATE":
             let guild = newGuild(data)
             var oldGuild: Option[Guild] = none(Guild)

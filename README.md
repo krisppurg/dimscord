@@ -29,7 +29,8 @@ Why Dimscord?
  You can use [choosenim](https://github.com/dom96/choosenim) or you could download it from [Nim's website](https://nim-lang.org/install.html)
 
  ### Step 2: Install Dimscord
-Do `nimble install dimscord` or `git clone https://github.com/krisppurg/dimscord`
+Install Dimscord via github `git clone https://github.com/krisppurg/dimscord`
+Currently, the library has some issues installing on nimble, especially using the git url.
 
 You will need at least Nim 1.0.0 to install dimscord
  

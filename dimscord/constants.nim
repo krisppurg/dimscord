@@ -4,7 +4,7 @@ var restVer* = "7"
 var base* = "https://discordapp.com/api/v" & restVer & "/"
 const
     libName* = "Dimscord"
-    libVer* = "0.0.8"
+    libVer* = "0.1.0"
 
     cdnBase* = "https://cdn.discordapp.com/"
     cdnCustomEmojis* = cdnBase & "emojis/"

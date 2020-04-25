@@ -14,33 +14,33 @@ type
         provider*: Option[EmbedProvider]
         author*: Option[EmbedAuthor]
         fields*: Option[seq[EmbedField]]
-    EmbedThumbnail* = ref object
+    EmbedThumbnail* = object
         url*: Option[string]
         proxy_url*: Option[string]
         height*: Option[int]
         width*: Option[int]
-    EmbedVideo* = ref object
+    EmbedVideo* = object
         url*: Option[string]
         height*: Option[int]
         width*: Option[int]
-    EmbedImage* = ref object
+    EmbedImage* = object
         url*: Option[string]
         proxy_url*: Option[string]
         height*: Option[int]
         width*: Option[int]
-    EmbedProvider* = ref object
+    EmbedProvider* = object
         name*: Option[string]
         url*: Option[string]
-    EmbedAuthor* = ref object
+    EmbedAuthor* = object
         name*: Option[string]
         url*: Option[string]
         icon_url*: Option[string]
         proxy_icon_url*: Option[string]
-    EmbedFooter* = ref object
+    EmbedFooter* = object
         text*: string
         icon_url*: Option[string]
         proxy_icon_url*: Option[string]
-    EmbedField* = ref object
+    EmbedField* = object
         name*: string
         value*: string
         inline*: Option[bool]
@@ -618,7 +618,8 @@ proc newGameActivity*(data: JsonNode): GameActivity =
         if data["party"].hasKey("id"):
             get(result.party).id = data["party"]["id"].str
         if data["party"].hasKey("size"):
-            get(result.party).size = data["party"]["size"].str
+            # TODO: Parse MaxSize too?
+            get(result.party).size = $data["party"]["size"][0].getInt()
 
     if data.hasKey("assets"):
         result.assets = some(GameAssets())

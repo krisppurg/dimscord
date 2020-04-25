@@ -3,8 +3,8 @@ import httpclient, sequtils, asyncdispatch, json, options, objects, constants, s
 randomize()
 
 type
-    RestException* = object of Exception
-    RequestException* = object of Exception
+    RestException* = object of CatchableError
+    RequestException* = object of CatchableError
     DiscordFile* = ref object ## A Discord file. It's a special type.
         name*: string
         body*: string

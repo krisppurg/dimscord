@@ -1144,7 +1144,7 @@ proc startSession*(cl: DiscordClient,
             let ss = newShard(i, cl)
             cl.shards.add(i, ss)
             ss.compress = compress
-            await ss.startSession(gateway.url, query)
+            asyncCheck ss.startSession(gateway.url, query)
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)

@@ -69,5 +69,4 @@ cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
 
 # Connect to Discord and run the bot.
 waitFor cl.startSession(compress=true)
-runForever()
 ```

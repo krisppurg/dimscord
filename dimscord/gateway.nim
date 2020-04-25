@@ -194,12 +194,9 @@ proc debugMsg(cl: DiscordClient, msg: string, info: Option[seq[string]] = none(s
                 finalmsg = finalmsg & e
     echo finalmsg
 
-proc debugMsg(s: Shard, msg: string, mentionWhere: bool = false, info: Option[seq[string]] = none(seq[string])) =
-    var finalmsg = msg
+proc debugMsg(s: Shard, msg: string, info: Option[seq[string]] = none(seq[string])) =
     if not s.client.debug: return
-
-    if mentionWhere:
-        finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
+    var finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
 
     if info.isSome:
         finalmsg = &"{finalmsg}:"
@@ -218,7 +215,7 @@ proc debugMsg(s: Shard, msg: string, mentionWhere: bool = false, info: Option[se
 proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actually prints out sock suspended then returns a bool whether to reconnect.
     let closeData = extractCloseData(msg)
 
-    s.debugMsg("Socket suspended", true, some(@["code", $closeData.code, "reason", $closeData.reason]))
+    s.debugMsg("Socket suspended", some(@["code", $closeData.code, "reason", $closeData.reason]))
 
     if s.authenticating: s.authenticating = false
     if s.resuming:
@@ -331,7 +328,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             s.authenticating = false
             cl.user = newUser(data["user"])
 
-            s.debugMsg("Successfully identified.", true)
+            s.debugMsg("Successfully identified.")
 
             cl.events.on_ready(s, newReady(data))
         of "VOICE_STATE_UPDATE":
@@ -815,12 +812,23 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 role = guild.roles[role.id]
 
             cl.events.guild_role_delete(s, guild, role)
+        of "WEBHOOKS_UPDATE":
+            var guild = Guild(id: data["guild_id"].str)
+            var chan = GuildChannel(id: data["channel_id"].str)
+
+            if cl.cache.preferences.cache_guilds:
+                guild = cl.cache.guilds[guild.id]
+            if cl.cache.preferences.cache_guild_channels:
+                chan = cl.cache.guildChannels[chan.id]
+            
+            cl.events.webhooks_update(s, guild, chan)
         of "RESUMED":
             s.resuming = false
             s.authenticating = false
-            s.debugMsg("Successfuly resumed.", true)
+
+            s.debugMsg("Successfuly resumed.")
         of "GUILD_CREATE": # TODO: finish
-            s.debugMsg("Recieved GUILD_CREATE event", true, some(@["id", data["id"].str]))
+            s.debugMsg("Recieved GUILD_CREATE event", some(@["id", data["id"].str]))
 
             if data["channels"].elems.len > 0:
                 for chan in data["channels"].elems:
@@ -836,7 +844,6 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 cl.cache.guilds.add(guild.id, guild)
         else:
             discard
-            # asyncCheck cl.emitHandler(unknown_event, (data: data))
 
 proc resume(s: Shard) {.async.} =
     if s.authenticating: return
@@ -845,7 +852,7 @@ proc resume(s: Shard) {.async.} =
     s.authenticating = true
     s.resuming = true
 
-    s.debugMsg("Attempting to resume", true, some(@["session_id", s.session_id, "events", $s.sequence]))
+    s.debugMsg("Attempting to resume", some(@["session_id", s.session_id, "events", $s.sequence]))
     await s.connection.sendText($(%*{
         "op": opResume,
         "d": %*{
@@ -881,7 +888,7 @@ proc handleConnection(cl: DiscordClient): Future[tuple[shards: int, url: string]
     
     result = (info.shards, info.url)
 
-proc reconnect*(s: Shard; resumable: bool = false) {.async.} =
+proc reconnect*(s: Shard) {.async.} =
     if s.reconnecting: return
     s.reconnecting = true
     s.retryInfo.attempts += 1
@@ -896,10 +903,10 @@ proc reconnect*(s: Shard; resumable: bool = false) {.async.} =
 
         s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", true, some(@["attempt", $s.retryInfo.attempts]))
+        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", some(@["attempt", $s.retryInfo.attempts]))
 
         await sleepAsync s.retryInfo.ms
-        await s.reconnect(resumable = resumable)
+        await s.reconnect()
 
     s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer & "&encoding=" & encode)
 
@@ -924,20 +931,17 @@ proc reconnect*(s: Shard; resumable: bool = false) {.async.} =
 
         s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", true, some(@["attempt", $s.retryInfo.attempts]))
+        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", some(@["attempt", $s.retryInfo.attempts]))
 
         await sleepAsync s.retryInfo.ms
-        await s.reconnect(resumable = resumable)
+        await s.reconnect()
 
-    if not resumable or s.session_id == "":
-        s.sequence = 0
-        s.session_id = ""
-
+    if s.session_id == "" and s.sequence == 0:
         await s.identify()
     else:
         await s.resume()
 
-proc disconnect*(s: Shard, code: int = 4000, shouldReconnect: bool = true) {.async.} =
+proc disconnect*(s: Shard, code: int = 4000, should_reconnect: bool = true) {.async.} =
     if s.stop: return
     s.stop = true
 
@@ -945,15 +949,15 @@ proc disconnect*(s: Shard, code: int = 4000, shouldReconnect: bool = true) {.asy
         s.debugMsg("Sending close code: " & $code & " to disconnect")
         await s.connection.close(code)
 
-    if s.client.autoreconnect or shouldReconnect: await s.reconnect(resumable = true)
+    if s.client.autoreconnect or should_reconnect: await s.reconnect()
 
 proc heartbeat(s: Shard) {.async.} =
     if not s.hbAck and s.session_id != "":
-        s.debugMsg("Last heartbeat was not acknowledged by Discord, possibly zombied connection.", true)
-        await s.disconnect()
+        s.debugMsg("Last heartbeat was not acknowledged by Discord, possibly zombied connection.")
+        await s.disconnect(should_reconnect = true)
         return
 
-    s.debugMsg("Sending heartbeat.", true)
+    s.debugMsg("Sending heartbeat.")
     s.hbAck = false
 
     await s.connection.sendText($(%*{
@@ -986,7 +990,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
             if s.heartbeating: s.heartbeating = false
 
             if exception.startsWith("The semaphore timeout period has expired."):
-                s.debugMsg("A network error has been detected.", true)
+                s.debugMsg("A network error has been detected.")
 
                 s.networkError = true
             elif exception.startsWith("socket closed"):
@@ -1008,7 +1012,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
             echo "An error occurred while parsing data: " & packet.data
             shouldReconnect = s.handleDisconnect(packet.data)
 
-            await s.disconnect(shouldReconnect = shouldReconnect)
+            await s.disconnect(should_reconnect = shouldReconnect)
             await s.handleSocketMessage()
 
         if data["s"].kind != JNull and not s.resuming:
@@ -1016,7 +1020,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
 
         case data["op"].num
             of opHello:
-                s.debugMsg("Received 'HELLO' from the gateway.", true)
+                s.debugMsg("Received 'HELLO' from the gateway.")
                 s.interval = data["d"]["heartbeat_interval"].getInt()
 
                 if not s.heartbeating:
@@ -1025,7 +1029,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
             of opHeartbeatAck:
                 s.lastHBReceived = epochTime() * 1000
                 s.hbSent = false
-                s.debugMsg("Heartbeat Acknowledged by Discord.", true)
+                s.debugMsg("Heartbeat Acknowledged by Discord.")
 
                 s.hbAck = true
             of opHeartbeat:
@@ -1035,17 +1039,17 @@ proc handleSocketMessage*(s: Shard) {.async.} =
                 asyncCheck s.handleDispatch(data["t"].str, data["d"])
             of opReconnect:
                 s.debugMsg("Discord is requesting for a client reconnect.")
-                await s.disconnect(shouldReconnect = shouldReconnect)
+                await s.disconnect(should_reconnect = shouldReconnect)
             of opInvalidSession:
                 s.resuming = false
                 s.authenticating = false
 
-                s.debugMsg("Received 'INVALID_SESSION'", true, some(@["resumable", $data["d"].getBool()]))
+                s.debugMsg("Received 'INVALID_SESSION'", some(@["resumable", $data["d"].getBool()]))
 
                 if data["d"].getBool():
                     await s.resume()
                 else:
-                    s.debugMsg("Sending the IDENTIFY packet in 5000ms.", true)
+                    s.debugMsg("Sending the IDENTIFY packet in 5000ms.")
 
                     await sleepAsync 5000
                     s.client.limiter = newGatewayLimiter(limit = 1, interval = 5500)
@@ -1067,7 +1071,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
     s.lastHBTransmit = 0
 
     if shouldReconnect:
-        await s.reconnect(resumable = true)
+        await s.reconnect()
         if not s.networkError: await handleSocketMessage(s)
     else:
         reconnectable = false
@@ -1084,7 +1088,7 @@ proc handleSocketMessageExceptions(s: Shard) {.async.} =
         if s.resuming: s.resuming = false
         if s.authenticating: s.authenticating = false
 
-        await s.reconnect(resumable = true)
+        await s.reconnect()
         await handleSocketMessageExceptions(s)
 
 proc startSession(s: Shard, url: string, query: string) {.async.} =

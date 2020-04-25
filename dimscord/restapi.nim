@@ -8,7 +8,7 @@ type
     DiscordFile* = ref object ## A Discord file. It's a special type.
         name*: string
         body*: string
-    AllowedMentions = ref object ## An object of allowed mentions
+    AllowedMentions* = object ## An object of allowed mentions
         parse*: seq[string] ## The values should be "roles", "users", "everyone"
         roles*: seq[string]
         users*: seq[string]
@@ -17,7 +17,7 @@ var ratelimited = false
 var globalReset = 0
 var global = false
 
-proc parseRoute*(endpoint, meth: string): string =
+proc parseRoute(endpoint, meth: string): string =
     let majorParams = @["channels", "guilds", "webhooks"]
 
     let params = endpoint.findAll(re"([a-z-]+)")
@@ -58,9 +58,9 @@ proc clean(errors: JsonNode, extra: string = ""): seq[string] =
     var ext = extra
     if errors.kind == JArray:
         var err: seq[string] = @[]
+
         for e in errors.elems:
             err.add("\n    - " & ext & ": " & e["message"].str)
-
         result = result.concat(err)
 
     if errors.kind == JObject:
@@ -202,17 +202,17 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if embed.isSome: payload["embed"] = %get(embed)
     if allowed_mentions.isSome: payload["allowed_mentions"] = %get(allowed_mentions)
 
-    var contenttype: string = ""
-
     if files.isSome:
+        var contenttype: string = ""
         var mpd = newMultipartData()
+
         for file in get(files):
             if file.body != "":
                 if file.body.startsWith("http"):
                     let client = newAsyncHttpClient()
                     let resp = await client.get(file.body)
                     file.body = await resp.body
-    
+
                     let fil = splitFile(file.name)
 
                     if file.name == "":
@@ -220,7 +220,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
                         file.name = "file." & contenttype.split("/")[1]
                     else:
                         if fil.ext != "": contenttype = newMimetypes().getMimetype(fil.ext[1..high(fil.ext)])
-    
+
                     mpd.add(fil.name, file.body, file.name, contenttype)
             else:
                 if file.name == "":
@@ -231,7 +231,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
                 file.body = readFile(file.name)
                 mpd.add(file.name, file.body, file.name, contenttype)
 
-        mpd.add("payload_json", $payload, contentType = "application/json")
+            mpd.add("payload_json", $payload, contentType = "application/json")
+
         return (await api.request("POST", endpointChannelMessages(channel_id), $(payload), mp = mpd)).newMessage
 
     result = (await api.request("POST", endpointChannelMessages(channel_id), $(payload))).newMessage
@@ -345,7 +346,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string; name: Option[string] = 
             topic: Option[string] = none(string); nsfw: Option[bool] = none(bool); rate_limit_per_user: Option[int] = none(int); bitrate: Option[int] = none(int);
             user_limit: Option[int] = none(int); permission_overwrites: Option[seq[Overwrite]] = none(seq[Overwrite]); parent_id: Option[string] = none(string); reason: string = ""): Future[GuildChannel] {.async.} =
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = %*{} # Don't judge me.
+    let payload = newJObject()
 
     if name.isSome:
         payload["name"] = %get(name)
@@ -363,6 +364,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string; name: Option[string] = 
         payload["user_limit"] = %get(user_limit)
     if permission_overwrites.isSome:
         var perms: seq[JsonNode] = @[]
+
         for ow in get(permission_overwrites):
             perms.add(%ow)
         payload["permission_overwrites"] = %perms
@@ -375,7 +377,7 @@ proc createGuildChannel*(api: RestApi, guild_id: string, name: string, kind: int
             topic: Option[string] = none(string); nsfw: Option[bool] = none(bool); rate_limit_per_user: Option[int] = none(int); bitrate: Option[int] = none(int);
             user_limit: Option[int] = none(int); permission_overwrites: Option[seq[Overwrite]] = none(seq[Overwrite]); parent_id: Option[string] = none(string)): Future[GuildChannel] {.async.} =
         ## Creates a channel
-        var payload = %*{"name": name, "type": kind}
+        let payload = %*{"name": name, "type": kind}
 
         if position.isSome:
             payload["position"] = %get(position)
@@ -407,7 +409,7 @@ proc deleteChannel*(api: RestApi, channel_id: string) {.async.} =
 proc editGuildChannelPermissions*(api: RestApi, channel_id, perm_id: string, kind: string, perms: PermObj) {.async.} =
     ## Modify the channel's permissions.
     ## The `kind` param needs to be either "member" or "role".
-    var payload = %*{"type": kind}
+    let payload = %*{"type": kind}
     if perms.allowed.len > 0:
         payload["allow"] = %(+perms.allowed)
     if perms.denied.len > 0:
@@ -418,7 +420,7 @@ proc getInvite*(api: RestApi, code: string, with_counts: bool = false, auth: boo
     ## Get's a channel invite. The auth param is whether or not you should get the invite while authenticated.
     result = (await api.request("GET", endpointInvites(code) & fmt"?with_counts={with_counts}", auth = auth)).newInvite
 
-proc beginGuildPrune*(api: RestApi, guild_id: string, days: int = 7, compute_prune_count: bool = true, reason: string = "") {.async.} =
+proc beginGuildPrune*(api: RestApi, guild_id: string, days: int = 7, compute_prune_count: bool = true; reason: string = "") {.async.} =
     ## Begins a guild prune.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     let url = endpointGuildPrune(guild_id) & "?days=" & $days & "&compute_prune_count=" & $compute_prune_count
@@ -432,24 +434,24 @@ proc deleteGuild*(api: RestApi, guild_id: string): Future[void] {.async.} =
     discard (await api.request("DELETE", endpointGuilds(guild_id)))
 
 proc editGuild*(api: RestApi, guild_id: string,
-    name: Option[string] = none(string);
-    region: Option[string] = none(string);
-    verification_level: Option[int] = none(int);
-    default_msg_notifs: Option[int] = none(int);
-    explicit_filter: Option[int] = none(int);
-    afk_chan_id: Option[string] = none(string);
-    afk_timeout: Option[int] = none(int);
-    icon: Option[string] = none(string);
-    owner_id: Option[string] = none(string);
-    splash: Option[string] = none(string);
-    banner: Option[string] = none(string);
-    system_chan_id: Option[string] = none(string);
-    rules_chan_id: Option[string] = none(string);
-    public_update_chan_id: Option[string] = none(string);
-    prefered_locale: Option[string] = none(string), reason: string = ""): Future[Guild] {.async.} =
+        name: Option[string] = none(string);
+        region: Option[string] = none(string);
+        verification_level: Option[int] = none(int);
+        default_msg_notifs: Option[int] = none(int);
+        explicit_filter: Option[int] = none(int);
+        afk_chan_id: Option[string] = none(string);
+        afk_timeout: Option[int] = none(int);
+        icon: Option[string] = none(string);
+        owner_id: Option[string] = none(string);
+        splash: Option[string] = none(string);
+        banner: Option[string] = none(string);
+        system_chan_id: Option[string] = none(string);
+        rules_chan_id: Option[string] = none(string);
+        public_update_chan_id: Option[string] = none(string);
+        prefered_locale: Option[string] = none(string); reason: string = ""): Future[Guild] {.async.} =
     ## Edits a guild.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    let payload = %*{}
+    let payload = newJObject()
     if name.isSome:
         payload["name"] = %name
     if region.isSome:
@@ -488,13 +490,14 @@ proc getGuild*(api: RestApi, guild_id: string): Future[Guild] {.async.} =
 
 proc getGuildRoles*(api: RestApi, guild_id: string): Future[seq[Role]] {.async.} =
     ## Get's a guild's roles.
-    let roles = await api.request("GET", endpointGuildRoles(guild_id))
     result = @[]
+    let roles = await api.request("GET", endpointGuildRoles(guild_id))
+
     for role in roles.elems:
         result.add(newRole(role))
 
 proc createGuildRole*(api: RestApi, guild_id: string; name: string = "new role";
-            pobj: PermObj; color: int = 0; hoist: bool = false; mentionable: bool = false, reason: string = ""): Future[Role] {.async.} =
+            pobj: PermObj; color: int = 0; hoist: bool = false; mentionable: bool = false; reason: string = ""): Future[Role] {.async.} =
     ## Creates a guild role.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     result = (await api.request("POST", endpointGuildRoles(guild_id), $(%*{
@@ -515,7 +518,7 @@ proc editGuildRole*(api: RestApi, guild_id: string, role_id: string;
             hoist: Option[bool] = none(bool);
             mentionable: Option[bool] = none(bool)): Future[Role] {.async.} =
     ## Modifies a guild role.
-    let payload = %*{}
+    let payload = newJObject()
     if name.isSome:
         payload["name"] = %name
     if color.isSome:
@@ -529,14 +532,14 @@ proc editGuildRole*(api: RestApi, guild_id: string, role_id: string;
 
     result = (await api.request("POST", endpointGuildRoles(guild_id), $(payload))).newRole
 
-proc editGuildRolePosition*(api: RestApi, guild_id: string, role_id: string, position: int, reason: string = ""): Future[seq[Role]] {.async.} =
+proc editGuildRolePosition*(api: RestApi, guild_id: string, role_id: string; position: Option[int] = none(int); reason: string = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role position.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     result = @[]
 
     let roles = await api.request("PATCH", endpointGuildRoles(guild_id), $(%*{
         "id": role_id,
-        "position": position,
+        "position": %position
     }), xheaders = h)
 
     for role in roles.elems:
@@ -546,6 +549,7 @@ proc getGuildInvites*(api: RestApi, guild_id: string): Future[seq[InviteMetadata
     ## Gets guild invites.
     result = @[]
     let invites = await api.request("GET", endpointGuildInvites(guild_id))
+
     for inv in invites.elems:
         result.add(newInviteMetadata(inv))
 
@@ -553,14 +557,14 @@ proc getGuildVanityUrl*(api: RestApi, guild_id: string): Future[tuple[code: Opti
     ## Gets the guild vanity url.
     result = (await api.request("GET", endpointGuildVanity(guild_id))).to(tuple[code: Option[string], uses: int])
 
-proc editGuildMember*(api: RestApi, guild_id: string, user_id: string,
-    nick: Option[string] = none(string);
-    roles: Option[seq[string]] = none(seq[string]);
-    mute: Option[bool] = none(bool);
-    deaf: Option[bool] = none(bool);
-    channel_id: Option[string] = none(string); reason: string = ""): Future[void] {.async.} = # TODO: test it.
+proc editGuildMember*(api: RestApi, guild_id: string, user_id: string;
+        nick: Option[string] = none(string);
+        roles: Option[seq[string]] = none(seq[string]);
+        mute: Option[bool] = none(bool);
+        deaf: Option[bool] = none(bool);
+        channel_id: Option[string] = none(string); reason: string = ""): Future[void] {.async.} = # TODO: test it.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = %*{}
+    let payload = newJObject()
         
     if nick.isSome:
         payload["nick"] = %nick
@@ -577,7 +581,7 @@ proc editGuildMember*(api: RestApi, guild_id: string, user_id: string,
         payload["channel_id"] = newJNull()
     discard (await api.request("PATCH", endpointGuildMembers(guild_id, user_id), $(payload), xheaders = h))
 
-proc removeGuildMember*(api: RestApi, guild_id: string, user_id: string, reason: string): Future[void] {.async.} =
+proc removeGuildMember*(api: RestApi, guild_id: string, user_id: string; reason: string): Future[void] {.async.} =
     ## Removes a guild member.
     discard (await api.request("DELETE", endpointGuildMembers(guild_id, user_id)))
 
@@ -613,7 +617,7 @@ proc getGuildChannels*(api: RestApi, guild_id: string): Future[seq[GuildChannel]
     for chan in chans.elems:
         result.add(newGuildChannel(chan))
 
-proc editGuildChannelPositions*(api: RestApi, guild_id: string, channel_id: string, position: int, reason: string = ""): Future[void] {.async.} =
+proc editGuildChannelPositions*(api: RestApi, guild_id: string, channel_id: string, position: int; reason: string = ""): Future[void] {.async.} =
     ## Edits a guild channel's position.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     discard (await api.request("PATCH", endpointGuildChannels(guild_id, channel_id), $(%*{
@@ -637,23 +641,23 @@ proc setGuildNick*(api: RestApi, guild_id: string, nick: string = ""): Future[vo
     ## Set's the current user's guild nickname, defaults to "" if no nick is set.
     discard (await api.request("PATCH", endpointGuildMembersNick(guild_id, "@me"), $(%*{"nick": nick})))
 
-proc addGuildMemberRole*(api: RestApi, guild_id: string, user_id: string, role_id: string, reason: string = ""): Future[void] {.async.} =
+proc addGuildMemberRole*(api: RestApi, guild_id: string, user_id: string, role_id: string; reason: string = ""): Future[void] {.async.} =
     ## Assigns a member's role.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     discard (await api.request("PUT", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h))
 
-proc removeGuildMemberRole*(api: RestApi, guild_id: string, user_id: string, role_id: string, reason: string = ""): Future[void] {.async.} =
+proc removeGuildMemberRole*(api: RestApi, guild_id: string, user_id: string, role_id: string; reason: string = ""): Future[void] {.async.} =
     ## Removes a member's role.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     discard (await api.request("DELETE", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h))
 
-proc createChannelInvite*(api: RestApi, channel_id: string,
-    max_age: int = 86400,
-    max_uses: int = 0,
-    temp: bool = false,
-    unique: bool = false,
-    target_user: Option[string] = none(string),
-    target_user_type: Option[int] = none(int)): Future[Invite] {.async.} =
+proc createChannelInvite*(api: RestApi, channel_id: string;
+            max_age: int = 86400,
+            max_uses: int = 0,
+            temp: bool = false,
+            unique: bool = false,
+            target_user: Option[string] = none(string),
+            target_user_type: Option[int] = none(int)): Future[Invite] {.async.} =
     ## Creates an instant invite.
     let payload = %*{
         "max_age": max_age,
@@ -667,7 +671,7 @@ proc createChannelInvite*(api: RestApi, channel_id: string,
         payload["target_user_type"] = %target_user_type
     result = (await api.request("POST", endpointChannelInvites(channel_id), $(payload))).newInvite
 
-proc deleteGuildChannelPermission*(api: RestApi, channel_id: string, overwrite: string, reason: string = ""): Future[void] {.async.} =
+proc deleteGuildChannelPermission*(api: RestApi, channel_id: string, overwrite: string; reason: string = ""): Future[void] {.async.} =
     ## Deletes guild channel permission overwrite.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     discard (await api.request("DELETE", endpointChannelOverwrites(channel_id, overwrite), xheaders = h))
@@ -684,16 +688,111 @@ proc getChannelInvites*(api: RestApi, channel_id: string): Future[seq[Invite]] {
     for inv in invites.elems:
         result.add(newInvite(inv))
 
-# proc executeWebhook*(api: RestApi, webhook_id: string): Future[Webhook] {.async.}
+proc getGuildIntegrations*(api: RestApi, guild_id: string): Future[seq[Integration]] {.async.} =
+    ## Gets a list of guild integrations.
+    result = @[]
+    let integs = (await api.request("GET", endpointGuildIntegrations(guild_id)))
 
-# proc getWebhook*(api: RestApi, webhook_id: string): Future[Webhook] {.async.}
+    for integ in integs:
+        result.add(integ.to(Integration))
 
-# proc deleteWebhook*(api: RestApi, webhook_id: string): Future[void] {.async.}
+proc getChannelWebhooks*(api: RestApi, channel_id: string): Future[seq[Webhook]] {.async.} =
+    ## Gets a list of a channel's webhooks.
+    result = @[]
+    let hooks = (await api.request("GET", endpointChannelWebhooks(channel_id)))
 
-# proc getChannelWebhooks*(api: RestApi): Future[Webhook] {.async.}
+    for hook in hooks.elems:
+        result.add(newWebhook(hook))
+
+proc getGuildWebhooks*(api: RestApi, guild_id: string): Future[seq[Webhook]] {.async.} =
+    ## Gets a list of a channel's webhooks.
+    result = @[]
+    let hooks = (await api.request("GET", endpointChannelWebhooks(guild_id)))
+
+    for hook in hooks.elems:
+        result.add(newWebhook(hook))
+
+proc executeWebhook*(api: RestApi, webhook_id: string, token: string; wait: bool = true;
+            content: string = ""; tts: bool = false;
+            file: Option[DiscordFile] = none(DiscordFile);
+            embeds: Option[seq[Embed]] = none(seq[Embed]);
+            allowed_mentions: Option[AllowedMentions] = none(AllowedMentions);
+            username: Option[string] = none(string);
+            avatar_url: Option[string] = none(string)): Future[Message] {.async.} =
+    ## Executes a webhook. If wait is false make sure to asyncCheck it.
+    var url = endpointWebhookToken(webhook_id, token) & "?wait=" & $wait
+    let payload = %*{
+        "content": content,
+        "tts": tts
+    }
+
+    if username.isSome:
+        payload["username"] = %username
+    if avatar_url.isSome:
+        payload["avatar_url"] = %avatar_url
+    if allowed_mentions.isSome:
+        payload["allowed_mentions"] = %allowed_mentions
+
+    if embeds.isSome:
+        var embs: seq[Embed] = @[]
+
+        for embed in get(embeds):
+            embs.add(embed)
+
+        payload["embeds"] = %* embs
+
+    if file.isSome:
+        var contenttype: string = ""
+        var mpd = newMultipartData()
+
+        if get(file).name == "":
+            get(file).name = "file.png"
+        let fil = splitFile(get(file).name)
+
+        if fil.ext != "": contenttype = newMimetypes().getMimetype(fil.ext[1..high(fil.ext)])
+        get(file).body = readFile(get(file).name)
+        mpd.add(get(file).name, get(file).body, get(file).name, contenttype)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
+
+        return (await api.request("POST", url, $(payload), mp = mpd)).newMessage
+    result = (await api.request("POST", url, $(payload))).newMessage
+
+proc executeSlackWebhook*(api: RestApi, webhook_id: string, token: string, wait: bool = true): Future[Message] {.async.} =
+    ## Executes a slack webhook. If wait is false make sure to asyncCheck it.
+    result = (await api.request("POST", endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait)).newMessage
+
+proc executeGithubWebhook*(api: RestApi, webhook_id: string, token: string, wait: bool = true): Future[Message] {.async.} =
+    ## Executes a github webhook. If wait is false make sure to asyncCheck it.
+    result = (await api.request("POST", endpointWebhookTokenGithub(webhook_id, token) & "?wait=" & $wait)).newMessage
+
+proc getWebhook*(api: RestApi, webhook_id: string): Future[Webhook] {.async.} =
+    ## Gets a webhook.
+    result = (await api.request("GET", endpointWebhooks(webhook_id))).newWebhook
+
+proc deleteWebhook*(api: RestApi, webhook_id: string; reason: string = ""): Future[void] {.async.} =
+    ## Deletes a webhook.
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+    discard (await api.request("DELETE", endpointWebhooks(webhook_id), xheaders = h))
+
+proc editWebhook*(api: RestApi, webhook_id: string;
+        name: Option[string] = none(string);
+        avatar: Option[string] = none(string);
+        channel_id: Option[string] = none(string); reason: string = ""): Future[void] {.async.} =
+    ## Modifies a webhook. 
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+    let payload = newJObject()
+
+    if name.isSome:
+        payload["name"] = %name
+    if avatar.isSome:
+        payload["avatar"] = %avatar
+    if channel_id.isSome:
+        payload["channel_id"] = %channel_id
+    discard (await api.request("PATCH", endpointWebhooks(webhook_id), $(payload), xheaders = h))
+
 # proc getGuildWidgetImage*()
 # proc addGuildMember*()
-# proc getGuildIntegrations*()
 # proc editGuildIntegration*()
 # proc deleteGuildIntegration*()
 # proc syncGuildIntegration*()

@@ -1144,12 +1144,12 @@ proc startSession*(cl: DiscordClient,
             let ss = newShard(i, cl)
             cl.shards.add(i, ss)
             ss.compress = compress
-            asyncCheck ss.startSession(gateway.url, query)
+            await ss.startSession(gateway.url, query)
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)
     ss.compress = compress
-    waitFor ss.startSession(gateway.url, query)
+    await ss.startSession(gateway.url, query)
 
 proc getPing*(s: Shard): int =
     ## Gets the shard's ping ms.

@@ -49,7 +49,7 @@ type
         guild_id*: string
         kind*: int
         name*: string
-    Message* = ref object
+    Message* = object
         id*: string
         channel_id*: string
         guild_id*: string ## Message.guild_id by default will be ""
@@ -74,14 +74,14 @@ type
         application*: Application
         message_reference*: tuple[channel_id: string, message_id: string, guild_id: string]
         flags*: int
-    User* = ref object
+    User* = object
         id*: string
         username*: string
         discriminator*: string
         avatar*: Option[string]
         bot*: bool
         system*: bool
-    Member* = ref object
+    Member* = object
         user*: User
         nick*: string
         roles*: seq[string]
@@ -91,7 +91,7 @@ type
         voice_state*: Option[VoiceState]
         deaf*: bool
         mute*: bool
-    Attachment* = ref object
+    Attachment* = object
         id*: string
         filename*: string
         size*: int
@@ -99,11 +99,11 @@ type
         proxy_url*: string
         height*: Option[int]
         width*: Option[int]
-    Reaction* = ref object
+    Reaction* = object
         count*: int
         emoji*: Emoji
         reacted*: bool
-    Emoji* = ref object
+    Emoji* = object
         id*: string
         name*: string
         user*: User
@@ -111,7 +111,7 @@ type
         require_colons*: bool
         managed*: bool
         animated*: bool
-    Application* = ref object
+    Application* = object
         id*: string
         cover_image*: string
         description*: string
@@ -126,16 +126,12 @@ type
     UnavailableGuild* = object
         id*: string
         unavailable*: bool
-    Ready* = ref object
+    Ready* = object
         v*: int
         user*: User
         guilds*: seq[UnavailableGuild]
         session_id*: string
         shard*: Option[seq[int]]
-    AnyChannel* = ref object
-        id*: string
-        name*: string
-        kind*: int
     DMChannel* = ref object
         id*: string
         last_message_id*: string
@@ -177,7 +173,7 @@ type
         secrets*: Option[tuple[join: string, spectate: string, match: string]]
         instance*: bool # Useful field if its instanced session
         flags*: int
-    Presence* = ref object
+    Presence* = object
         user*: User
         roles*: seq[string]
         game*: Option[GameActivity]
@@ -228,7 +224,7 @@ type
         premium_tier*: int
         premium_subscription_count*: Option[int]
         preferred_locale*: string
-    VoiceState* = ref object
+    VoiceState* = object
         guild_id*: Option[string]
         channel_id*: Option[string]
         user_id*: string
@@ -239,7 +235,7 @@ type
         self_mute*: bool
         self_stream*: bool # owo whats this
         suppress*: bool
-    Role* = ref object
+    Role* = object
         id*: string
         name*: string
         color*: int
@@ -258,7 +254,7 @@ type
         allow*: int
         deny*: int
         permObj*: PermObj
-    PermObj* = ref object
+    PermObj* = object
         allowed*: seq[int]
         denied*: seq[int]
         perms*: int
@@ -292,7 +288,7 @@ type
         channel_id*: string
         user_id*: string
         timestamp*: int
-    GuildMembersChunk* = ref object
+    GuildMembersChunk* = object
         members*: seq[Member]
         not_found*: seq[string]
         presences*: seq[Presence]
@@ -308,12 +304,25 @@ type
         name*: Option[string]
         avatar*: Option[string]
         token*: Option[string]
+    Integration* = object
+        id*: string
+        name*: string
+        kind*: string
+        enabled*: bool
+        syncing*: bool
+        role_id*: string
+        enable_emoticons*: Option[bool]
+        expire_behavior*: int
+        expire_grace_period*: int
+        user*: User
+        account*: tuple[id: string, name: string]
+        synced_at*: string
 
 proc `$`*(e: Emoji): string =
     result = if e.id != "": e.name & ":" & e.id else: e.name
 
 proc `$`*(r: Reaction): string =
-    result = $r[]
+    result = $r
 
 proc `+`*(p: PermObj): int =
     ## Sums up the total permissions.
@@ -386,7 +395,6 @@ proc newOverwrite*(data: JsonNode): Overwrite =
         deny: data["deny"].getInt()
     )
 
-    result.permObj = new(PermObj)
     if result.allow != 0:
         result.permObj.perms = result.permObj.perms or result.allow
     if result.deny != 0:
@@ -718,7 +726,7 @@ proc update*(m: Message, data: JsonNode): Message =
             result.mention_users.add(newUser(usr))
 
     if data.hasKey("tts"):
-        m.tts = data["tts"].bval
+        result.tts = data["tts"].bval
 
     if data.hasKey("attachments"):
         result.attachments = @[]

@@ -80,11 +80,11 @@ type
         reset: int
         processing: bool
         queue: seq[proc (cb: proc ()){.closure.}]
-    SessionLimit = ref object
+    SessionLimit = object
         total: int
         remaining: int
         reset_after: int
-    GatewayInfo = ref object
+    GatewayInfo = object
         url: string 
         shards: int
         session_start_limit: SessionLimit
@@ -717,7 +717,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             cl.events.guild_member_add(s, guild, member)
         of "GUILD_MEMBER_UPDATE":
             var guild = Guild(id: data["guild_id"].str)
-            var member = new(Member)
+            var member = Member()
             var oldMember: Option[Member] = none(Member)
 
             if cl.cache.preferences.cache_guilds:
@@ -868,7 +868,7 @@ proc handleConnection(cl: DiscordClient): Future[tuple[shards: int, url: string]
     cl.debugMsg("Successfully retrived gateway information from Discord", some(@[
         "url", info.url,
         "shards", $info.shards,
-        "session_start_limit", $info.session_start_limit[]
+        "session_start_limit", $info.session_start_limit
     ]))
 
     if info.session_start_limit.remaining == 0:
@@ -906,7 +906,7 @@ proc reconnect*(s: Shard; resumable: bool = false) {.async.} =
     try:
         s.connection = await newAsyncWebsocketClient(
             if url.startsWith("wss://"): url[6..url.high] else: url,
-            Port(443),
+            Port 443,
             "/?v=" & $gatewayVer & "&encoding=" & encode,
             true
         )
@@ -966,7 +966,7 @@ proc heartbeat(s: Shard) {.async.} =
 proc setupHeartbeatInterval(s: Shard) {.async.} =
     if not s.heartbeating: return
 
-    while not s.stop and not s.connection.sock.isClosed():
+    while not s.stop and not s.connection.sock.isClosed:
         await s.heartbeat()
         await sleepAsync s.interval
 
@@ -976,7 +976,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
     var packet: tuple[opcode: Opcode, data: string]
     var shouldReconnect = true
 
-    while not isClosed(s.connection.sock) and not s.stop:
+    while not s.connection.sock.isClosed and not s.stop:
         try:
             packet = await s.connection.readData()
         except:
@@ -993,8 +993,7 @@ proc handleSocketMessage*(s: Shard) {.async.} =
                 s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat recieved from discord.")
 
                 if (epochTime() * 1000 - s.lastHBReceived) > 60000 or exception.startsWith("The network connection was aborted by the local system."): # this is my clever way of detecting a sleep
-                    echo """It appears that the library has detected that you put your computer to sleep.
-                    - Unfortunately, this error is fatal resulting in some errors."""
+                    echo "It appears that the library has detected that you put your computer to sleep.\n\n    - Unfortunately, this error is fatal resulting in some errors."
                     shouldReconnect = false
                 break
 
@@ -1050,7 +1049,6 @@ proc handleSocketMessage*(s: Shard) {.async.} =
 
                     await sleepAsync 5000
                     s.client.limiter = newGatewayLimiter(limit = 1, interval = 5500)
-
                     await s.identify()
             else:
                 discard

@@ -140,6 +140,9 @@ const
     whIncoming* = 1
     whFollower* = 2
 
+    iebRemoveRole* = 0
+    iebKick* = 1
+
 proc changeApiVersion*(ver: string = "7") =
     ## Changes the Discord API REST Version
     assert parseInt(ver) >= 6 and parseInt(ver) < 8 # min max number conditions are quite tricky for me.
@@ -202,11 +205,29 @@ proc endpointGuildInvites*(gid: string): string =
 proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
 
-proc endpointGuildChannels*(gid: string, cid = ""): string =
+proc endpointGuildChannels*(gid: string, cid: string = ""): string =
     result = endpointGuilds(gid) & "/channels" & (if cid != "": "/" & cid else: "")
 
 proc endpointChannelOverwrites*(cid: string, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
+
+proc endpointWebhooks*(wid: string): string =
+    result = "webhooks/" & wid
+
+proc endpointChannelWebhooks*(cid: string): string =
+    result = endpointChannels(cid) & "/webhooks"
+
+proc endpointGuildWebhooks*(gid: string): string =
+    result = endpointGuilds(gid) & "/webhooks"
+
+proc endpointWebhookToken*(wid: string, tok: string): string =
+    result = endpointWebhooks(wid) & "/" & tok
+
+proc endpointWebhookTokenSlack*(wid: string, tok: string): string =
+    result = endpointWebhookToken(wid, tok) & "/slack"
+
+proc endpointWebhookTokenGithub*(wid: string, tok: string): string =
+    result = endpointWebhookToken(wid, tok) & "/github"
 
 proc endpointChannelMessages*(cid: string; mid: string = ""): string =
     result = endpointChannels(cid) & "/messages"

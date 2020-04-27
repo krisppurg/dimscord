@@ -336,7 +336,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             let voiceState = newVoiceState(data)
             var oldVoiceState: Option[VoiceState] = none(VoiceState)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 guild.members[voiceState.user_id].voice_state = some(voiceState)
 
@@ -356,14 +356,14 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             if data.hasKey("guild_id"):
                 guild = some(Guild(id: data["guild_id"].str))
-                if cl.cache.preferences.cache_guilds:
+                if cl.cache.guilds.hasKey(guild.id):
                     guild = some(cl.cache.guilds[data["guild_id"].str])
 
             await cl.events.channel_pins_update(s, data["channel_id"].str, guild, last_pin)
         of "GUILD_EMOJIS_UPDATE":
             var g = Guild(id: data["guild_id"].str)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(g.id):
                 g = cl.cache.guilds[g.id]
 
             var emojis: seq[Emoji] = @[]
@@ -602,7 +602,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                             chan.messages[msg.id] = chan.messages[msg.id].update(data)
                             msg = chan.messages[msg.id]
                 else:
-                    if cl.cache.preferences.cache_dm_channels and msg.channel_id in cl.cache.dmChannels:
+                    if cl.cache.preferences.cache_dm_channels:
                         let chan = cl.cache.dmChannels[msg.channel_id]
 
                         if chan.messages.hasKey(msg.id):
@@ -743,7 +743,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 guild.members.del(member.user.id)
                 guild.member_count = some(get(guild.member_count) - 1)
     
-                if cl.cache.preferences.cache_users:
+                if cl.cache.users.hasKey(member.user.id):
                     cl.cache.users.del(member.user.id)
 
             await cl.events.guild_member_remove(s, guild, member)

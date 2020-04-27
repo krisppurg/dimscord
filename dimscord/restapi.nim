@@ -632,7 +632,7 @@ proc getGuildMember*(api: RestApi, guild_id: string, user_id: string): Future[Me
 proc getGuildMembers*(api: RestApi, guild_id: string, limit: int = 1, after: string = "0"): Future[seq[Member]] {.async.} =
     ## Gets a list of a guild's members.
     result = @[]
-    let mems = (await api.request("GET", endpointGuildChannels(guild_id)))
+    let mems = (await api.request("GET", endpointGuildMembers(guild_id)))
 
     for mem in mems.elems:
         result.add(newMember(mem))
@@ -707,7 +707,7 @@ proc getChannelWebhooks*(api: RestApi, channel_id: string): Future[seq[Webhook]]
 proc getGuildWebhooks*(api: RestApi, guild_id: string): Future[seq[Webhook]] {.async.} =
     ## Gets a list of a channel's webhooks.
     result = @[]
-    let hooks = (await api.request("GET", endpointChannelWebhooks(guild_id)))
+    let hooks = (await api.request("GET", endpointGuildWebhooks(guild_id)))
 
     for hook in hooks.elems:
         result.add(newWebhook(hook))

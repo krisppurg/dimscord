@@ -1,22 +1,25 @@
 import objects, tables, constants, options
 
 type
-    CacheTable* = ref object ## An object that has properties of stored things
+    CacheTable* = ref object
+        ## An object that has properties of stored things
         preferences*: CacheTablePrefs
         users*: Table[string, User]
         guilds*: Table[string, Guild]
         guildChannels*: Table[string, GuildChannel]
         dmChannels*: Table[string, DMChannel]
     CacheTablePrefs* = ref object
+        ## An object representing whether users, guilds, guild channels, and DM channels are to be cached
         cache_users*: bool
         cache_guilds*: bool
         cache_guild_channels*: bool
         cache_dm_channels*: bool
     CacheError* = object of Exception
+        ## An error that indicates a problem while caching
 
 proc newCacheTable*(cache_users: bool; cache_guilds: bool;
             cache_guild_channels: bool; cache_dm_channels: bool): CacheTable =
-    ## Initialises cache.
+    ## Initialises cache according to the given preferences.
     var prefs = CacheTablePrefs(
         cache_users: cache_users,
         cache_guilds: cache_guilds,

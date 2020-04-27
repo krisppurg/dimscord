@@ -5,7 +5,8 @@ randomize() # I hate that function.
 {.warning[UnusedImport]: off.} # It says that it's not used, but it actually is used in unexported procedures. 
 
 type
-    Events* = ref object ## Event handler object. Exists param checks message is cached or not. Other cachable objects dont have them.
+    Events* = ref object
+        ## Event handler object. The `exists` param checks message is cached or not. Other cachable objects don't have them.
         message_create*: proc (s: Shard, m: Message)
         on_ready*: proc (s: Shard, r: Ready)
         message_delete*: proc (s: Shard, m: Message, exists: bool)
@@ -40,7 +41,8 @@ type
         user_update*: proc (s: Shard, u: User, o: Option[User])
         voice_state_update*: proc (s: Shard, v: VoiceState, o: Option[VoiceState])
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel)
-    DiscordClient* = ref object ## The Discord Client.
+    DiscordClient* = ref object
+        ## The Discord Client.
         token*: string
         api*: RestApi
         user*: User

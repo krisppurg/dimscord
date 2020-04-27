@@ -1,4 +1,4 @@
-import ../dimscord, asyncdispatch, os, strutils, sequtils
+import dimscord, asyncdispatch, os, strutils, sequtils
 let cl = newDiscordClient("<your bot token goes here>") 
 
 cl.events.on_ready = proc (s: Shard, r: Ready) {.async.} =

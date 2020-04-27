@@ -408,7 +408,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
         of "MESSAGE_CREATE":
             let msg = newMessage(data)
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -433,7 +433,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             if cl.cache.preferences.cache_users:
                 user = cl.cache.users[user.id]
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -473,10 +473,10 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var reaction = Reaction(emoji: emoji)
             var exists = false
 
-            if cl.cache.preferences.cache_users:
+            if cl.cache.users.hasKey(user.id):
                 user = cl.cache.users[user.id]
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -511,7 +511,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var emoji = newEmoji(data["emoji"])
             var exists = false
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -538,7 +538,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
             var exists = false
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -568,9 +568,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             if data.hasKey("guild_id"):
                 msg.guild_id = data["guild_id"].str
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if not cl.cache.dmChannels.hasKey(msg.channel_id):
-                    return
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -594,7 +592,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var oldMessage: Option[Message] = none(Message)
             var exists = false
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         let chan = cl.cache.guildChannels[msg.channel_id]
@@ -622,7 +620,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 var exists = false
                 var m = Message(id: msg.str, channel_id: data["channel_id"].str)
 
-                if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+                if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id)s:
                     if cl.cache.kind(m.channel_id) != ctDirect:
                         if cl.cache.preferences.cache_guild_channels:
                             let chan = cl.cache.guildChannels[m.channel_id]
@@ -652,7 +650,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             if data["type"].getInt() != ctDirect:
                 guild = some(Guild(id: data["guild_id"].str))
 
-                if cl.cache.preferences.cache_guilds:
+                if cl.cache.guilds.hasKey(get(guild).id):
                     guild = some(cl.cache.guilds[get(guild).id])
 
                 chan = some(newGuildChannel(data))
@@ -661,7 +659,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                     cl.cache.guildChannels.add(get(chan).id, get(chan))
             elif data["type"].getInt() == ctDirect and not cl.cache.dmChannels.hasKey(data["id"].str):
                 dmChan = some(newDMChannel(data))
-                cl.cache.dmChannels.add(data["id"].str, get(dmChan))
+                if cl.cache.preferences.cache_dm_channels:
+                    cl.cache.dmChannels.add(data["id"].str, get(dmChan))
 
             await cl.events.channel_create(s, guild, chan, dmChan)
         of "CHANNEL_UPDATE":
@@ -670,11 +669,11 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             var guild = Guild(id: data["guild_id"].str)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 oldChan = some(guild.channels[gchan.id])
 
-                if cl.cache.preferences.cache_guild_channels:
+                if cl.cache.guildChannels.hasKey(gchan.id):
                     cl.cache.guildChannels[gchan.id] = gchan
             await cl.events.channel_update(s, guild, gchan, oldChan)
         of "CHANNEL_DELETE":
@@ -687,7 +686,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 if cl.cache.preferences.cache_guilds:
                     guild = some(cl.cache.guilds[get(guild).id])
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
+            if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(data["id"].str) != ctDirect:
                     if cl.cache.preferences.cache_guild_channels:
                         gc = some(newGuildChannel(data))
@@ -702,7 +701,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var guild = Guild(id: data["guild_id"].str)
             let member = newMember(data)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 guild.members.add(member.user.id, member)
                 guild.member_count = some(get(guild.member_count) + 1)
@@ -715,7 +714,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var member = Member()
             var oldMember: Option[Member] = none(Member)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 member = guild.members[data["user"]["id"].str]
                 oldMember = some(member)
@@ -737,7 +736,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var guild = Guild(id: data["guild_id"].str)
             var member = Member(user: newUser(data))
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 member = guild.members[member.user.id]
 
@@ -751,30 +750,30 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
         of "GUILD_BAN_ADD":
             var guild = Guild(id: data["guild_id"].str)
             let user = newUser(data["user"])
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
-            
+
             await cl.events.guild_ban_add(s, guild, user)
         of "GUILD_BAN_REMOVE":
             var guild = Guild(id: data["guild_id"].str)
             let user = newUser(data["user"])
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
-            
+
             await cl.events.guild_ban_add(s, guild, user)
         of "GUILD_UPDATE":
             let guild = newGuild(data)
             var oldGuild: Option[Guild] = none(Guild)
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 oldGuild = some(cl.cache.guilds[guild.id])
                 cl.cache.guilds[guild.id] = guild
-            
+
             await cl.events.guild_update(s, guild, oldGuild)
         of "GUILD_DELETE":
             var guild = Guild(id: data["id"].str)
             var oldGuild: Option[Guild] = none(Guild)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 cl.cache.guilds[guild.id].unavailable = some((if data.hasKey("unavailable"): data["unavailable"].bval else: false))
                 guild = cl.cache.guilds[guild.id]
                 cl.cache.guilds.del(guild.id)
@@ -784,7 +783,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var guild = Guild(id: data["guild_id"].str)
             let role = newRole(data)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 guild.roles.add(role.id, role)
 
@@ -794,7 +793,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             let role = newRole(data["role"])
             var oldRole: Option[Role] = none(Role)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 oldRole = some(guild.roles[role.id])
 
@@ -805,7 +804,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var guild = Guild(id: data["guild_id"].str)
             var role = Role(id: data["role_id"].str)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
                 role = guild.roles[role.id]
 
@@ -814,11 +813,11 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var guild = Guild(id: data["guild_id"].str)
             var chan = GuildChannel(id: data["channel_id"].str)
 
-            if cl.cache.preferences.cache_guilds:
+            if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
-            if cl.cache.preferences.cache_guild_channels:
+            if cl.cache.guildChannels.hasKey(chan.id):
                 chan = cl.cache.guildChannels[chan.id]
-            
+
             await cl.events.webhooks_update(s, guild, chan)
         of "RESUMED":
             s.resuming = false
@@ -1149,7 +1148,7 @@ proc startSession*(cl: DiscordClient,
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)
     ss.compress = compress
-    await ss.startSession(gateway.url, query)
+    waitFor ss.startSession(gateway.url, query)
 
 proc getPing*(s: Shard): int =
     ## Gets the shard's ping ms.

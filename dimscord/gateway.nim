@@ -885,7 +885,7 @@ proc handleConnection(cl: DiscordClient): Future[tuple[shards: int, url: string]
     
     result = (info.shards, info.url)
 
-proc reconnect*(s: Shard) {.async.} =
+proc reconnect(s: Shard) {.async.} =
     if s.reconnecting: return
     s.reconnecting = true
     s.retryInfo.attempts += 1
@@ -971,7 +971,7 @@ proc setupHeartbeatInterval(s: Shard) {.async.} =
         await s.heartbeat()
         await sleepAsync s.interval
 
-proc handleSocketMessage*(s: Shard) {.async.} =
+proc handleSocketMessage(s: Shard) {.async.} =
     waitFor s.identify()
 
     var packet: tuple[opcode: Opcode, data: string]
@@ -1129,8 +1129,6 @@ proc startSession*(cl: DiscordClient,
     cl.limiter = newGatewayLimiter(limit = 1, interval = 5500)
 
     var query = "/?v=" & $gatewayVer & "&encoding=" & encoding
-    # if compress:
-    #     query = query & "&compress=zlib-stream"
 
     if gateway.url == "":
         gateway = await cl.handleConnection()
@@ -1148,7 +1146,7 @@ proc startSession*(cl: DiscordClient,
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)
     ss.compress = compress
-    waitFor ss.startSession(gateway.url, query)
+    await ss.startSession(gateway.url, query)
 
 proc getPing*(s: Shard): int =
     ## Gets the shard's ping ms.

@@ -1,4 +1,5 @@
-import strutils
+import strutils, tables
+from ./objects import Message
 
 func commandCallTokens*(contents: string): seq[string] =
     if contents.isEmptyOrWhitespace: return @[]
@@ -35,3 +36,23 @@ func commandCallTokens*(contents: string): seq[string] =
             token &= ch
     if inToken: endCurrentToken()
         
+type
+    CommandCall* = object
+        command*: string
+        params*: seq[string]
+        message*: Message
+    CommandHandler* = proc (c: CommandCall)
+    CommandHandlerTable* = Table[string, CommandHandler]
+
+proc addHandler*(table: var CommandHandlerTable, command: string, handler: CommandHandler) =
+    table[command] = handler
+
+proc handle*(table: CommandHandlerTable, tokens: seq[string], message: Message): bool =
+    if tokens.len == 0: return false
+    let command = tokens[0]
+    let params = tokens[1..^1]
+
+    if table.hasKey(command):
+        table[command](CommandCall(command: command, params: params, message: message))
+        return true
+    return false

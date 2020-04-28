@@ -478,7 +478,7 @@ proc editGuildRole*(api: RestApi, guild_id: string, role_id: string;
 
     result = (await api.request("POST", endpointGuildRoles(guild_id), $(payload))).newRole
 
-proc editGuildRolePosition*(api: RestApi, guild_id: string, role_id: string, position: int, reason: string = ""): Future[seq[Role]] {.async.} =
+proc editGuildRolePosition*(api: RestApi, guild_id: string, role_id: string, position = none(int), reason: string = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role position.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     result = @[]
@@ -503,13 +503,13 @@ proc getGuildVanityUrl*(api: RestApi, guild_id: string): Future[tuple[code: Opti
     result = (await api.request("GET", endpointGuildVanity(guild_id))).to(tuple[code: Option[string], uses: int])
 
 proc editGuildMember*(api: RestApi, guild_id: string, user_id: string,
-    nick: Option[string] = none(string);
-    roles: Option[seq[string]] = none(seq[string]);
-    mute: Option[bool] = none(bool);
-    deaf: Option[bool] = none(bool);
-    channel_id: Option[string] = none(string); reason: string = ""): Future[void] {.async.} = # TODO: test it.
+        nick: Option[string] = none(string);
+        roles: Option[seq[string]] = none(seq[string]);
+        mute: Option[bool] = none(bool);
+        deaf: Option[bool] = none(bool);
+        channel_id: Option[string] = none(string); reason: string = ""): Future[void] {.async.} = # TODO: test it.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = %*{}
+    var payload = newJObject()
     
     payload.loadOpt(nick, roles, mute, deaf, channel_id)
 
@@ -568,7 +568,7 @@ proc getGuildMember*(api: RestApi, guild_id: string, user_id: string): Future[Me
 proc getGuildMembers*(api: RestApi, guild_id: string, limit: int = 1, after: string = "0"): Future[seq[Member]] {.async.} =
     ## Gets a list of a guild's members.
     result = @[]
-    let mems = (await api.request("GET", endpointGuildChannels(guild_id)))
+    let mems = (await api.request("GET", endpointGuildMembers(guild_id)))
 
     for mem in mems.elems:
         result.add(newMember(mem))

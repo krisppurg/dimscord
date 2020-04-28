@@ -1,4 +1,7 @@
-import options, json, tables, constants
+import options, json, tables, constants, macros
+from sequtils import map
+from sugar import `=>`
+
 type
     Embed* = ref object
         title*: Option[string]
@@ -387,6 +390,56 @@ proc `%`*(o: Overwrite): JsonNode =
 
     return json
 
+func parseAssignment(target: NimNode, source: NimNode, ident: NimNode, itExpr: NimNode, checkKind: bool = false): NimNode =
+    # Parse a single "field <- it.whatever"
+    expectKind(ident, nnkIdent)
+    let identStr = ident.strVal()
+    let itReplacement = quote do:
+        `source`[`identStr`]
+
+    template isIt(node: NimNode): bool = node.kind() == nnkIdent and node.eqIdent("it")
+    proc replaceIt(node: NimNode) =
+        for (i, child) in node.pairs():
+            if child.isIt:
+                node[i] = itReplacement
+            else:
+                replaceIt(child)
+                node[i] = child
+
+    var valueExpr = if (itExpr.isIt): itReplacement else: itExpr
+    replaceIt(valueExpr)
+
+    let predicate = if checkKind:
+        quote do: `source`.hasKey(`identStr`) and `source`[`identStr`].kind != JNull
+    else:
+        quote do: `source`.hasKey(`identStr`)
+
+    result = quote do:
+        if `predicate`:
+            `target`.`ident` = `valueExpr`
+
+macro assignFrom(target: typed, source: typed, body: untyped): untyped =
+    # Assign optional field values from a JsonNode according to the body's declarations.
+    # Example:
+    # obj.assignFrom(js):
+    #     field1 <- it.toInt
+    #     field2 <- newOverwrite(it)
+    #     field3 <<- transform(it)
+    # turns into
+    # if js.hasKey("field1"):
+    #     obj.field1 = js["field1"].toInt
+    # if js.hasKey("field2"):
+    #     obj.field2 = newOverwrite(js["field2"])
+    # if js.hasKey("field3") and js["field3"].kind != JNull:
+    #     obj.field3 = transform(js["field3"])
+    result = newStmtList()
+    body.expectKind(nnkStmtList)
+    for asgn in body.children():
+        asgn.expectKind(nnkInfix)
+        asgn.expectLen(3)
+        doAssert asgn[0].strVal in ["<-", "<<-"], "unknown infix operator for assignFrom: " & asgn[0].strVal 
+        result.add parseAssignment(target, source, asgn[1], asgn[2], checkKind = asgn[0].strVal == "<<-")
+
 proc newOverwrite*(data: JsonNode): Overwrite =
     result = Overwrite(
         id: data["id"].str,
@@ -447,10 +500,9 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         else:
             discard
 
-    if data.hasKey("parent_id") and data["parent_id"].kind != JNull:
-        result.parent_id = some(data["parent_id"].str)
-    if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
-       result.guild_id = some(data["guild_id"].str)
+    result.assignFrom(data):
+        parent_id <<- some(it.str)
+        guild_id <<- some(it.str)
 
 proc newRestApi*(token: string): RestApi =
     result = RestApi(token: token)
@@ -473,16 +525,12 @@ proc newWebhook*(data: JsonNode): Webhook =
         kind: data["type"].getInt(),
         channel_id: data["channel_id"].str)
     
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
-    if data.hasKey("user"):
-        result.user = some(newUser(data["user"]))
-    if data.hasKey("token"):
-        result.token = some(data["token"].str)
-    if data["name"].kind != JNull:
-        result.name = some(data["name"].str)
-    if data["avatar"].kind != JNull:
-        result.avatar = some(data["avatar"].str)
+    result.assignFrom(data):
+        guild_id <- some(it.str)
+        user <- some(newUser(it))
+        token <- some(it.str)
+        name <<- some(it.str)
+        avatar <<- some(it.str)
 
 proc newGuildBan*(data: JsonNode): GuildBan =
     result = GuildBan(user: newUser(data["user"]))
@@ -505,19 +553,13 @@ proc newInvite*(data: JsonNode): Invite =
         kind: data["channel"]["type"].getInt(),
         name: data["channel"]["name"].str))
 
-    if data.hasKey("guild"):
-        result.guild = some(data["guild"].to(PartialGuild))
-    if data.hasKey("inviter"):
-        result.inviter = some(newUser(data["inviter"]))
-
-    if data.hasKey("target_user"):
-        result.target_user = some(newUser(data["inviter"]))
-    if data.hasKey("target_user_type"):
-        result.target_user_type = some(data["target_user_type"].getInt())
-    if data.hasKey("approximate_presence_count"):
-        result.approximate_presence_count = some(data["approximate_presence_count"].getInt())
-    if data.hasKey("approximate_member_count"):
-        result.approximate_member_count = some(data["approximate_member_count"].getInt())
+    result.assignFrom(data):
+        guild <- some(it.to(PartialGuild))
+        inviter <- some(newUser(it))
+        target_user <- some(newUser(it))
+        target_user_type <- some(it.getInt())
+        approximate_presence_count <- some(it.getInt())
+        approximate_member_count <- some(it.getInt())
 
 proc newReady*(data: JsonNode): Ready =
     result = Ready(
@@ -545,10 +587,9 @@ proc newAttachment(data: JsonNode): Attachment =
         url: data["url"].str,
         proxy_url: data["proxy_url"].str,
     )
-    if data.hasKey("height"):
-        result.height = some(data["height"].getInt())
-    if data.hasKey("width"):
-        result.width = some(data["width"].getInt())
+    result.assignFrom(data):
+        height <- some(it.getInt())
+        width <- some(it.getInt())
 
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = VoiceState(
@@ -560,12 +601,12 @@ proc newVoiceState*(data: JsonNode): VoiceState =
         self_mute: data["self_mute"].bval,
         suppress: data["suppress"].bval
     )
-    if data.hasKey("self_stream"):
-        result.self_stream = data["self_stream"].bval
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
     if data.hasKey("channel_id") and data["channel_id"].kind != JNull:
         result.channel_id = some(data["channel_id"].str)
+
+    result.assignFrom(data):
+        self_stream <- it.bval
+        guild_id <- some(it.str)
 
 proc newEmoji*(data: JsonNode): Emoji =
     result = Emoji(
@@ -577,17 +618,12 @@ proc newEmoji*(data: JsonNode): Emoji =
         for r in data["roles"].elems:
             result.roles.add(r.str)
 
-    if data.haskey("id") and data["id"].kind != JNull:
-        result.id = data["id"].str
-
-    if data.hasKey("user"):
-        result.user = newUser(data["user"])
-    if data.hasKey("require_colons"):
-        result.require_colons = data["require_colons"].bval
-    if data.hasKey("managed"):
-        result.managed = data["managed"].bval
-    if data.hasKey("animated"):
-        result.animated = data["animated"].bval
+    result.assignFrom(data):
+        id <<- it.str
+        user <- newUser(it)
+        require_colons <- it.bval
+        managed <- it.bval
+        animated <- it.bval
 
 proc newGameActivity*(data: JsonNode): GameActivity =
     result = GameActivity(
@@ -595,56 +631,42 @@ proc newGameActivity*(data: JsonNode): GameActivity =
         kind: data["type"].getInt(),
         created_at: data["created_at"].num
     )
-    if data.hasKey("url") and data["url"].kind != JNull:
-        result.url = some(data["url"].str)
     
     if data.hasKey("timestamps"):
-        result.timestamps = some((start: toBiggestInt(0), final: toBiggestInt(0)))
-        if data["timestamps"].hasKey("start"):
-            get(result.timestamps).start = data["timestamps"]["start"].num
-        if data["timestamps"].hasKey("end"):
-            get(result.timestamps).final = data["timestamps"]["end"].num
+        result.timestamps = some((
+            start: data["timestamps"]{"start"}.getInt.BiggestInt,
+            final: data["timestamps"]{"end"}.getInt.BiggestInt
+        ))
     
-    if data.hasKey("application_id"):
-        result.application_id = some(data["application_id"].str)
-    if data.hasKey("details") and data["details"].kind != JNull:
-        result.details = some(data["details"].str)
-    if data.hasKey("state") and data["state"].kind != JNull:
-        result.state = some(data["state"].str)
-    if data.hasKey("emoji"):
-        result.emoji = some(newEmoji(data["emoji"]))
+    result.assignFrom(data):
+        url <<- some(it.str)
+        application_id <- some(it.str)
+        details <<- some(it.str)
+        state <<- some(it.str)
+        emoji <- some(newEmoji(it))
+        instance <- it.bval
+        flags <- it.getInt()
+
     if data.hasKey("party"):
-        result.party = some((id: "", size: ""))
-        if data["party"].hasKey("id"):
-            get(result.party).id = data["party"]["id"].str
-        if data["party"].hasKey("size"):
-            # TODO: Parse MaxSize too?
-            get(result.party).size = $data["party"]["size"][0].getInt()
+        result.party = some((
+            id: data["party"]{"id"}.getStr,
+            size: data["party"]{"size"}.getStr
+        ))
 
     if data.hasKey("assets"):
         result.assets = some(GameAssets())
-        if data["assets"].hasKey("small_text"):
-            get(result.assets).small_text = data["assets"]["small_text"].str
-        if data["assets"].hasKey("small_image"):
-            get(result.assets).small_image = data["assets"]["small_image"].str
-        if data["assets"].hasKey("large_text"):
-            get(result.assets).large_text = data["assets"]["large_text"].str
-        if data["assets"].hasKey("large_image"):
-            get(result.assets).large_image = data["assets"]["large_image"].str
+        get(result.assets).assignFrom(data["assets"]):
+            small_text <- it.str
+            small_image <- it.str
+            large_text <- it.str
+            large_image <- it.str
 
     if data.hasKey("secrets"):
-        result.secrets = some((join: "", spectate: "", match: ""))
-        if data["secrets"].hasKey("join"):
-            get(result.secrets).join = data["secrets"].str
-        if data["secrets"].hasKey("spectate"):
-            get(result.secrets).spectate = data["spectate"].str
-        if data["secrets"].hasKey("match"):
-            get(result.secrets).match = data["match"].str
-
-    if data.hasKey("instance"):
-        result.instance = data["instance"].bval
-    if data.hasKey("flags"):
-        result.flags = data["flags"].getInt()
+        result.secrets = some((
+            join: data["secrets"]{"join"}.getStr,
+            spectate: data["secrets"]{"spectate"}.getStr,
+            match: data["secrets"]{"match"}.getStr
+        ))
 
 proc newPresence*(data: JsonNode): Presence =
     result = Presence(
@@ -654,29 +676,24 @@ proc newPresence*(data: JsonNode): Presence =
         activities: @[],
         client_status: (web: "offline", desktop: "offline", mobile: "offline"))
 
-    if data.hasKey("guild_id"):
-        result.guild_id = data["guild_id"].str
+    result.assignFrom(data):
+        guild_id <- it.str
+        game <<- some(newGameActivity(it))
+        nick <<- some(it.str)
+        premium_since <<- some(it.str)
+
     if data.hasKey("roles") and data["roles"].elems.len > 0:
         for role in data["roles"]:
             result.roles.add(role.str)
     if data["activities"].elems.len > 0:
         for activity in data["activities"].elems:
             result.activities.add(newGameActivity(activity))
+    
+    result.client_status.assignFrom(data["client_status"]):
+        desktop <- it.str
+        web <- it.str
+        mobile <- it.str
 
-    if data["game"].kind != JNull:
-        result.game = some(newGameActivity(data["game"]))
-
-    if data["client_status"].hasKey("desktop"):
-        result.client_status.desktop = data["client_status"]["desktop"].str
-    if data["client_status"].hasKey("web"):
-        result.client_status.web = data["client_status"]["web"].str
-    if data["client_status"].hasKey("mobile"):
-        result.client_status.mobile = data["client_status"]["mobile"].str
-
-    if data.hasKey("nick") and data["nick"].kind != JNull:
-        result.nick = some(data["nick"].str)
-    if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-        result.premium_since = some(data["premium_since"].str)
 
 proc newMember*(data: JsonNode): Member =
     result = Member(
@@ -685,18 +702,12 @@ proc newMember*(data: JsonNode): Member =
         mute: data["mute"].bval
     )
 
-    if data.hasKey("user") and data["user"].kind != JNull:
-        result.user = newUser(data["user"])
-
-    if data.hasKey("roles"):
-        result.roles = @[]
-        for r in data["roles"].elems:
-            result.roles.add(r.str)
-
-    if data.hasKey("nick") and data["nick"].kind != JNull:
-        result.nick = data["nick"].str
-    if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-        result.premium_since = data["premium_since"].str
+    result.assignFrom(data):
+        user <<- newUser(it)
+        # bug? map complains about second argument with default value (getStr)
+        roles <- it.elems.map(node => node.getStr())
+        nick <<- it.str
+        premium_since <<- it.str
 
     result.presence = Presence(status: "offline", client_status: ("offline", "offline", "offline"))
 
@@ -705,36 +716,21 @@ proc newReaction*(data: JsonNode): Reaction =
 
 proc update*(m: Message, data: JsonNode): Message =
     result = m
+    # can't coerce to assignFrom: "type" reserved, and kind != type
     if data.hasKey("type"):
         result.kind = data["type"].getInt()
-    if data.hasKey("author"):
-        result.author = newUser(data["author"])
-    if data.hasKey("flags"):
-        result.flags = data["flags"].getInt()
-    if data.hasKey("content"):
-        result.content = data["content"].str
-    if data.hasKey("mention_everyone"):
-        result.mention_everyone = data["mention_everyone"].bval
-    if data.hasKey("edited_timestamp") and data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
-
-    if data.hasKey("pinned"):
-        result.pinned = data["pinned"].bval
-    if data.hasKey("mentions"):
-        result.mention_users = @[]
     
-        for usr in data["mentions"].elems:
-            result.mention_users.add(newUser(usr))
+    result.assignFrom(data):
+        author <- newUser(it)
+        flags <- it.getInt()
+        content <- it.str
+        mention_everyone <- it.bval
+        edited_timestamp <<- it.str
+        pinned <- it.bval
+        tts <- it.bval
+        attachments <- it.elems.map(newAttachment)
 
-    if data.hasKey("tts"):
-        result.tts = data["tts"].bval
-
-    if data.hasKey("attachments"):
-        result.attachments = @[]
-
-        for attach in data["attachments"].elems:
-            result.attachments.add(newAttachment(attach))
-
+    # can't coerce to assignFrom: mention_users != mentions
     if data.hasKey("embeds") and data["embeds"].len > 0:
         result.embeds = @[]
 
@@ -770,27 +766,24 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
         kind: data["type"].getInt(),
         flags: data["flags"].getInt()
     )
-    if data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
 
-    if data.hasKey("mention_roles"):
-        result.mention_roles = @[]
+    result.assignFrom(data):
+        edited_timestamp <<- it.str
+        mention_roles <- it.elems.map(r => r.str)
+        guild_id <<- it.str
+        author <- newUser(it)
+        member <<- newMember(it)
+        attachments <- it.elems.map(newAttachment)
+        embeds <- it.elems.map(embed => embed.to(Embed))
+        webhook_id <- it.str
 
-        for r in data["mention_roles"].elems:
-            result.mention_roles.add(r.str)
-
-    if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
-        result.guild_id = data["guild_id"].str
-    if data.hasKey("author"):
-        result.author = newUser(data["author"])
-    if data.hasKey("member") and data["member"].kind != JNull:
-        result.member = newMember(data["member"])
-
+    # cannot coerce to assignFrom: mentions != mention_users
     if data.hasKey("mentions"):
         result.mention_users = @[]
     
         for usr in data["mentions"].elems:
             result.mention_users.add(newUser(usr))
+
     if data.hasKey("mention_channels"):
         result.mention_channels = @[]
     
@@ -801,16 +794,6 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
                 kind: chan["type"].getInt(),
                 name: chan["name"].str
             ))
-    if data.hasKey("attachments"):
-        result.attachments = @[]
-
-        for attach in data["attachments"].elems:
-            result.attachments.add(newAttachment(attach))
-    if data.hasKey("embeds"):
-        result.embeds = @[]
-
-        for embed in data["embeds"].elems:
-            result.embeds.add(embed.to(Embed))
     if data.hasKey("reactions"):
         result.reactions = initTable[string, Reaction]()
 
@@ -820,8 +803,6 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
 
     if data.hasKey("nonce") and data["nonce"].kind != JNull:
         result.nonce = if data["nonce"].getInt(-1) != -1: $(data["nonce"].getInt()) else: data["nonce"].str
-    if data.hasKey("webhook_id"):
-        result.webhook_id = data["webhook_id"].str
 
     if data.hasKey("activity"):
         var activity = data["activity"]
@@ -847,10 +828,9 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
         var reference = data["message_reference"]
         result.message_reference = (channel_id: reference["channel_id"].str, message_id: "", guild_id: "")
 
-        if reference.hasKey("message_id"):
-            result.message_reference.message_id = reference["message_id"].str
-        if reference.hasKey("guild_id") and reference["guild_id"].kind != JNull:
-            result.message_reference.guild_id = reference["guild_id"].str
+        result.message_reference.assignFrom(reference):
+            message_id <- it.str
+            guild_id <<- it.str
 
 proc newGuild*(data: JsonNode): Guild =
     result = Guild(
@@ -873,47 +853,26 @@ proc newGuild*(data: JsonNode): Guild =
         premium_tier: data["premium_tier"].getInt(),
         preferred_locale: data["preferred_locale"].str)
 
-    if data.hasKey("afk_timeout"):
-        result.afk_timeout = some(data["afk_timeout"].getInt())
-    if data.hasKey("permissions"):
-        result.permissions = some(data["permissions"].getInt()) 
-
-    if data.hasKey("widget_channel_id"):
-        result.widget_channel_id = some(data["widget_channel_id"].str)
-    if data.hasKey("joined_at"):
-        result.joined_at = some(data["joined_at"].str)
-    if data.hasKey("large"):
-        result.large = some(data["large"].bval)
-    if data.hasKey("unavailable"):
-        result.unavailable = some(data["unavailable"].bval)
-    if data.hasKey("member_count"):
-        result.member_count = some(data["member_count"].getInt())
-    if data.hasKey("premium_subscription_count"):
-        result.premium_subscription_count = some(data["premium_subscription_count"].getInt())
-
-    if data.hasKey("max_presences") and data["max_presences"].kind != JNull:
-        result.max_presences = some(data["max_presences"].getInt())
-    if data.hasKey("embed_channel_id") and data["embed_channel_id"].kind != JNull:
-        result.embed_channel_id = data["embed_channel_id"].str
-
-    if data["icon"].kind != JNull:
-        result.icon = some(data["icon"].str)
-    if data["splash"].kind != JNull:
-        result.splash = some(data["splash"].str)
-    if data["afk_channel_id"].kind != JNull:
-        result.afk_channel_id = some(data["afk_channel_id"].str)
-    if data["application_id"].kind != JNull:
-        result.application_id = some(data["application_id"].str)
-    if data["system_channel_id"].kind != JNull:
-        result.system_channel_id = some(data["system_channel_id"].str)
-    if data["vanity_url_code"].kind != JNull:
-        result.vanity_url_code = some(data["vanity_url_code"].str)
-    if data["description"].kind != JNull:
-        result.description = some(data["description"].str)
-    if data["banner"].kind != JNull:
-        result.banner = some(data["banner"].str)
-    if data["discovery_splash"].kind != JNull:
-        result.discovery_splash = some(data["discovery_splash"].str)
+    result.assignFrom(data):
+        afk_timeout <- some(it.getInt())
+        permissions <- some(it.getInt())
+        widget_channel_id <- some(it.str)
+        joined_at <- some(it.str)
+        large <- some(it.bval)
+        unavailable <- some(it.bval)
+        member_count <- some(it.getInt())
+        premium_subscription_count <- some(it.getInt())
+        max_presences <<- some(it.getInt())
+        embed_channel_id <<- it.str
+        icon <<- some(it.str)
+        splash <<- some(it.str)
+        afk_channel_id <<- some(it.str)
+        application_id <<- some(it.str)
+        system_channel_id <<- some(it.str)
+        vanity_url_code <<- some(it.str)
+        description <<- some(it.str)
+        banner <<- some(it.str)
+        discovery_splash <<- some(it.str)
 
     if data.hasKey("members") and data["members"].elems.len > 0:
         for m in data["members"].elems:
@@ -928,7 +887,6 @@ proc newGuild*(data: JsonNode): Guild =
 
     if data.hasKey("channels") and data["channels"].elems.len > 0:
         for c in data["channels"].elems:
-
             result.channels.add(c["id"].str, newGuildChannel(c))
 
     if data.hasKey("presences") and data["presences"].elems.len > 0:

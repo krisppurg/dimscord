@@ -202,10 +202,10 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if embed.isSome: payload["embed"] = %get(embed)
     if allowed_mentions.isSome: payload["allowed_mentions"] = %get(allowed_mentions)
 
-    if files.isSome:
-        var contenttype: string = ""
-        var mpd = newMultipartData()
+    var contenttype: string = ""
 
+    if files.isSome:
+        var mpd = newMultipartData()
         for file in get(files):
             if file.body != "":
                 if file.body.startsWith("http"):
@@ -221,18 +221,23 @@ proc sendMessage*(api: RestApi, channel_id: string;
                     else:
                         if fil.ext != "": contenttype = newMimetypes().getMimetype(fil.ext[1..high(fil.ext)])
 
-                    mpd.add(fil.name, file.body, file.name, contenttype)
+                    mpd.add(fil.name, file.body, file.name, contenttype, useStream = false)
+                else:
+                    if file.name == "":
+                        file.name = "file.png"
+                    let fil = splitFile(file.name)
+
+                    if fil.ext != "": contenttype = newMimetypes().getMimetype(fil.ext[1..high(fil.ext)])
+                    mpd.add(file.name, file.body, file.name, contenttype, useStream = false)
             else:
                 if file.name == "":
                     file.name = "file.png"
                 let fil = splitFile(file.name)
-
                 if fil.ext != "": contenttype = newMimetypes().getMimetype(fil.ext[1..high(fil.ext)])
                 file.body = readFile(file.name)
-                mpd.add(file.name, file.body, file.name, contenttype)
+                mpd.add(file.name, file.body, file.name, contenttype, useStream = false)
 
-            mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.add("payload_json", $payload, contentType = "application/json")
         return (await api.request("POST", endpointChannelMessages(channel_id), $(payload), mp = mpd)).newMessage
 
     result = (await api.request("POST", endpointChannelMessages(channel_id), $(payload))).newMessage

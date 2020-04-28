@@ -2,6 +2,14 @@ import strutils, tables
 from ./objects import Message
 
 func commandCallTokens*(contents: string): seq[string] =
+    ## Splits the given message content into individual tokens.
+    ## This is similar to `split(contents, ' ')` except that it supports double-quoted tokens with whitespace in them.
+    runnableExamples:
+        doAssert commandCallTokens(".test") == @[".test"]
+        doAssert commandCallTokens(".test 1 2 3") == @[".test", "1", "2", "3"]
+        doAssert commandCallTokens(".test \"a quoted token\"") == @[".test", "a quoted token"]
+        doAssert commandCallTokens("\t\r\n  ") == @[]
+    
     if contents.isEmptyOrWhitespace: return @[]
     result = newSeqOfCap[string](contents.count(' ') + 1)
 
@@ -38,6 +46,8 @@ func commandCallTokens*(contents: string): seq[string] =
         
 type
     CommandCall* = object
+        ## Represents a Discord message (`message`) that invoked a particular command (`command`) with parameters `params`.
+        ## `params` does not include the command itself.
         command*: string
         params*: seq[string]
         message*: Message
@@ -45,9 +55,12 @@ type
     CommandHandlerTable* = Table[string, CommandHandler]
 
 proc addHandler*(table: var CommandHandlerTable, command: string, handler: CommandHandler) =
+    ## Add the given `CommandHandler` to `table` such that it is invoked with the command `command`.
     table[command] = handler
 
 proc handle*(table: CommandHandlerTable, tokens: seq[string], message: Message): bool =
+    ## Dispatch the `message` with the given `tokens` to the appropriate registered `CommandHandler`.
+    ## Returns `true` if the message was handled by any handler. Returns `false` if the message was not handled.
     if tokens.len == 0: return false
     let command = tokens[0]
     let params = tokens[1..^1]

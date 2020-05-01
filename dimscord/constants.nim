@@ -1,12 +1,59 @@
 {.hint[XDeclaredButNotUsed]: off.}
 import strutils
-var restVer* = "7"
-var base* = "https://discordapp.com/api/v" & restVer & "/"
+
+type
+    PermEnum* = enum
+        permCreateInstantInvite 
+        permKickMembers 
+        permBanMembers 
+        permAdministrator 
+        permManageChannels 
+        permManageGuild 
+        permAddReactions 
+        permViewAuditLogs 
+        permPrioritySpeaker 
+        permViewChannel 
+        permSendMessages 
+        permSendTTSMessage 
+        permManageMessages 
+        permEmbedLinks 
+        permAttachFiles 
+        permReadMessageHistory 
+        permMentionEveryone 
+        permUseExternalEmojis 
+        permVoiceConnect 
+        permVoiceSpeak 
+        permVoiceMuteMembers 
+        permVoiceDeafenMembers 
+        permVoiceMoveMembers 
+        permUseVAD 
+        permChangeNickname 
+        permManageNicknames 
+        permManageRoles 
+        permManageWebhooks
+        permManageEmojis
+    GatewayIntent* = enum
+        intentGuilds = 1 shl 0
+        intentGuildMembers = 1 shl 1
+        intentGuildBans = 1 shl 2
+        intentGuildEmojis = 1 shl 3
+        intentGuildIntegrations = 1 shl 4
+        intentGuildWebhooks = 1 shl 5
+        intentGuildInvites = 1 shl 6
+        intentGuildVoiceStates = 1 shl 7
+        intentGuildPresences = 1 shl 8
+        intentGuildMessages = 1 shl 9
+        intentGuildMessageReactions = 1 shl 10
+        intentGuildMessageTyping = 1 shl 11
+        intentDirectMessages = 1 shl 12
+        intentDirectMessageReactions = 1 shl 13
+        intentDirectMessageTyping = 1 shl 14
 const
     libName* = "Dimscord"
     libVer* = "0.1.0"
 
     cdnBase* = "https://cdn.discordapp.com/"
+    restBase* = "https://discordapp.com/api/"
     cdnCustomEmojis* = cdnBase & "emojis/"
     cdnAttachments* = cdnBase & "attachments/"
     cdnAvatars* = cdnBase & "avatars/"
@@ -20,18 +67,6 @@ const
     cdnAppIcons* = cdnBase & "app-icons/"
 
     gatewayVer* = "6"
-
-    opDispatch* = 0
-    opHeartbeat* = 1
-    opIdentify* = 2
-    opStatusUpdate* = 3
-    opVoiceStateUpdate* = 4
-    opResume* = 6
-    opReconnect* = 7
-    opRequestGuildMembers* = 8
-    opInvalidSession* = 9
-    opHello* = 10
-    opHeartbeatAck* = 11
 
     mtDefault* = 0
     mtRecipientAdd* = 1
@@ -87,66 +122,36 @@ const
     gatWatching* = 3 # shhhh, this is a secret
     gatCustom* = 4
 
-    permCreateInstantInvite* = 0x00000001
-    permKickMembers* = 0x00000002
-    permBanMembers* = 0x00000004
-    permAdministrator* = 0x00000008
-    permManageChannels* = 0x00000010
-    permManageGuild* = 0x00000020
-    permAddReactions* = 0x00000040
-    permViewAuditLogs* = 0x00000080
-    permPrioritySpeaker* = 0x00000100
-    permViewChannel* = 0x00000400
-    permSendMessages* = 0x00000800
-    permSendTTSMessage* = 0x00001000
-    permManageMessages* = 0x00002000
-    permEmbedLinks* = 0x00004000
-    permAttachFiles* = 0x00008000
-    permReadMessageHistory* = 0x00010000
-    permMentionEveryone* = 0x00020000
-    permUseExternalEmojis* = 0x00040000
-    permVoiceConnect* = 0x00100000
-    permVoiceSpeak* = 0x00200000
-    permVoiceMuteMembers* = 0x00400000
-    permVoiceDeafenMemebers* = 0x00800000
-    permVoiceMoveMembers* = 0x01000000
-    permUseVAD* = 0x02000000
-    permChangeNickname* = 0x04000000
-    permManageNicknames* = 0x08000000
-    permManageRoles* = 0x10000000
-    permManageWebhooks* = 0x20000000
-    permManageEmojis* = 0x40000000
-    permAllText* = 261120
-    permAllVoice* = 66060288
-    permAllChannel* = 334757073
-    permAll* = 334757119
-
-    intentGuilds* = 1 shl 0
-    intentGuildMembers* = 1 shl 1
-    intentGuildBans* = 1 shl 2
-    intentGuildEmojis* = 1 shl 3
-    intentGuildIntegrations* = 1 shl 4
-    intentGuildWebhooks* = 1 shl 5
-    intentGuildInvites* = 1 shl 6
-    intentGuildVoiceStates* = 1 shl 7
-    intentGuildPresences* = 1 shl 8
-    intentGuildMessages* = 1 shl 9
-    intentGuildMessageReactions* = 1 shl 10
-    intentGuildMessageTyping* = 1 shl 11
-    intentDirectMessages* = 1 shl 12
-    intentDirectMessageReactions* = 1 shl 13
-    intentDirectMessageTyping* = 1 shl 14
-
     whIncoming* = 1
     whFollower* = 2
 
     iebRemoveRole* = 0
     iebKick* = 1
 
-proc changeApiVersion*(ver: string = "7") =
-    ## Changes the Discord API REST Version
-    assert parseInt(ver) >= 6 and parseInt(ver) < 8 # min max number conditions are quite tricky for me.
-    restVer = ver
+    permAllText* = {permViewChannel, 
+        permSendMessages, 
+        permSendTTSMessage, 
+        permManageMessages,
+        permEmbedLinks, 
+        permAttachFiles,
+        permReadMessageHistory,
+        permMentionEveryone}
+    permAllVoice* = {permVoiceConnect,
+        permVoiceSpeak,
+        permVoiceMuteMembers,
+        permVoiceMoveMembers,
+        permVoiceDeafenMembers,
+        permUseVAD,
+        permPrioritySpeaker}
+    permAllChannel* = {permCreateInstantInvite,
+        permManageRoles,
+        permManageChannels,
+        permAddReactions,
+        permViewAuditLogs} + permAllText + permAllVoice
+    permAll* = {permKickMembers,
+        permBanMembers,
+        permManageGuild,
+        permAdministrator} + permAllChannel
 
 # Rest Endpoints
 

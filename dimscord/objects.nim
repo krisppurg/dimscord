@@ -57,7 +57,7 @@ type
         member*: Member ## Member will be nilable
         content*: string
         timestamp*: string
-        edited_timestamp*: string
+        edited_timestamp*: Option[string]
         tts*: bool
         mention_everyone*: bool
         mention_users*: seq[User]
@@ -120,6 +120,7 @@ type
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
+        rest_ver*: int
     Ratelimit* = ref object
         reset*: int
         ratelimited*: bool
@@ -255,8 +256,8 @@ type
         deny*: int
         permObj*: PermObj
     PermObj* = object
-        allowed*: seq[int]
-        denied*: seq[int]
+        allowed*: set[PermEnum]
+        denied*: set[PermEnum]
         perms*: int
     PartialGuild* = object
         id*: string
@@ -329,16 +330,16 @@ proc `+`*(p: PermObj): int =
     result = 0
     if p.allowed.len > 0:
         for it in p.allowed:
-            result = result or it
+            result = result or it.int
     if p.denied.len > 0:
         for it in p.denied:
-            result = result and (it - it - it)
+            result = result and (it.int - it.int - it.int)
 
-proc `+`*(p: seq[int]): int =
+proc `+`*(p: set[PermEnum]): int =
     ## Sums up the total permissions for a specific permission.
     result = 0
     for it in p:
-        result = result or it
+        result = result or cast[int]({it})
 
 proc permCheck*(perms: int, p: int): bool =
     ## Checks if the set of permissions has the specific permission.
@@ -365,15 +366,12 @@ proc permCheck*(perms: int, p: PermObj): bool =
         if p.perms != 0:
             result = permCheck(perms, p.perms)
 
-proc boolCheck(data: JsonNode, key: string): bool =
-    result = if data.hasKey(key): data[key].bval else: false
-
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = InviteMetadata(
         code: data["code"].str,
         uses: data["uses"].getInt(),
         max_uses: data["max_uses"].getInt(),
-        max_age: data["max_age"].getInt,
+        max_age: data["max_age"].getInt(),
         temporary: data["temporary"].bval,
         created_at: data["created_at"].str
     )
@@ -428,7 +426,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
 
     case result.kind:
         of ctGuildText:
-            result.rate_limit_per_user = data["rate_limit_per_user"].getInt()
+            result.rate_limit_per_user = data["rate_limit_per_user"]. getInt(0)
 
             if data["last_message_id"].kind != JNull:
                 result.last_message_id = data["last_message_id"].str
@@ -442,8 +440,8 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
             result.topic = data["topic"].str
             result.last_message_id = data["last_message_id"].str
         of ctGuildVoice:
-            result.bitrate = data["bitrate"].getInt()
-            result.user_limit = data["user_limit"].getInt()
+            result.bitrate = data["bitrate"]. getInt(0)
+            result.user_limit = data["user_limit"]. getInt(0)
         else:
             discard
 
@@ -452,8 +450,9 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
        result.guild_id = some(data["guild_id"].str)
 
-proc newRestApi*(token: string): RestApi =
+proc newRestApi*(token: string, rest_ver: int): RestApi =
     result = RestApi(token: token)
+    result.rest_ver = rest_ver
     result.endpoints = initTable[string, Ratelimit]()
 
 proc newUser*(data: JsonNode): User =
@@ -461,8 +460,8 @@ proc newUser*(data: JsonNode): User =
         id: data["id"].str,
         username: if data.hasKey("username"): data["username"].str else: "",
         discriminator: if data.hasKey("discriminator"): data["discriminator"].str else: "",
-        bot: if data.hasKey("bot"): data.boolCheck("bot") else: false,
-        system: if data.hasKey("system"): data.boolCheck("system") else: false
+        bot: data{"bot"}.getBool,
+        system: data{"system"}.getBool
     )
     if data.hasKey("avatar") and data["avatar"].kind != JNull:
         result.avatar = some(data["avatar"].str)
@@ -615,11 +614,11 @@ proc newGameActivity*(data: JsonNode): GameActivity =
         result.emoji = some(newEmoji(data["emoji"]))
     if data.hasKey("party"):
         result.party = some((id: "", size: ""))
-        if data["party"].hasKey("id"):
-            get(result.party).id = data["party"]["id"].str
         if data["party"].hasKey("size"):
-            # TODO: Parse MaxSize too?
-            get(result.party).size = $data["party"]["size"][0].getInt()
+            result.party = some((
+                id: data["party"]{"id"}.getStr(""),
+                size: data["party"]{"size"}.getStr("")
+            ))
 
     if data.hasKey("assets"):
         result.assets = some(GameAssets())
@@ -716,7 +715,7 @@ proc update*(m: Message, data: JsonNode): Message =
     if data.hasKey("mention_everyone"):
         result.mention_everyone = data["mention_everyone"].bval
     if data.hasKey("edited_timestamp") and data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
+        result.edited_timestamp = some(data["edited_timestamp"].str)
 
     if data.hasKey("pinned"):
         result.pinned = data["pinned"].bval
@@ -766,12 +765,11 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
         timestamp: data["timestamp"].str,
         tts: data["tts"].bval,
         mention_everyone: data["mention_everyone"].bval,
+        edited_timestamp: if data{"edited_timestamp"}.getStr != "": some(data["edited_timestamp"].str) else: none(string),
         pinned: data["pinned"].bval,
         kind: data["type"].getInt(),
         flags: data["flags"].getInt()
     )
-    if data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
 
     if data.hasKey("mention_roles"):
         result.mention_roles = @[]
@@ -818,8 +816,8 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
             var rtn = newReaction(reaction)
             result.reactions.add($rtn.emoji, rtn)
 
-    if data.hasKey("nonce") and data["nonce"].kind != JNull:
-        result.nonce = if data["nonce"].getInt(-1) != -1: $(data["nonce"].getInt()) else: data["nonce"].str
+    if data.hasKey("nonce"):
+        result.nonce = data["nonce"].getStr("")
     if data.hasKey("webhook_id"):
         result.webhook_id = data["webhook_id"].str
 
@@ -832,7 +830,7 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
 
     if data.hasKey("application"):
         var app = data["application"]
-    
+
         result.application = Application(
             id: app["id"].str,
             description: app["description"].str,
@@ -856,10 +854,10 @@ proc newGuild*(data: JsonNode): Guild =
     result = Guild(
         id: data["id"].str,
         name: data["name"].str,
-        owner: data.boolCheck("owner"),
+        owner: data{"owner"}.getBool,
         owner_id: data["owner_id"].str,
         region: data["region"].str,
-        embed_enabled: data.boolCheck("embed_enabled"),
+        embed_enabled: data{"embed_enabled"}.getBool,
         verification_level: data["verification_level"].getInt(),
         explicit_content_filter: data["explicit_content_filter"].getInt(),
         default_message_notification: data["default_message_notifications"].getInt(),
@@ -908,9 +906,9 @@ proc newGuild*(data: JsonNode): Guild =
         result.system_channel_id = some(data["system_channel_id"].str)
     if data["vanity_url_code"].kind != JNull:
         result.vanity_url_code = some(data["vanity_url_code"].str)
-    if data["description"].kind != JNull:
+    if data.hasKey("description") and data["description"].kind != JNull:
         result.description = some(data["description"].str)
-    if data["banner"].kind != JNull:
+    if  data.hasKey("banner") and data["banner"].kind != JNull:
         result.banner = some(data["banner"].str)
     if data["discovery_splash"].kind != JNull:
         result.discovery_splash = some(data["discovery_splash"].str)

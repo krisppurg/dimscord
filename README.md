@@ -20,7 +20,7 @@ Why Dimscord?
 
  * For contributing you should use the devel branch.
 
- * The documentation for the library is https://krisppurg.github.io/dimscord/docs/0.0.9/dimscord.html
+ * The documentation for the library is https://krisppurg.github.io/dimscord/0.0.9/dimscord.html
 
  * Voice support will be added on later.
 

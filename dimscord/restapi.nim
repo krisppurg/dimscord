@@ -570,7 +570,7 @@ proc getGuildMember*(api: RestApi, guild_id, user_id: string): Future[Member] {.
 proc getGuildMembers*(api: RestApi, guild_id: string; limit = 1, after = "0"): Future[seq[Member]] {.async.} =
     ## Gets a list of a guild's members.
     result = @[]
-    let mems = (await api.request("GET", endpointGuildMembers(guild_id)))
+    let mems = (await api.request("GET", endpointGuildMembers(guild_id) & "?limit=" & $limit & "&after=" & after))
 
     for mem in mems.elems:
         result.add(newMember(mem))

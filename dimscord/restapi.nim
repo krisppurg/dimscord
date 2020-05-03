@@ -97,11 +97,10 @@ proc request(api: RestApi, meth, endpoint: string;
 
         try:
             let url = restBase & "v" & $api.rest_ver & "/" & endpoint
-            echo url
             if mp == nil:
-                resp = (waitFor client.request(restBase & endpoint, meth, pl))
+                resp = (waitFor client.request(url, meth, pl))
             else:
-                resp = (waitFor client.post(restBase & endpoint, pl, mp))
+                resp = (waitFor client.post(url, pl, mp))
         except:
             raise newException(Exception, getCurrentExceptionMsg())
 

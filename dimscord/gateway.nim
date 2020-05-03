@@ -50,7 +50,6 @@ type
         shards*: Table[int, Shard] ## A table of shard indexes
         gateway: tuple[shards: int, url: string]
         shard*: int
-        limiter: GatewayLimiter
         intents*: seq[int] ## A sequence of gateway intents
         autoreconnect*: bool
         debug*: bool
@@ -73,13 +72,6 @@ type
         session_id: string
         interval: int
         sequence: int
-    GatewayLimiter = ref object
-        limit: int
-        remaining: int
-        interval: int
-        reset: int
-        processing: bool
-        queue: seq[proc (cb: proc ()){.closure.}]
     SessionLimit = object
         total: int
         remaining: int
@@ -104,14 +96,6 @@ const
 var reconnectable = true
 var encode = "json"
 var gateway: tuple[shards: int, url: string] = (shards: 0, url: "")
-
-proc newGatewayLimiter(limit: int, interval: int): GatewayLimiter =
-    result = GatewayLimiter(
-        limit: limit,
-        remaining: limit,
-        interval: interval,
-        reset: int(getTime().utc.toTime.toUnix + interval)
-    )
 
 proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             cache_users = true; cache_guilds = true;
@@ -251,27 +235,6 @@ proc updateStatus*(s: Shard; game: Option[GameStatus] = none(GameStatus); status
         "d": payload
     }))
 
-proc check(s: Shard, l: GatewayLimiter) {.async.} =
-    if l.processing: return
-    l.processing = true
-
-    if getTime().utc.toTime.toUnix > l.reset:
-        l.remaining = l.limit
-        l.reset = int(getTime().utc.toTime.toUnix) + l.interval
-
-    if l.remaining == 0:
-        await sleepAsync l.interval
-        l.remaining = l.limit
-
-    if l.queue.len > 0:
-        l.remaining -= 1
-
-        procCall(l.queue[0](proc () =
-            l.processing = false
-            l.queue.del(0)
-            waitFor s.check(l)
-        ))
-
 proc updateStatus*(cl: DiscordClient; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
     ## Updates all the client's shard's status.
     for i in 0..cl.shards.len - 1:
@@ -281,36 +244,32 @@ proc updateStatus*(cl: DiscordClient; game: Option[GameStatus] = none(GameStatus
 proc identify(s: Shard) {.async.} =
     if s.authenticating and not s.connection.sock.isClosed: return
 
-    s.client.limiter.queue.add(proc (cb: proc ()) =
-        s.authenticating = true
+    s.authenticating = true
 
-        var payload = %*{
-            "token": s.client.token,
-            "properties": %*{
-                "$os": system.hostOS,
-                "$browser": libName,
-                "$device": libName
-            },
-            "compress": s.compress
-        }
+    var payload = %*{
+        "token": s.client.token,
+        "properties": %*{
+            "$os": system.hostOS,
+            "$browser": libName,
+            "$device": libName
+        },
+        "compress": s.compress
+    }
 
-        if s.client.shard > 1:
-            payload["shard"] = %[s.id, s.client.shard]
+    if s.client.shard > 1:
+        payload["shard"] = %[s.id, s.client.shard]
 
-        if s.client.intents.len > 0:
-            var intent = 0
+    if s.client.intents.len > 0:
+        var intent = 0
 
-            for itent in s.client.intents:
-                intent = intent or itent
-            payload["intents"] = %intent
+        for itent in s.client.intents:
+            intent = intent or itent
+        payload["intents"] = %intent
 
-        waitFor s.connection.sendText($(%*{
-            "op": opIdentify,
-            "d": payload
-        }))
-
-        cb())
-    await s.check(s.client.limiter)
+    await s.connection.sendText($(%*{
+        "op": opIdentify,
+        "d": payload
+    }))
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
     let cl = s.client
@@ -937,7 +896,7 @@ proc disconnect*(s: Shard, code: int = 4000, should_reconnect: bool = true) {.as
 
     if s.client.autoreconnect or should_reconnect: await s.reconnect()
 
-proc heartbeat(s: Shard) {.async.} =
+proc heartbeat(s: Shard, requested = false) {.async.} =
     if not s.hbAck and s.session_id != "":
         s.debugMsg("Last heartbeat was not acknowledged by Discord, possibly zombied connection.")
         await s.disconnect(should_reconnect = true)
@@ -961,7 +920,7 @@ proc setupHeartbeatInterval(s: Shard) {.async.} =
         await sleepAsync s.interval
 
 proc handleSocketMessage(s: Shard) {.async.} =
-    waitFor s.identify()
+    await s.identify()
 
     var packet: tuple[opcode: Opcode, data: string]
     var shouldReconnect = true
@@ -1038,7 +997,6 @@ proc handleSocketMessage(s: Shard) {.async.} =
                     s.debugMsg("Sending the IDENTIFY packet in 5000ms.")
 
                     await sleepAsync 5000
-                    s.client.limiter = newGatewayLimiter(limit = 1, interval = 5500)
                     await s.identify()
             else:
                 discard
@@ -1115,8 +1073,6 @@ proc startSession*(cl: DiscordClient,
     cl.intents = gateway_intents
     cl.shard = shards
 
-    cl.limiter = newGatewayLimiter(limit = 1, interval = 5500)
-
     var query = "/?v=" & $gatewayVer & "&encoding=" & encoding
 
     if gateway.url == "":
@@ -1131,6 +1087,7 @@ proc startSession*(cl: DiscordClient,
             cl.shards.add(i, ss)
             ss.compress = compress
             asyncCheck ss.startSession(gateway.url, query)
+            await sleepAsync 5500
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)

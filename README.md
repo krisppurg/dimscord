@@ -12,9 +12,6 @@ Why Dimscord?
  What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
 
- Where is the documentation for the library?
-  * The docs will be out soon or later.
-
 ## Notes:
  * This library is 90% finished (estimate).
  * When running your discord bot you would need to define `-d:ssl` e.g. `nim c -r -d:ssl yourfilename.nim`
@@ -34,7 +31,7 @@ You'd can install Dimscord via Nimble using `nimble install dimscord` or Github 
 You will need at least Nim 1.0.0 to install dimscord
  
  ### Step 3: Enjoy.
-Stay up-to-date with the latest Dimscord release and stuff.
+Stay up-to-date with the latest Dimscord release and stuff. [Make sure to read the documentation of Dimscord](https://krisppurg.github.io/dimscord/0.0.9/dimscord.html)
 
 ## Quick Example:
 ```nim

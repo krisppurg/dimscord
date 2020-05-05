@@ -1,11 +1,8 @@
 import options, json, tables, constants
 type
-    Embed* = ref object
-        title*: Option[string]
-        `type`*: Option[string]
-        description*: Option[string]
-        url*: Option[string]
-        timestamp*: Option[string]
+    Embed* = object
+        title*, `type`*, description*: Option[string]
+        url*, timestamp*: Option[string]
         color*: Option[int]
         footer*: Option[EmbedFooter]
         image*: Option[EmbedImage]
@@ -15,108 +12,73 @@ type
         author*: Option[EmbedAuthor]
         fields*: Option[seq[EmbedField]]
     EmbedThumbnail* = object
-        url*: Option[string]
-        proxy_url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
+        url*, proxy_url*: Option[string]
+        height*, width*: Option[int]
     EmbedVideo* = object
         url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
+        height*, width*: Option[int]
     EmbedImage* = object
-        url*: Option[string]
-        proxy_url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
+        url*, proxy_url*: Option[string]
+        height*, width*: Option[int]
     EmbedProvider* = object
-        name*: Option[string]
-        url*: Option[string]
+        name*, url*: Option[string]
     EmbedAuthor* = object
-        name*: Option[string]
-        url*: Option[string]
-        icon_url*: Option[string]
-        proxy_icon_url*: Option[string]
+        name*, url*: Option[string]
+        icon_url*, proxy_icon_url*: Option[string]
     EmbedFooter* = object
         text*: string
-        icon_url*: Option[string]
-        proxy_icon_url*: Option[string]
+        icon_url*, proxy_icon_url*: Option[string]
     EmbedField* = object
-        name*: string
-        value*: string
+        name*, value*: string
         inline*: Option[bool]
     MentionChannel* = ref object
-        id*: string
-        guild_id*: string
+        id*, guild_id*, name*: string
         kind*: int
-        name*: string
     Message* = object
-        id*: string
-        channel_id*: string
-        guild_id*: string ## Message.guild_id by default will be ""
+        id*, channel_id*, content*: string
+        timestamp*, nonce*: string
+        edited_timestamp*, guild_id*, webhook_id*: Option[string]
+        tts*, mention_everyone*, pinned*: bool
+        kind*, flags*: int
         author*: User
-        member*: Member ## Member will be nilable
-        content*: string
-        timestamp*: string
-        edited_timestamp*: Option[string]
-        tts*: bool
-        mention_everyone*: bool
+        member*: Option[Member]
         mention_users*: seq[User]
         mention_roles*: seq[string]
         mention_channels*: seq[MentionChannel]
         attachments*: seq[Attachment]
         embeds*: seq[Embed]
         reactions*: Table[string, Reaction]
-        nonce*: string ## It will always be a string, if it can be parsed as an int you can use parseInt from strutils.
-        pinned*: bool
-        webhook_id*: string
-        kind*: int
         activity*: tuple[kind: int, party_id: string]
         application*: Application
-        message_reference*: tuple[channel_id: string, message_id: string, guild_id: string]
-        flags*: int
+        message_reference*: tuple[channel_id, message_id, guild_id: string]
     User* = object
-        id*: string
-        username*: string
-        discriminator*: string
+        id*, username*, discriminator*: string
+        bot*, system*: bool
         avatar*: Option[string]
-        bot*: bool
-        system*: bool
     Member* = object
+        nick*, joined_at*, premium_since*: string
+        deaf*, mute*: bool
         user*: User
-        nick*: string
         roles*: seq[string]
-        joined_at*: string
         presence*: Presence
-        premium_since*: string
         voice_state*: Option[VoiceState]
-        deaf*: bool
-        mute*: bool
     Attachment* = object
-        id*: string
-        filename*: string
+        id*, filename*: string
+        proxy_url*, url*: string
+        height*, width*: Option[int]
         size*: int
-        url*: string
-        proxy_url*: string
-        height*: Option[int]
-        width*: Option[int]
     Reaction* = object
         count*: int
         emoji*: Emoji
         reacted*: bool
     Emoji* = object
-        id*: string
-        name*: string
+        id*, name*: string
+        require_colons*, managed*, animated*: bool
         user*: User
         roles*: seq[string]
-        require_colons*: bool
-        managed*: bool
-        animated*: bool
     Application* = object
-        id*: string
-        cover_image*: string
-        description*: string
-        icon*: string
-        name*: string
+        id*, cover_image*: string
+        description*, icon*, name*: string
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
@@ -134,160 +96,99 @@ type
         session_id*: string
         shard*: Option[seq[int]]
     DMChannel* = ref object
-        id*: string
-        last_message_id*: string
+        id*, last_message_id*: string
         kind*: int
         recipients*: seq[User]
         messages*: Table[string, Message]
     GuildChannel* = ref object
-        id*: string
-        name*: string
-        kind*: int
-        parent_id*: Option[string]
-        position*: int
+        id*, name*: string
+        topic*, last_message_id*: string
+        kind*, position*, rate_limit_per_user*: int
+        bitrate*, user_limit*: int
+        parent_id*, guild_id*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
         messages*: Table[string, Message]
-        guild_id*: Option[string]
         nsfw*: bool
-        topic*: string
-        last_message_id*: string
-        rate_limit_per_user*: int
-        bitrate*: int
-        user_limit*: int
     GameAssets* = object
-        large_text*: string
-        large_image*: string
-        small_text*: string
-        small_image*: string
+        large_text*, large_image*, small_text*, small_image*: string
     GameActivity* = object # A user game activity
         name*: string
-        kind*: int
-        url*: Option[string]
+        kind*, flags*: int
+        url*, application_id*, details*, state*: Option[string]
         created_at*: BiggestInt
-        timestamps*: Option[tuple[start: BiggestInt, final: BiggestInt]]
-        application_id*: Option[string]
-        details*: Option[string]
-        state*: Option[string]
+        timestamps*: Option[tuple[start, final: BiggestInt]]
         emoji*: Option[Emoji]
-        party*: Option[tuple[id: string, size: string]]
+        party*: Option[tuple[id, size: string]]
         assets*: Option[GameAssets]
-        secrets*: Option[tuple[join: string, spectate: string, match: string]]
+        secrets*: Option[tuple[join, spectate, match: string]]
         instance*: bool # Useful field if its instanced session
-        flags*: int
     Presence* = object
         user*: User
         roles*: seq[string]
         game*: Option[GameActivity]
-        guild_id*: string
-        status*: string
+        guild_id*, status*: string
         activities*: seq[GameActivity]
-        client_status*: tuple[web: string, desktop: string, mobile: string]
-        premium_since*: Option[string]
-        nick*: Option[string]
+        client_status*: tuple[web, desktop, mobile: string]
+        premium_since*, nick*: Option[string]
     Guild* = ref object ## A guild object. All option fields are cached only fields or fields that cannot be assumed (e.g. permissions) or nilable
-        id*: string
-        name*: string
-        icon*: Option[string]
-        splash*: Option[string]
-        discovery_splash*: Option[string]
-        owner*: bool
-        owner_id*: string
-        permissions*: Option[int]
-        region*: string
-        afk_channel_id*: Option[string]
-        afk_timeout*: Option[int] # thx yasmin from #api
-        embed_enabled*: bool
-        embed_channel_id*: string
-        verification_level*: int
-        default_message_notification*: int
-        explicit_content_filter*: int
+        id*, name*, owner_id*: string
+        region*, embed_channel_id*, preferred_locale*: string
+        icon*, splash*, discovery_splash*: Option[string]
+        afk_channel_id*, vanity_url_code*, application_id*: Option[string]
+        widget_channel_id*, system_channel_id*, joined_at*, description*, banner*: Option[string]
+        owner*, embed_enabled*, widget_enabled*: bool
+        large*, unavailable*: Option[bool]
+        permissions*, afk_timeout*, member_count*: Option[int]
+        max_presences*, max_members*, premium_subscription_count*: Option[int]
+        verification_level*, default_message_notification*: int
+        explicit_content_filter*, mfa_level*, premium_tier*: int
+        features*: seq[string]
         roles*: Table[string, Role]
         emojis*: Table[string, Emoji]
-        features*: seq[string]
-        mfa_level*: int
-        application_id*: Option[string]
-        widget_enabled*: bool
-        widget_channel_id*: Option[string]
-        system_channel_id*: Option[string]
-        joined_at*: Option[string]
-        large*: Option[bool]
-        unavailable*: Option[bool]
-        member_count*: Option[int]
         voice_states*: Table[string, VoiceState]
         members*: Table[string, Member]
         channels*: Table[string, GuildChannel]
         presences*: Table[string, Presence]
-        max_presences*: Option[int]
-        max_members*: Option[int]
-        vanity_url_code*: Option[string]
-        description*: Option[string]
-        banner*: Option[string]
-        premium_tier*: int
-        premium_subscription_count*: Option[int]
-        preferred_locale*: string
     VoiceState* = object
-        guild_id*: Option[string]
-        channel_id*: Option[string]
-        user_id*: string
-        session_id*: string
-        deaf*: bool
-        mute*: bool
-        self_deaf*: bool
-        self_mute*: bool
-        self_stream*: bool # owo whats this
-        suppress*: bool
+        guild_id*, channel_id*: Option[string]
+        user_id*, session_id*: string
+        deaf*, mute*, suppress*: bool
+        self_deaf*, self_mute*, self_stream*: bool
     Role* = object
-        id*: string
-        name*: string
-        color*: int
-        hoist*: bool
-        position*: int
-        permissions*: int
-        managed*: bool
-        mentionable*: bool
+        id*, name*: string
+        color*, position*, permissions*: int
+        hoist*, managed*, mentionable*: bool
     GameStatus* = object
         name*: string
         kind*: int
         url*: Option[string]
     Overwrite* = object
-        id*: string
-        kind*: string
-        allow*: int
-        deny*: int
+        id*, kind*: string
+        allow*, deny*: int
         permObj*: PermObj
     PermObj* = object
-        allowed*: set[PermEnum]
-        denied*: set[PermEnum]
+        allowed*, denied*: set[PermEnum]
         perms*: int
     PartialGuild* = object
-        id*: string
-        name*: string
-        icon*: Option[string]
-        splash*: Option[string]
+        id*, name*: string
+        icon*, splash*: Option[string]
     PartialChannel* = object
-        id*: string
-        name*: string
+        id*, name*: string
         kind*: int
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
         channel*: PartialChannel
-        inviter*: Option[User]
-        target_user*: Option[User]
+        inviter*, target_user*: Option[User]
         target_user_type*: Option[int]
-        approximate_presence_count*: Option[int]
-        approximate_member_count*: Option[int]
+        approximate_presence_count*, approximate_member_count*: Option[int]
     InviteMetadata* = object
-        code*: string
+        code*, created_at*: string
         guild_id*: Option[string]
-        uses*: int
-        max_uses*: int
-        max_age*: int
+        uses*, max_uses*, max_age*: int
         temporary*: bool
-        created_at*: string
     TypingStart* = object
-        channel_id*: string
-        user_id*: string
+        channel_id*, user_id*: string
         timestamp*: int
     GuildMembersChunk* = object
         members*: seq[Member]
@@ -297,27 +198,19 @@ type
         user*: User
         reason*: Option[string]
     Webhook* = object
-        id*: string
+        id*, channel_id*: string
         kind*: int
-        guild_id*: Option[string]
-        channel_id*: string
+        guild_id*, avatar*: Option[string]
+        name*, token*: Option[string]
         user*: Option[User]
-        name*: Option[string]
-        avatar*: Option[string]
-        token*: Option[string]
     Integration* = object
-        id*: string
-        name*: string
-        kind*: string
-        enabled*: bool
-        syncing*: bool
-        role_id*: string
+        id*, name, kind*: string
+        role_id*, synced_at*: string
+        enabled*, syncing*: bool
         enable_emoticons*: Option[bool]
-        expire_behavior*: int
-        expire_grace_period*: int
+        expire_behavior*, expire_grace_period*: int
         user*: User
-        account*: tuple[id: string, name: string]
-        synced_at*: string
+        account*: tuple[id, name: string]
 
 proc `$`*(e: Emoji): string =
     result = if e.id != "": e.name & ":" & e.id else: e.name
@@ -778,11 +671,11 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
             result.mention_roles.add(r.str)
 
     if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
-        result.guild_id = data["guild_id"].str
+        result.guild_id = some(data["guild_id"].str)
     if data.hasKey("author"):
         result.author = newUser(data["author"])
     if data.hasKey("member") and data["member"].kind != JNull:
-        result.member = newMember(data["member"])
+        result.member = some(newMember(data["member"]))
 
     if data.hasKey("mentions"):
         result.mention_users = @[]
@@ -819,7 +712,7 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
     if data.hasKey("nonce"):
         result.nonce = data["nonce"].getStr("")
     if data.hasKey("webhook_id"):
-        result.webhook_id = data["webhook_id"].str
+        result.webhook_id = some(data["webhook_id"].str)
 
     if data.hasKey("activity"):
         var activity = data["activity"]

@@ -1,5 +1,4 @@
 {.hint[XDeclaredButNotUsed]: off.}
-import strutils
 
 type
     PermEnum* = enum
@@ -53,7 +52,7 @@ const
     libVer* = "0.1.0"
 
     cdnBase* = "https://cdn.discordapp.com/"
-    restBase* = "https://discordapp.com/api/"
+    restBase* = "https://discord.com/api/"
     cdnCustomEmojis* = cdnBase & "emojis/"
     cdnAttachments* = cdnBase & "attachments/"
     cdnAvatars* = cdnBase & "avatars/"
@@ -164,44 +163,44 @@ proc endpointUserChannels*(): string =
 proc endpointUserGuilds*(gid: string): string =
     result = endpointUsers("@me") & "/guilds/" & gid
 
-proc endpointChannels*(cid: string = ""): string =
+proc endpointChannels*(cid = ""): string =
     result = "channels"
     if cid != "": result = result & "/" & cid
 
-proc endpointGuilds*(gid: string = ""): string =
+proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")
 
-proc endpointGuildMembers*(gid: string, mid: string = ""): string =
+proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
 
-proc endpointGuildMembersNick*(gid: string, mid: string = "@me"): string =
+proc endpointGuildMembersNick*(gid: string; mid: string = "@me"): string =
     result = endpointGuildMembers(gid, mid) & "/nick"
 
-proc endpointGuildMembersRole*(gid: string, mid: string, rid: string): string =
+proc endpointGuildMembersRole*(gid, mid, rid: string): string =
     result = endpointGuildMembers(gid, mid) & "/roles/" & rid
 
 proc endpointGuildRegions*(gid: string): string =
     result = endpointGuilds(gid) & "/regions"
 
-proc endpointGuildIntegrations*(gid: string, iid: string = ""): string =
+proc endpointGuildIntegrations*(gid: string; iid = ""): string =
     result = endpointGuilds(gid) & "/integrations" & (if iid != "": "/" & iid else: "")
 
-proc endpointGuildIntegrationsSync*(gid: string, iid: string): string =
+proc endpointGuildIntegrationsSync*(gid, iid: string): string =
     result = endpointGuildIntegrations(gid, iid) & "/sync"
 
 proc endpointGuildEmbed*(gid: string): string =
     result = endpointGuilds(gid) & "/embed"
 
-proc endpointGuildEmojis*(gid: string, eid: string = ""): string =
+proc endpointGuildEmojis*(gid: string; eid = ""): string =
     result = endpointGuilds(gid) & "/emojis" & (if eid != "": "/" & eid else: "")
 
-proc endpointGuildRoles*(gid: string, rid: string = ""): string =
+proc endpointGuildRoles*(gid: string; rid = ""): string =
     result = endpointGuilds(gid) & "/roles" & (if rid != "": "/" & rid else: "")
 
 proc endpointGuildPrune*(gid: string): string =
     result = endpointGuilds(gid) & "/prune"
 
-proc endpointInvites*(code: string = ""): string =
+proc endpointInvites*(code = ""): string =
     result = "invites" & (if code != "": "/" & code else: "")
 
 proc endpointGuildInvites*(gid: string): string =
@@ -210,10 +209,10 @@ proc endpointGuildInvites*(gid: string): string =
 proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
 
-proc endpointGuildChannels*(gid: string, cid: string = ""): string =
+proc endpointGuildChannels*(gid: string; cid = ""): string =
     result = endpointGuilds(gid) & "/channels" & (if cid != "": "/" & cid else: "")
 
-proc endpointChannelOverwrites*(cid: string, oid: string): string =
+proc endpointChannelOverwrites*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
 
 proc endpointWebhooks*(wid: string): string =
@@ -225,26 +224,26 @@ proc endpointChannelWebhooks*(cid: string): string =
 proc endpointGuildWebhooks*(gid: string): string =
     result = endpointGuilds(gid) & "/webhooks"
 
-proc endpointWebhookToken*(wid: string, tok: string): string =
+proc endpointWebhookToken*(wid, tok: string): string =
     result = endpointWebhooks(wid) & "/" & tok
 
-proc endpointWebhookTokenSlack*(wid: string, tok: string): string =
+proc endpointWebhookTokenSlack*(wid, tok: string): string =
     result = endpointWebhookToken(wid, tok) & "/slack"
 
-proc endpointWebhookTokenGithub*(wid: string, tok: string): string =
+proc endpointWebhookTokenGithub*(wid, tok: string): string =
     result = endpointWebhookToken(wid, tok) & "/github"
 
-proc endpointChannelMessages*(cid: string; mid: string = ""): string =
+proc endpointChannelMessages*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/messages"
     if mid != "": result = result & "/" & mid
 
 proc endpointChannelInvites*(cid: string): string =
     result = endpointChannels(cid) & "/invites"
 
-proc endpointChannelPermissions*(cid: string, oid: string): string =
+proc endpointChannelPermissions*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
 
-proc endpointGuildBans*(gid: string, uid: string = ""): string =
+proc endpointGuildBans*(gid: string; uid = ""): string =
     result = endpointGuilds(gid) & "/bans" & (if uid != "": "/" & uid else: "")
 
 proc endpointBulkDeleteMessages*(cid: string): string =
@@ -253,15 +252,15 @@ proc endpointBulkDeleteMessages*(cid: string): string =
 proc endpointTriggerTyping*(cid: string): string =
     result = endpointChannels(cid) & "/typing"
 
-proc endpointChannelPins*(cid: string; mid: string = ""): string =
+proc endpointChannelPins*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/pins"
     if mid != "":
         result = result & "/" & $mid
 
-proc endpointGroupRecipient*(cid: string, rid: string): string =
+proc endpointGroupRecipient*(cid, rid: string): string =
     result = endpointChannels(cid) & "/recipients/" & rid
 
-proc endpointReactions*(cid: string, mid: string; e: string = ""; uid: string = ""): string =
+proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     result = endpointChannels(cid) & "/messages/" & mid & "/reactions"
     if e != "":
         result = result & "/" & e

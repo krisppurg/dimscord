@@ -15,67 +15,48 @@ type
         channel_pins_update*: proc (s: Shard, c: string, g: Option[Guild], last_pin: Option[string]) {.async.}
         presence_update*: proc (s: Shard, p: Presence, o: Option[Presence]) {.async.}
         message_update*: proc (s: Shard, m: Message, o: Option[Message], exists: bool) {.async.}
-        message_reaction_add*: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool) {.async.}
-        message_reaction_remove*: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool) {.async.}
+        message_reaction_add*, message_reaction_remove*: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool) {.async.}
         message_reaction_remove_all*: proc (s: Shard, m: Message, exists: bool) {.async.}
         message_reaction_remove_emoji*: proc (s: Shard, m: Message, e: Emoji, exists: bool) {.async.}
         message_delete_bulk*: proc (s: Shard, m: seq[tuple[msg: Message, exists: bool]]) {.async.}
         typing_start*: proc (s: Shard, t: TypingStart) {.async.}
-        guild_ban_add*: proc (s: Shard, g: Guild, u: User) {.async.}
-        guild_ban_remove*: proc (s: Shard, g: Guild, u: User) {.async.}
+        guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild, u: User) {.async.}
         guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
         guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
-        guild_member_add*: proc (s: Shard, g: Guild, m: Member) {.async.}
+        guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild, m: Member) {.async.}
         guild_member_update*: proc (s: Shard, g: Guild, m: Member, o: Option[Member]) {.async.}
-        guild_member_remove*: proc (s: Shard, g: Guild, m: Member) {.async.}
         guild_update*: proc (s: Shard, g: Guild, o: Option[Guild]) {.async.}
-        guild_create*: proc (s: Shard, g: Guild) {.async.}
-        guild_delete*: proc (s: Shard, g: Guild) {.async.}
+        guild_create*, guild_delete*: proc (s: Shard, g: Guild) {.async.}
         guild_members_chunk*: proc (s: Shard, g: Guild, m: GuildMembersChunk) {.async.}
-        guild_role_create*: proc (s: Shard, g: Guild, r: Role) {.async.}
+        guild_role_create*, guild_role_delete*: proc (s: Shard, g: Guild, r: Role) {.async.}
         guild_role_update*: proc (s: Shard, g: Guild, r: Role, o: Option[Role]) {.async.}
-        guild_role_delete*: proc (s: Shard, g: Guild, r: Role) {.async.}
         invite_create*: proc (s: Shard, c: GuildChannel, i: InviteMetadata) {.async.}
         invite_delete*: proc (s: Shard, c: GuildChannel, code: string, g: Option[Guild]) {.async.}
         user_update*: proc (s: Shard, u: User, o: Option[User]) {.async.}
         voice_state_update*: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
     DiscordClient* = ref object ## The Discord Client.
-        token*: string
         api*: RestApi
         user*: User
-        restMode*: bool
         events*: Events
-        cache*: CacheTable
+        token*: string
         shards*: Table[int, Shard] ## A table of shard indexes
-        gateway: tuple[shards: int, url: string]
+        restMode*, autoreconnect*: bool
         shard*: int
-        intents*: seq[int] ## A sequence of gateway intents
-        autoreconnect*: bool
-        debug*: bool
+        cache*: CacheTable
+        intents*: seq[GatewayIntent] ## A sequence of gateway intents
     Shard* = ref object
         id*: int
         client*: DiscordClient
-        compress*: bool
-        heartbeating: bool
-        resuming: bool
-        reconnecting: bool
-        authenticating: bool
-        retryInfo: tuple[ms: int, attempts: int]
-        networkError: bool
-        lastHBTransmit*: float
-        lastHBReceived*: float
-        hbAck*: bool
-        hbSent*: bool
         connection*: AsyncWebsocket
-        stop*: bool
-        session_id: string
-        interval: int
-        sequence: int
+        hbAck*, hbSent*, stop*, compress*: bool
+        lastHBTransmit*, lastHBReceived*: float
+        heartbeating, resuming, reconnecting, authenticating, networkError: bool
+        interval, sequence: int
+        retry_info*: tuple[ms: int, attempts: int]
+        session_id*: string
     SessionLimit = object
-        total: int
-        remaining: int
-        reset_after: int
+        total, remaining, reset_after: int
     GatewayInfo = object
         url: string 
         shards: int
@@ -94,8 +75,7 @@ const
     opHeartbeatAck = 11
 
 var reconnectable = true
-var encode = "json"
-var gateway: tuple[shards: int, url: string] = (shards: 0, url: "")
+var gateway: tuple[shards: int, url: string]
 
 proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             cache_users = true; cache_guilds = true;
@@ -197,8 +177,7 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
     s.debugMsg("Socket suspended", @["code", $closeData.code, "reason", $closeData.reason])
 
     if s.authenticating: s.authenticating = false
-    if s.resuming:
-        s.resuming = false
+    if s.resuming: s.resuming = false
 
     s.hbAck = false
     s.hbSent = false
@@ -211,11 +190,12 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
     var unreconnectableCodes = @[4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013]
     if unreconnectableCodes.contains(closeData.code):
         result = false
+        reconnectable = false
         debugMsg("Unable to reconnect to gateway, because one your options sent to gateway are invalid.")
 
 proc updateStatus*(s: Shard; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
     ## Updates the shard's status.
-    if s.stop or (s.connection == nil or s.connection.sock.isClosed): return
+    if s.stop or s.connection.sock.isClosed: return
     var payload = %*{
         "since": 0,
         "afk": afk,
@@ -245,6 +225,7 @@ proc identify(s: Shard) {.async.} =
     if s.authenticating and not s.connection.sock.isClosed: return
 
     s.authenticating = true
+    s.debugMsg("Identifying...")
 
     var payload = %*{
         "token": s.client.token,
@@ -263,7 +244,7 @@ proc identify(s: Shard) {.async.} =
         var intent = 0
 
         for itent in s.client.intents:
-            intent = intent or itent
+            intent = intent or itent.int
         payload["intents"] = %intent
 
     await s.connection.sendText($(%*{
@@ -273,13 +254,16 @@ proc identify(s: Shard) {.async.} =
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
     let cl = s.client
-    if cl.debug: echo event
+    s.debugMsg("Recieved event: " & event)
 
     case event:
         of "READY":
             s.session_id = data["session_id"].str
             s.authenticating = false
             cl.user = newUser(data["user"])
+
+            if s.id + 1 == cl.shard:
+                debugMsg("All shards have successfully connected to the gateway.")
 
             s.debugMsg("Successfully identified.")
 
@@ -333,8 +317,9 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             await cl.events.user_update(s, user, oldUser)
         of "PRESENCE_UPDATE":
             var oldPresence = none(Presence)
-            var presence = newPresence(data)
-            if cl.cache.preferences.cache_guilds and presence.guild_id in cl.cache.guilds:
+            let presence = newPresence(data)
+
+            if cl.cache.guilds.hasKey(presence.guild_id):
                 let guild = cl.cache.guilds[presence.guild_id]
 
                 if guild.presences.hasKey(presence.user.id):
@@ -398,8 +383,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                             exists = true
 
             if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-                msg.member = newMember(data["member"])
+                msg.guild_id = some(data["guild_id"].str)
+                msg.member = some(newMember(data["member"]))
 
             if msg.reactions.hasKey($emoji):
                 reaction.count = msg.reactions[$emoji].count + 1
@@ -441,7 +426,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                             exists = true
 
             if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
+                msg.guild_id = some(data["guild_id"].str)
 
             if msg.reactions.hasKey($emoji) and msg.reactions[$emoji].count != 1:
                 reaction.count = msg.reactions[$emoji].count - 1
@@ -476,7 +461,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                             exists = true
 
             if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
+                msg.guild_id = some(data["guild_id"].str)
 
             if msg.reactions.hasKey($emoji):
                 msg.reactions.del($emoji)
@@ -503,7 +488,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                             exists = true
 
             if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
+                msg.guild_id = some(data["guild_id"].str)
 
             if msg.reactions.len > 0:
                 msg.reactions.clear()
@@ -514,7 +499,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             var exists = false
 
             if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
+                msg.guild_id = some(data["guild_id"].str)
 
             if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
@@ -586,7 +571,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                                 exists = true
 
                 if data.hasKey("guild_id"):
-                    m.guild_id = data["guild_id"].str
+                    m.guild_id = some(data["guild_id"].str)
                 ids.add((msg: m, exists: exists))
 
             await cl.events.message_delete_bulk(s, ids)
@@ -807,32 +792,6 @@ proc resume(s: Shard) {.async.} =
         }
     }))
 
-proc handleConnection(cl: DiscordClient): Future[tuple[shards: int, url: string]] {.async.} =
-    debugMsg("Connecting to the discord gateway.")
-    var info: GatewayInfo
-
-    try:
-        info = await cl.getGatewayBot()
-    except OSError:
-        if getCurrentExceptionMsg().startsWith("No such host is known."):
-            debugMsg("A network error has been detected.")
-
-    debugMsg("Successfully retrived gateway information from Discord", @[
-        "url", info.url,
-        "shards", $info.shards,
-        "session_start_limit", $info.session_start_limit
-    ])
-
-    if info.session_start_limit.remaining == 0:
-        let time = getTime().utc.toTime.toUnix - info.session_start_limit.reset_after
-
-        debugMsg("Your session start limit has reached its limit", @[
-            "sleep_time", $time
-        ])
-        await sleepAsync time.int
-    
-    result = (info.shards, info.url)
-
 proc reconnect(s: Shard) {.async.} =
     if s.reconnecting: return
     s.reconnecting = true
@@ -853,13 +812,13 @@ proc reconnect(s: Shard) {.async.} =
         await sleepAsync s.retryInfo.ms
         await s.reconnect()
 
-    s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer & "&encoding=" & encode)
+    s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer)
 
     try:
         s.connection = await newAsyncWebsocketClient(
             if url.startsWith("wss://"): url[6..url.high] else: url,
             Port 443,
-            "/?v=" & $gatewayVer & "&encoding=" & encode,
+            "/?v=" & $gatewayVer,
             true
         )
         s.hbAck = true
@@ -897,7 +856,7 @@ proc disconnect*(s: Shard, code: int = 4000, should_reconnect: bool = true) {.as
     if s.client.autoreconnect or should_reconnect: await s.reconnect()
 
 proc heartbeat(s: Shard, requested = false) {.async.} =
-    if not s.hbAck and s.session_id != "":
+    if not s.hbAck and not requested:
         s.debugMsg("Last heartbeat was not acknowledged by Discord, possibly zombied connection.")
         await s.disconnect(should_reconnect = true)
         return
@@ -979,7 +938,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 s.hbAck = true
             of opHeartbeat:
                 s.debugMsg("Discord has requested a heartbeat.")
-                await s.heartbeat()
+                await s.heartbeat(true)
             of opDispatch:
                 asyncCheck s.handleDispatch(data["t"].str, data["d"])
             of opReconnect:
@@ -989,12 +948,12 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 s.resuming = false
                 s.authenticating = false
 
-                s.debugMsg("Received 'INVALID_SESSION'", @["resumable", $data["d"].getBool()])
+                s.debugMsg("Session invalidated", @["resumable", $data["d"].bval])
 
-                if data["d"].getBool():
+                if data["d"].bval:
                     await s.resume()
                 else:
-                    s.debugMsg("Sending the IDENTIFY packet in 5000ms.")
+                    s.debugMsg("Identifying in 5000ms...")
 
                     await sleepAsync 5000
                     await s.identify()
@@ -1054,29 +1013,50 @@ proc startSession(s: Shard, url: string, query: string) {.async.} =
 
 proc startSession*(cl: DiscordClient,
             autoreconnect: bool = false;
-            gateway_intents: seq[int] = @[];
+            gateway_intents: seq[GatewayIntent] = @[];
             shards: int = 1;
-            compress: bool = false;
-            encoding: string = "json") {.async.} =
+            compress: bool = false) {.async.} =
     ## Connects the client to Discord via gateway.
     ## 
     ## - gateway_intents | Allows you to subscribe to pre-defined events (info: https://discordapp.com/developers/docs/topics/gateway#gateway-intents)
     ## - shards | An amount of shards.
-    ## - encoding | Sets gateway encoding.
     ## - compress | Whether or not to compress. zlib1.dll needs to be in your directory.
 
     if cl.restMode:
         raise newException(Exception, "(╯°□°)╯︵ ┻━┻ ! You cannot connect to the gateway while rest mode is enabled ! (╯°□°)╯︵ ┻━┻")
 
     cl.autoreconnect = autoreconnect
-    encode = encoding
     cl.intents = gateway_intents
     cl.shard = shards
 
-    var query = "/?v=" & $gatewayVer & "&encoding=" & encoding
+    var query = "/?v=" & $gatewayVer
 
     if gateway.url == "":
-        gateway = await cl.handleConnection()
+        debugMsg("Connecting to the discord gateway.")
+        var info: GatewayInfo
+
+        try:
+            info = await cl.getGatewayBot()
+        except OSError:
+            if getCurrentExceptionMsg().startsWith("No such host is known."):
+                debugMsg("A network error has been detected.")
+                return
+
+        debugMsg("Successfully retrived gateway information from Discord", @[
+            "url", info.url,
+            "shards", $info.shards,
+            "session_start_limit", $info.session_start_limit
+        ])
+
+        if info.session_start_limit.remaining == 0:
+            let time = getTime().utc.toTime.toUnix - info.session_start_limit.reset_after
+
+            debugMsg("Your session start limit has reached its limit", @[
+                "sleep_time", $time
+            ])
+            await sleepAsync time.int
+        
+        gateway = (info.shards, info.url)
 
     if shards == 1 and gateway.shards > 1:
         cl.shard = gateway.shards

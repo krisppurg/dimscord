@@ -131,7 +131,7 @@ proc newShard*(id: int, client: DiscordClient): Shard =
     result = Shard(
         id: id,
         client: client,
-        retryInfo: (ms: 1000, attempts: 0)
+        retry_info: (ms: 1000, attempts: 0)
     )
 
 proc getGatewayBot(cl: DiscordClient): Future[GatewayInfo] {.async.} =
@@ -181,7 +181,7 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
 
     s.hbAck = false
     s.hbSent = false
-    s.retryInfo = (ms: 1000, attempts: 0)
+    s.retry_info = (ms: 1000, attempts: 0)
     s.lastHBTransmit = 0
     s.lastHBReceived = 0
 
@@ -795,7 +795,7 @@ proc resume(s: Shard) {.async.} =
 proc reconnect(s: Shard) {.async.} =
     if s.reconnecting: return
     s.reconnecting = true
-    s.retryInfo.attempts += 1
+    s.retry_info.attempts += 1
 
     var url: string = ""
 
@@ -805,11 +805,11 @@ proc reconnect(s: Shard) {.async.} =
         s.debugMsg("Error occurred:: \n" & getCurrentExceptionMsg())
         s.reconnecting = false
 
-        s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
+        s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", @["attempt", $s.retryInfo.attempts])
+        s.debugMsg(&"Reconnecting in {s.retry_info.ms}ms", @["attempt", $s.retry_info.attempts])
 
-        await sleepAsync s.retryInfo.ms
+        await sleepAsync s.retry_info.ms
         await s.reconnect()
 
     s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer)
@@ -827,17 +827,17 @@ proc reconnect(s: Shard) {.async.} =
 
         if s.networkError:
             s.debugMsg("Successfully established a gateway connection after network error.")
-            s.retryInfo = (ms: 1000, attempts: 0)
+            s.retry_info = (ms: 1000, attempts: 0)
             s.networkError = false
     except:
         s.debugMsg("Error occurred: \n" & getCurrentExceptionMsg())
         s.reconnecting = false
 
-        s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
+        s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", @["attempt", $s.retryInfo.attempts])
+        s.debugMsg(&"Reconnecting in {s.retry_info.ms}ms", @["attempt", $s.retry_info.attempts])
 
-        await sleepAsync s.retryInfo.ms
+        await sleepAsync s.retry_info.ms
         await s.reconnect()
 
     if s.session_id == "" and s.sequence == 0:

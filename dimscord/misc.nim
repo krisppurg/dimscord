@@ -3,7 +3,7 @@ import constants, objects, strformat, strutils, options
 proc defaultAvatarUrl*(u: User): string =
     result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
 
-proc avatarUrl*(u: User; fmt: string = ""; size: int = 128): string =
+proc avatarUrl*(u: User; fmt = ""; size = 128): string =
     ## Get's the user's avatar url, you can provide an image format. If user does not have an avatar it will return the default image of the user.
     var ift = fmt
     if fmt == "":
@@ -15,7 +15,7 @@ proc avatarUrl*(u: User; fmt: string = ""; size: int = 128): string =
         return defaultAvatarUrl(u)
     result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{ift}?size={size}"
 
-proc iconUrl*(e: Emoji; fmt: string = ""; size: int = 128): string =
+proc iconUrl*(e: Emoji; fmt = ""; size = 128): string =
     ## Get's the emoji's url, you can provide an image format.
     var ift = fmt
     if fmt == "":
@@ -25,7 +25,7 @@ proc iconUrl*(e: Emoji; fmt: string = ""; size: int = 128): string =
 
     result = &"{cdnCustomEmojis}{e.id}.{ift}?size={size}"
 
-proc iconUrl*(g: Guild; fmt: string = ""; size: int = 128): string =
+proc iconUrl*(g: Guild; fmt = ""; size = 128): string =
     var ift = fmt
     if fmt == "":
         ift = "png"
@@ -39,17 +39,15 @@ proc iconUrl*(g: Guild; fmt: string = ""; size: int = 128): string =
 proc `$`*(u: User): string =
     result = &"{u.username}#{u.discriminator}"
 
-proc `@`*(u: User, nick: bool = false): string =
+proc `@`*(u: User; nick = false): string =
     var n = if nick: "!" else: ""
     result = &"<@{n}{u.id}>"
 
-# proc getPermsFor*(cl: DiscordClient, gid: string, id: string, c: GuildChannel): PermObj =
-#     ## Gets permissions for a user or role.
+proc `@`*(r: Role): string =
+    result = &"<@{r.id}>"
 
-#     if cl.guilds.hasKey(gid):
-#         var mem_perms: int
-#         var role_perms: int
+proc `@`*(g: GuildChannel): string =
+    result = &"<#{g.id}>"
 
-#         cl.cache.users[gid] = 
-#     let everyone = c.permission_overwrites[gid]
-#     for ow in c.permission_overwrites.values:
+proc `$`*(g: GuildChannel): string =
+    result = &"#{g.name}"

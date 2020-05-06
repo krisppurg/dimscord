@@ -84,9 +84,9 @@ proc commit(api: RestApi, meth, endpoint: string;
     
     try:
         if global:
-            awaitapi.delayRequest(global)
+            await api.delayRequest(global)
         else:
-            awaitapi.delayRequest(false, route)
+            await api.delayRequest(false, route)
 
         let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
         var resp: AsyncResponse
@@ -100,7 +100,7 @@ proc commit(api: RestApi, meth, endpoint: string;
         try:
             let url = restBase & "v" & $api.rest_ver & "/" & endpoint
             if mp == nil:
-                resp = (awaitclient.request(url, meth, pl))
+                resp = (await client.request(url, meth, pl))
             else:
                 resp = (await client.post(url, pl, mp))
         except:
@@ -148,7 +148,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                         error = fin & "You are being rate-limited."
                         if resp.headers.hasKey("Retry-After"):
                             await sleepAsync resp.headers["Retry-After"].parseInt()
-                        reqFunc()
+                        result = await api.commit(meth, endpoint, pl, mp, xheaders, auth)
 
                     if res.hasKey("code") and res.hasKey("message"):
                         error = error & " - " & res.getErrorDetails()

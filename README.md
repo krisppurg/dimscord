@@ -41,28 +41,28 @@ let cl = newDiscordClient("<your bot token>")
 
 # Add an event handler for on_ready.
 cl.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
-  echo "Connected to Discord as " & $r.user
+    echo "Connected to Discord as " & $r.user
 
 # Add an event handler for message_create.
 cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
-  if m.author.bot: return
-  if m.content == "!ping": # if message content is "!ping"
-    let before = getTime().toUnix()
-    let msg = await cl.api.sendMessage(m.channel_id, "ping?")
-    let after = getTime().toUnix()
-    # Edit the message as pong! Use "discard" because editMessage returns a new message
-    discard await cl.api.editMessage(
-      m.channel_id, 
-      msg.id, 
-      "Pong! took " & $int(after - before) & "ms | " & $s.getPing() & "ms."
-    )
-  elif m.content == "!embed": # otherwise if content is embed
-    # Sends a messge with embed. The '?' symbol is a shorthand for 'some' in options.
-    discard await cl.api.sendMessage(m.channel_id, embed = ?Embed(
-      title: ?"Hello there!", 
-      description: ?"This is a cool embed",
-      color: ?5
-    ))
+    if m.author.bot: return
+    if m.content == "!ping": # if message content is "!ping"
+        let before = getTime().toUnix()
+        let msg = await cl.api.sendMessage(m.channel_id, "ping?")
+        let after = getTime().toUnix()
+        # Edit the message as pong! Use "discard" because editMessage returns a new message
+        discard await cl.api.editMessage(
+            m.channel_id, 
+            msg.id, 
+            "Pong! took " & $int(after - before) & "ms | " & $s.getPing() & "ms."
+        )
+    elif m.content == "!embed": # otherwise if content is embed
+        # Sends a messge with embed. The '?' symbol is a shorthand for 'some' in options.
+        discard await cl.api.sendMessage(m.channel_id, embed = ?Embed(
+            title: ?"Hello there!", 
+            description: ?"This is a cool embed",
+            color: ?5
+        ))
 
 # Connect to Discord and run the bot.
 waitFor cl.startSession(compress=true)

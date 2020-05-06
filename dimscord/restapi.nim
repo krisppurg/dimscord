@@ -38,7 +38,7 @@ proc parseRoute(endpoint, meth: string): string =
 
     result = route # I love 'result ='
 
-proc handleReqAttempt(api: RestApi; global = false; route = "") {.async.} =
+proc delayRequest(api: RestApi; global = false; route = "") {.async.} =
     var rl: tuple[reset: int, ratelimited: bool]
 
     if global:
@@ -47,7 +47,6 @@ proc handleReqAttempt(api: RestApi; global = false; route = "") {.async.} =
         rl = (api.endpoints[route].reset, api.endpoints[route].ratelimited)
 
     if rl.ratelimited:
-        
         echo "Delaying ",(if global: "all" else: "HTTP")," requests in (", rl.reset * 1000 + 250, "ms) [", (if global: "global" else: route), "]"
 
         await sleepAsync rl.reset * 1000 + 250
@@ -73,18 +72,21 @@ proc getErrorDetails(data: JsonNode): string =
     if data.hasKey("errors"):
         result = result & "\n" & clean(data["errors"]).join("\n")
 
-proc request(api: RestApi, meth, endpoint: string;
+proc commit(api: RestApi, meth, endpoint: string;
             pl = "", mp: MultipartData = nil,
             xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
     var data: JsonNode
-    var error = "Unknown error."
+    var error = ""
     var route = endpoint.parseRoute(meth)
 
-    proc reqFunc() =
+    if not api.endpoints.hasKey(route):
+        api.endpoints.add(route, Ratelimit())
+    
+    try:
         if global:
-            waitFor api.handleReqAttempt(global)
+            awaitapi.delayRequest(global)
         else:
-            waitFor api.handleReqAttempt(false, route)
+            awaitapi.delayRequest(false, route)
 
         let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
         var resp: AsyncResponse
@@ -98,9 +100,9 @@ proc request(api: RestApi, meth, endpoint: string;
         try:
             let url = restBase & "v" & $api.rest_ver & "/" & endpoint
             if mp == nil:
-                resp = (waitFor client.request(url, meth, pl))
+                resp = (awaitclient.request(url, meth, pl))
             else:
-                resp = (waitFor client.post(url, pl, mp))
+                resp = (await client.post(url, pl, mp))
         except:
             raise newException(Exception, getCurrentExceptionMsg())
 
@@ -109,48 +111,53 @@ proc request(api: RestApi, meth, endpoint: string;
         if api.endpoints.hasKey(route):
             var r = api.endpoints[route]
 
-            if resp.headers.hasKey("X-RateLimit-Reset"):
-                r.reset = int(resp.headers["X-RateLimit-Reset"].parseInt - getTime().utc.toTime.toUnix)
+            r.reset = (resp.headers["X-RateLimit-Reset"].parseInt - getTime().toUnix()).int
 
-                if r.reset < 0:
+            if resp.headers.hasKey("X-RateLimit-Reset-After"):
+                if r.reset != resp.headers["X-RateLimit-Reset-After"].parseInt:
+                    r.reset = resp.headers["X-RateLimit-Reset-After"].parseInt
+
+                if r.reset < 0: # if discord gives us reset-after a negative int, this would be cursed.
                     r.reset += 3
 
             if resp.headers.hasKey("X-RateLimit-Global"):
                 global = true
                 globalReset = r.reset
 
+        let fin = "[" & $status & "] "
         if status >= 200:
             if status >= 300:
+                error = fin & "Unknown error."
                 fatalErr = true
                 if status >= 400:
                     var res: JsonNode
                     if resp.headers["content-type"] == "application/json":
-                        res = (waitFor resp.body).parseJson
+                        res = (await resp.body).parseJson
 
-                    error = "Bad request."
+                    error = fin & "Bad request."
                     if status == 401:
-                        error = "Invalid authorization or missing authorization."
+                        error = fin & "Invalid authorization or missing authorization."
                     elif status == 403:
-                        error = "Missing permissions/access."
+                        error = fin & "Missing permissions/access."
                     elif status == 404:
-                        error = "Not found."
+                        error = fin & "Not found."
                     elif status == 429:
                         fatalErr = false
                         ratelimited = true
 
-                        error = "You are being rate-limited."
+                        error = fin & "You are being rate-limited."
                         if resp.headers.hasKey("Retry-After"):
-                            waitFor sleepAsync resp.headers["Retry-After"].parseInt()
+                            await sleepAsync resp.headers["Retry-After"].parseInt()
                         reqFunc()
 
                     if res.hasKey("code") and res.hasKey("message"):
                         error = error & " - " & res.getErrorDetails()
                 if status >= 500:
-                    error = "Internal Server Error."
+                    error = fin & "Internal Server Error."
                     if status == 503:
-                        error = "Service Unavailable."
+                        error = fin & "Service Unavailable."
                     elif status == 504:
-                        error = "Gateway timed out."
+                        error = fin & "Gateway timed out."
 
                 if fatalErr:
                     raise newException(RestException, error)
@@ -159,7 +166,7 @@ proc request(api: RestApi, meth, endpoint: string;
 
             if status < 300 and status >= 200:
                 if resp.headers["content-type"] == "application/json":
-                    data = (waitFor resp.body).parseJson
+                    data = (await resp.body).parseJson
                 else:
                     data = nil # Did you know JsonNode is nilable?
 
@@ -176,18 +183,17 @@ proc request(api: RestApi, meth, endpoint: string;
 
                 if ratelimited or rl.ratelimited:
                     if global:
-                        waitFor api.handleReqAttempt(global)
+                        await api.delayRequest(global)
                     else:
-                        waitFor api.handleReqAttempt(false, route)
-
-    if not api.endpoints.hasKey(route):
-        api.endpoints.add(route, Ratelimit())
-    
-    try:
-        reqFunc()
+                        await api.delayRequest(false, route)
     except:
-        raise newException(RestException, error)
+        raise newException(RestException, if error != "": getCurrentExceptionMsg() else: error)
     result = data
+
+proc request*(api: RestApi, meth, endpoint: string;
+            pl = "", mp: MultipartData = nil,
+            xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
+    result = await api.commit(meth, endpoint, pl, mp, xheaders, auth)
 
 proc sendMessage*(api: RestApi, channel_id: string;
             content = ""; tts = false; embed = none(Embed);

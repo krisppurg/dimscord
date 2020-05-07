@@ -28,7 +28,7 @@ Why Dimscord?
  ### Step 2: Install Dimscord
 You'd can install Dimscord via Nimble using `nimble install dimscord` or Github `git clone https://github.com/krisppurg/dimscord`
 
-You will need at least Nim 1.0.0 to install dimscord
+You will need at least Nim 1.2.0 to install dimscord
  
  ### Step 3: Enjoy.
 Stay up-to-date with the latest Dimscord release and stuff. [Make sure to read the documentation of Dimscord](https://krisppurg.github.io/dimscord/0.0.9/dimscord.html)

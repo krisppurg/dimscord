@@ -360,7 +360,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string; name, parent_id,
             rate_limit_per_user, bitrate, position, user_limit = none(int);
             permission_overwrites = none(seq[Overwrite]); reason = ""): Future[GuildChannel] {.async.} =
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = %*{} # Don't judge me.
+    var payload = newJObject()
 
     payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user, bitrate, user_limit, permission_overwrites, parent_id)
 
@@ -414,7 +414,7 @@ proc editGuild*(api: RestApi, guild_id: string;
     verification_level, default_msg_notifs, explicit_filter, afk_timeout = none(int); reason = ""): Future[Guild] {.async.} =
     ## Edits a guild. Icon needs to be a base64 image (See: https://nim-lang.org/docs/base64.html)
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    let payload = %*{}
+    let payload = newJObject()
 
     payload.loadOpt(name, region, verification_level, default_msg_notifs, explicit_filter, afk_chan_id, afk_timeout, icon,
         owner_id, splash, banner, system_chan_id, rules_chan_id, public_update_chan_id, preferred_locale)
@@ -450,7 +450,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             pobj = none(PermObj); color = none(int);
             hoist, mentionable = none(bool)): Future[Role] {.async.} =
     ## Modifies a guild role.
-    let payload = %*{}
+    let payload = newJObject()
 
     payload.loadOpt(name, color, hoist, mentionable)
     if pobj.isSome:

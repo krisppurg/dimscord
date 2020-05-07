@@ -76,6 +76,7 @@ const
 
 var reconnectable = true
 var gateway: tuple[shards: int, url: string]
+var lastReady = 0.0
 
 proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             cache_users = true; cache_guilds = true;
@@ -150,7 +151,7 @@ proc getGateway(): Future[string] {.async.} =
     result = (await resp.body).parseJson()["url"].str
 
 proc debugMsg(msg: string, info: seq[string] = @[]) =
-    when defined(debugmsgs):        
+    when defined(dimscordDebug):        
         var finalmsg = &"[Lib]: {msg}"
 
         if info.len > 0:
@@ -161,7 +162,7 @@ proc debugMsg(msg: string, info: seq[string] = @[]) =
         echo finalmsg
 
 proc debugMsg(s: Shard, msg: string, info: seq[string] = @[]) =
-    when defined(debugmsgs):        
+    when defined(dimscordDebug):        
         var finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
 
         if info.len > 0:
@@ -170,6 +171,11 @@ proc debugMsg(s: Shard, msg: string, info: seq[string] = @[]) =
                 finalmsg &= (if (i and 1) == 0: &"\n  {e}: " else: &"{e}")
 
         echo finalmsg
+
+proc waitWhenReady(s: Shard) {.async.} =
+    while s.authenticating:
+        await sleepAsync 500
+        await s.waitWhenReady()
 
 proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actually prints out sock suspended then returns a bool whether to reconnect.
     let closeData = extractCloseData(msg)
@@ -184,6 +190,7 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
     s.retry_info = (ms: 1000, attempts: 0)
     s.lastHBTransmit = 0
     s.lastHBReceived = 0
+    lastReady = 0.0
 
     result = true
 
@@ -195,7 +202,7 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
 
 proc updateStatus*(s: Shard; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
     ## Updates the shard's status.
-    if s.stop or s.connection.sock.isClosed: return
+    if s.stop or (s.connection == nil or s.connection.sock.isClosed): return
     var payload = %*{
         "since": 0,
         "afk": afk,
@@ -222,10 +229,13 @@ proc updateStatus*(cl: DiscordClient; game: Option[GameStatus] = none(GameStatus
         await s.updateStatus(game, status, afk)
 
 proc identify(s: Shard) {.async.} =
-    if s.authenticating and not s.connection.sock.isClosed: return
+    if s.authenticating or (s.connection == nil or s.connection.sock.isClosed): return
 
     s.authenticating = true
     s.debugMsg("Identifying...")
+
+    if (epochTime() * 1000 - lastReady) < 5500.0:
+        await sleepAsync 5500
 
     var payload = %*{
         "token": s.client.token,
@@ -241,11 +251,11 @@ proc identify(s: Shard) {.async.} =
         payload["shard"] = %[s.id, s.client.shard]
 
     if s.client.intents.len > 0:
-        var intent = 0
+        var intents = 0
 
-        for itent in s.client.intents:
-            intent = intent or itent.int
-        payload["intents"] = %intent
+        for intent in s.client.intents:
+            intents = intents or intent.int
+        payload["intents"] = %intents
 
     await s.connection.sendText($(%*{
         "op": opIdentify,
@@ -261,6 +271,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             s.session_id = data["session_id"].str
             s.authenticating = false
             cl.user = newUser(data["user"])
+            lastReady = epochTime() * 1000
 
             if s.id + 1 == cl.shard:
                 debugMsg("All shards have successfully connected to the gateway.")
@@ -590,6 +601,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
                 if cl.cache.preferences.cache_guild_channels:
                     cl.cache.guildChannels.add(get(chan).id, get(chan))
+                    get(guild).channels.add(get(chan).id, get(chan))
             elif data["type"].getInt() == ctDirect and not cl.cache.dmChannels.hasKey(data["id"].str):
                 dmChan = some(newDMChannel(data))
                 if cl.cache.preferences.cache_dm_channels:
@@ -604,9 +616,10 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
-                oldChan = some(guild.channels[gchan.id])
 
                 if cl.cache.guildChannels.hasKey(gchan.id):
+                    oldChan = some(guild.channels[gchan.id])
+                    guild.channels[gchan.id] = gchan
                     cl.cache.guildChannels[gchan.id] = gchan
             await cl.events.channel_update(s, guild, gchan, oldChan)
         of "CHANNEL_DELETE":
@@ -616,13 +629,17 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             if data.hasKey("guild_id"):
                 guild = some(Guild(id: data["guild_id"].str))
-                if cl.cache.preferences.cache_guilds:
+                if cl.cache.guilds.hasKey(get(guild).id):
                     guild = some(cl.cache.guilds[get(guild).id])
 
             if cl.cache.guildChannels.hasKey(data["id"].str) or cl.cache.dmChannels.hasKey(data["id"].str):
                 if cl.cache.kind(data["id"].str) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        gc = some(newGuildChannel(data))
+                    gc = some(newGuildChannel(data))
+
+                    if cl.cache.guilds.hasKey(get(guild).id):
+                        get(guild).channels.del(get(gc).id)
+
+                    if cl.cache.guildChannels.hasKey(get(gc).id):
                         cl.cache.guildChannels.del(get(gc).id)
                 else:
                     if cl.cache.preferences.cache_dm_channels:
@@ -758,20 +775,25 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             s.debugMsg("Successfuly resumed.")
         of "GUILD_CREATE": # TODO: finish
-            s.debugMsg("Recieved GUILD_CREATE event", @["id", data["id"].str])
+            let guild = newGuild(data)
+            s.debugMsg("Recieved GUILD_CREATE event", @["id", guild.id])
+
+            if cl.cache.preferences.cache_guilds:
+                cl.cache.guilds.add(guild.id, guild)
 
             if data["channels"].elems.len > 0:
                 for chan in data["channels"].elems:
                     if cl.cache.preferences.cache_guild_channels:
-                        cl.cache.guildChannels.add(chan["id"].str, newGuildChannel(chan))
+                        let gc = newGuildChannel(chan)
+                        guild.channels.add(gc.id, gc)
+                        cl.cache.guildChannels.add(gc.id, gc)
 
             if cl.cache.preferences.cache_users:
                 if data["members"].elems.len > 0:
                     for m in data["members"].elems:
                         cl.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
-            if cl.cache.preferences.cache_guilds:
-                let guild = newGuild(data)
-                cl.cache.guilds.add(guild.id, guild)
+            
+            await cl.events.guild_create(s, guild)
         else:
             discard
 
@@ -898,11 +920,10 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
                 s.networkError = true
             elif exception.startsWith("socket closed"):
-                s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat recieved from discord.")
+                s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat recieved: " & $int(epochTime() * 1000 - s.lastHBReceived))
 
-                if (epochTime() * 1000 - s.lastHBReceived) > 60000 or exception.startsWith("The network connection was aborted by the local system."): # this is my clever way of detecting a sleep
-                    echo "It appears that the library has detected that you put your computer to sleep.\n\n    - Unfortunately, this error is fatal resulting in some errors."
-                    shouldReconnect = false
+                if (epochTime() * 1000 - s.lastHBReceived) > 90000 or exception.startsWith("The network connection was aborted by the local system."): # this is my clever way of detecting a sleep
+                    raise newException(Exception, "Last heartbeat was recieved over 90 seconds.")
                 break
 
         var data: JsonNode
@@ -917,7 +938,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
             shouldReconnect = s.handleDisconnect(packet.data)
 
             await s.disconnect(should_reconnect = shouldReconnect)
-            await s.handleSocketMessage()
+            if not s.networkError: await s.handleSocketMessage()
 
         if data["s"].kind != JNull and not s.resuming:
             s.sequence = data["s"].getInt()
@@ -972,6 +993,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
     s.hbSent = false
     s.lastHBReceived = 0
     s.lastHBTransmit = 0
+    lastReady = 0.0
 
     if shouldReconnect:
         await s.reconnect()
@@ -1005,9 +1027,8 @@ proc startSession(s: Shard, url: string, query: string) {.async.} =
         s.hbAck = true
         s.debugMsg("Socket is open.")
     except:
-        echo getCurrentExceptionMsg()
         s.stop = true
-        return
+        raise newException(Exception, getCurrentExceptionMsg())
 
     await s.handleSocketMessageExceptions() # hope dis works *sweats*
 
@@ -1063,11 +1084,16 @@ proc startSession*(cl: DiscordClient,
 
     if shards > 1:
         for i in 0..cl.shard - 2:
+            if i != 0:
+                if cl.shards[1 - 1].authenticating:
+                    await cl.shards[i - 1].waitWhenReady()
+                await sleepAsync 5000
             let ss = newShard(i, cl)
             cl.shards.add(i, ss)
             ss.compress = compress
             asyncCheck ss.startSession(gateway.url, query)
-            await sleepAsync 5500
+            await ss.waitWhenReady()
+            await sleepAsync 5000
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)

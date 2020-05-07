@@ -77,7 +77,7 @@ proc commit(api: RestApi, meth, endpoint: string;
             xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
     var data: JsonNode
     var error = ""
-    var route = endpoint.parseRoute(meth)
+    let route = endpoint.parseRoute(meth)
 
     if not api.endpoints.hasKey(route):
         api.endpoints.add(route, Ratelimit())

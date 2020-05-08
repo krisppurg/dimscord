@@ -84,7 +84,7 @@ type
         endpoints*: Table[string, Ratelimit]
         rest_ver*: int
     Ratelimit* = ref object
-        reset*: int
+        retry_after*: int
         ratelimited*: bool
     UnavailableGuild* = object
         id*: string
@@ -204,7 +204,7 @@ type
         name*, token*: Option[string]
         user*: Option[User]
     Integration* = object
-        id*, name, kind*: string
+        id*, name*, kind*: string
         role_id*, synced_at*: string
         enabled*, syncing*: bool
         enable_emoticons*: Option[bool]

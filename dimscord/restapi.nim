@@ -5,23 +5,20 @@ randomize()
 type
     RestException* = object of CatchableError
     RequestException* = object of CatchableError 
-    DiscordFile* = ref object ## A Discord file. It's a special type.
-        name*: string
-        body*: string
-    AllowedMentions* = object ## An object of allowed mentions
-        parse*: seq[string] ## The values should be "roles", "users", "everyone"
-        roles*: seq[string]
-        users*: seq[string]
+    DiscordFile* = ref object ## A Discord file.
+        name*, body*: string
+    AllowedMentions* = object
+        ## An object of allowed mentions.
+        ## For parse: The values should be "roles", "users", "everyone"
+        parse*, roles*, users*: seq[string]
 var fatalErr = false
 var ratelimited = false
-var globalReset = 0
+var global_retry_after = 0
 var global = false
 
 proc parseRoute(endpoint, meth: string): string =
     let majorParams = @["channels", "guilds", "webhooks"]
-
     let params = endpoint.findAll(re"([a-z-]+)")
-
     var route = endpoint.split("?", 2)[0]
 
     for param in params:
@@ -38,36 +35,39 @@ proc parseRoute(endpoint, meth: string): string =
 
     result = route # I love 'result ='
 
-proc delayRequest(api: RestApi; global = false; route = "") {.async.} =
-    var rl: tuple[reset: int, ratelimited: bool]
+proc delayRoutes(api: RestApi; global = false; route = "") {.async.} =
+    var rl: tuple[retry_after: int, ratelimited: bool]
 
     if global:
-        rl = (globalReset, ratelimited)
+        rl = (global_retry_after, ratelimited)
     elif route != "":
-        rl = (api.endpoints[route].reset, api.endpoints[route].ratelimited)
+        rl = (api.endpoints[route].retry_after, api.endpoints[route].ratelimited)
 
     if rl.ratelimited:
-        echo "Delaying ",(if global: "all" else: "HTTP")," requests in (", rl.reset * 1000 + 250, "ms) [", (if global: "global" else: route), "]"
+        echo "Delaying ",(if global: "all" else: "HTTP")," requests in (", rl.retry_after * 1000 + 250, "ms) [", (if global: "global" else: route), "]"
 
-        await sleepAsync rl.reset * 1000 + 250
+        await sleepAsync rl.retry_after * 1000 + 250
         api.endpoints[route].ratelimited = false
 
 proc clean(errors: JsonNode, extra = ""): seq[string] =
     result = @[]        
     var ext = extra
-    if errors.kind == JArray:
-        var err: seq[string] = @[]
 
-        for e in errors.elems:
-            err.add("\n    - " & ext & ": " & e["message"].str)
-        result = result.concat(err)
+    case errors.kind:
+        of JArray:
+            var err: seq[string] = @[]
 
-    if errors.kind == JObject:
-        for err in errors.pairs:
-            return clean(err.val, (if ext == "": err.key & "." & err.key else: ext & "." & err.key))
+            for e in errors.elems:
+                err.add("\n    - " & ext & ": " & e["message"].str)
+            result = result.concat(err)
+        of JObject:
+            for err in errors.pairs:
+                return clean(err.val, (if ext == "": err.key & "." & err.key else: ext & "." & err.key))
+        else:
+            discard
 
 proc getErrorDetails(data: JsonNode): string =
-    result = "[Request Exception]:: " & data["message"].str & " (" & $data["code"].getInt() & ")"
+    result = "[Discord Exception]:: " & data["message"].str & " (" & $data["code"].getInt() & ")"
 
     if data.hasKey("errors"):
         result = result & "\n" & clean(data["errors"]).join("\n")
@@ -84,9 +84,9 @@ proc commit(api: RestApi, meth, endpoint: string;
     
     try:
         if global:
-            await api.delayRequest(global)
+            await api.delayRoutes(global)
         else:
-            await api.delayRequest(false, route)
+            await api.delayRoutes(false, route)
 
         let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
         var resp: AsyncResponse
@@ -109,20 +109,21 @@ proc commit(api: RestApi, meth, endpoint: string;
         var status = resp.code.int
 
         if api.endpoints.hasKey(route):
-            var r = api.endpoints[route]
+            let r = api.endpoints[route]           
 
-            r.reset = (resp.headers["X-RateLimit-Reset"].parseInt - getTime().toUnix()).int
+            if resp.headers.hasKey("X-RateLimit-Reset"):
+                r.retry_after = int(resp.headers["X-RateLimit-Reset"].parseInt - getTime().toUnix())
 
-            if resp.headers.hasKey("X-RateLimit-Reset-After"):
-                if r.reset != resp.headers["X-RateLimit-Reset-After"].parseInt:
-                    r.reset = resp.headers["X-RateLimit-Reset-After"].parseInt
+                if resp.headers.hasKey("X-RateLimit-Reset-After"):
+                    if r.retry_after != resp.headers["X-RateLimit-Reset-After"].parseInt:
+                        r.retry_after = resp.headers["X-RateLimit-Reset-After"].parseInt
 
-                if r.reset < 0: # if discord gives us reset-after a negative int, this would be cursed.
-                    r.reset += 3
+            if r.retry_after <= 0: # if discord gives us reset-after a negative int, this would be cursed.
+                r.retry_after = (r.retry_after - r.retry_after - r.retry_after) + 3
 
             if resp.headers.hasKey("X-RateLimit-Global"):
                 global = true
-                globalReset = r.reset
+                global_retry_after = r.retry_after
 
         let fin = "[" & $status & "] "
         if status >= 200:
@@ -147,11 +148,12 @@ proc commit(api: RestApi, meth, endpoint: string;
 
                         error = fin & "You are being rate-limited."
                         if resp.headers.hasKey("Retry-After"):
-                            await sleepAsync resp.headers["Retry-After"].parseInt()
+                            await sleepAsync resp.headers["Retry-After"].parseInt
+
                         result = await api.commit(meth, endpoint, pl, mp, xheaders, auth)
 
                     if res.hasKey("code") and res.hasKey("message"):
-                        error = error & " - " & res.getErrorDetails()
+                        error = error & "\n\n - " & res.getErrorDetails()
                 if status >= 500:
                     error = fin & "Internal Server Error."
                     if status == 503:
@@ -183,9 +185,9 @@ proc commit(api: RestApi, meth, endpoint: string;
 
                 if ratelimited or rl.ratelimited:
                     if global:
-                        await api.delayRequest(global)
+                        await api.delayRoutes(global)
                     else:
-                        await api.delayRequest(false, route)
+                        await api.delayRoutes(false, route)
     except:
         raise newException(RestException, if error != "": getCurrentExceptionMsg() else: error)
     result = data

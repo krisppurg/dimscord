@@ -411,9 +411,12 @@ proc deleteGuild*(api: RestApi, guild_id: string): Future[void] {.async.} =
     discard (await api.request("DELETE", endpointGuilds(guild_id)))
 
 proc editGuild*(api: RestApi, guild_id: string;
-    name, region, afk_chan_id, icon, owner_id, splash,
-    banner, system_chan_id, rules_chan_id, preferred_locale, public_update_chan_id = none(string);
-    verification_level, default_msg_notifs, explicit_filter, afk_timeout = none(int); reason = ""): Future[Guild] {.async.} =
+    name, region, afk_chan_id, icon = none(string);
+    owner_id, splash, banner, system_chan_id = none(string);
+    rules_chan_id, preferred_locale = none(string);
+    public_update_chan_id = none(string);
+    verification_level, default_msg_notifs = none(string);
+    explicit_filter, afk_timeout = none(int); reason = ""): Future[Guild] {.async.} =
     ## Edits a guild. Icon needs to be a base64 image (See: https://nim-lang.org/docs/base64.html)
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     let payload = newJObject()

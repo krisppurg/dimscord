@@ -189,7 +189,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                     else:
                         await api.delayRoutes(false, route)
     except:
-        raise newException(RestException, if error != "": getCurrentExceptionMsg() else: error)
+        raise newException(RestException, if error == "": getCurrentExceptionMsg() else: error)
     result = data
 
 proc request*(api: RestApi, meth, endpoint: string;

@@ -819,7 +819,7 @@ proc reconnect(s: Shard) {.async.} =
     s.reconnecting = true
     s.retry_info.attempts += 1
 
-    var url: string = ""
+    var url = "gateway.discord.gg"
 
     try: 
         url = await getGateway()
@@ -829,7 +829,9 @@ proc reconnect(s: Shard) {.async.} =
 
         s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retry_info.ms}ms", @["attempt", $s.retry_info.attempts])
+        s.debugMsg(&"Reconnecting in {s.retry_info.ms}ms", @[
+            "attempt", $s.retry_info.attempts
+        ])
 
         await sleepAsync s.retry_info.ms
         await s.reconnect()
@@ -854,10 +856,11 @@ proc reconnect(s: Shard) {.async.} =
     except:
         s.debugMsg("Error occurred: \n" & getCurrentExceptionMsg())
         s.reconnecting = false
-
         s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retry_info.ms}ms", @["attempt", $s.retry_info.attempts])
+        s.debugMsg(&"Got gateway, but failed to connect, reconnecting in {s.retry_info.ms}ms", @[
+            "attempt", $s.retry_info.attempts
+        ])
 
         await sleepAsync s.retry_info.ms
         await s.reconnect()
@@ -1039,7 +1042,7 @@ proc startSession*(cl: DiscordClient,
             compress: bool = false) {.async.} =
     ## Connects the client to Discord via gateway.
     ## 
-    ## - gateway_intents | Allows you to subscribe to pre-defined events (info: https://discordapp.com/developers/docs/topics/gateway#gateway-intents)
+    ## - gateway_intents | Allows you to subscribe to pre-defined events (info: https://discord.com/developers/docs/topics/gateway#gateway-intents)
     ## - shards | An amount of shards.
     ## - compress | Whether or not to compress. zlib1.dll needs to be in your directory.
 

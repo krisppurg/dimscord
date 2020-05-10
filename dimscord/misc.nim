@@ -51,3 +51,8 @@ proc `@`*(g: GuildChannel): string =
 
 proc `$`*(g: GuildChannel): string =
     result = &"#{g.name}"
+
+proc getGuildWidget(guild_id, style: string): string =
+    ## Gets a guild widget.
+    ## (See: https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options
+    result = &"{restBase}/guilds/{guild_id}/widget.png"

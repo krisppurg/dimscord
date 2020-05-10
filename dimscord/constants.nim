@@ -170,6 +170,9 @@ proc endpointChannels*(cid = ""): string =
 proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")
 
+proc endpointGuildPreview*(gid: string): string =
+    result = endpointGuilds(gid) & "/preview"
+
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
 

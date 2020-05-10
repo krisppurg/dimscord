@@ -211,6 +211,11 @@ type
         expire_behavior*, expire_grace_period*: int
         user*: User
         account*: tuple[id, name: string]
+    GuildPreview* = object
+        id*, name*: string
+        icon*, splash, emojis*: Option[string]
+        discovery_splash*, description*: Option[string]
+        approximate_member_count*, approximate_presence_count*: int
 
 proc `$`*(e: Emoji): string =
     result = if e.id != "": e.name & ":" & e.id else: e.name

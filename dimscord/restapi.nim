@@ -81,7 +81,7 @@ proc commit(api: RestApi, meth, endpoint: string;
 
     if not api.endpoints.hasKey(route):
         api.endpoints.add(route, Ratelimit())
-    
+
     try:
         if global:
             await api.delayRoutes(global)
@@ -115,7 +115,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                 r.retry_after = int(resp.headers["X-RateLimit-Reset"].parseInt - getTime().toUnix())
 
                 if resp.headers.hasKey("X-RateLimit-Reset-After"):
-                    if r.retry_after != resp.headers["X-RateLimit-Reset-After"].parseInt:
+                    if r.retry_after < resp.headers["X-RateLimit-Reset-After"].parseInt:
                         r.retry_after = resp.headers["X-RateLimit-Reset-After"].parseInt
 
             if r.retry_after <= 0: # if discord gives us reset-after a negative int, this would be cursed.
@@ -150,7 +150,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                         if resp.headers.hasKey("Retry-After"):
                             await sleepAsync resp.headers["Retry-After"].parseInt
 
-                        result = await api.commit(meth, endpoint, pl, mp, xheaders, auth)
+                        return await api.commit(meth, endpoint, pl, mp, xheaders, auth)
 
                     if res.hasKey("code") and res.hasKey("message"):
                         error = error & "\n\n - " & res.getErrorDetails()
@@ -175,19 +175,18 @@ proc commit(api: RestApi, meth, endpoint: string;
         if api.endpoints.hasKey(route):
             var rl = api.endpoints[route]
 
-            if resp.headers.hasKey("X-RateLimit-Remaining"):
-                if resp.headers["X-RateLimit-Remaining"].toString == "0":
-                    if resp.headers.hasKey("X-RateLimit-Global"):
-                        echo "Got ratelimit global."
-                        ratelimited = true
-                    else:
-                        rl.ratelimited = true
+            if resp.headers.getOrDefault("X-RateLimit-Remaining", @["0"].HttpHeaderValues).toString == "0":
+                if resp.headers.hasKey("X-RateLimit-Global"):
+                    echo "Got ratelimit global."
+                    ratelimited = true
+                else:
+                    rl.ratelimited = true
 
-                if ratelimited or rl.ratelimited:
-                    if global:
-                        await api.delayRoutes(global)
-                    else:
-                        await api.delayRoutes(false, route)
+            if ratelimited or rl.ratelimited:
+                if global:
+                    await api.delayRoutes(global)
+                else:
+                    await api.delayRoutes(false, route)
     except:
         raise newException(RestException, if error == "": getCurrentExceptionMsg() else: error)
     result = data
@@ -261,7 +260,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string; content = ""; tt
 proc deleteMessage*(api: RestApi, channel_id, message_id: string; reason = "") {.async.} =
     ## Deletes a discord message.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("DELETE", endpointChannelMessages(channel_id, message_id), xheaders = h))
+    discard await api.request("DELETE", endpointChannelMessages(channel_id, message_id), xheaders = h)
 
 proc getChannelMessages*(api: RestApi, channel_id: string; around = ""; before = ""; after = ""; limit = 50): Future[seq[Message]] {.async.} =
     ## Gets channel message.
@@ -283,7 +282,7 @@ proc getChannelMessages*(api: RestApi, channel_id: string; around = ""; before =
 proc bulkDeleteMessages*(api: RestApi, channel_id: string; message_ids: seq[string]; reason = "") {.async.} =
     ## Bulk deletes messages
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("POST", endpointBulkDeleteMessages(channel_id), $(%*{"messages": message_ids}), xheaders = h))
+    discard await api.request("POST", endpointBulkDeleteMessages(channel_id), $(%*{"messages": message_ids}), xheaders = h)
 
 proc addMessageReaction*(api: RestApi, channel_id, message_id, emoji: string) {.async.} =
     ## Add a message reaction to a Discord message.
@@ -293,7 +292,7 @@ proc addMessageReaction*(api: RestApi, channel_id, message_id, emoji: string) {.
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
 
-    discard (await api.request("PUT", endpointReactions(channel_id, message_id, e = emj, uid = "@me"))) # first 'PUT' request :)
+    discard await api.request("PUT", endpointReactions(channel_id, message_id, e = emj, uid = "@me")) # first 'PUT' request :)
 
 proc deleteMessageReaction*(api: RestApi, channel_id, message_id, emoji: string; user_id = "@me") {.async.} =
     ## Deletes the user's or the current user's message reaction to a Discord message.
@@ -302,7 +301,7 @@ proc deleteMessageReaction*(api: RestApi, channel_id, message_id, emoji: string;
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
 
-    discard (await api.request("DELETE", endpointReactions(channel_id, message_id, e = emj, uid = user_id)))
+    discard await api.request("DELETE", endpointReactions(channel_id, message_id, e = emj, uid = user_id))
 
 proc getMessageReactions*(api: RestApi, channel_id, message_id, emoji: string; before = ""; after = ""; limit = 25): Future[seq[User]] {.async.} =
     ## Get all user message reactions on the emoji provided.
@@ -323,19 +322,19 @@ proc getMessageReactions*(api: RestApi, channel_id, message_id, emoji: string; b
 
 proc deleteAllMessageReactions*(api: RestApi, channel_id, message_id: string) {.async.} =
     ## Remove all message reactions.
-    discard (await api.request("DELETE", endpointReactions(channel_id, message_id)))
+    discard await api.request("DELETE", endpointReactions(channel_id, message_id))
 
 proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async.} =
     ## Start typing in a specific discord channel.
-    discard (await api.request("POST", endpointTriggerTyping(channel_id)))
+    discard await api.request("POST", endpointTriggerTyping(channel_id))
 
 proc addChannelMessagePin*(api: RestApi, channel_id, message_id: string) {.async.} =
     ## Add pin message.
-    discard (await api.request("PUT", endpointChannelPins(channel_id, message_id)))
+    discard await api.request("PUT", endpointChannelPins(channel_id, message_id))
 
 proc deleteChannelMessagePin*(api: RestApi, channel_id, message_id: string) {.async.} =
     ## Remove pinned message.
-    discard (await api.request("DELETE", endpointChannelPins(channel_id, message_id)))
+    discard await api.request("DELETE", endpointChannelPins(channel_id, message_id))
 
 proc getChannelPins*(api: RestApi, channel_id: string): Future[seq[Message]] {.async.} =
     ## Get channel pins.
@@ -357,6 +356,32 @@ macro loadOpt(obj: typed, lits: varargs[untyped]): untyped =
             if `lit`.isSome:
                 `obj`[`fieldName`] = %get(`lit`)
 
+macro loadNullableOptStr(obj: typed, lits: varargs[untyped]): untyped =
+    # Best demonstrated through example.
+    # loadNullableOpt(payload, channel_id) expands to:
+    # if channel_id.isSome and getOrDefault(channel_id) == "":
+    #     payload["channel_id"] = newJNull()
+
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `lit`.isSome and get(`lit`) == "":
+                `obj`[`fieldName`] = newJNull()
+
+macro loadNullableOptInt(obj: typed, lits: varargs[untyped]): untyped =
+    # Best demonstrated through example.
+    # loadNullableOpt(payload, channel_id) expands to:
+    # if channel_id.isSome and get(channel_id) == "":
+    #     payload["channel_id"] = newJNull()
+
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `lit`.isSome and get(`lit`) == -1:
+                `obj`[`fieldName`] = newJNull()
+
 proc editGuildChannel*(api: RestApi, channel_id: string; name, parent_id,
             topic = none(string); nsfw = none(bool);
             rate_limit_per_user, bitrate, position, user_limit = none(int);
@@ -364,7 +389,11 @@ proc editGuildChannel*(api: RestApi, channel_id: string; name, parent_id,
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     var payload = newJObject()
 
-    payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user, bitrate, user_limit, permission_overwrites, parent_id)
+    payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user,
+        bitrate, user_limit, permission_overwrites, parent_id)
+
+    payload.loadNullableOptStr(topic, parent_id)
+    payload.loadNullableOptInt(position, rate_limit_per_user, bitrate, user_limit)
 
     result = (await api.request("PATCH", endpointChannels(channel_id), $(payload), xheaders = h)).newGuildChannel
 
@@ -380,8 +409,8 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
     result = (await api.request("POST", endpointGuildChannels(guild_id), $(payload))).newGuildChannel
 
 proc deleteChannel*(api: RestApi, channel_id: string) {.async.} =
-    ## Delete's channel.
-    discard (await api.request("DELETE", endpointChannels(channel_id)))
+    ## Deletes or closes a channel.
+    discard await api.request("DELETE", endpointChannels(channel_id))
 
 proc editGuildChannelPermissions*(api: RestApi, channel_id, perm_id, kind: string, perms: PermObj) {.async.} =
     ## Modify the channel's permissions.
@@ -391,7 +420,7 @@ proc editGuildChannelPermissions*(api: RestApi, channel_id, perm_id, kind: strin
         payload["allow"] = %(+perms.allowed)
     if perms.denied.len > 0:
         payload["deny"] = %(+perms.denied)
-    discard (await api.request("PUT", endpointChannelOverwrites(channel_id, perm_id), $(payload)))
+    discard await api.request("PUT", endpointChannelOverwrites(channel_id, perm_id), $(payload))
 
 proc getInvite*(api: RestApi, code: string; with_counts, auth = false): Future[Invite] {.async.} =
     ## Get's a channel invite. The auth param is whether or not you should get the invite while authenticated.
@@ -401,29 +430,36 @@ proc beginGuildPrune*(api: RestApi, guild_id: string; days = 7; compute_prune_co
     ## Begins a guild prune.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     let url = endpointGuildPrune(guild_id) & "?days=" & $days & "&compute_prune_count=" & $compute_prune_count
-    discard (await api.request("POST", url, xheaders = h))
+    discard await api.request("POST", url, xheaders = h)
 
 proc getGuildPruneCount*(api: RestApi, guild_id: string, days: int): Future[int] {.async.} =
     ## Gets the prune count.
     result = (await api.request("GET", endpointGuildPrune(guild_id) & "?days=" & $days))["pruned"].getInt()
 
 proc deleteGuild*(api: RestApi, guild_id: string): Future[void] {.async.} =
-    discard (await api.request("DELETE", endpointGuilds(guild_id)))
+    discard await api.request("DELETE", endpointGuilds(guild_id))
 
 proc editGuild*(api: RestApi, guild_id: string;
-    name, region, afk_chan_id, icon = none(string);
-    owner_id, splash, banner, system_chan_id = none(string);
-    rules_chan_id, preferred_locale = none(string);
-    public_update_chan_id = none(string);
-    verification_level, default_msg_notifs = none(string);
-    explicit_filter, afk_timeout = none(int); reason = ""): Future[Guild] {.async.} =
+    name, region, afk_channel_id, icon = none(string);
+    discovery_splash, owner_id, splash, banner = none(string);
+    system_channel_id, rules_channel_id = none(string);
+    preferred_locale, public_updates_channel_id = none(string);
+    verification_level, default_message_notifications = none(int);
+    explicit_content_filter, afk_timeout = none(int); reason = ""): Future[Guild] {.async.} =
     ## Edits a guild. Icon needs to be a base64 image (See: https://nim-lang.org/docs/base64.html)
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     let payload = newJObject()
 
-    payload.loadOpt(name, region, verification_level, default_msg_notifs, explicit_filter, afk_chan_id, afk_timeout, icon,
-        owner_id, splash, banner, system_chan_id, rules_chan_id, public_update_chan_id, preferred_locale)
-    
+    payload.loadOpt(name, region, verification_level, default_message_notifications, icon,
+        explicit_content_filter, afk_channel_id, afk_timeout, discovery_splash, owner_id,
+        splash, banner, system_channel_id, rules_channel_id, public_updates_channel_id, preferred_locale)
+
+    payload.loadNullableOptInt(verification_level, default_message_notifications,
+        explicit_content_filter, afk_timeout)
+
+    payload.loadNullableOptStr(icon, region, splash, discovery_splash, banner, system_channel_id,
+        rules_channel_id, public_updates_channel_id, preferred_locale)
+
     result = (await api.request("PATCH", endpointGuilds(guild_id), $(payload), xheaders = h)).newGuild
 
 proc getGuild*(api: RestApi, guild_id: string): Future[Guild] {.async.} =
@@ -447,8 +483,8 @@ proc createGuildRole*(api: RestApi, guild_id: string; name = "new role";
     }), xheaders = h)).newRole
 
 proc deleteGuildRole*(api: RestApi, guild_id, role_id: string): Future[void] {.async.} =
-    ## Delete's a guild role.
-    discard (await api.request("DELETE", endpointGuildRoles(guild_id, role_id)))
+    ## Deletes a guild role.
+    discard await api.request("DELETE", endpointGuildRoles(guild_id, role_id))
 
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none(string);
@@ -458,6 +494,10 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     let payload = newJObject()
 
     payload.loadOpt(name, color, hoist, mentionable)
+
+    payload.loadNullableOptStr(name)
+    payload.loadNullableOptInt(color)
+
     if pobj.isSome:
         payload["permissions"] = %(+(get(pobj)))
 
@@ -483,19 +523,18 @@ proc getGuildVanityUrl*(api: RestApi, guild_id: string): Future[tuple[code: Opti
 proc editGuildMember*(api: RestApi, guild_id, user_id: string;
         nick, channel_id = none(string);
         roles = none(seq[string]);
-        mute, deaf = none(bool); reason = ""): Future[void] {.async.} = # TODO: test it.
+        mute, deaf = none(bool); reason = ""): Future[void] {.async.} =
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
     var payload = newJObject()
-    
-    payload.loadOpt(nick, roles, mute, deaf, channel_id)
 
-    if channel_id.isSome and get(channel_id) == "":
-        payload["channel_id"] = newJNull()
-    discard (await api.request("PATCH", endpointGuildMembers(guild_id, user_id), $(payload), xheaders = h))
+    payload.loadOpt(nick, roles, mute, deaf, channel_id)
+    payload.loadNullableOptStr(channel_id)
+
+    discard await api.request("PATCH", endpointGuildMembers(guild_id, user_id), $(payload), xheaders = h)
 
 proc removeGuildMember*(api: RestApi, guild_id, user_id, reason: string): Future[void] {.async.} =
     ## Removes a guild member.
-    discard (await api.request("DELETE", endpointGuildMembers(guild_id, user_id)))
+    discard await api.request("DELETE", endpointGuildMembers(guild_id, user_id))
 
 proc getGuildBan*(api: RestApi, guild_id, user_id: string): Future[GuildBan] {.async.} =
     ## Gets guild ban.
@@ -508,29 +547,29 @@ proc getGuildBans*(api: RestApi, guild_id: string): Future[seq[GuildBan]] {.asyn
 proc createGuildBan*(api: RestApi, guild_id, user_id: string; deletemsgdays = 0; reason = ""): Future[void] {.async.} =
     ## Creates a guild ban.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
+    discard await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
         "delete-message-days": $deletemsgdays,
         "reason": reason
-    }), xheaders = h))
+    }), xheaders = h)
 
 proc removeGuildBan*(api: RestApi, guild_id, user_id: string): Future[void] {.async.} =
     ## Removes a guild ban. 
-    discard (await api.request("DELETE", endpointGuildBans(guild_id, user_id)))
+    discard await api.request("DELETE", endpointGuildBans(guild_id, user_id))
 
 proc getGuildChannels*(api: RestApi, guild_id: string): Future[seq[GuildChannel]] {.async.} =
     ## Gets a list of a guild's channels
     result = (await api.request("GET", endpointGuildChannels(guild_id))).elems.map(newGuildChannel)
 
-proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string; position: int; reason = ""): Future[void] {.async.} =
+proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string; position = none(int); reason = ""): Future[void] {.async.} =
     ## Edits a guild channel's position.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("PATCH", endpointGuildChannels(guild_id, channel_id), $(%*{
+    discard await api.request("PATCH", endpointGuildChannels(guild_id, channel_id), $(%*{
         "id": channel_id,
-        "position": position
-    }), xheaders = h))
+        "position": %position
+    }), xheaders = h)
 
 proc getGuildMember*(api: RestApi, guild_id, user_id: string): Future[Member] {.async.} =
-    ## Gets a guild member
+    ## Gets a guild member.
     result = (await api.request("GET", endpointGuildMembers(guild_id, user_id))).newMember
 
 proc getGuildMembers*(api: RestApi, guild_id: string; limit = 1, after = "0"): Future[seq[Member]] {.async.} =
@@ -538,18 +577,18 @@ proc getGuildMembers*(api: RestApi, guild_id: string; limit = 1, after = "0"): F
     result = ((await api.request("GET", endpointGuildMembers(guild_id) & "?limit=" & $limit & "&after=" & after))).elems.map(newMember)
 
 proc setGuildNick*(api: RestApi, guild_id: string; nick = ""): Future[void] {.async.} =
-    ## Set's the current user's guild nickname, defaults to "" if no nick is set.
-    discard (await api.request("PATCH", endpointGuildMembersNick(guild_id, "@me"), $(%*{"nick": nick})))
+    ## Sets the current user's guild nickname, defaults to "" if no nick is set.
+    discard await api.request("PATCH", endpointGuildMembersNick(guild_id, "@me"), $(%*{"nick": nick}))
 
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string; reason = ""): Future[void] {.async.} =
     ## Assigns a member's role.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("PUT", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h))
+    discard await api.request("PUT", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h)
 
 proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string; reason = ""): Future[void] {.async.} =
     ## Removes a member's role.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("DELETE", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h))
+    discard await api.request("DELETE", endpointGuildMembersRole(guild_id, user_id, role_id), xheaders = h)
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
     max_age = 86400,
@@ -571,11 +610,11 @@ proc createChannelInvite*(api: RestApi, channel_id: string;
 proc deleteGuildChannelPermission*(api: RestApi, channel_id, overwrite: string; reason = ""): Future[void] {.async.} =
     ## Deletes guild channel permission overwrite.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("DELETE", endpointChannelOverwrites(channel_id, overwrite), xheaders = h))
+    discard await api.request("DELETE", endpointChannelOverwrites(channel_id, overwrite), xheaders = h)
 
 proc deleteInvite*(api: RestApi, code: string): Future[void] {.async.} =
     ## Deletes a guild invite.
-    discard (await api.request("DELETE", endpointInvites(code)))
+    discard await api.request("DELETE", endpointInvites(code))
 
 proc getChannelInvites*(api: RestApi, channel_id: string): Future[seq[Invite]] {.async.} =
     ## Gets a list of a channel's invites.
@@ -644,7 +683,7 @@ proc getWebhook*(api: RestApi, webhook_id: string): Future[Webhook] {.async.} =
 proc deleteWebhook*(api: RestApi, webhook_id: string; reason = ""): Future[void] {.async.} =
     ## Deletes a webhook.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("DELETE", endpointWebhooks(webhook_id), xheaders = h))
+    discard await api.request("DELETE", endpointWebhooks(webhook_id), xheaders = h)
 
 proc editWebhook*(api: RestApi, webhook_id: string;
         name, avatar, channel_id = none(string); reason = ""): Future[void] {.async.} =
@@ -653,16 +692,64 @@ proc editWebhook*(api: RestApi, webhook_id: string;
     let payload = newJObject()
 
     payload.loadOpt(name, avatar, channel_id)
-    discard (await api.request("PATCH", endpointWebhooks(webhook_id), $(payload), xheaders = h))
+    payload.loadNullableOptStr(avatar)
+
+    discard await api.request("PATCH", endpointWebhooks(webhook_id), $(payload), xheaders = h)
+
+proc syncGuildIntegration*(api: RestApi, guild_id, integ_id: string) {.async.} =
+    ## Syncs a guild integration.
+    discard await api.request("POST", endpointGuildIntegrationsSync(guild_id, integ_id))
+
+proc editGuildIntegration*(api: RestApi, guild_id, integ_id: string;
+        expire_behavior, expire_grace_period = none(int);
+        enable_emoticons = none(bool); reason: string = "") {.async.} =
+    ## Edits a guild integration.
+    let payload = newJObject()
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+
+    payload.loadOpt(expire_behavior, expire_grace_period, enable_emoticons)
+    payload.loadNullableOptInt(expire_behavior, expire_grace_period)
+
+    discard await api.request("PATCH", endpointGuildIntegrationsSync(guild_id, integ_id), $(payload), xheaders = h)
 
 proc deleteGuildIntegration*(api: RestApi, integ_id: string; reason = "") {.async.} =
+    ## Deletes a guild integration.
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    discard (await api.request("DELETE", endpointGuildIntegrations(integ_id), xheaders = h))
+    discard await api.request("DELETE", endpointGuildIntegrations(integ_id), xheaders = h)
 
-# proc getGuildWidgetImage*()
-# proc addGuildMember*()
+proc getGuildEmbed*(api: RestApi, guild_id: string): Future[tuple[enabled: bool, channel_id: Option[string]]] {.async.} =
+    ## Gets a guild embed.
+    result = (await api.request("GET", endpointGuildEmbed(guild_id))).to(tuple[enabled: bool, channel_id: Option[string]])
+
+proc editGuildEmbed*(api: RestApi, guild_id: string, enabled = none(bool); channel_id = none(string)): Future[tuple[enabled: bool, channel_id: Option[string]]] {.async.} =
+    ## Modifies a guild embed.
+    let payload = newJObject()
+
+    payload.loadOpt(enabled, channel_id)
+    payload.loadNullableOptStr(channel_id)
+
+    result = (await api.request("PATCH", endpointGuildEmbed(guild_id), $(payload))).to(tuple[enabled: bool, channel_id: Option[string]])
+
+proc getGuildPreview*(api: RestApi, guild_id: string): Future[GuildPreview] {.async.} =
+    ## Gets guild preview.
+    result = (await api.request("GET", endpointGuildPreview(guild_id))).to(GuildPreview)
+
+proc addGuildMember*(api: RestApi, guild_id, user_id,
+        access_token: string;
+        nick = none(string);
+        roles = none(seq[string]);
+        mute, deaf = none(bool); reason: string = ""): Future[tuple[member: Member, exists: bool]] {.async.} =
+    ## Adds a guild member. If member is in the guild, then exists will be true.
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+    let payload = %*{"access_token": access_token}
+
+    payload.loadOpt(nick, roles, mute, deaf)
+
+    let member = (await api.request("PUT", endpointGuildMembers(guild_id, user_id), xheaders = h))
+    if member.kind == JNull:
+        result = (Member(), true)
+    else:
+        result = (newMember(member), false)
+
 # proc editGuildIntegration*()
-# proc syncGuildIntegration*()
-# proc getGuildEmbed*()
-# proc modifyGuildEmbed*()
 # proc getGuildVoiceRegions*()

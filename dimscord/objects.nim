@@ -1,4 +1,4 @@
-import options, json, tables, constants
+import options, json, tables, constants, sequtils
 type
     Embed* = object
         title*, `type`*, description*: Option[string]
@@ -133,9 +133,10 @@ type
     Guild* = ref object ## A guild object. All option fields are cached only fields or fields that cannot be assumed (e.g. permissions) or nilable
         id*, name*, owner_id*: string
         region*, embed_channel_id*, preferred_locale*: string
+        description*, banner*: Option[string]
         icon*, splash*, discovery_splash*: Option[string]
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
-        widget_channel_id*, system_channel_id*, joined_at*, description*, banner*: Option[string]
+        widget_channel_id*, system_channel_id*, joined_at*: Option[string]
         owner*, embed_enabled*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
         permissions*, afk_timeout*, member_count*: Option[int]
@@ -191,6 +192,9 @@ type
         channel_id*, user_id*: string
         timestamp*: int
     GuildMembersChunk* = object
+        guild_id*: string
+        nonce*: Option[string]
+        chunk_index*, chunk_count*: int
         members*: seq[Member]
         not_found*: seq[string]
         presences*: seq[Presence]
@@ -273,15 +277,6 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
         temporary: data["temporary"].bval,
         created_at: data["created_at"].str
     )
-
-proc `%`*(o: Overwrite): JsonNode =
-    var json = %* {}
-    json["id"] = % o.id
-    json["type"] = % o.kind
-    json["allow"] = % o.allow
-    json["deny"] = % o.deny
-
-    return json
 
 proc newOverwrite*(data: JsonNode): Overwrite =
     result = Overwrite(
@@ -596,6 +591,17 @@ proc newMember*(data: JsonNode): Member =
         result.premium_since = data["premium_since"].str
 
     result.presence = Presence(status: "offline", client_status: ("offline", "offline", "offline"))
+
+proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
+    result = GuildMembersChunk(
+        guild_id: data["guild_id"].str,
+        nonce: if data{"nonce"}.getStr == "": none(string) else: some(data["nonce"].str) ,
+        chunk_index: data["chunk_index"].getInt(),
+        chunk_count: data["chunk_count"].getInt(),
+        members: data["members"].elems.map(newMember),
+        not_found: data["not_found"].elems.map(proc (x: JsonNode): string = return x.str),
+        presences: data["presences"].elems.map(newPresence)
+    )
 
 proc newReaction*(data: JsonNode): Reaction =
     result = Reaction(count: data["count"].getInt(), emoji: newEmoji(data["emoji"]), reacted: data["me"].bval)

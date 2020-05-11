@@ -1,11 +1,13 @@
 import zip/zlib, math, httpclient, websocket, asyncdispatch, json, locks, tables, strutils, times, constants, asyncnet, strformat, options, sequtils, random, objects, cacher
 
-randomize() # I hate that function.
+randomize()
 {.hint[XDeclaredButNotUsed]: off.}
 {.warning[UnusedImport]: off.} # It says that it's not used, but it actually is used in unexported procedures. 
 
 type
-    Events* = ref object ## Event handler object. Exists param checks message is cached or not. Other cachable objects dont have them.
+    Events* = ref object
+        ## An Events object.
+        ## `exists` param checks message is cached or not. Other cachable objects dont have them.
         message_create*: proc (s: Shard, m: Message) {.async.}
         on_ready*: proc (s: Shard, r: Ready) {.async.}
         message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
@@ -35,32 +37,34 @@ type
         user_update*: proc (s: Shard, u: User, o: Option[User]) {.async.}
         voice_state_update*: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
-    DiscordClient* = ref object ## The Discord Client.
+    DiscordClient* = ref object
+        ## The Discord Client, itself.
         api*: RestApi
         user*: User
         events*: Events
         token*: string
-        shards*: Table[int, Shard] ## A table of shard indexes
-        restMode*, autoreconnect*: bool
-        shard*: int
+        shards*: Table[int, Shard]
+        restMode*, autoreconnect*, guildSubscriptions*: bool
+        largeThresold*, shard*: int
         cache*: CacheTable
-        intents*: seq[GatewayIntent] ## A sequence of gateway intents
+        intents*: set[GatewayIntent]
     Shard* = ref object
-        id*: int
+        id*, sequence*: int
         client*: DiscordClient
         connection*: AsyncWebsocket
         hbAck*, hbSent*, stop*, compress*: bool
         lastHBTransmit*, lastHBReceived*: float
-        heartbeating, resuming, reconnecting, authenticating, networkError: bool
-        interval, sequence: int
-        retry_info*: tuple[ms: int, attempts: int]
+        retry_info*: tuple[ms, attempts: int]
         session_id*: string
-    SessionLimit = object
+        heartbeating, resuming, reconnecting: bool
+        authenticating, networkError: bool
+        interval: int
+    GatewaySession = object
         total, remaining, reset_after: int
-    GatewayInfo = object
+    GatewayBot = object
         url: string 
         shards: int
-        session_start_limit: SessionLimit
+        session_start_limit: GatewaySession
 const
     opDispatch = 0
     opHeartbeat = 1
@@ -84,7 +88,7 @@ proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
     ## Construct a client.
     result = DiscordClient(
         token: token,
-        api: newRestApi(token = if token.startsWith("Bot "): token else: "Bot " & token, rest_ver = restVer),
+        api: newRestApi(token = if token.startsWith("Bot "): token else: "Bot " & token, rest_ver = rest_ver),
         shard: 1,
         restMode: rest_mode,
         cache: newCacheTable(cache_users, cache_guilds, cache_guild_channels, cache_dm_channels),
@@ -125,7 +129,7 @@ proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             webhooks_update: proc (s: Shard, g: Guild, c: GuildChannel) {.async.} = discard
         ))
 
-proc getShardID*(id: string, shard: int): SomeInteger =
+proc shardId*(id: string, shard: int): SomeInteger =
     result = (parseBiggestInt(id) shl 22) mod shard
 
 proc newShard*(id: int, client: DiscordClient): Shard =
@@ -135,14 +139,14 @@ proc newShard*(id: int, client: DiscordClient): Shard =
         retry_info: (ms: 1000, attempts: 0)
     )
 
-proc getGatewayBot(cl: DiscordClient): Future[GatewayInfo] {.async.} =
+proc getGatewayBot(cl: DiscordClient): Future[GatewayBot] {.async.} =
     let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
 
     client.headers["Authorization"] = if cl.token.startsWith("Bot "): cl.token else: "Bot " & cl.token
     let resp = await client.get(restBase & "/gateway/bot")
 
     if int(resp.code) == 200:
-        result = (await resp.body).parseJson.to(GatewayInfo)
+        result = (await resp.body).parseJson.to(GatewayBot)
 
 proc getGateway(): Future[string] {.async.} =
     let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
@@ -194,35 +198,35 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
 
     result = true
 
-    var unreconnectableCodes = @[4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013]
+    var unreconnectableCodes = @[4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013, 4014]
     if unreconnectableCodes.contains(closeData.code):
         result = false
         reconnectable = false
         debugMsg("Unable to reconnect to gateway, because one your options sent to gateway are invalid.")
 
-proc updateStatus*(s: Shard; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
+proc updateStatus*(s: Shard; game = none(GameStatus); status = "online"; afk = false) {.async.} =
     ## Updates the shard's status.
     if s.stop or (s.connection == nil or s.connection.sock.isClosed): return
-    var payload = %*{
+    let payload = %*{
         "since": 0,
         "afk": afk,
         "status": status
     }
 
     if game.isSome:
-        payload["game"] = %*{}
-        payload["game"]["type"] = %* get(game).kind
-        payload["game"]["name"] = %* get(game).name
+        payload["game"] = newJObject()
+        payload["game"]["type"] = %*get(game).kind
+        payload["game"]["name"] = %*get(game).name
 
         if get(game).url.isSome:
-            payload["game"]["url"] = %* get(get(game).url)
+            payload["game"]["url"] = %*get(get(game).url)
 
     await s.connection.sendText($(%*{
         "op": opStatusUpdate,
         "d": payload
     }))
 
-proc updateStatus*(cl: DiscordClient; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
+proc updateStatus*(cl: DiscordClient; game = none(GameStatus); status = "online"; afk = false) {.async.} =
     ## Updates all the client's shard's status.
     for i in 0..cl.shards.len - 1:
         let s = cl.shards[i]
@@ -237,28 +241,52 @@ proc identify(s: Shard) {.async.} =
     if (epochTime() * 1000 - lastReady) < 5500.0:
         await sleepAsync 5500
 
-    var payload = %*{
+    let payload = %*{
         "token": s.client.token,
         "properties": %*{
             "$os": system.hostOS,
             "$browser": libName,
             "$device": libName
         },
-        "compress": s.compress
+        "compress": s.compress,
+        "guild_subscriptions": s.client.guild_subscriptions,
+        "large_threshold": s.client.largeThresold
     }
+    echo "Hi"
 
     if s.client.shard > 1:
         payload["shard"] = %[s.id, s.client.shard]
-
     if s.client.intents.len > 0:
         var intents = 0
 
         for intent in s.client.intents:
-            intents = intents or intent.int
+            intents = intents or cast[int]({intent})
         payload["intents"] = %intents
 
     await s.connection.sendText($(%*{
         "op": opIdentify,
+        "d": payload
+    }))
+
+proc requestGuildMembers*(s: Shard, guild_id: seq[string];
+        query = ""; limit: int;
+        presences = false; nonce = "";
+        user_ids: seq[string] = @[]) {.async.} =
+    ## Requests the offline members to a guild.
+    ## (See: https://discord.com/developers/docs/topics/gateway#request-guild-members)
+    let payload = %*{
+        "guild_id": guild_id,
+        "query": query,
+        "limit": limit,
+        "presences": presences
+    }
+    if user_ids.len > 0:
+        payload["user_ids"] = %user_ids
+    if nonce != "":
+        payload["nonce"] = %nonce
+    
+    await s.connection.sendText($(%*{
+        "op": opRequestGuildMembers,
         "d": payload
     }))
 
@@ -280,19 +308,16 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.on_ready(s, newReady(data))
         of "VOICE_STATE_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
             let voiceState = newVoiceState(data)
             var oldVoiceState = none(VoiceState)
 
             if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
                 guild.members[voiceState.user_id].voice_state = some(voiceState)
 
-                if guild.voice_states.hasKey(voiceState.user_id):
+                if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
                     oldVoiceState = some(guild.voice_states[voiceState.user_id])
                     guild.voice_states[voiceState.user_id] = voiceState
-                else:
-                    guild.voice_states.add(voiceState.user_id, voiceState)
 
             await cl.events.voice_state_update(s, voiceState, oldVoiceState)
         of "CHANNEL_PINS_UPDATE":
@@ -647,6 +672,14 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                         cl.cache.dmChannels.del(get(dm).id)
 
             await cl.events.channel_delete(s, guild, gc, dm)
+        of "GUILD_MEMBERS_CHUNK":
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+
+            for member in data["members"].elems:
+                guild.members.add(member["user"]["id"].str, newMember(member))
+                cl.cache.users.add(member["user"]["id"].str, newUser(member["user"]))
+
+            await cl.events.guild_members_chunk(s, guild, newGuildMembersChunk(data))
         of "GUILD_MEMBER_ADD":
             var guild = Guild(id: data["guild_id"].str)
             let member = newMember(data)
@@ -670,7 +703,12 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
                 oldMember = some(member)
 
             member.user = newUser(data["user"])
-            cl.cache.users[member.user.id] = member.user
+
+            if not cl.cache.users.hasKey(member.user.id):
+                if cl.cache.preferences.cache_users:
+                    cl.cache.users.add(member.user.id, member.user)
+            else:
+                cl.cache.users[member.user.id] = member.user
 
             if data.hasKey("nick") and data["nick"].kind != JNull:
                 member.nick = data["nick"].str
@@ -731,7 +769,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             await cl.events.guild_delete(s, guild)
         of "GUILD_ROLE_CREATE":
             var guild = Guild(id: data["guild_id"].str)
-            let role = newRole(data)
+            let role = newRole(data["role"])
 
             if cl.cache.guilds.hasKey(guild.id):
                 guild = cl.cache.guilds[guild.id]
@@ -1036,15 +1074,19 @@ proc startSession(s: Shard, url: string, query: string) {.async.} =
     await s.handleSocketMessageExceptions() # hope dis works *sweats*
 
 proc startSession*(cl: DiscordClient,
-            autoreconnect: bool = false;
-            gateway_intents: seq[GatewayIntent] = @[];
-            shards: int = 1;
-            compress: bool = false) {.async.} =
+            autoreconnect = false;
+            gateway_intents: set[GatewayIntent] = {};
+            large_threshold = 50;
+            guild_subscriptions = true;
+            shards = 1;
+            compress = false) {.async.} =
     ## Connects the client to Discord via gateway.
     ## 
-    ## - gateway_intents | Allows you to subscribe to pre-defined events (info: https://discord.com/developers/docs/topics/gateway#gateway-intents)
+    ## - gateway_intents | Allows you to subscribe to pre-defined events (See: https://discord.com/developers/docs/topics/gateway#gateway-intents)
     ## - shards | An amount of shards.
-    ## - compress | Whether or not to compress. zlib1.dll needs to be in your directory.
+    ## - compress | Whether or not to compress. zlib1(.dll|.so.1|.dylib) needs to be in your directory.
+    ## - large_threshold | An integer that would be considered a large guild. You should use requestGuildMembers if necessary.
+    ## - guild_subscriptions | This allows you to subscribe to receive presence_update and typing_start events.
 
     if cl.restMode:
         raise newException(Exception, "(╯°□°)╯︵ ┻━┻ ! You cannot connect to the gateway while rest mode is enabled ! (╯°□°)╯︵ ┻━┻")
@@ -1057,7 +1099,7 @@ proc startSession*(cl: DiscordClient,
 
     if gateway.url == "":
         debugMsg("Connecting to the discord gateway.")
-        var info: GatewayInfo
+        var info: GatewayBot
 
         try:
             info = await cl.getGatewayBot()
@@ -1091,10 +1133,12 @@ proc startSession*(cl: DiscordClient,
                 if cl.shards[1 - 1].authenticating:
                     await cl.shards[i - 1].waitWhenReady()
                 await sleepAsync 5000
+
             let ss = newShard(i, cl)
             cl.shards.add(i, ss)
             ss.compress = compress
             asyncCheck ss.startSession(gateway.url, query)
+
             await ss.waitWhenReady()
             await sleepAsync 5000
 

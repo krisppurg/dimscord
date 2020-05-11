@@ -32,21 +32,21 @@ type
         permManageWebhooks
         permManageEmojis
     GatewayIntent* = enum
-        intentGuilds = 1 shl 0
-        intentGuildMembers = 1 shl 1
-        intentGuildBans = 1 shl 2
-        intentGuildEmojis = 1 shl 3
-        intentGuildIntegrations = 1 shl 4
-        intentGuildWebhooks = 1 shl 5
-        intentGuildInvites = 1 shl 6
-        intentGuildVoiceStates = 1 shl 7
-        intentGuildPresences = 1 shl 8
-        intentGuildMessages = 1 shl 9
-        intentGuildMessageReactions = 1 shl 10
-        intentGuildMessageTyping = 1 shl 11
-        intentDirectMessages = 1 shl 12
-        intentDirectMessageReactions = 1 shl 13
-        intentDirectMessageTyping = 1 shl 14
+        intentGuilds,
+        intentGuildMembers,
+        intentGuildBans,
+        intentGuildEmojis,
+        intentGuildIntegrations,
+        intentGuildWebhooks,
+        intentGuildInvites,
+        intentGuildVoiceStates,
+        intentGuildPresences,
+        intentGuildMessages,
+        intentGuildMessageReactions,
+        intentGuildMessageTyping,
+        intentDirectMessages,
+        intentDirectMessageReactions,
+        intentDirectMessageTyping
 const
     libName* = "Dimscord"
     libVer* = "0.1.0"

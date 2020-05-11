@@ -34,7 +34,7 @@ type
         guild_role_update*: proc (s: Shard, g: Guild, r: Role, o: Option[Role]) {.async.}
         invite_create*: proc (s: Shard, c: GuildChannel, i: InviteMetadata) {.async.}
         invite_delete*: proc (s: Shard, c: GuildChannel, code: string, g: Option[Guild]) {.async.}
-        user_update*: proc (s: Shard, u: User, o: Option[User]) {.async.}
+        user_update*: proc (s: Shard, u: User) {.async.}
         voice_state_update*: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
     DiscordClient* = ref object
@@ -124,7 +124,7 @@ proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             guild_role_delete: proc (s: Shard, g: Guild, r: Role) {.async.} = discard,
             invite_create: proc (s: Shard, c: GuildChannel, i: InviteMetadata) {.async.} = discard,
             invite_delete: proc (s: Shard, c: GuildChannel, code: string, g: Option[Guild]) {.async.} = discard,
-            user_update: proc (s: Shard, u: User, o: Option[User]) {.async.} = discard,
+            user_update: proc (s: Shard, u: User) {.async.} = discard,
             voice_state_update: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild, c: GuildChannel) {.async.} = discard
         ))
@@ -252,7 +252,6 @@ proc identify(s: Shard) {.async.} =
         "guild_subscriptions": s.client.guild_subscriptions,
         "large_threshold": s.client.largeThresold
     }
-    echo "Hi"
 
     if s.client.shard > 1:
         payload["shard"] = %[s.id, s.client.shard]
@@ -334,23 +333,21 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.channel_pins_update(s, data["channel_id"].str, guild, last_pin)
         of "GUILD_EMOJIS_UPDATE":
-            var g = Guild(id: data["guild_id"].str)
-
-            if cl.cache.guilds.hasKey(g.id):
-                g = cl.cache.guilds[g.id]
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
 
             var emojis: seq[Emoji] = @[]
-            for emji in data["emojis"]:
-                emojis.add(newEmoji(emji))
-                g.emojis.add(emji["id"].str, newEmoji(emji))
+            for emoji in data["emojis"]:
+                let emji = newEmoji(emoji)
+                emojis.add(emji)
+                guild.emojis.clear()
+                guild.emojis.add(emji.id, emji)
 
-            await cl.events.guild_emojis_update(s, g, emojis)
+            await cl.events.guild_emojis_update(s, guild, emojis)
         of "USER_UPDATE":
             let user = newUser(data)
-            var oldUser = none(User)
             cl.user = user
 
-            await cl.events.user_update(s, user, oldUser)
+            await cl.events.user_update(s, user)
         of "PRESENCE_UPDATE":
             var oldPresence = none(Presence)
             let presence = newPresence(data)

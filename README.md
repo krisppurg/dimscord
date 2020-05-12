@@ -19,6 +19,8 @@ Why Dimscord?
  * For compressing data and stuff you would need zlib1.dll to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
 
  * For contributing you should use the devel branch.
+ 
+ * You should either use the devel branch, if there's issues with this branch.
 
  * The documentation for the library is https://krisppurg.github.io/dimscord/0.0.9/dimscord.html
 

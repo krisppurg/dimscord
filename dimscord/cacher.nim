@@ -7,12 +7,10 @@ type
         guilds*: Table[string, Guild]
         guildChannels*: Table[string, GuildChannel]
         dmChannels*: Table[string, DMChannel]
-    CacheTablePrefs* = ref object
-        cache_users*: bool
-        cache_guilds*: bool
-        cache_guild_channels*: bool
-        cache_dm_channels*: bool
-    CacheError* = object of Exception
+    CacheTablePrefs* = object
+        cache_users*, cache_guilds*: bool
+        cache_guild_channels*, cache_dm_channels*: bool
+    CacheError* = object of KeyError
 
 proc newCacheTable*(cache_users: bool; cache_guilds: bool;
             cache_guild_channels: bool; cache_dm_channels: bool): CacheTable =

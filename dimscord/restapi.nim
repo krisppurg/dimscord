@@ -72,8 +72,8 @@ proc getErrorDetails(data: JsonNode): string =
     if data.hasKey("errors"):
         result = result & "\n" & clean(data["errors"]).join("\n")
 
-proc commit(api: RestApi, meth, endpoint: string;
-            pl = "", mp: MultipartData = nil,
+proc request*(api: RestApi, meth, endpoint: string;
+            pl = "", mp: MultipartData = nil;
             xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
     var data: JsonNode
     var error = ""
@@ -82,7 +82,7 @@ proc commit(api: RestApi, meth, endpoint: string;
     if not api.endpoints.hasKey(route):
         api.endpoints.add(route, Ratelimit())
 
-    try:
+    proc doreq() {.async.} =
         if global:
             await api.delayRoutes(global)
         else:
@@ -150,7 +150,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                         if resp.headers.hasKey("Retry-After"):
                             await sleepAsync resp.headers["Retry-After"].parseInt
 
-                        return await api.commit(meth, endpoint, pl, mp, xheaders, auth)
+                        data = await api.request(meth, endpoint, pl, mp, xheaders, auth)
 
                     if res.hasKey("code") and res.hasKey("message"):
                         error = error & "\n\n - " & res.getErrorDetails()
@@ -173,7 +173,7 @@ proc commit(api: RestApi, meth, endpoint: string;
                     data = nil # Did you know JsonNode is nilable?
 
         if api.endpoints.hasKey(route):
-            var rl = api.endpoints[route]
+            let rl = api.endpoints[route]
 
             if resp.headers.getOrDefault("X-RateLimit-Remaining", @["0"].HttpHeaderValues).toString == "0":
                 if resp.headers.hasKey("X-RateLimit-Global"):
@@ -187,14 +187,18 @@ proc commit(api: RestApi, meth, endpoint: string;
                     await api.delayRoutes(global)
                 else:
                     await api.delayRoutes(false, route)
+    try:
+        await doreq()
+        result = data
     except:
         raise newException(RestException, if error == "": getCurrentExceptionMsg() else: error)
-    result = data
 
-proc request*(api: RestApi, meth, endpoint: string;
-            pl = "", mp: MultipartData = nil,
-            xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
-    result = await api.commit(meth, endpoint, pl, mp, xheaders, auth)
+proc `%`*(o: Overwrite): JsonNode =
+    result = newJObject()
+    result["id"] = %o.id
+    result["type"] = %o.kind
+    result["allow"] = %o.allow
+    result["deny"] = %o.deny
 
 proc sendMessage*(api: RestApi, channel_id: string;
             content = ""; tts = false; embed = none(Embed);
@@ -387,7 +391,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string; name, parent_id,
             rate_limit_per_user, bitrate, position, user_limit = none(int);
             permission_overwrites = none(seq[Overwrite]); reason = ""): Future[GuildChannel] {.async.} =
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = newJObject()
+    let payload = newJObject()
 
     payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user,
         bitrate, user_limit, permission_overwrites, parent_id)
@@ -402,7 +406,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             rate_limit_per_user, bitrate, position, user_limit = none(int);
             permission_overwrites = none(seq[Overwrite]); reason = ""): Future[GuildChannel] {.async.} =
     ## Creates a channel
-    var payload = %*{"name": name, "type": kind}
+    let payload = %*{"name": name, "type": kind}
 
     payload.loadOpt(position, topic, nsfw, rate_limit_per_user, bitrate, user_limit, permission_overwrites, parent_id)
 
@@ -525,7 +529,7 @@ proc editGuildMember*(api: RestApi, guild_id, user_id: string;
         roles = none(seq[string]);
         mute, deaf = none(bool); reason = ""): Future[void] {.async.} =
     let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
-    var payload = newJObject()
+    let payload = newJObject()
 
     payload.loadOpt(nick, roles, mute, deaf, channel_id)
     payload.loadNullableOptStr(channel_id)
@@ -751,5 +755,22 @@ proc addGuildMember*(api: RestApi, guild_id, user_id,
     else:
         result = (newMember(member), false)
 
-# proc editGuildIntegration*()
 # proc getGuildVoiceRegions*()
+# proc getVoiceRegions*()
+# proc getUser*()
+# proc getCurrentUser*()
+# proc getCurrentUser*()
+# proc editCurrentUser*()
+# proc getCurrentUserGuilds*()
+# proc leaveGuild*()
+# proc createUserDm*()
+# proc createGroupDm*()
+# proc createGuildEmoji*()
+# proc deleteGuildEmoji*()
+# proc editGuildEmoji*()
+# proc deleteMessageReactionEmoji*()
+# proc getGuildAuditLogs*()
+# proc addGroupDmRecipient*()
+# proc removeGroupDmRecipient*()
+# proc getChannelMessage*()
+# proc getChannelMessage*()

@@ -1,4 +1,4 @@
-import constants, objects, strformat, strutils, options
+import constants, objects, strformat, strutils, options, times
 
 proc defaultAvatarUrl*(u: User): string =
     result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
@@ -52,7 +52,12 @@ proc `@`*(g: GuildChannel): string =
 proc `$`*(g: GuildChannel): string =
     result = &"#{g.name}"
 
-proc getGuildWidget(guild_id, style: string): string =
+proc getGuildWidget*(guild_id, style: string): string =
     ## Gets a guild widget.
     ## (See: https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options
     result = &"{restBase}/guilds/{guild_id}/widget.png"
+
+proc timestamp*(id: string): Time =
+    ## Gets a timestamp from a Discord ID.
+    let snowflake = parseBiggestUint(id)
+    result = fromUnix int64(((snowflake shr 22) + 1420070400000'u64) div 1000)

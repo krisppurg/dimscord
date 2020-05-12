@@ -595,12 +595,12 @@ proc newMember*(data: JsonNode): Member =
 proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
     result = GuildMembersChunk(
         guild_id: data["guild_id"].str,
-        nonce: if data{"nonce"}.getStr == "": none(string) else: some(data["nonce"].str) ,
+        nonce: if data{"nonce"}.getStr == "": none(string) else: some(data["nonce"].str),
         chunk_index: data["chunk_index"].getInt(),
         chunk_count: data["chunk_count"].getInt(),
         members: data["members"].elems.map(newMember),
-        not_found: data["not_found"].elems.map(proc (x: JsonNode): string = return x.str),
-        presences: data["presences"].elems.map(newPresence)
+        not_found: data{"not_found"}.getElems.mapIt(it.getStr()),
+        presences: data{"presences"}.getElems.map(newPresence)
     )
 
 proc newReaction*(data: JsonNode): Reaction =

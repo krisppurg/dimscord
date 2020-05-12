@@ -780,8 +780,7 @@ proc newGuild*(data: JsonNode): Guild =
     if data.hasKey("permissions"):
         result.permissions = some(data["permissions"].getInt()) 
 
-    if data.hasKey("widget_channel_id"):
-        result.widget_channel_id = some(data["widget_channel_id"].str)
+
     if data.hasKey("joined_at"):
         result.joined_at = some(data["joined_at"].str)
     if data.hasKey("large"):
@@ -810,12 +809,14 @@ proc newGuild*(data: JsonNode): Guild =
         result.system_channel_id = some(data["system_channel_id"].str)
     if data["vanity_url_code"].kind != JNull:
         result.vanity_url_code = some(data["vanity_url_code"].str)
-    if data.hasKey("description") and data["description"].kind != JNull:
-        result.description = some(data["description"].str)
-    if  data.hasKey("banner") and data["banner"].kind != JNull:
-        result.banner = some(data["banner"].str)
     if data["discovery_splash"].kind != JNull:
         result.discovery_splash = some(data["discovery_splash"].str)
+    if data.hasKey("description") and data["description"].kind != JNull:
+        result.description = some(data["description"].str)
+    if data.hasKey("banner") and data["banner"].kind != JNull:
+        result.banner = some(data["banner"].str)
+    if data.hasKey("widget_channel_id") and data["widget_channel_id"].kind != JNull:
+        result.widget_channel_id = some(data["widget_channel_id"].str)
 
     if data.hasKey("members") and data["members"].elems.len > 0:
         for m in data["members"].elems:

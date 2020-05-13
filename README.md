@@ -1,6 +1,6 @@
 
 # <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
-A Discord Bot & REST Library for Nim.
+A Discord Bot & REST Library for Nim. [Discord Server](https://discord.gg/bw4mHUV)
 
 Why Dimscord?
  * It is a bit more straightforward.

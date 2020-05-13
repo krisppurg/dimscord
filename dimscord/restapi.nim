@@ -72,7 +72,7 @@ proc getErrorDetails(data: JsonNode): string =
     if data.hasKey("errors"):
         result = result & "\n" & clean(data["errors"]).join("\n")
 
-proc request*(api: RestApi, meth, endpoint: string;
+proc request(api: RestApi, meth, endpoint: string;
             pl = "", mp: MultipartData = nil;
             xheaders: HttpHeaders = nil; auth = true): Future[JsonNode] {.async.} =
     var data: JsonNode
@@ -755,22 +755,46 @@ proc addGuildMember*(api: RestApi, guild_id, user_id,
     else:
         result = (newMember(member), false)
 
+proc createGuildEmoji*(api: RestApi, guild_id, name, image: string; roles: seq[string] = @[]; reason = ""): Future[Emoji] {.async.} =
+    ## Creates a guild emoji. The image needs to be a base64 string (See: https://nim-lang.org/docs/base64.html)
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+
+    result = (await api.request("POST", endpointGuildEmojis(guild_id), $(%*{
+        "name": name,
+        "image": image,
+        "roles": roles
+    }), xheaders = h)).newEmoji
+
+proc editGuildEmoji*(api: RestApi, guild_id, emoji_id: string; name = none(string); roles = none(seq[string]); reason = ""): Future[Emoji] {.async.} =
+    let payload = newJObject()
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+
+    payload.loadOpt(name)
+    payload.loadNullableOptStr(name)
+
+    if roles.isSome and get(roles).len < 0:
+        payload["roles"] = newJNull()
+
+    result = (await api.request("PATCH", endpointGuildEmojis(guild_id, emoji_id), $(%*{
+        "name": name,
+        "roles": roles
+    }), xheaders = h)).newEmoji
+
+proc deleteGuildEmoji*(api: RestApi, guild_id, emoji_id: string; reason = "") {.async.} =
+    let h = if reason != "": newHttpHeaders({"X-Audit-Log-Reason": reason}) else: nil
+    discard await api.request("DELETE", endpointGuildEmojis(guild_id, emoji_id), xheaders = h)
+
 # proc getGuildVoiceRegions*()
 # proc getVoiceRegions*()
 # proc getUser*()
-# proc getCurrentUser*()
 # proc getCurrentUser*()
 # proc editCurrentUser*()
 # proc getCurrentUserGuilds*()
 # proc leaveGuild*()
 # proc createUserDm*()
 # proc createGroupDm*()
-# proc createGuildEmoji*()
-# proc deleteGuildEmoji*()
-# proc editGuildEmoji*()
 # proc deleteMessageReactionEmoji*()
 # proc getGuildAuditLogs*()
 # proc addGroupDmRecipient*()
 # proc removeGroupDmRecipient*()
-# proc getChannelMessage*()
 # proc getChannelMessage*()

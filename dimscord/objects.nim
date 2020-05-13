@@ -733,7 +733,7 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
             result.activity.party_id = activity["party_id"].str
 
     if data.hasKey("application"):
-        var app = data["application"]
+        let app = data["application"]
 
         result.application = Application(
             id: app["id"].str,
@@ -779,7 +779,6 @@ proc newGuild*(data: JsonNode): Guild =
         result.afk_timeout = some(data["afk_timeout"].getInt())
     if data.hasKey("permissions"):
         result.permissions = some(data["permissions"].getInt()) 
-
 
     if data.hasKey("joined_at"):
         result.joined_at = some(data["joined_at"].str)

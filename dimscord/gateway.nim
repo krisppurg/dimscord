@@ -249,7 +249,7 @@ proc identify(s: Shard) {.async.} =
             "$device": libName
         },
         "compress": s.compress,
-        "guild_subscriptions": s.client.guild_subscriptions,
+        "guild_subscriptions": s.client.guildSubscriptions,
         "large_threshold": s.client.largeThresold
     }
 
@@ -291,7 +291,7 @@ proc requestGuildMembers*(s: Shard, guild_id: seq[string];
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
     let cl = s.client
-    s.debugMsg("Recieved event: " & event)
+    s.debugMsg("Received event: " & event)
 
     case event:
         of "READY":
@@ -718,32 +718,23 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.guild_member_update(s, guild, member, oldMember)
         of "GUILD_MEMBER_REMOVE":
-            var guild = Guild(id: data["guild_id"].str)
-            var member = Member(user: newUser(data))
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+            let member = guild.members.getOrDefault(data["user"]["id"].str, Member(user: newUser(data["user"])))
 
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
-                member = guild.members[member.user.id]
+            guild.members.del(member.user.id)
+            guild.member_count = some(get(guild.member_count) - 1)
 
-                guild.members.del(member.user.id)
-                guild.member_count = some(get(guild.member_count) - 1)
-    
-                if cl.cache.users.hasKey(member.user.id):
-                    cl.cache.users.del(member.user.id)
+            cl.cache.users.del(member.user.id)
 
             await cl.events.guild_member_remove(s, guild, member)
         of "GUILD_BAN_ADD":
-            var guild = Guild(id: data["guild_id"].str)
-            let user = newUser(data["user"])
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+            let user = newUser(data["user"]) 
 
             await cl.events.guild_ban_add(s, guild, user)
         of "GUILD_BAN_REMOVE":
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
             let user = newUser(data["user"])
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
 
             await cl.events.guild_ban_add(s, guild, user)
         of "GUILD_UPDATE":
@@ -811,7 +802,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             s.debugMsg("Successfuly resumed.")
         of "GUILD_CREATE": # TODO: finish
             let guild = newGuild(data)
-            s.debugMsg("Recieved GUILD_CREATE event", @["id", guild.id])
+            s.debugMsg("Received GUILD_CREATE event", @["id", guild.id])
 
             if cl.cache.preferences.cache_guilds:
                 cl.cache.guilds.add(guild.id, guild)
@@ -833,7 +824,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             discard
 
 proc resume(s: Shard) {.async.} =
-    if s.authenticating: return
+    if s.authenticating and not s.resuming: return # if the last resume didn't work out, then we can allow it to send again.
     if s.connection.sock.isClosed: return
 
     s.authenticating = true
@@ -878,7 +869,8 @@ proc reconnect(s: Shard) {.async.} =
             if url.startsWith("wss://"): url[6..url.high] else: url,
             Port 443,
             "/?v=" & $gatewayVer,
-            true
+            true,
+            userAgent = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
         )
         s.hbAck = true
         s.stop = false
@@ -890,13 +882,10 @@ proc reconnect(s: Shard) {.async.} =
             s.networkError = false
     except:
         s.debugMsg("Error occurred: \n" & getCurrentExceptionMsg())
-        s.reconnecting = false
-        s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
         s.debugMsg(&"Got gateway, but failed to connect, reconnecting in {s.retry_info.ms}ms", @[
             "attempt", $s.retry_info.attempts
         ])
-
         await sleepAsync s.retry_info.ms
         await s.reconnect()
 
@@ -905,12 +894,12 @@ proc reconnect(s: Shard) {.async.} =
     else:
         await s.resume()
 
-proc disconnect*(s: Shard, code: int = 4000, should_reconnect: bool = true) {.async.} =
+proc disconnect*(s: Shard, code = 4000; should_reconnect = true) {.async.} =
     if s.stop: return
     s.stop = true
 
     if s.connection != nil or not s.connection.sock.isClosed:
-        s.debugMsg("Sending close code: " & $code & " to disconnect")
+        s.debugMsg("Sending close code: " & $code & " to disconnect.")
         await s.connection.close(code)
 
     if s.client.autoreconnect or should_reconnect: await s.reconnect()
@@ -958,10 +947,10 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
                 s.networkError = true
             elif exception.startsWith("socket closed"):
-                s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat recieved: " & $int(epochTime() * 1000 - s.lastHBReceived))
+                s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat received : " & $int(epochTime() * 1000 - s.lastHBReceived))
 
                 if (epochTime() * 1000 - s.lastHBReceived) > 90000 or exception.startsWith("The network connection was aborted by the local system."): # this is my clever way of detecting a sleep
-                    raise newException(Exception, "Last heartbeat was recieved over 90 seconds.")
+                    raise newException(Exception, "Last heartbeat was received over 90 seconds.")
                 break
 
         var data: JsonNode
@@ -996,7 +985,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
                 s.hbAck = true
             of opHeartbeat:
-                s.debugMsg("Discord has requested a heartbeat.")
+                s.debugMsg("Discord is requesting for a heartbeat.")
                 await s.heartbeat(true)
             of opDispatch:
                 asyncCheck s.handleDispatch(data["t"].str, data["d"])
@@ -1060,7 +1049,8 @@ proc startSession(s: Shard, url: string, query: string) {.async.} =
                 url[6..url.high],
                 Port 443,
                 query,
-                true
+                true,
+                userAgent = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
             )
         s.hbAck = true
         s.debugMsg("Socket is open.")

@@ -441,8 +441,6 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             if cl.cache.users.hasKey(user.id):
                 user = cl.cache.users[user.id]
-            else:
-                echo "ZOOBER LOL"
 
             if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:

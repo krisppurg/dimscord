@@ -45,7 +45,7 @@ type
         token*: string
         shards*: Table[int, Shard]
         restMode*, autoreconnect*, guildSubscriptions*: bool
-        largeThresold*, shard*: int
+        largeThreshold*, gatewayVer*, shard*: int
         cache*: CacheTable
         intents*: set[GatewayIntent]
     Shard* = ref object
@@ -60,9 +60,9 @@ type
         authenticating, networkError: bool
         interval: int
     GatewaySession = object
-        total, remaining, reset_after: int
+        total, remaining, reset_after, max_concurrency: int
     GatewayBot = object
-        url: string 
+        url: string
         shards: int
         session_start_limit: GatewaySession
 const
@@ -81,6 +81,7 @@ const
 var reconnectable = true
 var gateway: tuple[shards: int, url: string]
 var lastReady = 0.0
+var max_concurrency = 0
 
 proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             cache_users = true; cache_guilds = true;
@@ -237,8 +238,9 @@ proc identify(s: Shard) {.async.} =
 
     s.authenticating = true
     s.debugMsg("Identifying...")
+    max_concurrency -= 1
 
-    if (epochTime() * 1000 - lastReady) < 5500.0:
+    if (epochTime() * 1000 - lastReady) < 5500.0 and max_concurrency == 0:
         await sleepAsync 5500
 
     let payload = %*{
@@ -249,12 +251,13 @@ proc identify(s: Shard) {.async.} =
             "$device": libName
         },
         "compress": s.compress,
-        "guild_subscriptions": s.client.guildSubscriptions,
-        "large_threshold": s.client.largeThresold
+        "guild_subscriptions": s.client.guildSubscriptions
     }
 
     if s.client.shard > 1:
         payload["shard"] = %[s.id, s.client.shard]
+    if s.client.largeThreshold >= 50 and s.client.largeThreshold <= 250:
+        payload["large_threshold"] = %s.client.largeThreshold
     if s.client.intents.len > 0:
         var intents = 0
 
@@ -392,12 +395,9 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
         of "MESSAGE_REACTION_ADD":
             var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
             var emoji = newEmoji(data["emoji"])
-            var user = User(id: data["user_id"].str)
+            var user = cl.cache.users.getOrDefault(data["user_id"].str, User(id: data["user_id"].str))
             var reaction = Reaction(emoji: emoji)
             var exists = false
-
-            if cl.cache.preferences.cache_users:
-                user = cl.cache.users[user.id]
 
             if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
@@ -441,6 +441,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             if cl.cache.users.hasKey(user.id):
                 user = cl.cache.users[user.id]
+            else:
+                echo "ZOOBER LOL"
 
             if cl.cache.guildChannels.hasKey(msg.channel_id) or cl.cache.dmChannels.hasKey(msg.channel_id):
                 if cl.cache.kind(msg.channel_id) != ctDirect:
@@ -690,20 +692,18 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.guild_member_add(s, guild, member)
         of "GUILD_MEMBER_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
-            var member = Member()
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+            var member = Member(user: User(id: data["user"]["id"].str))
             var oldMember = none(Member)
 
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
-                member = guild.members[data["user"]["id"].str]
+            if guild.members.hasKeyOrPut(member.user.id, member):
+                member = guild.members[member.user.id]
                 oldMember = some(member)
 
             member.user = newUser(data["user"])
 
             if not cl.cache.users.hasKey(member.user.id):
-                if cl.cache.preferences.cache_users:
-                    cl.cache.users.add(member.user.id, member.user)
+                cl.cache.users.add(member.user.id, member.user)
             else:
                 cl.cache.users[member.user.id] = member.user
 
@@ -715,6 +715,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             for role in data["roles"].elems:
                 member.roles.add(role.str)
+
+            if guild.members.hasKey(member.user.id): guild.members[member.user.id] = member
 
             await cl.events.guild_member_update(s, guild, member, oldMember)
         of "GUILD_MEMBER_REMOVE":
@@ -817,6 +819,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             if cl.cache.preferences.cache_users:
                 if data["members"].elems.len > 0:
                     for m in data["members"].elems:
+                        guild.members.add(m["user"]["id"].str, newMember(m))
                         cl.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
             
             await cl.events.guild_create(s, guild)
@@ -946,6 +949,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 s.debugMsg("A network error has been detected.")
 
                 s.networkError = true
+                break
             elif exception.startsWith("socket closed"):
                 s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat received : " & $int(epochTime() * 1000 - s.lastHBReceived))
 
@@ -1044,6 +1048,7 @@ proc handleSocketMessageExceptions(s: Shard) {.async.} =
         await handleSocketMessageExceptions(s)
 
 proc startSession(s: Shard, url: string, query: string) {.async.} =
+    s.debugMsg("Connecting to ")
     try:
         s.connection = await newAsyncWebsocketClient(
                 url[6..url.high],
@@ -1065,6 +1070,7 @@ proc startSession*(cl: DiscordClient,
             gateway_intents: set[GatewayIntent] = {};
             large_threshold = 50;
             guild_subscriptions = true;
+            gateway_version = 6;
             shards = 1;
             compress = false) {.async.} =
     ## Connects the client to Discord via gateway.
@@ -1080,12 +1086,15 @@ proc startSession*(cl: DiscordClient,
 
     cl.autoreconnect = autoreconnect
     cl.intents = gateway_intents
+    cl.largeThreshold = large_threshold
+    cl.guildSubscriptions = guild_subscriptions
     cl.shard = shards
+    cl.gatewayVer = gateway_version
 
-    var query = "/?v=" & $gatewayVer
+    var query = "/?v=" & $gateway_version
 
     if gateway.url == "":
-        debugMsg("Connecting to the discord gateway.")
+        debugMsg("Starting the session.")
         var info: GatewayBot
 
         try:
@@ -1102,14 +1111,15 @@ proc startSession*(cl: DiscordClient,
         ])
 
         if info.session_start_limit.remaining == 0:
-            let time = getTime().utc.toTime.toUnix - info.session_start_limit.reset_after
+            let time = getTime().toUnix() - info.session_start_limit.reset_after
 
             debugMsg("Your session start limit has reached its limit", @[
                 "sleep_time", $time
             ])
             await sleepAsync time.int
-        
+
         gateway = (info.shards, info.url)
+        max_concurrency = info.session_start_limit.max_concurrency
 
     if shards == 1 and gateway.shards > 1:
         cl.shard = gateway.shards
@@ -1127,7 +1137,7 @@ proc startSession*(cl: DiscordClient,
             asyncCheck ss.startSession(gateway.url, query)
 
             await ss.waitWhenReady()
-            await sleepAsync 5000
+            await sleepAsync 5000 
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)

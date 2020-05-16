@@ -23,6 +23,8 @@ Why Dimscord?
  * You should either use the devel branch, if there's issues with this branch.
 
  * The documentation for the library is https://krisppurg.github.io/dimscord/0.0.9/dimscord.html
+ 
+ * There is an issue with the websocket.nim library (0.5.0), where if you connect your discord bot the socket will close, try using either 0.4.0 or 0.4.1. 
 
  * Voice support will be added on later.
 

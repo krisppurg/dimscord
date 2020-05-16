@@ -18,4 +18,4 @@ cl.events.message_create = proc (s: Shard, m: Message) = #  Add Event Handler fo
       description: ?"This is a cool embed",
       color: ?5))
 
-waitFor cl.startSession(compress=true)
+waitFor cl.startSession()

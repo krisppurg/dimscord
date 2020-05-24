@@ -4,20 +4,19 @@ A Discord Bot & REST Library for Nim. [Discord Server](https://discord.gg/bw4mHU
 
 Why Dimscord?
  * It is a bit more straightforward.
- * Nim is a good programming language and I believe that Nim should stand a chance on having a good enough discord library.
+ * Nim is a good programming language and I believe that Nim should stand a chance on having a up-to-date good enough discord library.
  * It has REST mode feature.
- * The other nim discord library has bunch of issues and also the way of handling.
+ * The other nim discord library has bunch of issues and it's unmaintained.
  
  ## FAQ:
  What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
 
 ## Notes:
- * This library is 90% finished (estimate).
- * When running your discord bot you would need to define `-d:ssl` e.g. `nim c -r -d:ssl yourfilename.nim`
+ * This library is 92% finished (estimated).
+ * When running your discord bot you would need to define `-d:ssl` e.g. `nim c -r -d:ssl yourfilename.nim`, you can use `-d:dimscordDebug`, if you want to debug.
 
- * For compressing data and stuff you would need zlib1.dll to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
-
+ * For compressing data and stuff you would need zlib1.(dll,dylib,so.1) to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
  * Voice support will be added on later.
 
 ## How to install Dimscord:
@@ -46,17 +45,17 @@ cl.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
 # Add an event handler for message_create.
 cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
     if m.author.bot: return
-    if m.content == "!ping": # if message content is "!ping"
+    if m.content == "!ping": # If message content is "!ping".
         let before = getTime().toUnix()
         let msg = await cl.api.sendMessage(m.channel_id, "ping?")
         let after = getTime().toUnix()
-        # Edit the message as pong! Use "discard" because editMessage returns a new message
+        # Edit the message as pong! Use 'discard' because editMessage returns a new message.
         discard await cl.api.editMessage(
             m.channel_id, 
             msg.id, 
             "Pong! took " & $int(after - before) & "ms | " & $s.getPing() & "ms."
         )
-    elif m.content == "!embed": # otherwise if content is embed
+    elif m.content == "!embed": # Otherwise if content is embed.
         # Sends a messge with embed. The '?' symbol is a shorthand for 'some' in options.
         discard await cl.api.sendMessage(m.channel_id, embed = ?Embed(
             title: ?"Hello there!", 
@@ -65,5 +64,5 @@ cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
         ))
 
 # Connect to Discord and run the bot.
-waitFor cl.startSession(compress=true)
+waitFor cl.startSession()
 ```

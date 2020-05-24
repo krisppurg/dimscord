@@ -1,4 +1,4 @@
-import options, json, tables, constants, sequtils
+import options, json, tables, constants, sequtils, macros
 type
     Embed* = object
         title*, `type`*, description*: Option[string]
@@ -268,6 +268,30 @@ proc permCheck*(perms: int, p: PermObj): bool =
         if p.perms != 0:
             result = permCheck(perms, p.perms)
 
+macro keyCheckOptionInt(obj: typed, obj2: typed, lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `obj`.hasKey(`fieldName`) and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some(`obj`[`fieldName`].getInt)
+
+macro keyCheckOptionBool(obj: typed, obj2: typed, lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `obj`.hasKey(`fieldName`) and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some(`obj`[`fieldName`].getBool)
+
+macro keyCheckOptionStr(obj: typed, obj2: typed, lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `obj`.hasKey(`fieldName`) and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some(`obj`[`fieldName`].getStr)
+
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = InviteMetadata(
         code: data["code"].str,
@@ -310,8 +334,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         kind: data["type"].getInt(),
         position: data["position"].getInt())
 
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
+    data.keyCheckOptionStr(result, guild_id)
 
     if data["permission_overwrites"].elems.len > 0:
         for ow in data["permission_overwrites"].elems:
@@ -329,7 +352,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
             if data.hasKey("topic") and data["topic"].kind != JNull:
                 result.topic = data["topic"].str
         of ctGuildNews:
-            result.nsfw = data["nsfw"].bval
+            result.nsfw = data{"nsfw"}.getBool
             result.topic = data["topic"].str
             result.last_message_id = data["last_message_id"].str
         of ctGuildVoice:

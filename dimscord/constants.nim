@@ -65,8 +65,6 @@ const
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAppIcons* = cdnBase & "app-icons/"
 
-    gatewayVer* = "6"
-
     mtDefault* = 0
     mtRecipientAdd* = 1
     mtRecipientRemove* = 2
@@ -97,9 +95,9 @@ const
     mnlAllMessages* = 0
     mnlOnlyMentions* = 1
 
-    eclDisabled* = 0
-    eclMembersWithoutRoles* = 1
-    eclAllMembers* = 2
+    ecfDisabled* = 0
+    ecfMembersWithoutRoles* = 1
+    ecfAllMembers* = 2
 
     mfaNone* = 0
     mfaElevated* = 1
@@ -267,5 +265,5 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     result = endpointChannels(cid) & "/messages/" & mid & "/reactions"
     if e != "":
         result = result & "/" & e
-    if uid != "": # Actually I could just add "/@me"
+    if uid != "":
         result = result & "/" & uid

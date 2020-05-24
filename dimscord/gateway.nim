@@ -57,7 +57,7 @@ type
         retry_info*: tuple[ms, attempts: int]
         session_id*: string
         heartbeating, resuming, reconnecting: bool
-        authenticating, networkError: bool
+        authenticating, networkError, ready: bool
         interval: int
     GatewaySession = object
         total, remaining, reset_after, max_concurrency: int
@@ -82,6 +82,7 @@ var reconnectable = true
 var gateway: tuple[shards: int, url: string]
 var lastReady = 0.0
 var max_concurrency = 0
+var max_concurrency_limit = 0
 
 proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             cache_users = true; cache_guilds = true;
@@ -129,6 +130,14 @@ proc newDiscordClient*(token: string; rest_mode = false; rest_ver = 7;
             voice_state_update: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild, c: GuildChannel) {.async.} = discard
         ))
+
+proc sendSock*(s: Shard, opcode: int, data: JsonNode, ignore = false) {.async.} =
+    if not ignore and s.session_id == "": return
+
+    await s.connection.sendText($(%*{
+        "op": opcode,
+        "d": data
+    }))
 
 proc shardId*(id: string, shard: int): SomeInteger =
     result = (parseBiggestInt(id) shl 22) mod shard
@@ -178,9 +187,8 @@ proc debugMsg(s: Shard, msg: string, info: seq[string] = @[]) =
         echo finalmsg
 
 proc waitWhenReady(s: Shard) {.async.} =
-    while s.authenticating:
+    while not s.ready:
         await sleepAsync 500
-        await s.waitWhenReady()
 
 proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actually prints out sock suspended then returns a bool whether to reconnect.
     let closeData = extractCloseData(msg)
@@ -192,6 +200,7 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
 
     s.hbAck = false
     s.hbSent = false
+    s.ready = false
     s.retry_info = (ms: 1000, attempts: 0)
     s.lastHBTransmit = 0
     s.lastHBReceived = 0
@@ -204,6 +213,22 @@ proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actuall
         result = false
         reconnectable = false
         debugMsg("Unable to reconnect to gateway, because one your options sent to gateway are invalid.")
+
+proc hasKeyOrPut(c: CacheTable, members: var Table[string, Member], m: Member): bool =
+    if members.hasKey(m.user.id):
+        result = true
+    else:
+        result = false
+        if c.preferences.cache_users:
+            members.add(m.user.id, m)
+
+proc hasKeyOrPut(c: CacheTable, users: var Table[string, User], u: User): bool =
+    if users.hasKey(u.id):
+        result = true
+    else:
+        result = false
+        if c.preferences.cache_users:
+            users.add(u.id, u)
 
 proc updateStatus*(s: Shard; game = none(GameStatus); status = "online"; afk = false) {.async.} =
     ## Updates the shard's status.
@@ -222,26 +247,15 @@ proc updateStatus*(s: Shard; game = none(GameStatus); status = "online"; afk = f
         if get(game).url.isSome:
             payload["game"]["url"] = %*get(get(game).url)
 
-    await s.connection.sendText($(%*{
-        "op": opStatusUpdate,
-        "d": payload
-    }))
-
-proc updateStatus*(cl: DiscordClient; game = none(GameStatus); status = "online"; afk = false) {.async.} =
-    ## Updates all the client's shard's status.
-    for i in 0..cl.shards.len - 1:
-        let s = cl.shards[i]
-        await s.updateStatus(game, status, afk)
+    await s.sendSock(opStatusUpdate, payload)
 
 proc identify(s: Shard) {.async.} =
     if s.authenticating or (s.connection == nil or s.connection.sock.isClosed): return
 
     s.authenticating = true
-    s.debugMsg("Identifying...")
     max_concurrency -= 1
 
-    if (epochTime() * 1000 - lastReady) < 5500.0 and max_concurrency == 0:
-        await sleepAsync 5500
+    s.debugMsg("Identifying...")
 
     let payload = %*{
         "token": s.client.token,
@@ -265,10 +279,21 @@ proc identify(s: Shard) {.async.} =
             intents = intents or cast[int]({intent})
         payload["intents"] = %intents
 
-    await s.connection.sendText($(%*{
-        "op": opIdentify,
-        "d": payload
-    }))
+    await s.sendSock(opIdentify, payload, ignore = true)
+
+proc resume(s: Shard) {.async.} =
+    if s.authenticating and not s.resuming: return # if the last resume didn't work out, then we can allow it to send again.
+    if s.connection.sock.isClosed: return
+
+    s.authenticating = true
+    s.resuming = true
+
+    s.debugMsg("Attempting to resume", @["session_id", s.session_id, "events", $s.sequence])
+    await s.sendSock(opResume, %*{
+        "token": s.client.token,
+        "session_id": s.session_id,
+        "seq": s.sequence
+    })
 
 proc requestGuildMembers*(s: Shard, guild_id: seq[string];
         query = ""; limit: int;
@@ -286,11 +311,8 @@ proc requestGuildMembers*(s: Shard, guild_id: seq[string];
         payload["user_ids"] = %user_ids
     if nonce != "":
         payload["nonce"] = %nonce
-    
-    await s.connection.sendText($(%*{
-        "op": opRequestGuildMembers,
-        "d": payload
-    }))
+
+    await s.sendSock(opRequestGuildMembers, payload)
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
     let cl = s.client
@@ -302,6 +324,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             s.authenticating = false
             cl.user = newUser(data["user"])
             lastReady = epochTime() * 1000
+            s.ready = true
 
             if s.id + 1 == cl.shard:
                 debugMsg("All shards have successfully connected to the gateway.")
@@ -631,18 +654,16 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.channel_create(s, guild, chan, dmChan)
         of "CHANNEL_UPDATE":
-            var gchan = newGuildChannel(data)
+            let gchan = newGuildChannel(data)
             var oldChan = none(GuildChannel) 
 
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
 
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
+            if cl.cache.guildChannels.hasKey(gchan.id):
+                oldChan = some(guild.channels[gchan.id])
+                guild.channels[gchan.id] = gchan
+                cl.cache.guildChannels[gchan.id] = gchan
 
-                if cl.cache.guildChannels.hasKey(gchan.id):
-                    oldChan = some(guild.channels[gchan.id])
-                    guild.channels[gchan.id] = gchan
-                    cl.cache.guildChannels[gchan.id] = gchan
             await cl.events.channel_update(s, guild, gchan, oldChan)
         of "CHANNEL_DELETE":
             var guild = none(Guild)
@@ -678,15 +699,15 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             await cl.events.guild_members_chunk(s, guild, newGuildMembersChunk(data))
         of "GUILD_MEMBER_ADD":
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
             let member = newMember(data)
 
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
-                guild.members.add(member.user.id, member)
+            guild.members.add(member.user.id, member)
+
+            if guild.member_count.isSome:
                 guild.member_count = some(get(guild.member_count) + 1)
-                if cl.cache.preferences.cache_users:
-                    cl.cache.users.add(member.user.id, member.user)
+            if cl.cache.preferences.cache_users:
+                cl.cache.users.add(member.user.id, member.user)
 
             await cl.events.guild_member_add(s, guild, member)
         of "GUILD_MEMBER_UPDATE":
@@ -700,16 +721,11 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
 
             member.user = newUser(data["user"])
 
-            if not cl.cache.users.hasKey(member.user.id):
+            if cl.cache.preferences.cache_users and member.user.id notin cl.cache.users:
                 cl.cache.users.add(member.user.id, member.user)
-            else:
-                cl.cache.users[member.user.id] = member.user
 
-            if data.hasKey("nick") and data["nick"].kind != JNull:
-                member.nick = data["nick"].str
-
-            if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-                member.premium_since = data["premium_since"].str
+            member.nick = data{"nick"}.getStr
+            member.premium_since = data{"premium_since"}.getStr
 
             for role in data["roles"].elems:
                 member.roles.add(role.str)
@@ -722,9 +738,11 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             let member = guild.members.getOrDefault(data["user"]["id"].str, Member(user: newUser(data["user"])))
 
             guild.members.del(member.user.id)
-            guild.member_count = some(get(guild.member_count) - 1)
-
             cl.cache.users.del(member.user.id)
+
+            if guild.member_count.isSome:
+                guild.member_count = some(get(guild.member_count) - 1)
+
 
             await cl.events.guild_member_remove(s, guild, member)
         of "GUILD_BAN_ADD":
@@ -740,64 +758,56 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
         of "GUILD_UPDATE":
             let guild = newGuild(data)
             var oldGuild = none(Guild)
+
             if cl.cache.guilds.hasKey(guild.id):
                 oldGuild = some(cl.cache.guilds[guild.id])
                 cl.cache.guilds[guild.id] = guild
 
             await cl.events.guild_update(s, guild, oldGuild)
         of "GUILD_DELETE":
-            var guild = Guild(id: data["id"].str)
-            var oldGuild = none(Guild)
+            let guild = cl.cache.guilds.getOrDefault(data["id"].str, Guild(id: data["id"].str))
 
-            if cl.cache.guilds.hasKey(guild.id):
-                cl.cache.guilds[guild.id].unavailable = some((if data.hasKey("unavailable"): data["unavailable"].bval else: false))
-                guild = cl.cache.guilds[guild.id]
-                cl.cache.guilds.del(guild.id)
+            guild.unavailable = some(data{"unavailable"}.getBool)
+            cl.cache.guilds.del(guild.id)
 
             await cl.events.guild_delete(s, guild)
         of "GUILD_ROLE_CREATE":
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
             let role = newRole(data["role"])
 
             if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
                 guild.roles.add(role.id, role)
 
             await cl.events.guild_role_create(s, guild, role)
         of "GUILD_ROLE_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+
             let role = newRole(data["role"])
             var oldRole = none(Role)
 
             if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
                 oldRole = some(guild.roles[role.id])
 
                 guild.roles[role.id] = role
 
             await cl.events.guild_role_update(s, guild, role, oldRole)
         of "GUILD_ROLE_DELETE":
-            var guild = Guild(id: data["guild_id"].str)
-            var role = Role(id: data["role_id"].str)
-
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
-                role = guild.roles[role.id]
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+            let role = guild.roles.getOrDefault(data["role_id"].str, Role(id: data["role_id"].str))
 
             await cl.events.guild_role_delete(s, guild, role)
         of "WEBHOOKS_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
-            var chan = GuildChannel(id: data["channel_id"].str)
-
-            if cl.cache.guilds.hasKey(guild.id):
-                guild = cl.cache.guilds[guild.id]
-            if cl.cache.guildChannels.hasKey(chan.id):
-                chan = cl.cache.guildChannels[chan.id]
+            let guild = cl.cache.guilds.getOrDefault(data["guild_id"].str, Guild(id: data["guild_id"].str))
+            let chan = cl.cache.guildChannels.getOrDefault(
+                data["channel_id"].str,
+                GuildChannel(id: data["channel_id"].str)
+            )
 
             await cl.events.webhooks_update(s, guild, chan)
         of "RESUMED":
             s.resuming = false
             s.authenticating = false
+            s.ready = true
 
             s.debugMsg("Successfuly resumed.")
         of "GUILD_CREATE": # TODO: finish
@@ -817,29 +827,11 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
             if cl.cache.preferences.cache_users:
                 if data["members"].elems.len > 0:
                     for m in data["members"].elems:
-                        guild.members.add(m["user"]["id"].str, newMember(m))
                         cl.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
-            
+
             await cl.events.guild_create(s, guild)
         else:
             discard
-
-proc resume(s: Shard) {.async.} =
-    if s.authenticating and not s.resuming: return # if the last resume didn't work out, then we can allow it to send again.
-    if s.connection.sock.isClosed: return
-
-    s.authenticating = true
-    s.resuming = true
-
-    s.debugMsg("Attempting to resume", @["session_id", s.session_id, "events", $s.sequence])
-    await s.connection.sendText($(%*{
-        "op": opResume,
-        "d": %*{
-            "token": s.client.token,
-            "session_id": s.session_id,
-            "seq": s.sequence
-        }
-    }))
 
 proc reconnect(s: Shard) {.async.} =
     if s.reconnecting: return
@@ -863,13 +855,13 @@ proc reconnect(s: Shard) {.async.} =
         await sleepAsync s.retry_info.ms
         await s.reconnect()
 
-    s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer)
+    s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $s.client.gatewayVer)
 
     try:
         s.connection = await newAsyncWebsocketClient(
             if url.startsWith("wss://"): url[6..url.high] else: url,
             Port 443,
-            "/?v=" & $gatewayVer,
+            "/?v=" & $s.client.gatewayVer,
             true,
             userAgent = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
         )
@@ -914,10 +906,7 @@ proc heartbeat(s: Shard, requested = false) {.async.} =
     s.debugMsg("Sending heartbeat.")
     s.hbAck = false
 
-    await s.connection.sendText($(%*{
-        "op": 1,
-        "d": s.sequence
-    }))
+    await s.sendSock(opHeartbeat, %* s.sequence, ignore = true)
     s.lastHBTransmit = epochTime() * 1000
     s.hbSent = true
 
@@ -925,6 +914,9 @@ proc setupHeartbeatInterval(s: Shard) {.async.} =
     if not s.heartbeating: return
 
     while not s.stop and not s.connection.sock.isClosed:
+        if int(epochTime() * 1000 - s.lastHBTransmit) < s.interval and s.lastHBTransmit != 0.0:
+            s.debugMsg("Concurrency heartbeat detected")
+            break
         await s.heartbeat()
         await sleepAsync s.interval
 
@@ -998,11 +990,15 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 s.resuming = false
                 s.authenticating = false
 
-                s.debugMsg("Session invalidated", @["resumable", $data["d"].bval])
+                s.debugMsg("Session invalidated", @["resumable", $data["d"].getBool])
 
-                if data["d"].bval:
+                if data["d"].getBool:
                     await s.resume()
                 else:
+                    if s.id != 0:
+                        for shard in s.client.shards.values:
+                            if shard.id != s.id:
+                                await shard.waitWhenReady()
                     s.debugMsg("Identifying in 5000ms...")
 
                     await sleepAsync 5000
@@ -1018,6 +1014,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
     s.stop = true
     s.resuming = false
     s.authenticating = false
+    s.ready = false
     s.hbAck = false
     s.hbSent = false
     s.lastHBReceived = 0
@@ -1026,6 +1023,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
     if shouldReconnect:
         await s.reconnect()
+        await sleepAsync 2000
         if not s.networkError: await handleSocketMessage(s)
     else:
         reconnectable = false
@@ -1041,12 +1039,18 @@ proc handleSocketMessageExceptions(s: Shard) {.async.} =
 
         if s.resuming: s.resuming = false
         if s.authenticating: s.authenticating = false
+        if s.ready: s.ready = false
 
         await s.reconnect()
         await handleSocketMessageExceptions(s)
 
+proc endSession*(cl: DiscordClient) {.async.} =
+    for shard in cl.shards.values:
+        await shard.disconnect(should_reconnect = false)
+        cl.cache.clear()
+
 proc startSession(s: Shard, url: string, query: string) {.async.} =
-    s.debugMsg("Connecting to ")
+    s.debugMsg("Connecting to " & url & query)
     try:
         s.connection = await newAsyncWebsocketClient(
                 url[6..url.high],
@@ -1118,24 +1122,23 @@ proc startSession*(cl: DiscordClient,
 
         gateway = (info.shards, info.url)
         max_concurrency = info.session_start_limit.max_concurrency
+        max_concurrency_limit = info.session_start_limit.max_concurrency
 
     if shards == 1 and gateway.shards > 1:
         cl.shard = gateway.shards
 
     if shards > 1:
         for i in 0..cl.shard - 2:
-            if i != 0:
-                if cl.shards[1 - 1].authenticating:
-                    await cl.shards[i - 1].waitWhenReady()
-                await sleepAsync 5000
-
             let ss = newShard(i, cl)
             cl.shards.add(i, ss)
             ss.compress = compress
             asyncCheck ss.startSession(gateway.url, query)
 
             await ss.waitWhenReady()
-            await sleepAsync 5000 
+
+            if max_concurrency <= 0:
+                await sleepAsync 5000
+                max_concurrency = max_concurrency_limit
 
     let ss = newShard(cl.shard - 1, cl)
     cl.shards.add(cl.shard - 1, ss)

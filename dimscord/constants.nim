@@ -2,33 +2,35 @@
 
 type
     PermEnum* = enum
-        permCreateInstantInvite 
-        permKickMembers 
-        permBanMembers 
-        permAdministrator 
-        permManageChannels 
-        permManageGuild 
-        permAddReactions 
-        permViewAuditLogs 
-        permPrioritySpeaker 
-        permViewChannel 
-        permSendMessages 
-        permSendTTSMessage 
-        permManageMessages 
-        permEmbedLinks 
-        permAttachFiles 
-        permReadMessageHistory 
-        permMentionEveryone 
-        permUseExternalEmojis 
-        permVoiceConnect 
-        permVoiceSpeak 
-        permVoiceMuteMembers 
-        permVoiceDeafenMembers 
-        permVoiceMoveMembers 
-        permUseVAD 
-        permChangeNickname 
-        permManageNicknames 
-        permManageRoles 
+        permCreateInstantInvite
+        permKickMembers
+        permBanMembers
+        permAdministrator
+        permManageChannels
+        permManageGuild
+        permAddReactions
+        permViewAuditLogs
+        permPrioritySpeaker
+        permVoiceStream
+        permViewChannel
+        permSendMessages
+        permSendTTSMessage
+        permManageMessages
+        permEmbedLinks
+        permAttachFiles
+        permReadMessageHistory
+        permMentionEveryone
+        permUseExternalEmojis
+        permViewGuildInsights
+        permVoiceConnect
+        permVoiceSpeak
+        permVoiceMuteMembers
+        permVoiceDeafenMembers
+        permVoiceMoveMembers
+        permUseVAD
+        permChangeNickname
+        permManageNicknames
+        permManageRoles
         permManageWebhooks
         permManageEmojis
     GatewayIntent* = enum
@@ -47,9 +49,17 @@ type
         intentDirectMessages,
         intentDirectMessageReactions,
         intentDirectMessageTyping
+    AuditLogChangeKind* = enum
+        alcString,
+        alcInt,
+        alcBool,
+        alcRoles,
+        alcOverwrites,
+        alcNil
 const
     libName* = "Dimscord"
-    libVer* = "0.1.0"
+    libVer* = "1.0.0"
+    libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"
     restBase* = "https://discord.com/api/"
@@ -125,30 +135,74 @@ const
     iebRemoveRole* = 0
     iebKick* = 1
 
-    permAllText* = {permViewChannel, 
-        permSendMessages, 
-        permSendTTSMessage, 
-        permManageMessages,
+    aleGuildUpdate* = 1
+    aleChannelCreate* = 10
+    aleChannelUpdate* = 11
+    aleChannelDelete* = 12
+    aleChannelOverwriteCreate* = 13
+    aleChannelOverwriteUpdate* = 14
+    aleChannelOverwriteDelete* = 15
+    aleMemberKick* = 20
+    aleMemberPrune* = 21
+    aleMemberBanAdd* = 22
+    aleMemberBanRemove* = 23
+    aleMemberUpdate* = 24
+    aleMemberRoleUpdate* = 25
+    aleMemberMove* = 26
+    aleMemberDisconnect* = 27
+    aleBotAdd* = 28
+    aleRoleCreate* = 30
+    aleRoleUpdate* = 31
+    aleRoleDelete* = 32
+    aleInviteCreate* = 40
+    aleInviteUpdate* = 41
+    aleInviteDelete* = 42 # these type numbers are killing me tbh.
+    aleWebhookCreate* = 50
+    aleWebhookUpdate* = 51
+    aleWebhookDelete* = 52
+    aleEmojiCreate* = 60
+    aleEmojiUpdate* = 61
+    aleEmojiDelete* = 62
+    aleMessageDelete* = 72
+    aleMessageBulkDelete* = 73
+    aleMessagePin* = 74
+    aleMessageUnpin* = 75
+    aleIntegrationCreate* = 80
+    aleIntegrationUpdate* = 81
+    aleIntegrationDelete* = 82
+
+    permAllText* = {permSendTTSMessage,
         permEmbedLinks, 
-        permAttachFiles,
         permReadMessageHistory,
-        permMentionEveryone}
+        permUseExternalEmojis,
+        permSendMessages,
+        permManageMessages,
+        permAttachFiles,
+        permMentionEveryone,
+        permAddReactions}
     permAllVoice* = {permVoiceConnect,
-        permVoiceSpeak,
         permVoiceMuteMembers,
         permVoiceMoveMembers,
+        permVoiceSpeak,
         permVoiceDeafenMembers,
+        permPrioritySpeaker,
         permUseVAD,
-        permPrioritySpeaker}
-    permAllChannel* = {permCreateInstantInvite,
+        permVoiceStream}
+    permAllChannel* = permAllText + permAllVoice
+    permAll* = {permAdministrator,
         permManageRoles,
-        permManageChannels,
-        permAddReactions,
-        permViewAuditLogs} + permAllText + permAllVoice
-    permAll* = {permKickMembers,
-        permBanMembers,
+        permKickMembers,
+        permCreateInstantInvite,
+        permManageNicknames,
         permManageGuild,
-        permAdministrator} + permAllChannel
+        permManageChannels,
+        permBanMembers,
+        permChangeNickname,
+        permManageWebhooks,
+        permViewGuildInsights,
+        permManageEmojis,
+        permViewAuditLogs,
+        permViewChannel} + permAllChannel
 
 # Rest Endpoints
 
@@ -157,6 +211,9 @@ proc endpointUsers*(uid: string = "@me"): string =
 
 proc endpointUserChannels*(): string =
     result = endpointUsers("@me") & "/channels"
+
+proc endpointVoiceRegions*(): string =
+    result = "voice/regions"
 
 proc endpointUserGuilds*(gid: string): string =
     result = endpointUsers("@me") & "/guilds/" & gid
@@ -171,6 +228,12 @@ proc endpointGuilds*(gid = ""): string =
 proc endpointGuildPreview*(gid: string): string =
     result = endpointGuilds(gid) & "/preview"
 
+proc endpointGuildRegions*(gid: string): string =
+    result = endpointGuilds(gid) & "/regions"
+
+proc endpointGuildAuditLogs*(gid: string): string =
+    result = endpointGuilds(gid) & "/audit-logs"
+
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
 
@@ -179,9 +242,6 @@ proc endpointGuildMembersNick*(gid: string; mid: string = "@me"): string =
 
 proc endpointGuildMembersRole*(gid, mid, rid: string): string =
     result = endpointGuildMembers(gid, mid) & "/roles/" & rid
-
-proc endpointGuildRegions*(gid: string): string =
-    result = endpointGuilds(gid) & "/regions"
 
 proc endpointGuildIntegrations*(gid: string; iid = ""): string =
     result = endpointGuilds(gid) & "/integrations" & (if iid != "": "/" & iid else: "")

@@ -16,6 +16,7 @@ Why Dimscord?
  * For compressing data and stuff you would need zlib1.(dll,dylib,so.1) to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
  * Voice support will be added on later.
  * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member's presence use the requestGuildMembers proc, that way you can get a specific guild member from a large guild.
+ * If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.
 
 ## How to install Dimscord:
 ### Step 1: Install Nim

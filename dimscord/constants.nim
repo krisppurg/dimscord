@@ -56,6 +56,13 @@ type
         alcRoles,
         alcOverwrites,
         alcNil
+    ActivityFlags* = enum
+        afInstance,
+        afJoin,
+        afSpectate,
+        afJoinRequest,
+        afSync,
+        afPlay
 const
     libName* = "Dimscord"
     libVer* = "1.0.0"

@@ -218,7 +218,7 @@ type
         created_at*: BiggestInt
         timestamps*: Option[tuple[start, final: BiggestInt]]
         emoji*: Option[Emoji]
-        party*: Option[tuple[id, size: string]]
+        party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[GameAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
         instance*: bool
@@ -791,7 +791,7 @@ proc newGameActivity*(data: JsonNode): GameActivity =
     if "party" in data:
         result.party = some((
             id: data["party"]{"id"}.getStr,
-            size: data["party"]{"size"}.getStr
+            size: data["party"]{"size"}.getElems.mapIt(it.getInt)
         ))
 
     if "assets" in data:

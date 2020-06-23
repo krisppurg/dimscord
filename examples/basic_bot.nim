@@ -1,10 +1,13 @@
-import dimscord, asyncdispatch, strutils, sequtils, options
+import dimscord, asyncdispatch, strutils, sequtils, options, tables
 let cl = newDiscordClient("<your bot token goes here>") 
 
 cl.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
     echo "Ready as: " & $r.user
+
     await s.updateStatus(game = some GameStatus(
-        name: "with Nim.", kind: gatPlaying), status="idle")
+        name: "around.",
+        kind: gatPlaying
+    ), status = "idle")
 
 cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
     let args = m.content.split(" ") # Splits a message.
@@ -15,11 +18,17 @@ cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
     of "test": # Sends a basic message.
         discard await cl.api.sendMessage(m.channel_id, "Success!")
     of "deletemsg": # Deletes a message.
-        if s.cache.kind(m.channel_id) == ctDirect:
+        if s.cache.kind(m.channel_id) == ctDirect: return
+
+        let guild = s.cache.guilds[m.guild_id.get]
+        let chan = s.cache.guildChannels[m.channel_id]
+        let perms = guild.readPerms(guild.members[m.author.id], chan)
+        let pobj = PermObj(allowed: {permManageMessages})
+
+        if not cast[int](pobj.allowed).permCheck(pobj):
             discard await cl.api.sendMessage(
-                m.channel_id,
-                "I can't do that command!"
-            )
+                m.channel_id, "you can't do that command!")
+            return
         try:
             let messages = await cl.api.getChannelMessages(
                 m.channel_id,
@@ -33,7 +42,7 @@ cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
             echo "An error occurred when deleting a message."
             echo getCurrentExceptionMsg()
     of "facepalm": # Sends a facepalm image.
-        discard await cl.api.sendMessage(m.channel_id, "hello",
+        discard await cl.api.sendMessage(m.channel_id, "smh",
             files = some @[DiscordFile(
                 name: "facepalm.png"
             )]
@@ -41,10 +50,12 @@ cl.events.message_create = proc (s: Shard, m: Message) {.async.} =
     of "help": # Sends help.
         discard await cl.api.sendMessage(
             m.channel_id,
-            "`test, echo, deletemsg` are the commands."
+            "`test, echo, facepalm, deletemsg` are the commands."
         )
     of "echo": # Copies your text.
-        let text = args[1..args.high].join(" ")
+        var text = args[1..args.high].join(" ")
+        if text == "":
+            text = "Empty text."
         discard await cl.api.sendMessage(m.channel_id, text)
     else:
         discard

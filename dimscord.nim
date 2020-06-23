@@ -5,7 +5,8 @@
 ## 
 ## - For objects, this file includes the discord objects,
 ##   such as Message, Guild, User, Shard, etc.
-##   This also includes some utils for permissions too.
+##   This also includes caching too, if you want to handle raw discord objects,
+##   which is event data, then you can the constructors too.
 ## 
 ## - For gateway, this file allows you to
 ##   connect, disconnect, send gateway messages to the gateway.
@@ -24,12 +25,14 @@
 ##   (OAuth2 support will be added)
 ## 
 ## - For misc, this includes helper methods such as mentioning a user
-##   @ify channels, users, roles, etc, this also includes iconUrls.
+##   @ify channels, users, roles, etc, this includes iconUrls too.
 ## 
 ## - For constants, say if you were to check what verification level is the guild
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
+##   If any of these types are enums and you want to compare them like
+##   for example ActivityFlags use cast[int](myEnum) e.g. cast[int](afSync)
 
 import dimscord/[gateway, restapi, constants, objects, misc]
 

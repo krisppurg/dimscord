@@ -43,7 +43,7 @@ Stay up-to-date with the latest Dimscord release and stuff.
 
 ## Quick Example:
 ```nim
-import dimscord, asyncdispatch
+import dimscord, asyncdispatch, times
 
 let cl = newDiscordClient("<token>")
 

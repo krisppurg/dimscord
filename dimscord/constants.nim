@@ -1,3 +1,4 @@
+import strformat
 {.hint[XDeclaredButNotUsed]: off.}
 
 type
@@ -210,6 +211,18 @@ const
         permManageEmojis,
         permViewAuditLogs,
         permViewChannel} + permAllChannel
+
+# Logging stuffs
+proc log*(msg: string, info: seq[string] = @[]) =
+    when defined(dimscordDebug):
+        var finalmsg = &"[Lib]: {msg}"
+
+        if info.len > 0:
+            finalmsg = &"{finalmsg}:"
+            for i, e in info:
+                finalmsg &= (if (i and 1) == 0: &"\n  {e}: " else: &"{e}")
+
+        echo finalmsg
 
 # Rest Endpoints
 

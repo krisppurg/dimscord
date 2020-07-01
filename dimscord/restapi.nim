@@ -13,9 +13,10 @@ type
         ## For parse: The values should be "roles", "users", "everyone"
         parse*, roles*, users*: seq[string]
 var
-    fatalErr, ratelimited, global = false
-    global_retry_after = 0.0 
-    invalid_requests = 0
+    fatalErr = true
+    ratelimited, global = false
+    global_retry_after = 0.0
+    invalid_requests, expiry = 0'i64
 
 proc parseRoute(endpoint, meth: string): string =
     let majorParams = @["channels", "guilds", "webhooks"]
@@ -49,9 +50,9 @@ proc delayRoutes(api: RestApi; global = false; route = "") {.async.} =
             api.endpoints[route].ratelimited)
 
     if rl.ratelimited:
-        echo "Delaying ", (if global: "all" else: "HTTP"),
-            " requests in (", int(rl.retry_after * 1000) + 250,
-            "ms) [", (if global: "global" else: route), "]"
+        log "Delaying " & (if global: "all" else: "HTTP") &
+            " requests in (" & $(int(rl.retry_after * 1000) + 250) &
+            "ms) [" & (if global: "global" else: route) & "]"
 
         await sleepAsync int(rl.retry_after * 1000) + 250
 
@@ -61,7 +62,6 @@ proc delayRoutes(api: RestApi; global = false; route = "") {.async.} =
             ratelimited = false
 
 proc clean(errors: JsonNode, extra = ""): seq[string] =
-    result = @[]
     var ext = extra
 
     case errors.kind:
@@ -80,10 +80,10 @@ proc clean(errors: JsonNode, extra = ""): seq[string] =
 
 proc getErrorDetails(data: JsonNode): string =
     result = "[Discord Exception]:: " &
-        data["message"].str & " (" & $data["code"].getInt() & ")"
+        data["message"].str & " (" & $data["code"].getInt & ")"
 
-    if data.hasKey("errors"):
-        result = result & "\n" & clean(data["errors"]).join("\n")
+    if "errors" in data:
+        result &= "\n" & clean(data["errors"]).join("\n")
 
 proc req(api: RestApi, meth, endpoint: string;
             pl, reason = ""; mp: MultipartData = nil;
@@ -93,7 +93,7 @@ proc req(api: RestApi, meth, endpoint: string;
 
     let route = endpoint.parseRoute(meth)
 
-    if not api.endpoints.hasKey(route):
+    if route notin api.endpoints:
         api.endpoints.add(route, Ratelimit())
 
     var
@@ -102,16 +102,16 @@ proc req(api: RestApi, meth, endpoint: string;
 
     let r = api.endpoints[route]
 
-    if not retried:
-        r.queue_size += 1
-
     if r.processing:
-        await sleepAsync 1000
+        if getTime().toUnix() >= expiry and expiry != 0:
+            r.processing = false
+            expiry = 0
+        await sleepAsync 750
 
         return await api.req(meth, endpoint, pl, reason, mp, auth, true)
 
     proc doreq() {.async.} =
-        if invalid_requests >= 12500:
+        if invalid_requests >= 1500:
             let msg = "You are sending too many invalid requests."
             raise newException(RestError, msg)
 
@@ -129,11 +129,19 @@ proc req(api: RestApi, meth, endpoint: string;
             client.headers["Authorization"] = api.token
 
         client.headers["Content-Type"] = "application/json"
-        client.headers["Content-Length"] = $(pl.len)
+        client.headers["Content-Length"] = $pl.len
         client.headers["X-RateLimit-Precision"] = "millisecond"
 
+        let url = restBase & "v" & $api.rest_ver & "/" & endpoint
+
+        log("Sending HTTP request", @[
+            "method", meth,
+            "endpoint", url,
+            "payload_size", $pl.len,
+            "reason", if reason != "": reason else: "\"\""
+        ])
+
         try:
-            let url = restBase & "v" & $api.rest_ver & "/" & endpoint
             if mp == nil:
                 resp = (await client.request(url, meth, pl))
             else:
@@ -141,22 +149,30 @@ proc req(api: RestApi, meth, endpoint: string;
         except:
             raise newException(Exception, getCurrentExceptionMsg())
 
-        r.processing = false
-        r.queue_rem += 1
+        log("Got response.")
 
         client.close()
 
-        let status = resp.code.int
+        let
+            retry_header = resp.headers.getOrDefault(
+                "X-RateLimit-Reset-After", 
+                @["1.000"].HttpHeaderValues).parseFloat
+            status = resp.code.int
+            fin = "[" & $status & "] "
 
-        let fin = "[" & $status & "] "
+        if retry_header > r.retry_after:
+            r.retry_after = retry_header
+
         if status >= 200:
             if status >= 300:
                 error = fin & "Unknown error."
-                fatalErr = true
+
+                if status != 429: r.processing = false
                 if status >= 400:
-                    var res: JsonNode
                     if resp.headers["content-type"] == "application/json":
-                        res = (await resp.body).parseJson
+                        expiry = getTime().toUnix() + 20
+                        data = (await resp.body).parseJson
+                        expiry = 0
 
                     error = fin & "Bad request."
                     if status == 401:
@@ -170,17 +186,17 @@ proc req(api: RestApi, meth, endpoint: string;
                     elif status == 429:
                         fatalErr = false
                         ratelimited = true
+
                         invalid_requests += 1
 
                         error = fin & "You are being rate-limited."
-                        if resp.headers.hasKey("Retry-After"):
+                        if resp.headers.hasKey("Retry-After"): # ;-; no `in` support
                             await sleepAsync resp.headers["Retry-After"].parseInt
 
-                        data = await api.req(meth, endpoint, reason,
-                            pl, mp, auth, true)
+                        await doreq()
 
-                    if res.hasKey("code") and res.hasKey("message"):
-                        error = error & "\n\n - " & res.getErrorDetails()
+                    if "code" in data and "message" in data:
+                        error &= "\n\n - " & data.getErrorDetails()
                 if status >= 500:
                     error = fin & "Internal Server Error."
                     if status == 503:
@@ -196,23 +212,23 @@ proc req(api: RestApi, meth, endpoint: string;
             if status < 300:
                 if resp.headers["content-type"] == "application/json":
                     try:
+                        log("Awaiting for body to be parsed")
+
+                        expiry = getTime().toUnix() + (retry_header.int + 3)
                         data = (await resp.body).parseJson
+                        expiry = 0
                     except:
                         raise newException(RestError, "An error occurred.")
                 else:
-                    data = nil # Did you know JsonNode is nilable?
+                    data = nil
 
-                if invalid_requests > 0: invalid_requests -= 1
+                if invalid_requests > 0: invalid_requests -= 250
 
         let headerLimited = resp.headers.getOrDefault(
             "X-RateLimit-Remaining",
             @["0"].HttpHeaderValues).toString == "0"
 
         if headerLimited:
-            r.retry_after = resp.headers.getOrDefault(
-                "X-RateLimit-Reset-After", 
-                @["3.000"].HttpHeaderValues).parseFloat
-
             if resp.headers.hasKey("X-RateLimit-Global"):
                 global = true
                 ratelimited = true
@@ -222,20 +238,22 @@ proc req(api: RestApi, meth, endpoint: string;
             else:
                 r.ratelimited = true
                 await api.delayRoutes(false, route)
+
+        r.processing = false
     try:
         r.processing = true
         await doreq()
-
-        if r.queue_rem == r.queue_size:
-            r.queue_size = 0
-            r.queue_rem = 0
+        log("Request has finished.")
 
         result = data
     except:
         var err = getCurrentExceptionMsg()
+
         if error != "":
             err = error
-        raise newException(RestError, err)
+
+        if fatalErr:
+            raise newException(RestError, err)
 
 proc request(api: RestApi, meth, endpoint: string;
             pl, reason = ""; mp: MultipartData = nil;
@@ -259,11 +277,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "tts": tts
     }
 
-    if embed.isSome: payload["embed"] = %get(embed)
+    if embed.isSome: payload["embed"] = %get embed
     if allowed_mentions.isSome:
-        payload["allowed_mentions"] = %get(allowed_mentions)
-
-    var contenttype = ""
+        payload["allowed_mentions"] = %get allowed_mentions
 
     if files.isSome:
         var mpd = newMultipartData()
@@ -307,7 +323,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         "tts": tts
     }
 
-    if embed.isSome: payload["embed"] = %get(embed)
+    if embed.isSome: payload["embed"] = %get embed
 
     result = (await api.request(
         "PATCH",
@@ -328,24 +344,22 @@ proc getChannelMessages*(api: RestApi, channel_id: string;
         around, before, after = "";
         limit = 50): Future[seq[Message]] {.async.} =
     ## Gets channel message.
-    result = @[]
-
     var url = endpointChannelMessages(channel_id) & "?"
 
     if before != "":
-        url = url & "before=" & before & "&"
+        url &= "before=" & before & "&"
     if after != "":
-        url = url & "after=" & after & "&"
+        url &= "after=" & after & "&"
     if around != "":
-        url = url & "around=" & around & "&"
+        url &= "around=" & around & "&"
     if limit > 0 and limit <= 100:
-        url = url & "limit=" & $limit
+        url &= "limit=" & $limit
 
     result = (await api.request("GET", url)).elems.map(newMessage)
 
 proc getChannelMessage*(api: RestApi, channel_id,
         message_id: string): Future[Message] {.async.} =
-    ## Get a Discord message.
+    ## Get a channel message.
     result = (await api.request(
         "GET",
         endpointChannelMessages(channel_id, message_id)
@@ -436,19 +450,21 @@ proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async.} =
     discard await api.request("POST", endpointTriggerTyping(channel_id))
 
 proc addChannelMessagePin*(api: RestApi,
-        channel_id, message_id: string) {.async.} =
+        channel_id, message_id: string; reason = "") {.async.} =
     ## Add pinned message.
     discard await api.request(
         "PUT",
-        endpointChannelPins(channel_id, message_id)
+        endpointChannelPins(channel_id, message_id),
+        reason
     )
 
 proc deleteChannelMessagePin*(api: RestApi,
-        channel_id, message_id: string) {.async.} =
+        channel_id, message_id: string; reason = "") {.async.} =
     ## Remove pinned message.
     discard await api.request(
         "DELETE",
-        endpointChannelPins(channel_id, message_id)
+        endpointChannelPins(channel_id, message_id),
+        reason
     )
 
 proc getChannelPins*(api: RestApi,
@@ -523,13 +539,13 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
         $payload
     )).newGuildChannel
 
-proc deleteChannel*(api: RestApi, channel_id: string) {.async.} =
+proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     ## Deletes or closes a channel.
-    discard await api.request("DELETE", endpointChannels(channel_id))
+    discard await api.request("DELETE", endpointChannels(channel_id), reason)
 
 proc editGuildChannelPermissions*(api: RestApi,
-        channel_id, perm_id, kind: string,
-        perms: PermObj) {.async.} =
+        channel_id, perm_id, kind: string;
+        perms: PermObj; reason = "") {.async.} =
     ## Modify the channel's permissions.
     ## The `kind` param needs to be either "member" or "role".
     let payload = %*{"type": kind}
@@ -542,7 +558,8 @@ proc editGuildChannelPermissions*(api: RestApi,
     discard await api.request(
         "PUT",
         endpointChannelOverwrites(channel_id, perm_id),
-        $payload
+        $payload,
+        reason
     )
 
 proc getInvite*(api: RestApi, code: string;
@@ -574,6 +591,7 @@ proc getGuildPruneCount*(api: RestApi, guild_id: string,
     ))["pruned"].getInt
 
 proc deleteGuild*(api: RestApi, guild_id: string) {.async.} =
+    ## Deletes a guild.
     discard await api.request("DELETE", endpointGuilds(guild_id))
 
 proc editGuild*(api: RestApi, guild_id: string;
@@ -665,14 +683,15 @@ proc getGuildAuditLogs*(api: RestApi, guild_id: string;
         limit = 50): Future[AuditLog] {.async.} =
     ## Get guild audit logs. The maximum limit is 100.
     var url = endpointGuildAuditLogs(guild_id) & "?"
+
     if user_id != "":
-        url &= "user_id=" & encodeUrl(user_id) & "&"
+        url &= "user_id=" & user_id & "&"
     if before != "":
-        url &= "before=" & encodeUrl(before) & "&"
+        url &= "before=" & before & "&"
     if action_type != -1:
-        url &= "action_type=" & encodeUrl($action_type) & "&"
+        url &= "action_type=" & $action_type & "&"
     if limit <= 100:
-        url &= "limit=" & encodeUrl($limit)
+        url &= "limit=" & $limit
 
     result = (await api.request("GET", url)).newAuditLog
 
@@ -705,7 +724,8 @@ proc deleteGuildRole*(api: RestApi, guild_id, role_id: string) {.async.} =
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none string;
             pobj = none PermObj; color = none int;
-            hoist, mentionable = none bool): Future[Role] {.async.} =
+            hoist, mentionable = none bool;
+            reason = ""): Future[Role] {.async.} =
     ## Modifies a guild role.
     let payload = newJObject()
 
@@ -715,12 +735,13 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     payload.loadNullableOptInt(color)
 
     if pobj.isSome:
-        payload["permissions"] = %(+(get(pobj)))
+        payload["permissions"] = %(+(get pobj))
 
     result = (await api.request(
         "PATCH",
         endpointGuildRoles(guild_id, role_id),
-        $payload
+        $payload,
+        reason
     )).newRole
 
 proc editGuildRolePosition*(api: RestApi, guild_id, role_id: string;
@@ -752,6 +773,7 @@ proc editGuildMember*(api: RestApi, guild_id, user_id: string;
         nick, channel_id = none string;
         roles = none seq[string];
         mute, deaf = none bool; reason = "") {.async.} =
+    ## Modifies a guild member
     let payload = newJObject()
 
     payload.loadOpt(nick, roles, mute, deaf, channel_id)
@@ -763,8 +785,11 @@ proc editGuildMember*(api: RestApi, guild_id, user_id: string;
 proc removeGuildMember*(api: RestApi, guild_id, user_id: string;
         reason = "") {.async.} =
     ## Removes a guild member.
-    discard await api.request("DELETE", endpointGuildMembers(guild_id, user_id),
-        reason)
+    discard await api.request(
+        "DELETE",
+        endpointGuildMembers(guild_id, user_id),
+        reason
+    )
 
 proc getGuildBan*(api: RestApi,
         guild_id, user_id: string): Future[GuildBan] {.async.} =
@@ -790,9 +815,13 @@ proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         "reason": reason
     }), reason)
 
-proc removeGuildBan*(api: RestApi, guild_id, user_id: string) {.async.} =
+proc removeGuildBan*(api: RestApi, guild_id, user_id: string; reason = "") {.async.} =
     ## Removes a guild ban.
-    discard await api.request("DELETE", endpointGuildBans(guild_id, user_id))
+    discard await api.request(
+        "DELETE",
+        endpointGuildBans(guild_id, user_id),
+        reason
+    )
 
 proc getGuildChannels*(api: RestApi,
         guild_id: string): Future[seq[GuildChannel]] {.async.} =
@@ -831,14 +860,15 @@ proc getGuildMembers*(api: RestApi, guild_id: string;
         endpointGuildMembers(guild_id) & "?limit=" & $limit & "&after=" & after
     ))).elems.map(newMember)
 
-proc setGuildNick*(api: RestApi, guild_id: string; nick = "") {.async.} =
+proc setGuildNick*(api: RestApi, guild_id: string; nick, reason = "") {.async.} =
     ## Sets the current user's guild nickname, defaults to "" if no nick is set.
     discard await api.request(
         "PATCH",
         endpointGuildMembersNick(guild_id, "@me"),
         $(%*{
             "nick": nick
-        })
+        }),
+        reason
     )
 
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
@@ -864,7 +894,7 @@ proc createChannelInvite*(api: RestApi, channel_id: string;
     max_uses = 0,
     temp, unique = false,
     target_user = none string,
-    target_user_type = none int): Future[Invite] {.async.} =
+    target_user_type = none int; reason = ""): Future[Invite] {.async.} =
     ## Creates an instant invite.
     let payload = %*{
         "max_age": max_age,
@@ -877,21 +907,22 @@ proc createChannelInvite*(api: RestApi, channel_id: string;
     result = (await api.request(
         "POST",
         endpointChannelInvites(channel_id),
-        $payload
+        $payload,
+        reason
     )).newInvite
 
 proc deleteGuildChannelPermission*(api: RestApi, channel_id, overwrite: string;
         reason = "") {.async.} =
-    ## Deletes guild channel permission overwrite.
+    ## Deletes a guild channel overwrite.
     discard await api.request(
         "DELETE",
         endpointChannelOverwrites(channel_id, overwrite),
         reason
     )
 
-proc deleteInvite*(api: RestApi, code: string) {.async.} =
+proc deleteInvite*(api: RestApi, code: string; reason = "") {.async.} =
     ## Deletes a guild invite.
-    discard await api.request("DELETE", endpointInvites(code))
+    discard await api.request("DELETE", endpointInvites(code), reason)
 
 proc getChannelInvites*(api: RestApi,
         channel_id: string): Future[seq[Invite]] {.async.} =
@@ -927,7 +958,7 @@ proc getGuildWebhooks*(api: RestApi,
     )).elems.map(newWebhook)
 
 proc createWebhook*(api: RestApi, channel_id, username: string;
-        avatar = none string): Future[Webhook] {.async.} =
+        avatar = none string; reason = ""): Future[Webhook] {.async.} =
     ## Creates a webhook.
     ## (webhook names cannot be: 'clyde', and they range 1-80)
     result = (await api.request(
@@ -936,7 +967,8 @@ proc createWebhook*(api: RestApi, channel_id, username: string;
         $(%*{
             "username": username,
             "avatar": avatar
-        })
+        }),
+        reason
     )).newWebhook
 
 proc executeWebhook*(api: RestApi, webhook_id, token: string; wait = true;
@@ -1034,7 +1066,7 @@ proc syncGuildIntegration*(api: RestApi, guild_id, integ_id: string) {.async.} =
 
 proc editGuildIntegration*(api: RestApi, guild_id, integ_id: string;
         expire_behavior, expire_grace_period = none int;
-        enable_emoticons = none bool; reason: string = "") {.async.} =
+        enable_emoticons = none bool; reason = "") {.async.} =
     ## Edits a guild integration.
     let payload = newJObject()
 
@@ -1079,8 +1111,8 @@ proc editGuildEmbed*(api: RestApi, guild_id: string,
     result = (await api.request(
         "PATCH",
         endpointGuildEmbed(guild_id),
-        $payload)
-    ).to(tuple[enabled: bool, channel_id: Option[string]])
+        $payload
+    )).to(tuple[enabled: bool, channel_id: Option[string]])
 
 proc getGuildPreview*(api: RestApi,
         guild_id: string): Future[GuildPreview] {.async.} =
@@ -1130,12 +1162,13 @@ proc editGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
         name = none string;
         roles = none seq[string];
         reason = ""): Future[Emoji] {.async.} =
+    ## Modifies a guild emoji.
     let payload = newJObject()
 
     payload.loadOpt(name)
     payload.loadNullableOptStr(name)
 
-    if roles.isSome and get(roles).len < 0:
+    if roles.isSome and roles.get.len < 0:
         payload["roles"] = newJNull()
 
     result = (await api.request("PATCH",
@@ -1149,24 +1182,29 @@ proc editGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
 
 proc deleteGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
         reason = "") {.async.} =
+    ## Deletes a guild emoji.
     discard await api.request("DELETE",
         endpointGuildEmojis(guild_id, emoji_id),
         reason
     )
 
 proc getUser*(api: RestApi, user_id: string): Future[User] {.async.} =
+    ## Gets a user.
     result = (await api.request("GET", endpointUsers(user_id))).newUser
 
 proc leaveGuild*(api: RestApi, guild_id: string) {.async.} =
+    ## Leaves a guild.
     discard await api.request("DELETE", endpointUserGuilds(guild_id))
 
 proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel] {.async.} =
+    ## Create user dm.
     result = (await api.request("POST", endpointUserChannels(), $(%*{
         "recipient_id": user_id
     }))).newDMChannel
 
 proc getGuildVoiceRegions*(api: RestApi,
         guild_id: string): Future[seq[VoiceRegion]] {.async.} =
+    ## Gets a guild's voice regions.
     result = (await api.request(
         "GET",
         endpointGuildRegions(guild_id)
@@ -1174,6 +1212,7 @@ proc getGuildVoiceRegions*(api: RestApi,
         result = x.to(VoiceRegion))
 
 proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
+    ## Get voice regions
     result = (await api.request(
         "GET",
         endpointVoiceRegions()
@@ -1181,12 +1220,15 @@ proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
         result = x.to(VoiceRegion))
 
 proc getCurrentUser*(api: RestApi): Future[User] {.async.} =
+    ## Gets the current user.
     result = (await api.request("GET", endpointUsers())).newUser
 
 proc getGatewayBot*(api: RestApi): Future[GatewayBot] {.async.} =
+    ## Get gateway bot with authentication.
     result = (await api.request("GET", "gateway/bot")).to(GatewayBot)
 
 proc getGateway*(api: RestApi): Future[string] {.async.} =
+    ## Get Discord gateway URL.
     result = (await api.request("GET", "gateway"))["url"].str
 
 proc editCurrentUser*(api: RestApi,

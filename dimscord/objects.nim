@@ -1,65 +1,7 @@
 import options, json, tables, constants, macros
-import sequtils, strutils, asyncdispatch, websocket
+import sequtils, strutils, asyncdispatch, ws
 
 type
-    Events* = ref object
-        ## An Events object.
-        ## `exists` param checks message is cached or not.
-        ## Other cachable objects dont have them.
-        ## 
-        ## - `on_dispatch` event gives you the raw event data for you to handle things.
-        ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
-        on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
-        on_ready*: proc (s: Shard, r: Ready) {.async.}
-        message_create*: proc (s: Shard, m: Message) {.async.}
-        message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
-        message_update*: proc (s: Shard, m: Message,
-                o: Option[Message], exists: bool) {.async.}
-        message_reaction_add*, message_reaction_remove*: proc (s: Shard,
-                m: Message, u: User,
-                r: Reaction, exists: bool) {.async.}
-        message_reaction_remove_all*: proc (s: Shard, m: Message,
-                exists: bool) {.async.}
-        message_reaction_remove_emoji*: proc (s: Shard, m: Message,
-                e: Emoji, exists: bool) {.async.}
-        message_delete_bulk*: proc (s: Shard, m: seq[tuple[
-                msg: Message, exists: bool]]) {.async.}
-        channel_create*: proc (s: Shard, g: Option[Guild],
-                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
-        channel_update*: proc (s: Shard, g: Guild,
-                c: GuildChannel, o: Option[GuildChannel]) {.async.}
-        channel_delete*: proc (s: Shard, g: Option[Guild],
-                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
-        channel_pins_update*: proc (s: Shard, cid: string,
-                g: Option[Guild], last_pin: Option[string]) {.async.}
-        presence_update*: proc (s: Shard, p: Presence,
-                o: Option[Presence]) {.async.}
-        typing_start*: proc (s: Shard, t: TypingStart) {.async.}
-        guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
-        guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
-                u: User) {.async.}
-        guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
-        guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
-                m: Member) {.async.}
-        guild_member_update*: proc (s: Shard, g: Guild,
-                m: Member, o: Option[Member]) {.async.}
-        guild_update*: proc (s: Shard, g: Guild, o: Option[Guild]) {.async.}
-        guild_create*, guild_delete*: proc (s: Shard, g: Guild) {.async.}
-        guild_members_chunk*: proc (s: Shard, g: Guild,
-                m: GuildMembersChunk) {.async.}
-        guild_role_create*, guild_role_delete*: proc (s: Shard, g: Guild,
-                r: Role) {.async.}
-        guild_role_update*: proc (s: Shard, g: Guild,
-                r: Role, o: Option[Role]) {.async.}
-        invite_create*: proc (s: Shard, i: InviteCreate) {.async.}
-        invite_delete*: proc (s: Shard, g: Option[Guild],
-                cid, code: string) {.async.}
-        user_update*: proc (s: Shard, u: User) {.async.}
-        voice_state_update*: proc (s: Shard, v: VoiceState,
-                o: Option[VoiceState]) {.async.}
-        voice_server_update*: proc (s: Shard, g: Guild,
-                token: string, e: Option[string]) {.async.}
-        webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
     DiscordClient* = ref object
         ## The Discord Client, itself.
         api*: RestApi
@@ -73,12 +15,12 @@ type
         id*, sequence*: int
         client*: DiscordClient
         user*: User
+        gatewayUrl*, session_id*: string
         cache*: CacheTable
-        connection*: AsyncWebsocket
+        connection*: Websocket
         hbAck*, hbSent*, stop*, compress*: bool
         lastHBTransmit*, lastHBReceived*: float
         retry_info*: tuple[ms, attempts: int]
-        session_id*: string
         heartbeating*, resuming*, reconnecting*: bool
         authenticating*, networkError*, ready*: bool
         interval*: int
@@ -183,7 +125,6 @@ type
         rest_ver*: int
     Ratelimit* = ref object
         retry_after*: float
-        queue_size*, queue_rem*: int
         processing*, ratelimited*: bool
     UnavailableGuild* = object
         id*: string
@@ -380,6 +321,64 @@ type
         url*: string
         shards*: int
         session_start_limit*: GatewaySession
+    Events* = ref object
+        ## An Events object.
+        ## `exists` param checks message is cached or not.
+        ## Other cachable objects dont have them.
+        ## 
+        ## - `on_dispatch` event gives you the raw event data for you to handle things.
+        ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
+        on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
+        on_ready*: proc (s: Shard, r: Ready) {.async.}
+        message_create*: proc (s: Shard, m: Message) {.async.}
+        message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
+        message_update*: proc (s: Shard, m: Message,
+                o: Option[Message], exists: bool) {.async.}
+        message_reaction_add*, message_reaction_remove*: proc (s: Shard,
+                m: Message, u: User,
+                r: Reaction, exists: bool) {.async.}
+        message_reaction_remove_all*: proc (s: Shard, m: Message,
+                exists: bool) {.async.}
+        message_reaction_remove_emoji*: proc (s: Shard, m: Message,
+                e: Emoji, exists: bool) {.async.}
+        message_delete_bulk*: proc (s: Shard, m: seq[tuple[
+                msg: Message, exists: bool]]) {.async.}
+        channel_create*: proc (s: Shard, g: Option[Guild],
+                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
+        channel_update*: proc (s: Shard, g: Guild,
+                c: GuildChannel, o: Option[GuildChannel]) {.async.}
+        channel_delete*: proc (s: Shard, g: Option[Guild],
+                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
+        channel_pins_update*: proc (s: Shard, cid: string,
+                g: Option[Guild], last_pin: Option[string]) {.async.}
+        presence_update*: proc (s: Shard, p: Presence,
+                o: Option[Presence]) {.async.}
+        typing_start*: proc (s: Shard, t: TypingStart) {.async.}
+        guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
+        guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
+                u: User) {.async.}
+        guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
+        guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
+                m: Member) {.async.}
+        guild_member_update*: proc (s: Shard, g: Guild,
+                m: Member, o: Option[Member]) {.async.}
+        guild_update*: proc (s: Shard, g: Guild, o: Option[Guild]) {.async.}
+        guild_create*, guild_delete*: proc (s: Shard, g: Guild) {.async.}
+        guild_members_chunk*: proc (s: Shard, g: Guild,
+                m: GuildMembersChunk) {.async.}
+        guild_role_create*, guild_role_delete*: proc (s: Shard, g: Guild,
+                r: Role) {.async.}
+        guild_role_update*: proc (s: Shard, g: Guild,
+                r: Role, o: Option[Role]) {.async.}
+        invite_create*: proc (s: Shard, i: InviteCreate) {.async.}
+        invite_delete*: proc (s: Shard, g: Option[Guild],
+                cid, code: string) {.async.}
+        user_update*: proc (s: Shard, u: User) {.async.}
+        voice_state_update*: proc (s: Shard, v: VoiceState,
+                o: Option[VoiceState]) {.async.}
+        voice_server_update*: proc (s: Shard, g: Guild,
+                token: string, e: Option[string]) {.async.}
+        webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
 
 proc newCacheTable*(cache_users, cache_guilds,
             cache_guild_channels, cache_dm_channels: bool): CacheTable =
@@ -418,7 +417,7 @@ proc clear*(c: CacheTable) =
 proc `$`*(e: Emoji): string =
     result = if e.id != "": e.name & ":" & e.id else: e.name
 
-macro keyCheckOptionInt(obj: typed, obj2: typed,
+macro keyCheckOptInt(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
   result = newStmtList()
   for lit in lits:
@@ -436,7 +435,7 @@ macro keyCheckInt(obj: typed, obj2: typed,
       if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
         `obj2`.`lit` = `obj`[`fieldName`].getInt
 
-macro keyCheckOptionBool(obj: typed, obj2: typed,
+macro keyCheckOptBool(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
   result = newStmtList()
   for lit in lits:
@@ -454,7 +453,7 @@ macro keyCheckBool(obj: typed, obj2: typed,
       if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
         `obj2`.`lit` = `obj`[`fieldName`].getBool
 
-macro keyCheckOptionStr(obj: typed, obj2: typed,
+macro keyCheckOptStr(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
   result = newStmtList()
   for lit in lits:
@@ -478,7 +477,7 @@ proc newRestApi*(token: string, rest_ver: int): RestApi =
     result.endpoints = initTable[string, Ratelimit]()
 
 proc newDiscordClient*(token: string; rest_mode = false;
-        rest_ver = 7): DiscordClient =
+        rest_ver = 6): DiscordClient =
     ##  a client.
     var auth_token = token
     if not token.startsWith("Bot "):
@@ -612,20 +611,19 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         last_message_id: data{"last_message_id"}.getStr
     )
 
-    if data["permission_overwrites"].elems.len > 0:
-        for ow in data["permission_overwrites"].elems:
-            result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
+    for ow in data["permission_overwrites"].getElems:
+        result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
 
     case result.kind:
         of ctGuildText:
             result.rate_limit_per_user = data["rate_limit_per_user"].getInt
 
-            data.keyCheckOptionStr(result, topic)
+            data.keyCheckOptStr(result, topic)
             data.keyCheckBool(result, nsfw)
 
             result.messages = initTable[string, Message]()
         of ctGuildNews:
-            data.keyCheckOptionStr(result, topic)
+            data.keyCheckOptStr(result, topic)
 
             data.keyCheckBool(result, nsfw)
         of ctGuildVoice:
@@ -634,7 +632,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         else:
             discard
 
-    data.keyCheckOptionStr(result, parent_id)
+    data.keyCheckOptStr(result, parent_id)
 
 proc newUser*(data: JsonNode): User =
     result = User(
@@ -645,7 +643,7 @@ proc newUser*(data: JsonNode): User =
         system: data{"system"}.getBool
     )
 
-    data.keyCheckOptionStr(result, avatar)
+    data.keyCheckOptStr(result, avatar)
 
 proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
@@ -656,12 +654,12 @@ proc newWebhook*(data: JsonNode): Webhook =
     if "user" in data:
         result.user = some newUser(data["user"])
 
-    data.keyCheckOptionStr(result, guild_id, token, name, avatar)
+    data.keyCheckOptStr(result, guild_id, token, name, avatar)
 
 proc newGuildBan*(data: JsonNode): GuildBan =
     result = GuildBan(user: newUser(data["user"]))
 
-    data.keyCheckOptionStr(result, reason)
+    data.keyCheckOptStr(result, reason)
 
 proc newDMChannel*(data: JsonNode): DMChannel =
     result = DMChannel(
@@ -690,7 +688,7 @@ proc newInvite*(data: JsonNode): Invite =
     if "target_user" in data:
         result.target_user = some newUser(data["inviter"])
 
-    data.keyCheckOptionInt(result, target_user_type,
+    data.keyCheckOptInt(result, target_user_type,
         approximate_presence_count, approximate_member_count)
 
 proc newInviteCreate*(data: JsonNode): InviteCreate =
@@ -709,14 +707,13 @@ proc newInviteCreate*(data: JsonNode): InviteCreate =
     if "inviter" in data:
         result.inviter = some newUser(data["inviter"])
 
-    data.keyCheckOptionStr(result, guild_id)
-    data.keyCheckOptionInt(result, target_user_type)
+    data.keyCheckOptStr(result, guild_id)
+    data.keyCheckOptInt(result, target_user_type)
 
 proc newReady*(data: JsonNode): Ready =
     result = Ready(
         v: data["v"].getInt,
         user: newUser(data["user"]),
-        guilds: @[],
         session_id: data["session_id"].str
     )
 
@@ -740,7 +737,7 @@ proc newAttachment(data: JsonNode): Attachment =
         url: data["url"].str,
         proxy_url: data["proxy_url"].str,
     )
-    data.keyCheckOptionInt(result, height, width)
+    data.keyCheckOptInt(result, height, width)
 
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = VoiceState(
@@ -754,7 +751,7 @@ proc newVoiceState*(data: JsonNode): VoiceState =
     )
 
     data.keyCheckBool(result, self_stream)
-    data.keyCheckOptionStr(result, guild_id, channel_id)
+    data.keyCheckOptStr(result, guild_id, channel_id)
 
 proc newEmoji*(data: JsonNode): Emoji =
     result = Emoji(name: data["name"].str)
@@ -763,7 +760,7 @@ proc newEmoji*(data: JsonNode): Emoji =
         result.roles.add(r.str)
 
     data.keyCheckStr(result, id)
-    data.keyCheckOptionBool(result, require_colons, managed, animated)
+    data.keyCheckOptBool(result, require_colons, managed, animated)
 
     if "user" in data:
         result.user = newUser(data["user"])
@@ -776,23 +773,23 @@ proc newGameActivity*(data: JsonNode): GameActivity =
         flags: data{"flags"}.getInt
     )
 
-    data.keyCheckOptionStr(result, url, application_id, details, state)
+    data.keyCheckOptStr(result, url, application_id, details, state)
     data.keyCheckBool(result, instance)
 
     if "timestamps" in data:
-        result.timestamps = some((
+        result.timestamps = some (
             start: data["timestamps"]{"start"}.getBiggestInt,
             final: data["timestamps"]{"end"}.getBiggestInt
-        ))
+        )
 
     if "emoji" in data:
         result.emoji = some newEmoji(data["emoji"])
 
     if "party" in data:
-        result.party = some((
+        result.party = some (
             id: data["party"]{"id"}.getStr,
             size: data["party"]{"size"}.getElems.mapIt(it.getInt)
-        ))
+        )
 
     if "assets" in data:
         result.assets = some GameAssets(
@@ -803,25 +800,24 @@ proc newGameActivity*(data: JsonNode): GameActivity =
         )
 
     if "secrets" in data:
-        result.secrets = some((
+        result.secrets = some (
             join: data["secrets"]{"join"}.getStr,
             spectate: data["secrets"]{"spectate"}.getStr,
             match: data["secrets"]{"match"}.getStr
-        ))
+        )
 
 proc newPresence*(data: JsonNode): Presence =
     result = Presence(
         user: newUser(data["user"]),
         guild_id: data{"guild_id"}.getStr,
         status: data["status"].str,
-        activities: @[],
         client_status: (
             web: "offline",
             desktop: "offline",
             mobile: "offline"
         )
     )
-    data.keyCheckOptionStr(result, nick, premium_since)
+    data.keyCheckOptStr(result, nick, premium_since)
 
     for role in data{"roles"}.getElems:
         result.roles.add(role.str)
@@ -850,7 +846,7 @@ proc newMember*(data: JsonNode): Member =
     if "user" in data and data["user"].kind != JNull:
         result.user = newUser(data["user"])
 
-    data.keyCheckOptionStr(result, nick, premium_since)
+    data.keyCheckOptStr(result, nick, premium_since)
 
 proc newTypingStart*(data: JsonNode): TypingStart =
     result = TypingStart(
@@ -862,7 +858,7 @@ proc newTypingStart*(data: JsonNode): TypingStart =
     if "member" in data and data["member"].kind != JNull:
         result.member = some newMember(data["member"])
 
-    data.keyCheckOptionStr(result, guild_id)
+    data.keyCheckOptStr(result, guild_id)
 
 proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
     result = GuildMembersChunk(
@@ -873,7 +869,7 @@ proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
         not_found: data{"not_found"}.getElems.mapIt(it.getStr()),
         presences: data{"presences"}.getElems.map(newPresence)
     )
-    data.keyCheckOptionStr(result, nonce)
+    data.keyCheckOptStr(result, nonce)
 
 proc newReaction*(data: JsonNode): Reaction =
     result = Reaction(
@@ -892,7 +888,7 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
 
     data.keyCheckInt(result, kind, flags)
     data.keyCheckStr(result, content)
-    data.keyCheckOptionStr(result, edited_timestamp)
+    data.keyCheckOptStr(result, edited_timestamp)
     data.keyCheckBool(result, mention_everyone, pinned, tts)
 
     if "author" in data:
@@ -929,7 +925,7 @@ proc newMessage*(data: JsonNode): Message =
         flags: data["flags"].getInt,
         reactions: initTable[string, Reaction]()
     )
-    data.keyCheckOptionStr(result, edited_timestamp,
+    data.keyCheckOptStr(result, edited_timestamp,
         guild_id, nonce, webhook_id)
 
     if "author" in data:
@@ -985,7 +981,7 @@ proc newMessage*(data: JsonNode): Message =
         var message_reference = MessageReference(
             channel_id: reference["channel_id"].str
         )
-        reference.keyCheckOptionStr(message_reference, message_id, guild_id)
+        reference.keyCheckOptStr(message_reference, message_id, guild_id)
         result.message_reference = some message_reference
 
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
@@ -1017,7 +1013,7 @@ proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
         id: data["id"].str,
         action_type: data["action_type"].getInt
     )
-    data.keyCheckOptionStr(result, target_id, reason)
+    data.keyCheckOptStr(result, target_id, reason)
 
     if "options" in data:
         result.opts = some data.to(AuditLogOptions)
@@ -1070,13 +1066,13 @@ proc newGuild*(data: JsonNode): Guild =
     for e in data["emojis"].elems:
         result.emojis.add(e["id"].str, newEmoji(e))
 
-    data.keyCheckOptionInt(result, afk_timeout, permissions, member_count,
+    data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
         premium_subscription_count, max_presences, approximate_member_count,
         approximate_presence_count, max_video_channel_uses)
-    data.keyCheckOptionStr(result, joined_at, icon, splash, afk_channel_id,
+    data.keyCheckOptStr(result, joined_at, icon, splash, afk_channel_id,
         application_id, system_channel_id, vanity_url_code, discovery_splash,
         description, banner, widget_channel_id, public_updates_channel_id)
-    data.keyCheckOptionBool(result, large, unavailable)
+    data.keyCheckOptBool(result, large, unavailable)
 
     for m in data{"members"}.getElems:
         result.members.add(m["user"]["id"].str, newMember(m))

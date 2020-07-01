@@ -8,11 +8,18 @@
 ##   This also includes caching too, if you want to handle raw discord objects,
 ##   which is event data, then you can the constructors too.
 ## 
+## 
 ## - For gateway, this file allows you to
 ##   connect, disconnect, send gateway messages to the gateway.
 ##   Like updating your status with updateStatus,
 ##   requesting guild members with requestGuildMembers,
 ##   joining/moving/leaving a voice channel with voiceStateUpdate
+## 
+##   Please note that if you are compiling with ARC or ORC, old objects
+##   will be none due to the deepCopy feature being removed, if there are
+##   alternatives to this, I'll update, if you do have alternatives,
+##   make sure you make a PR to it. You can use on_dispatch for now.
+## 
 ## 
 ## - For restapi, this file would be pretty self-explantory,
 ##   as this file would handle ratelimits if you receive lots of 403s or 429s,
@@ -24,15 +31,17 @@
 ##   I'd recommend adding some sort of cooldowns to it.
 ##   (OAuth2 support will be added)
 ## 
+## 
 ## - For misc, this includes helper methods such as mentioning a user
 ##   @ify channels, users, roles, etc, this includes iconUrls too.
+## 
 ## 
 ## - For constants, say if you were to check what verification level is the guild
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ##   If any of these types are enums and you want to compare them like
-##   for example ActivityFlags use cast[int](myEnum) e.g. cast[int](afSync)
+##   for example ActivityFlags use `cast[int](myEnum)` e.g. `cast[int](afSync)`
 
 import dimscord/[gateway, restapi, constants, objects, misc]
 

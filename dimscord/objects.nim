@@ -15,7 +15,7 @@ type
         id*, sequence*: int
         client*: DiscordClient
         user*: User
-        gatewayUrl*, session_id*: string
+        session_id*: string
         cache*: CacheTable
         connection*: Websocket
         hbAck*, hbSent*, stop*, compress*: bool
@@ -478,7 +478,7 @@ proc newRestApi*(token: string, rest_ver: int): RestApi =
 
 proc newDiscordClient*(token: string; rest_mode = false;
         rest_ver = 6): DiscordClient =
-    ##  a client.
+    ## Creates a discord client.
     var auth_token = token
     if not token.startsWith("Bot "):
         auth_token = "Bot " & token

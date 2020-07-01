@@ -3,10 +3,11 @@ import strformat, strutils, times
 import tables
 
 proc defaultAvatarUrl*(u: User): string =
+    ## Returns the default avatar for a user.
     result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
 
 proc avatarUrl*(u: User, fmt = ""; size = 128): string =
-    ## Get's the user's avatar url, you can provide an image format.
+    ## Gets a user's avatar url.
     ## If user does not have an avatar it will return default avatar of the user.
     var ift = fmt
     if fmt == "":
@@ -19,7 +20,7 @@ proc avatarUrl*(u: User, fmt = ""; size = 128): string =
     result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{ift}?size={size}"
 
 proc iconUrl*(e: Emoji, fmt = ""; size = 128): string =
-    ## Get's the emoji's url, you can provide an image format.
+    ## Gets an emoji's url.
     if e.id == "" or e.name == "":
         return ""
 
@@ -32,6 +33,7 @@ proc iconUrl*(e: Emoji, fmt = ""; size = 128): string =
     result = &"{cdnCustomEmojis}{e.id}.{ift}?size={size}"
 
 proc iconUrl*(g: Guild, fmt = ""; size = 128): string =
+    ## Get icon url for guild.
     var ift = fmt
     if fmt == "":
         ift = "png"
@@ -44,19 +46,26 @@ proc iconUrl*(g: Guild, fmt = ""; size = 128): string =
         result = ""
 
 proc `$`*(u: User): string =
+    ## Stringifies a user.
+    ## This would return something like `MrDude#6969`
     result = &"{u.username}#{u.discriminator}"
 
 proc `@`*(u: User; nick = false): string =
+    ## Mentions a user.
     var n = if nick: "!" else: ""
     result = &"<@{n}{u.id}>"
 
 proc `@`*(r: Role): string =
+    ## Mentions a role.
     result = &"<@{r.id}>"
 
 proc `@`*(g: GuildChannel): string =
+    ## Mentions a guild channel.
     result = &"<#{g.id}>"
 
 proc `$`*(g: GuildChannel): string =
+    ## Stringifies a guild channel.
+    ## This would return something like `#general`
     result = &"#{g.name}"
 
 proc getGuildWidget*(guild_id, style: string): string =
@@ -85,8 +94,8 @@ proc permCheck*(perms: int, p: int): bool =
 
 proc permCheck*(perms: int, p: PermObj): bool =
     ## Just like permCheck, but with a PermObj.
-    var allowed: Option[bool] = none bool
-    var denied: Option[bool] = none bool
+    var allowed: Option[bool]
+    var denied: Option[bool]
 
     if p.allowed.len > 0:
         allowed = some permCheck(perms, cast[int](p.allowed))
@@ -105,6 +114,7 @@ proc permCheck*(perms: int, p: PermObj): bool =
             result = permCheck(perms, p.perms)
 
 proc computeBasePerms*(guild: Guild, role: Role): PermObj =
+    ## Computes the base permissions for a role.
     let
         everyone = guild.roles[guild.id]
         perms = everyone.permissions or role.permissions
@@ -115,6 +125,7 @@ proc computeBasePerms*(guild: Guild, role: Role): PermObj =
     result = PermObj(allowed: cast[set[PermEnum]](perms))
 
 proc computeBasePerms*(guild: Guild, member: Member): PermObj =
+    ## Computes the base permissions for a member.
     if guild.owner_id == member.user.id:
         return PermObj(allowed: permAll)
 

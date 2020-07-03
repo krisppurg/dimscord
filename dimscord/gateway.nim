@@ -177,7 +177,7 @@ proc resume(s: Shard) {.async.} =
 
 proc requestGuildMembers*(s: Shard, guild_id: seq[string];
         limit: int;
-        query, nonce = ""; 
+        query, nonce = "";
         presences = false;
         user_ids: seq[string] = @[]) {.async.} =
     ## Requests the offline members to a guild.
@@ -279,9 +279,8 @@ proc reconnect(s: Shard) {.async.} =
     s.logShard("Connecting to " & $prefix & "/?v=" & $s.client.gatewayVer)
 
     try:
-        s.connection = await newWebSocket(
-            prefix & "/?v=" & $s.client.gatewayVer
-        )
+        s.connection = await newWebSocket(prefix &
+            "/?v=" & $s.client.gatewayVer)
         s.hbAck = true
         s.stop = false
         s.reconnecting = false
@@ -306,6 +305,7 @@ proc reconnect(s: Shard) {.async.} =
         await s.resume()
 
 proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
+    ## Disconnects a shard.
     if s.stop: return
     s.stop = true
 
@@ -451,16 +451,15 @@ proc handleSocketMessage(s: Shard) {.async.} =
         return
 
 proc endSession*(cl: DiscordClient) {.async.} =
+    ## Ends the session.
     for shard in cl.shards.values:
         await shard.disconnect(should_reconnect = false)
         shard.cache.clear()
 
-proc startSession(s: Shard, url: string, query: string) {.async.} =
+proc startSession(s: Shard, url, query: string) {.async.} =
     s.logShard("Connecting to " & url & query)
     try:
-        s.connection = await newWebsocket(
-                url & query
-            )
+        s.connection = await newWebsocket(url & query)
         s.hbAck = true
         s.logShard("Socket is open.")
     except:

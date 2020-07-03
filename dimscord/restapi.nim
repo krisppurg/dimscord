@@ -17,6 +17,7 @@ var
     ratelimited, global = false
     global_retry_after = 0.0
     invalid_requests, expiry = 0'i64
+    caller: proc () {.async.}
 
 proc parseRoute(endpoint, meth: string): string =
     let majorParams = @["channels", "guilds", "webhooks"]
@@ -106,6 +107,8 @@ proc req(api: RestApi, meth, endpoint: string;
         if getTime().toUnix() >= expiry and expiry != 0:
             r.processing = false
             expiry = 0
+            await caller()
+            caller = proc () {.async.} = discard
         await sleepAsync 750
 
         return await api.req(meth, endpoint, pl, reason, mp, auth, true)
@@ -155,7 +158,7 @@ proc req(api: RestApi, meth, endpoint: string;
 
         let
             retry_header = resp.headers.getOrDefault(
-                "X-RateLimit-Reset-After", 
+                "X-RateLimit-Reset-After",
                 @["1.000"].HttpHeaderValues).parseFloat
             status = resp.code.int
             fin = "[" & $status & "] "
@@ -170,8 +173,9 @@ proc req(api: RestApi, meth, endpoint: string;
                 if status != 429: r.processing = false
                 if status >= 400:
                     if resp.headers["content-type"] == "application/json":
-                        expiry = getTime().toUnix() + 20
+                        expiry = getTime().toUnix() + (retry_header.int + 3)
                         data = (await resp.body).parseJson
+                        caller = doreq
                         expiry = 0
 
                     error = fin & "Bad request."
@@ -216,6 +220,7 @@ proc req(api: RestApi, meth, endpoint: string;
 
                         expiry = getTime().toUnix() + (retry_header.int + 3)
                         data = (await resp.body).parseJson
+                        caller = doreq
                         expiry = 0
                     except:
                         raise newException(RestError, "An error occurred.")
@@ -295,7 +300,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
                 contenttype = newMimetypes().getMimetype(ext)
 
             if file.body == "":
-                file.body = readFile(file.name)                
+                file.body = readFile(file.name)
 
             mpd.add(fil.name, file.body, file.name,
                 contenttype, useStream = false)
@@ -408,7 +413,7 @@ proc deleteMessageReaction*(api: RestApi,
 
 proc deleteMessageReactionEmoji*(api: RestApi,
         channel_id, message_id, emoji: string) {.async.} =
-    ## Deletes all the reactions
+    ## Deletes all the reactions for emoji.
     discard await api.request(
         "DELETE",
         endpointReactions(channel_id, message_id, emoji)
@@ -430,7 +435,7 @@ proc getMessageReactions*(api: RestApi,
     if after != "":
         url = url & "after=" & after & "&"
     if limit > 0 and limit <= 100:
-        url = url & "limit=" & $limit  
+        url = url & "limit=" & $limit
 
     result = (await api.request(
         "GET",
@@ -1045,7 +1050,7 @@ proc deleteWebhook*(api: RestApi, webhook_id: string; reason = "") {.async.} =
 
 proc editWebhook*(api: RestApi, webhook_id: string;
         name, avatar, channel_id = none string; reason = "") {.async.} =
-    ## Modifies a webhook. 
+    ## Modifies a webhook.
     let payload = newJObject()
 
     payload.loadOpt(name, avatar, channel_id)

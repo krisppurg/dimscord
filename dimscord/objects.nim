@@ -298,7 +298,7 @@ type
         of alcBool:
             bval*: bool
         of alcRoles:
-            roles*: seq[Role]
+            roles*: seq[tuple[id, name: string]]
         of alcOverwrites:
             overwrites*: seq[Overwrite]
         of alcNil:
@@ -827,7 +827,7 @@ proc newPresence*(data: JsonNode): Presence =
 
     if data["game"].kind != JNull:
         result.game = some newGameActivity(data["game"])
-    
+
     data["client_status"].keyCheckStr(result.client_status,
         desktop, web, mobile)
 
@@ -935,7 +935,7 @@ proc newMessage*(data: JsonNode): Message =
 
     for r in data{"mention_roles"}.getElems:
         result.mention_roles.add(r.str)
-    
+
     for usr in data{"mentions"}.getElems:
         result.mention_users.add(newUser(usr))
 
@@ -998,7 +998,10 @@ proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
         of JArray:
             if key in ["$add", "$remove"]:
                 result = AuditLogChangeValue(kind: alcRoles)
-                result.roles = data.elems.map(newRole)
+                result.roles = data.elems.map(
+                    proc (x: JsonNode): tuple[id, name: string] =
+                        x.to(tuple[id, name: string])
+                )
             elif "permission_overwrites" in key:
                 result = AuditLogChangeValue(kind: alcOverwrites)
                 result.overwrites = data.elems.map(newOverwrite)

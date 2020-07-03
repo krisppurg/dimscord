@@ -180,7 +180,7 @@ const
     aleIntegrationDelete* = 82
 
     permAllText* = {permSendTTSMessage,
-        permEmbedLinks, 
+        permEmbedLinks,
         permReadMessageHistory,
         permUseExternalEmojis,
         permSendMessages,

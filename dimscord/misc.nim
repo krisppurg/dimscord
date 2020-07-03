@@ -1,4 +1,4 @@
-import constants, objects, options 
+import constants, objects, options
 import strformat, strutils, times
 import tables
 
@@ -14,7 +14,7 @@ proc avatarUrl*(u: User, fmt = ""; size = 128): string =
         ift = "jpg"
         if u.avatar.isSome and (get(u.avatar)).startsWith("a_"):
             ift = "gif"
-    
+
     if u.avatar.isNone:
         return defaultAvatarUrl(u)
     result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{ift}?size={size}"
@@ -157,7 +157,7 @@ proc readPerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj =
         return PermObj(allowed: permAll)
 
     let overwrites = channel.permission_overwrites
- 
+
     if channel.guild_id in overwrites:
         let eow = overwrites[channel.guild_id]
         perms = perms or cast[int](eow.permObj.allowed)

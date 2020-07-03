@@ -370,7 +370,7 @@ proc channelCreate(s: Shard, data: JsonNode) {.async.} =
 
 proc channelUpdate(s: Shard, data: JsonNode) {.async.} =
     let gchan = newGuildChannel(data)
-    var oldChan: Option[GuildChannel ]
+    var oldChan: Option[GuildChannel]
 
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
@@ -499,7 +499,7 @@ proc guildBanAdd(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
     )
-    let user = newUser(data["user"]) 
+    let user = newUser(data["user"])
 
     await s.client.events.guild_ban_add(s, guild, user)
 
@@ -520,18 +520,18 @@ proc guildUpdate(s: Shard, data: JsonNode) {.async.} =
         when declared(deepCopy):
             oldGuild = some deepCopy s.cache.guilds[guild.id]
 
-        guild.emojis = oldGuild.get.emojis
-        guild.roles = oldGuild.get.roles
-        guild.channels = oldGuild.get.channels
-        guild.members = oldGuild.get.members
-        guild.presences = oldGuild.get.presences
-        guild.voice_states = oldGuild.get.voice_states
+            guild.emojis = oldGuild.get.emojis
+            guild.roles = oldGuild.get.roles
+            guild.channels = oldGuild.get.channels
+            guild.members = oldGuild.get.members
+            guild.presences = oldGuild.get.presences
+            guild.voice_states = oldGuild.get.voice_states
 
-        guild.large = oldGuild.get.large
-        guild.joined_at = oldGuild.get.joined_at
-        guild.unavailable = oldGuild.get.unavailable
-        guild.afk_timeout = oldGuild.get.afk_timeout
-        guild.member_count = oldGuild.get.member_count
+            guild.large = oldGuild.get.large
+            guild.joined_at = oldGuild.get.joined_at
+            guild.unavailable = oldGuild.get.unavailable
+            guild.afk_timeout = oldGuild.get.afk_timeout
+            guild.member_count = oldGuild.get.member_count
 
         s.cache.guilds[guild.id] = guild
 

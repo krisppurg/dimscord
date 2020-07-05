@@ -17,7 +17,6 @@ var
     ratelimited, global = false
     global_retry_after = 0.0
     invalid_requests, expiry = 0'i64
-    caller: proc () {.async.}
 
 proc parseRoute(endpoint, meth: string): string =
     let majorParams = @["channels", "guilds", "webhooks"]
@@ -107,8 +106,6 @@ proc req(api: RestApi, meth, endpoint: string;
         if getTime().toUnix() >= expiry and expiry != 0:
             r.processing = false
             expiry = 0
-            await caller()
-            caller = proc () {.async.} = discard
         await sleepAsync 750
 
         return await api.req(meth, endpoint, pl, reason, mp, auth, true)
@@ -175,7 +172,6 @@ proc req(api: RestApi, meth, endpoint: string;
                     if resp.headers["content-type"] == "application/json":
                         expiry = getTime().toUnix() + (retry_header.int + 3)
                         data = (await resp.body).parseJson
-                        caller = doreq
                         expiry = 0
 
                     error = fin & "Bad request."
@@ -220,7 +216,6 @@ proc req(api: RestApi, meth, endpoint: string;
 
                         expiry = getTime().toUnix() + (retry_header.int + 3)
                         data = (await resp.body).parseJson
-                        caller = doreq
                         expiry = 0
                     except:
                         raise newException(RestError, "An error occurred.")

@@ -185,8 +185,8 @@ proc genInviteLink*(client_id: string, permissions: set[PermEnum] = {};
     ## 
     ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
     result = restBase & "oauth2/authorize?client_id=" & client_id &
-        "&scope=bot&permissions=" & $cast[int](permissions) &
-            "&disable_guild_select=true" & $disable_guild_select
+        "&scope=bot&permissions=" & $cast[int](permissions)   
 
     if guild_id != "":
-        result &= "&guild_id=" & guild_id
+        result &= "&guild_id=" & guild_id &
+            "&disable_guild_select=" & $disable_guild_select

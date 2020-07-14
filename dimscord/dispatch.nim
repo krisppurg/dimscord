@@ -1,4 +1,4 @@
-import objects, options, json, asyncdispatch, tables, constants, sequtils
+import objects, options, json, asyncdispatch, tables, constants
 
 proc addMsg(c: GuildChannel, m: Message, data: string;
         prefs: CacheTablePrefs) {.async.} =

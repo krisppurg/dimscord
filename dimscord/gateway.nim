@@ -350,8 +350,8 @@ proc handleSocketMessage(s: Shard) {.async.} =
             packet = await s.connection.receivePacket()
         except:
             var exceptn = getCurrentExceptionMsg()
-            logShard(
-                "Error occurred in websocket ::\n", getCurrentExceptionMsg()
+            s.logShard(
+                "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
             )
 
             if not s.stop: s.stop = true
@@ -373,7 +373,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
         try:
             data = parseJson(packet[1])
         except:
-            logShard("An error occurred while parsing data: " & packet[1])
+            s.logShard("An error occurred while parsing data: " & packet[1])
             shouldReconnect = s.handleDisconnect(packet[1])
 
             await s.disconnect(should_reconnect = shouldReconnect)

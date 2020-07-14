@@ -1,14 +1,22 @@
-import objects, options, json, asyncdispatch, tables, constants
+import objects, options, json, asyncdispatch, tables, constants, sequtils
 
-proc addMsg(gc: GuildChannel, m: Message) {.async.} =
-    gc.messages.add(m.id, m)
+proc addMsg(c: GuildChannel, m: Message, data: string;
+        prefs: CacheTablePrefs) {.async.} =
+    if data.len < prefs.max_message_size:
+        if c.messages.len == prefs.large_message_threshold:
+            c.messages.clear()
+        c.messages.add(m.id, m)
     await sleepAsync 120_000
-    gc.messages.del(m.id)
+    c.messages.del(m.id)
 
-proc addMsg(dc: DMChannel, m: Message) {.async.} =
-    dc.messages.add(m.id, m)
+proc addMsg(c: DMChannel, m: Message, data: string;
+        prefs: CacheTablePrefs) {.async.} =
+    if data.len < prefs.max_message_size:
+        if c.messages.len == prefs.large_message_threshold:
+            c.messages.clear()
+        c.messages.add(m.id, m)
     await sleepAsync 120_000
-    dc.messages.del(m.id)
+    c.messages.del(m.id)
 
 proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
@@ -29,8 +37,9 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
         oldVoiceState)
 
 proc channelPinsUpdate(s: Shard, data: JsonNode) {.async.} =
-    var guild: Option[Guild]
-    var last_pin: Option[string]
+    var
+        guild: Option[Guild]
+        last_pin: Option[string]
 
     if "last_pin_timestamp" in data:
         last_pin = some data["last_pin_timestamp"].str
@@ -52,8 +61,7 @@ proc guildEmojisUpdate(s: Shard, data: JsonNode) {.async.} =
     for emoji in data["emojis"]:
         let emji = newEmoji(emoji)
         emojis.add(emji)
-        guild.emojis.clear()
-        guild.emojis.add(emji.id, emji)
+        guild.emojis[emji.id] = emji
 
     await s.client.events.guild_emojis_update(s, guild, emojis)
 
@@ -93,13 +101,13 @@ proc messageCreate(s: Shard, data: JsonNode) {.async.} =
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
 
-        asyncCheck chan.addMsg(msg)
+        asyncCheck chan.addMsg(msg, $data, s.cache.preferences)
         chan.last_message_id = msg.id
 
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
-        asyncCheck chan.addMsg(msg)
+        asyncCheck chan.addMsg(msg, $data, s.cache.preferences)
         chan.last_message_id = msg.id
 
     await s.client.events.message_create(s, msg)
@@ -300,16 +308,16 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         if msg.id in chan.messages:
             when declared(deepCopy):
                 oldMessage = some deepCopy chan.messages[msg.id]
-            msg = chan.messages[msg.id].updateMessage(data)
+            msg = chan.messages[msg.id]
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
         if msg.id in chan.messages:
             when declared(deepCopy):
                 oldMessage = some deepCopy chan.messages[msg.id]
-            msg = chan.messages[msg.id].updateMessage(data)
-    else:
-        msg = msg.updateMessage(data)
+            msg = chan.messages[msg.id]
+
+    msg = msg.updateMessage(data)
 
     await s.client.events.message_update(s, msg, oldMessage, exists)
 
@@ -339,8 +347,7 @@ proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =
                 chan.messages.del(m.id)
                 exists = true
 
-        mids.add((msg: m,
-            exists: exists))
+        mids.add (msg: m, exists: exists)
 
     await s.client.events.message_delete_bulk(s, mids)
 
@@ -369,12 +376,13 @@ proc channelCreate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.channel_create(s, guild, chan, dmChan)
 
 proc channelUpdate(s: Shard, data: JsonNode) {.async.} =
-    let gchan = newGuildChannel(data)
-    var oldChan: Option[GuildChannel]
+    let
+        gchan = newGuildChannel(data)
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    var oldChan: Option[GuildChannel]
 
     if gchan.id in s.cache.guildChannels:
         when declared(deepCopy):
@@ -419,7 +427,6 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
             guild.members.add(member["user"]["id"].str,
                 newMember(member))
 
-        if member["user"]["id"].str notin s.cache.users:
             s.cache.users.add(member["user"]["id"].str,
                 newUser(member["user"]))
 
@@ -427,11 +434,11 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
         newGuildMembersChunk(data))
 
 proc guildMemberAdd(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
-
-    let member = newMember(data)
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        member = newMember(data)
 
     guild.members.add(member.user.id, member)
 
@@ -444,15 +451,16 @@ proc guildMemberAdd(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_member_add(s, guild, member)
 
 proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
-
-    let member = guild.members.getOrDefault(data["user"]["id"].str, Member(
-        user: User(
-            id: data["user"]["id"].str
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
         )
-    ))
+
+        member = guild.members.getOrDefault(data["user"]["id"].str, Member(
+            user: User(
+                id: data["user"]["id"].str
+            )
+        ))
 
     var oldMember: Option[Member]
 
@@ -479,13 +487,13 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_member_update(s, guild, member, oldMember)
 
 proc guildMemberRemove(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
-
-    let member = guild.members.getOrDefault(data["user"]["id"].str,
-        Member(user: newUser(data["user"]))
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        member = guild.members.getOrDefault(data["user"]["id"].str,
+            Member(user: newUser(data["user"]))
+        )
 
     guild.members.del(member.user.id)
     s.cache.users.del(member.user.id)
@@ -496,19 +504,21 @@ proc guildMemberRemove(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_member_remove(s, guild, member)
 
 proc guildBanAdd(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
-    let user = newUser(data["user"])
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        user = newUser(data["user"])
 
     await s.client.events.guild_ban_add(s, guild, user)
 
 proc guildBanRemove(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let user = newUser(data["user"])
+        user = newUser(data["user"])
 
     await s.client.events.guild_ban_remove(s, guild, user)
 
@@ -560,18 +570,18 @@ proc guildCreate(s: Shard, data: JsonNode) {.async.} =
             s.cache.guildChannels.add(chan["id"].str, newGuildChannel(chan))
 
     if s.cache.preferences.cache_users:
-        if data["members"].elems.len > 0:
-            for m in data["members"].elems:
-                s.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
+        for m in data["members"].elems:
+            s.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
 
     await s.client.events.guild_create(s, guild)
 
 proc guildRoleCreate(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let role = newRole(data["role"])
+        role = newRole(data["role"])
 
     if guild.id in s.cache.guilds:
         guild.roles.add(role.id, role)
@@ -579,11 +589,12 @@ proc guildRoleCreate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_role_create(s, guild, role)
 
 proc guildRoleUpdate(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let role = newRole(data["role"])
+        role = newRole(data["role"])
     var oldRole: Option[Role]
 
     if guild.id in s.cache.guilds:
@@ -595,25 +606,27 @@ proc guildRoleUpdate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_role_update(s, guild, role, oldRole)
 
 proc guildRoleDelete(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let role = guild.roles.getOrDefault(data["role_id"].str, Role(
-        id: data["role_id"].str
-    ))
+        role = guild.roles.getOrDefault(data["role_id"].str, Role(
+            id: data["role_id"].str
+        ))
 
     await s.client.events.guild_role_delete(s, guild, role)
 
 proc webhooksUpdate(s: Shard, data: JsonNode) {.async.} =
-    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
-        Guild(id: data["guild_id"].str)
-    )
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
 
-    let chan = s.cache.guildChannels.getOrDefault(
-        data["channel_id"].str,
-        GuildChannel(id: data["channel_id"].str)
-    )
+        chan = s.cache.guildChannels.getOrDefault(
+            data["channel_id"].str,
+            GuildChannel(id: data["channel_id"].str)
+        )
 
     await s.client.events.webhooks_update(s, guild, chan)
 

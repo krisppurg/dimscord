@@ -85,12 +85,11 @@ proc getErrorDetails(data: JsonNode): string =
     if "errors" in data:
         result &= "\n" & clean(data["errors"]).join("\n")
 
-proc req(api: RestApi, meth, endpoint: string;
+proc request(api: RestApi, meth, endpoint: string;
             pl, reason = ""; mp: MultipartData = nil;
-            auth = true; retried = false): Future[JsonNode] {.async.} =
+            auth = true): Future[JsonNode] {.async.} =
     if api.token == "Bot  ":
         raise newException(Exception, "The token you specified was empty.")
-
     let route = endpoint.parseRoute(meth)
 
     if route notin api.endpoints:
@@ -101,14 +100,11 @@ proc req(api: RestApi, meth, endpoint: string;
         error = ""
 
     let r = api.endpoints[route]
-
-    if r.processing:
-        if getTime().toUnix() >= expiry and expiry != 0:
+    while r.processing:
+        if getTime().toUnix() >= expiry and expiry != 0: # if there is a hang up we do not want to wait forever.
             r.processing = false
             expiry = 0
         await sleepAsync 750
-
-        return await api.req(meth, endpoint, pl, reason, mp, auth, true)
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
@@ -150,8 +146,6 @@ proc req(api: RestApi, meth, endpoint: string;
             raise newException(Exception, getCurrentExceptionMsg())
 
         log("Got response.")
-
-        client.close()
 
         let
             retry_header = resp.headers.getOrDefault(
@@ -255,11 +249,6 @@ proc req(api: RestApi, meth, endpoint: string;
         if fatalErr:
             raise newException(RestError, err)
 
-proc request(api: RestApi, meth, endpoint: string;
-            pl, reason = ""; mp: MultipartData = nil;
-            auth = true): Future[JsonNode] {.async.} =
-    result = await api.req(meth, endpoint, pl, reason, mp, auth)
-
 proc `%`(o: Overwrite): JsonNode =
     result = newJObject()
     result["id"] = %o.id
@@ -270,16 +259,25 @@ proc `%`(o: Overwrite): JsonNode =
 proc sendMessage*(api: RestApi, channel_id: string;
             content = ""; tts = false; embed = none Embed;
             allowed_mentions = none AllowedMentions;
+            nonce: tuple[ival: int, str: string] = (-1, "");
             files = none seq[DiscordFile]): Future[Message] {.async.} =
     ## Sends a discord message.
+    ## * `nonce` This can be used for optimistic message sending
     let payload = %*{
         "content": content,
         "tts": tts
     }
 
-    if embed.isSome: payload["embed"] = %get embed
+    if embed.isSome:
+        payload["embed"] = %get embed
+
     if allowed_mentions.isSome:
         payload["allowed_mentions"] = %get allowed_mentions
+
+    if nonce.ival != -1:
+        payload["nonce"] = %nonce.ival
+    if nonce.str != "":
+        payload["nonce"] = %nonce.str
 
     if files.isSome:
         var mpd = newMultipartData()
@@ -315,15 +313,15 @@ proc sendMessage*(api: RestApi, channel_id: string;
     )).newMessage
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
-        content = ""; tts = false;
+        content = ""; tts = false; flags = none(int);
         embed = none Embed): Future[Message] {.async.} =
     ## Edits a discord message.
     let payload = %*{
         "content": content,
-        "tts": tts
+        "tts": tts,
+        "flags": %flags,
+        "embed": %embed
     }
-
-    if embed.isSome: payload["embed"] = %get embed
 
     result = (await api.request(
         "PATCH",
@@ -343,7 +341,7 @@ proc deleteMessage*(api: RestApi, channel_id, message_id: string;
 proc getChannelMessages*(api: RestApi, channel_id: string;
         around, before, after = "";
         limit = 50): Future[seq[Message]] {.async.} =
-    ## Gets channel message.
+    ## Gets channel messages.
     var url = endpointChannelMessages(channel_id) & "?"
 
     if before != "":
@@ -673,9 +671,13 @@ proc createGuild*(api: RestApi, name, region = none string;
         $payload
     )).newGuild
 
-proc getGuild*(api: RestApi, guild_id: string): Future[Guild] {.async.} =
+proc getGuild*(api: RestApi, guild_id: string;
+        with_counts = false): Future[Guild] {.async.} =
     ## Gets a guild.
-    result = (await api.request("GET", endpointGuilds(guild_id))).newGuild
+    result = (await api.request(
+        "GET",
+        endpointGuilds(guild_id) & "?with_counts=" & $with_counts
+    )).newGuild
 
 proc getGuildAuditLogs*(api: RestApi, guild_id: string;
         user_id, before = "";
@@ -938,8 +940,10 @@ proc getGuildIntegrations*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildIntegrations(guild_id)
-    )).elems.map(proc (x: JsonNode): Integration =
-        result = x.to(Integration))
+    )).elems.map(
+        proc (x: JsonNode): Integration =
+            x.to(Integration)
+    )
 
 proc getChannelWebhooks*(api: RestApi,
         channel_id: string): Future[seq[Webhook]] {.async.} =
@@ -1126,7 +1130,7 @@ proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
         nick = none string;
         roles = none seq[string];
         mute, deaf = none bool;
-        reason: string = ""): Future[tuple[member: Member,
+        reason = ""): Future[tuple[member: Member,
                                             exists: bool]] {.async.} =
     ## Adds a guild member.
     ## If member is in the guild, then exists will be true.
@@ -1208,16 +1212,20 @@ proc getGuildVoiceRegions*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildRegions(guild_id)
-    )).elems.map(proc (x: JsonNode): VoiceRegion =
-        result = x.to(VoiceRegion))
+    )).elems.map(
+        proc (x: JsonNode): VoiceRegion =
+            x.to(VoiceRegion)
+    )
 
 proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
     ## Get voice regions
     result = (await api.request(
         "GET",
         endpointVoiceRegions()
-    )).elems.map(proc (x: JsonNode): VoiceRegion =
-        result = x.to(VoiceRegion))
+    )).elems.map(
+        proc (x: JsonNode): VoiceRegion =
+            x.to(VoiceRegion)
+    )
 
 proc getCurrentUser*(api: RestApi): Future[User] {.async.} =
     ## Gets the current user.
@@ -1240,3 +1248,24 @@ proc editCurrentUser*(api: RestApi,
     payload.loadNullableOptStr(avatar)
 
     result = (await api.request("PATCH", endpointUsers(), $payload)).newUser
+
+proc createGroupDm*(api: RestApi,
+        access_tokens: seq[string];
+        nicks: Table[string, string]): Future[DMChannel] {.async.} =
+    ## Creates a Group DM Channel.
+    ## * `nicks` Example: `{"2123450": "MrDude"}.toTable`
+    result = (await api.request(
+        "POST",
+        endpointUserChannels(),
+        $(%*{
+            "access_tokens": %access_tokens,
+            "nicks": %nicks
+        })
+    )).newDMChannel
+
+proc getCurrentApplication*(api: RestApi): Future[OAuth2Application] {.async.} =
+    ## Gets the current application for the current user (bot user).
+    result = (await api.request(
+        "GET",
+        endpointOAuth2Application()
+    )).newOAuth2Application

@@ -88,14 +88,15 @@ proc `+`*(p: PermObj): int =
         for it in p.denied:
             result = result and (it.int - it.int - it.int)
 
-proc permCheck*(perms: int, p: int): bool =
+proc permCheck*(perms, perm: int): bool =
     ## Checks if the set of permissions has the specific permission.
-    result = (perms and p) == p
+    result = (perms and perm) == perm
 
 proc permCheck*(perms: int, p: PermObj): bool =
     ## Just like permCheck, but with a PermObj.
-    var allowed: Option[bool]
-    var denied: Option[bool]
+    var
+        allowed: Option[bool]
+        denied: Option[bool]
 
     if p.allowed.len > 0:
         allowed = some permCheck(perms, cast[int](p.allowed))
@@ -113,8 +114,8 @@ proc permCheck*(perms: int, p: PermObj): bool =
         if p.perms != 0:
             result = permCheck(perms, p.perms)
 
-proc computeBasePerms*(guild: Guild, role: Role): PermObj =
-    ## Computes the base permissions for a role.
+proc computePerms*(guild: Guild, role: Role): PermObj =
+    ## Computes the guild permissions for a role.
     let
         everyone = guild.roles[guild.id]
         perms = everyone.permissions or role.permissions
@@ -124,8 +125,8 @@ proc computeBasePerms*(guild: Guild, role: Role): PermObj =
 
     result = PermObj(allowed: cast[set[PermEnum]](perms))
 
-proc computeBasePerms*(guild: Guild, member: Member): PermObj =
-    ## Computes the base permissions for a member.
+proc computePerms*(guild: Guild, member: Member): PermObj =
+    ## Computes the guild permissions for a member.
     if guild.owner_id == member.user.id:
         return PermObj(allowed: permAll)
 
@@ -133,14 +134,14 @@ proc computeBasePerms*(guild: Guild, member: Member): PermObj =
     var perms = cast[set[PermEnum]](everyone.permissions)
 
     for r in member.roles:
-        perms = perms + guild.computeBasePerms(guild.roles[r]).allowed
+        perms = perms + guild.computePerms(guild.roles[r]).allowed
         let permissions = cast[int](perms)
         if permissions.permCheck(cast[int]({permAdministrator})):
             return PermObj(allowed: permAll)
 
     result = PermObj(allowed: perms)
 
-proc readPerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj =
+proc computePerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj =
     ## Returns the permissions for the guild member of the channel.
     ## For permission checking you can do something like this:
     ## 
@@ -149,7 +150,7 @@ proc readPerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj =
     ##        allowed: {permExample}
     ##    ))
     var
-        perms = cast[int](guild.computeBasePerms(member))
+        perms = cast[int](guild.computePerms(member))
         allow = 0
         deny = 0
 

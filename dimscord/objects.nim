@@ -1,3 +1,13 @@
+##[
+    All Optional fields in these object are:
+    
+    * Fields that cannot be assumed. such as bools
+    * Optional fields for example embeds, which they may not be
+      present.
+    
+    Some may not be optional, but they can be assumable or always present.
+]##
+
 import options, json, tables, constants, macros
 import sequtils, strutils, asyncdispatch, ws
 
@@ -15,7 +25,7 @@ type
         id*, sequence*: int
         client*: DiscordClient
         user*: User
-        session_id*: string
+        gatewayUrl*, session_id*: string
         cache*: CacheTable
         connection*: Websocket
         hbAck*, hbSent*, stop*, compress*: bool
@@ -34,6 +44,7 @@ type
     CacheTablePrefs* = object
         cache_users*, cache_guilds*: bool
         cache_guild_channels*, cache_dm_channels*: bool
+        large_message_threshold*, max_message_size*: int
     CacheError* = object of KeyError
     Embed* = object
         title*, `type`*, description*: Option[string]
@@ -76,7 +87,7 @@ type
         id*, channel_id*: string
         content*, timestamp*: string
         edited_timestamp*, guild_id*: Option[string]
-        webhook_id*, nonce: Option[string]
+        webhook_id*, nonce*: Option[string]
         tts*, mention_everyone*, pinned*: bool
         kind*, flags*: int
         author*: User
@@ -173,7 +184,6 @@ type
         premium_since*, nick*: Option[string]
     Guild* = ref object
         ## A guild object.
-        ## All Optional fields are cache fields, or fields that cannot be assumed.
         id*, name*, owner_id*: string
         region*, preferred_locale*: string
         description*, banner*: Option[string]
@@ -226,6 +236,25 @@ type
         ## Used for creating guilds.
         name*, parent_id*: string
         id*, kind*: int
+    TeamMember* = object
+        membership_state*: int
+        permissions*: seq[string] ## always would be @["*"]
+        team_id*: string
+        user*: User
+    Team* = object
+        icon*: Option[string]
+        id*, owner_user_id*: string
+        members*: seq[TeamMember]
+    OAuth2Application* = object
+        id*, name*: string
+        description*, summary*: string
+        verify_key*: string
+        icon*, guild_id*, primary_sku_id*: Option[string]
+        slug*, cover_image*: Option[string]
+        rpc_origins*: seq[string]
+        bot_public*, bot_require_code_grant*: bool
+        owner*: User
+        team*: Option[Team]
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
@@ -322,7 +351,8 @@ type
         shards*: int
         session_start_limit*: GatewaySession
     Events* = ref object
-        ## An Events object.
+        ## An object containing events that can be changed.
+        ## 
         ## `exists` param checks message is cached or not.
         ## Other cachable objects dont have them.
         ## 
@@ -379,24 +409,6 @@ type
         voice_server_update*: proc (s: Shard, g: Guild,
                 token: string, e: Option[string]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
-
-proc newCacheTable*(cache_users, cache_guilds,
-            cache_guild_channels, cache_dm_channels: bool): CacheTable =
-    ## Initialises cache.
-    let prefs = CacheTablePrefs(
-        cache_users: cache_users,
-        cache_guilds: cache_guilds,
-        cache_guild_channels: cache_guild_channels,
-        cache_dm_channels: cache_dm_channels
-    )
-
-    result = CacheTable(
-        preferences: prefs,
-        users: initTable[string, User](),
-        guilds: initTable[string, Guild](),
-        guildChannels: initTable[string, GuildChannel](),
-        dmChannels: initTable[string, DMChannel]()
-    )
 
 proc kind*(c: CacheTable, channel_id: string): int =
     ## Checks for a channel kind. (Shortcut)
@@ -471,21 +483,30 @@ macro keyCheckStr(obj: typed, obj2: typed,
       if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
         `obj2`.`lit` = `obj`[`fieldName`].getStr
 
-proc newRestApi*(token: string, rest_ver: int): RestApi =
-    result = RestApi(token: token)
-    result.rest_ver = rest_ver
-    result.endpoints = initTable[string, Ratelimit]()
+proc newShard*(id: int, client: DiscordClient): Shard =
+    result = Shard(
+        id: id,
+        client: client,
+        cache: CacheTable(
+            users: initTable[string, User](),
+            guilds: initTable[string, Guild](),
+            guildChannels: initTable[string, GuildChannel](),
+            dmChannels: initTable[string, DMChannel]()
+        ),
+        retry_info: (ms: 1000, attempts: 0)
+    )
 
-proc newDiscordClient*(token: string; rest_mode = false;
+proc newDiscordClient*(token: string;
+        rest_mode = false;
         rest_ver = 6): DiscordClient =
-    ## Creates a discord client.
+    ## Creates a Discord Client.
     var auth_token = token
     if not token.startsWith("Bot "):
         auth_token = "Bot " & token
 
     result = DiscordClient(
         token: auth_token,
-        api: newRestApi(token = auth_token, rest_ver = rest_ver),
+        api: RestApi(token: auth_token, rest_ver: rest_ver),
         max_shards: 1,
         restMode: rest_mode,
         events: Events(
@@ -686,7 +707,7 @@ proc newInvite*(data: JsonNode): Invite =
     if "inviter" in data:
         result.inviter = some newUser(data["inviter"])
     if "target_user" in data:
-        result.target_user = some newUser(data["inviter"])
+        result.target_user = some newUser(data["target_user"])
 
     data.keyCheckOptInt(result, target_user_type,
         approximate_presence_count, approximate_member_count)
@@ -883,12 +904,14 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
 
     result.mention_users = data{"mentions"}.getElems.map(newUser)
     result.attachments = data{"attachments"}.getElems.map(newAttachment)
-    result.embeds = data{"embeds"}.getElems.map(proc (x: JsonNode): Embed =
-        result = x.to(Embed))
+    result.embeds = data{"embeds"}.getElems.map(
+        proc (x: JsonNode): Embed =
+            x.to(Embed)
+    )
 
     data.keyCheckInt(result, kind, flags)
-    data.keyCheckStr(result, content)
-    data.keyCheckOptStr(result, edited_timestamp)
+    data.keyCheckStr(result, content, timestamp)
+    data.keyCheckOptStr(result, edited_timestamp, guild_id)
     data.keyCheckBool(result, mention_everyone, pinned, tts)
 
     if "author" in data:
@@ -1042,6 +1065,40 @@ proc newAuditLog*(data: JsonNode): AuditLog =
             result = x.to(Integration)
         )
     )
+
+proc newTeam(data: JsonNode): Team =
+    result = Team(
+        id: data["id"].str,
+        owner_user_id: data["owner_user_id"].str,
+        members: data["members"].elems.map(
+            proc (x: JsonNode): TeamMember =
+                result = TeamMember(
+                    membership_state: x["membership_state"].getInt,
+                    permissions: x["permissions"].elems.mapIt(it.str),
+                    team_id: x["team_id"].str,
+                    user: newUser(x["user"])
+                )
+        )
+    )
+    data.keyCheckOptStr(result, icon)
+
+proc newOAuth2Application*(data: JsonNode): OAuth2Application =
+    result = OAuth2Application(
+        id: data["id"].str,
+        name: data["name"].str,
+        description: data["description"].str,
+        rpc_origins: data{"rpc_orgins"}.getElems.mapIt(it.str),
+        bot_public: data["bot_public"].bval,
+        bot_require_code_grant: data["bot_require_code_grant"].bval,
+        owner: newUser(data["owner"]),
+        summary: data["summary"].str,
+        verify_key: data["verify_key"].str,
+    )
+    data.keyCheckOptStr(result, icon, guild_id,
+        primary_sku_id, slug, cover_image)
+
+    if "team" in data:
+        result.team = some newTeam(data["team"])
 
 proc newGuild*(data: JsonNode): Guild =
     result = Guild(

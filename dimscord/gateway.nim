@@ -25,13 +25,6 @@ var
     backoff = false
     reconnectable = true
 
-proc newShard(id: int, client: DiscordClient): Shard =
-    result = Shard(
-        id: id,
-        client: client,
-        retry_info: (ms: 1000, attempts: 0)
-    )
-
 proc logShard(s: Shard, msg: string, info: seq[string] = @[]) =
     when defined(dimscordDebug):
         var finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
@@ -254,12 +247,12 @@ proc reconnect(s: Shard) {.async.} =
     s.reconnecting = true
     s.retry_info.attempts += 1
 
-    var url = gateway.url
+    var url = s.gatewayUrl
 
     if s.retry_info.attempts > 3:
         try:
             url = await s.client.api.getGateway()
-            gateway.url = url
+            s.gatewayUrl = url
         except:
             s.logShard("Error occurred:: \n" & getCurrentExceptionMsg())
             s.reconnecting = false
@@ -284,6 +277,8 @@ proc reconnect(s: Shard) {.async.} =
         s.hbAck = true
         s.stop = false
         s.reconnecting = false
+        s.retry_info.attempts = 0
+        s.retry_info.ms = max(s.retry_info.ms - 5000, 1000)
 
         if s.networkError:
             s.logShard("Connection established after network error.")
@@ -295,6 +290,7 @@ proc reconnect(s: Shard) {.async.} =
         s.logShard(&"Failed to connect, reconnecting in {s.retry_info.ms}ms",@[
             "attempt", $s.retry_info.attempts
         ])
+        s.reconnecting = false
         await sleepAsync s.retry_info.ms
         await s.reconnect()
         return
@@ -354,7 +350,9 @@ proc handleSocketMessage(s: Shard) {.async.} =
             packet = await s.connection.receivePacket()
         except:
             var exceptn = getCurrentExceptionMsg()
-            echo "Error occurred in websocket ::\n", getCurrentExceptionMsg()
+            logShard(
+                "Error occurred in websocket ::\n", getCurrentExceptionMsg()
+            )
 
             if not s.stop: s.stop = true
             if s.heartbeating: s.heartbeating = false
@@ -375,7 +373,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
         try:
             data = parseJson(packet[1])
         except:
-            echo "An error occurred while parsing data: " & packet[1]
+            logShard("An error occurred while parsing data: " & packet[1])
             shouldReconnect = s.handleDisconnect(packet[1])
 
             await s.disconnect(should_reconnect = shouldReconnect)
@@ -456,8 +454,17 @@ proc endSession*(cl: DiscordClient) {.async.} =
         await shard.disconnect(should_reconnect = false)
         shard.cache.clear()
 
+proc setupShard(cl: DiscordClient, i: int;
+        compress: bool; cache_prefs: CacheTablePrefs): Shard =
+    result = newShard(i, cl)
+    cl.shards.add(i, result)
+    result.compress = compress
+
+    result.cache.preferences = cache_prefs
+
 proc startSession(s: Shard, url, query: string) {.async.} =
     s.logShard("Connecting to " & url & query)
+
     try:
         s.connection = await newWebsocket(url & query)
         s.hbAck = true
@@ -475,18 +482,23 @@ proc startSession*(cl: DiscordClient,
             compress = false;
             autoreconnect = true;
             gateway_intents: set[GatewayIntent] = {};
-            large_threshold = 50;
+            large_message_threshold, large_threshold = 50;
+            max_message_size = 5_000_000;
             gateway_version = 6;
             max_shards = 1;
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
-    ## Connects the client to Discord via gateway.
-    ##
-    ## - `gateway_intents` Allows you to subscribe to pre-defined events.
-    ## - `compress` The zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
-    ## - `large_threshold` The number that would be considered a large guild (50-250).
-    ## - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
+    ##[
+        Connects the client to Discord via gateway.
 
+        - `gateway_intents` Allows you to subscribe to pre-defined events.
+        - `compress` The zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
+        - `large_threshold` The number that would be considered a large guild (50-250).
+        - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
+        - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
+        - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
+        - `large_message_threshold` Max message limit (MESSAGE_CREATE)
+    ]##
     if cl.restMode:
         raise newException(Exception, "(╯°□°)╯ REST mode is enabled! (╯°□°)╯")
     elif cl.token == "Bot  ":
@@ -499,11 +511,12 @@ proc startSession*(cl: DiscordClient,
     cl.max_shards = max_shards
     cl.gatewayVer = gateway_version
 
-    var query = "/?v=" & $gateway_version
+    var
+        query = "/?v=" & $gateway_version
+        info: GatewayBot
 
-    if gateway.url == "":
-        log("Starting the session.")
-        var info: GatewayBot
+    if cl.shards.len == 0:
+        log("Starting gateway session.")
 
         try:
             info = await cl.api.getGatewayBot()
@@ -529,30 +542,26 @@ proc startSession*(cl: DiscordClient,
             ])
             await sleepAsync time.int
 
-        gateway = (info.shards, info.url)
+        if max_shards == 1 and info.shards > 1:
+            cl.max_shards = info.shards
 
-    if max_shards == 1 and gateway.shards > 1:
-        cl.max_shards = gateway.shards
+    for id in 0..cl.max_shards - 1:
+        let s = cl.setupShard(id, compress, CacheTablePrefs(
+            cache_users: cache_users,
+            cache_guilds: cache_guilds,
+            cache_guild_channels: cache_guild_channels,
+            cache_dm_channels: cache_dm_channels,
+            large_message_threshold: large_message_threshold,
+            max_message_size: max_message_size
+        ))
+        s.gatewayUrl = info.url
 
-    if max_shards > 1:
-        for i in 0..cl.max_shards - 2:
-            let s = newShard(i, cl)
-            cl.shards.add(i, s)
-            s.compress = compress
-            s.cache = newCacheTable(cache_users, cache_guilds,
-                cache_guild_channels, cache_dm_channels)
+        if id == max_shards - 1: # Last shard.
+            await s.startSession(s.gatewayUrl, query)
+        else:
+            asyncCheck s.startSession(s.gatewayUrl, query)
 
-            asyncCheck s.startSession(gateway.url, query)
-
-            await s.waitWhenReady()
-
-    let s = newShard(cl.max_shards - 1, cl)
-    cl.shards.add(cl.max_shards - 1, s)
-    s.compress = compress
-    s.cache = newCacheTable(cache_users, cache_guilds,
-        cache_guild_channels, cache_dm_channels)
-
-    await s.startSession(gateway.url, query)
+        await s.waitWhenReady()
 
 proc latency*(s: Shard): int =
     ## Gets the shard's latency ms.

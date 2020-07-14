@@ -1,4 +1,5 @@
-import strformat
+when defined(dimscordDebug):
+    import strformat
 {.hint[XDeclaredButNotUsed]: off.}
 
 type
@@ -35,21 +36,21 @@ type
         permManageWebhooks
         permManageEmojis
     GatewayIntent* = enum
-        intentGuilds,
-        intentGuildMembers,
-        intentGuildBans,
-        intentGuildEmojis,
-        intentGuildIntegrations,
-        intentGuildWebhooks,
-        intentGuildInvites,
-        intentGuildVoiceStates,
-        intentGuildPresences,
-        intentGuildMessages,
-        intentGuildMessageReactions,
-        intentGuildMessageTyping,
-        intentDirectMessages,
-        intentDirectMessageReactions,
-        intentDirectMessageTyping
+        giGuilds,
+        giGuildMembers,
+        giGuildBans,
+        giGuildEmojis,
+        giGuildIntegrations,
+        giGuildWebhooks,
+        giGuildInvites,
+        giGuildVoiceStates,
+        giGuildPresences,
+        giGuildMessages,
+        giGuildMessageReactions,
+        giGuildMessageTyping,
+        giDirectMessages,
+        giDirectMessageReactions,
+        giDirectMessageTyping
     AuditLogChangeKind* = enum
         alcString,
         alcInt,
@@ -179,6 +180,9 @@ const
     aleIntegrationUpdate* = 81
     aleIntegrationDelete* = 82
 
+    tmsInvited* = 1 # not to be confused with "The Mysterious Song" lol
+    tmsAccepted* = 2
+
     permAllText* = {permSendTTSMessage,
         permEmbedLinks,
         permReadMessageHistory,
@@ -226,7 +230,7 @@ proc log*(msg: string, info: seq[string] = @[]) =
 
 # Rest Endpoints
 
-proc endpointUsers*(uid: string = "@me"): string =
+proc endpointUsers*(uid = "@me"): string =
     result = "users/" & uid
 
 proc endpointUserChannels*(): string =
@@ -257,7 +261,7 @@ proc endpointGuildAuditLogs*(gid: string): string =
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
 
-proc endpointGuildMembersNick*(gid: string; mid: string = "@me"): string =
+proc endpointGuildMembersNick*(gid: string; mid = "@me"): string =
     result = endpointGuildMembers(gid, mid) & "/nick"
 
 proc endpointGuildMembersRole*(gid, mid, rid: string): string =
@@ -347,3 +351,6 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
         result = result & "/" & e
     if uid != "":
         result = result & "/" & uid
+
+proc endpointOAuth2Application*(): string =
+    result = "oauth2/applications/@me"

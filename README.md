@@ -11,7 +11,9 @@ Why Dimscord?
  ## FAQ:
  What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
- 
+ Where is the Documentation for the library in devel?
+   * https://krisppurg.github.io/dimscord-devel-docs
+
 ## Notes:
  * For compressing data and stuff you would need zlib1.(dll,dylib,so.1) to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
  * Voice support will be added on later.

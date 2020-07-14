@@ -176,3 +176,18 @@ proc computePerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj
 
     perms = (perms and deny - deny - deny - 1) or allow
     result = PermObj(allowed: cast[set[PermEnum]](perms))
+
+proc genInviteLink*(client_id: string, permissions: set[PermEnum] = {};
+        guild_id = ""; disable_guild_select = false): string =
+    ## Creates an invite link for the bot of the form.
+    ## 
+    ## Example:
+    ## `https://discord.com/api/oauth2/authorize?client_id=666&scope=bot&permissions=1`
+    ## 
+    ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
+    result = restBase & "oauth2/authorize?client_id=" & client_id &
+        "&scope=bot&permissions=" & $cast[int](permissions)   
+
+    if guild_id != "":
+        result &= "&guild_id=" & guild_id &
+            "&disable_guild_select=" & $disable_guild_select

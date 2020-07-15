@@ -17,22 +17,23 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
     case command.toLowerAscii():
     of "test": # Sends a basic message.
         discard await discord.api.sendMessage(m.channel_id, "Success!")
-    of "deletemsg": # Deletes a message.
+    of "prune": # Prune messages.
         if s.cache.kind(m.channel_id) == ctDirect: return
 
-        let guild = s.cache.guilds[m.guild_id.get]
-        let chan = s.cache.guildChannels[m.channel_id]
-        let perms = guild.computePerms(guild.members[m.author.id], chan)
-        let pobj = PermObj(allowed: {permManageMessages})
+        let
+            guild = s.cache.guilds[m.guild_id.get]
+            chan = s.cache.guildChannels[m.channel_id]
+            perms = guild.computePerms(guild.members[m.author.id], chan)
 
-        if not cast[int](pobj.allowed).permCheck(pobj):
+        if permManageMessages notin perms.allowed:
             discard await discord.api.sendMessage(
                 m.channel_id, "you can't do that command!")
             return
         try:
             let messages = await discord.api.getChannelMessages(
                 m.channel_id,
-                limit = 2
+                before = m.id,
+                limit = max(2, if args.len == 1: 2 else: args[1].parseInt)
             )
             await discord.api.bulkDeleteMessages(
                 m.channel_id,
@@ -50,7 +51,7 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
     of "help": # Sends help.
         discard await discord.api.sendMessage(
             m.channel_id,
-            "`test, echo, facepalm, deletemsg` are the commands."
+            "`test, echo, facepalm, prune` are the commands."
         )
     of "echo": # Copies your text.
         var text = args[1..args.high].join(" ")

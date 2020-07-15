@@ -74,8 +74,8 @@ proc handleDisconnect(s: Shard, msg: string): bool =
         "reason", closeData.reason
     ])
 
-    if s.authenticating: s.authenticating = false
-    if s.resuming: s.resuming = false
+    s.authenticating = false
+    s.resuming = false
 
     s.hbAck = false
     s.hbSent = false

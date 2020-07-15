@@ -49,9 +49,10 @@ discord.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
 discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
     if m.author.bot: return
     if m.content == "!ping": # If message content is "!ping".
-        let before = epochTime() * 1000
-        let msg = await discord.api.sendMessage(m.channel_id, "ping?")
-        let after = epochTime() * 1000
+        let
+            before = epochTime() * 1000
+            msg = await discord.api.sendMessage(m.channel_id, "ping?")
+            after = epochTime() * 1000
         # Edit the message as pong! Use 'discard' because editMessage returns a new message.
         discard await discord.api.editMessage(
             m.channel_id,
@@ -65,7 +66,7 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
             embed = some Embed(
                 title: some "Hello there!", 
                 description: some "This is description",
-                color: some 0xFFFFFF
+                color: some 0x7789ec
             )
         )
 

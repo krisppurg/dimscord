@@ -5,9 +5,6 @@
 ## 
 ## - For objects, this file includes the discord objects,
 ##   such as Message, Guild, User, Shard, etc.
-##   This also includes caching too, if you want to handle raw discord objects,
-##   which is event data, then you can the constructors too.
-## 
 ## 
 ## - For gateway, this file allows you to
 ##   connect, disconnect, send gateway messages to the gateway.
@@ -41,7 +38,7 @@
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ##   If any of these types are enums and you want to compare them like
-##   for example ActivityFlags use `cast[int](myEnum)` e.g. `cast[int](afSync)`
+##   for example ActivityFlags use `cast[int]({myEnum})` e.g. `cast[int]({afSync})`
 
 import dimscord/[gateway, restapi, constants, objects, misc]
 

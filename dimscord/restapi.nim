@@ -116,7 +116,10 @@ proc request(api: RestApi, meth, endpoint: string;
         else:
             await api.delayRoutes(false, route)
 
-        let client = newAsyncHttpClient(libAgent)
+        let
+            client = newAsyncHttpClient(libAgent)
+            url = restBase & "v" & $api.rest_ver & "/" & endpoint
+
         var resp: AsyncResponse
 
         if reason != "":
@@ -127,8 +130,6 @@ proc request(api: RestApi, meth, endpoint: string;
         client.headers["Content-Type"] = "application/json"
         client.headers["Content-Length"] = $pl.len
         client.headers["X-RateLimit-Precision"] = "millisecond"
-
-        let url = restBase & "v" & $api.rest_ver & "/" & endpoint
 
         log("Sending HTTP request", @[
             "method", meth,

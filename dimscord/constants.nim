@@ -13,7 +13,7 @@ type
         permAddReactions = "Add Reactions"
         permViewAuditLogs = "View Audit Log"
         permPrioritySpeaker = "Priority Speaker"
-        permVoiceStream = "VoiceStream"
+        permVoiceStream = "Voice Stream"
         permViewChannel = "View Channel"
         permSendMessages = "Send Messages"
         permSendTTSMessage = "Send TTS Messages"

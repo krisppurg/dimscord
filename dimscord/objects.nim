@@ -601,13 +601,9 @@ proc newOverwrite*(data: JsonNode): Overwrite =
     )
 
     if result.allow != 0:
-        result.permObj.perms = result.permObj.perms or result.allow
         result.permObj.allowed = cast[set[PermEnum]](result.allow)
 
     if result.deny != 0:
-        let deny = (result.deny - result.deny - result.deny - 1)
-        result.permObj.perms = result.permObj.perms and deny
-
         result.permObj.denied = cast[set[PermEnum]](result.deny)
 
 proc newRole*(data: JsonNode): Role =

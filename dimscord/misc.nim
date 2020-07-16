@@ -78,8 +78,8 @@ proc timestamp*(id: string): Time =
     let snowflake = parseBiggestUint(id)
     result = fromUnix int64(((snowflake shr 22) + 1420070400000'u64) div 1000)
 
-proc `+`*(p: PermObj): int =
-    ## Sums up the total permissions.
+proc perms*(p: PermObj): int =
+    ## Gets the total permissions.
     result = 0
     if p.allowed.len > 0:
         for it in p.allowed:
@@ -135,8 +135,7 @@ proc computePerms*(guild: Guild, member: Member): PermObj =
 
     for r in member.roles:
         perms = perms + guild.computePerms(guild.roles[r]).allowed
-        let permissions = cast[int](perms)
-        if permissions.permCheck(cast[int]({permAdministrator})):
+        if permAdministrator in perms:
             return PermObj(allowed: permAll)
 
     result = PermObj(allowed: perms)

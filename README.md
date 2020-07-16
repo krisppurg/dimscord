@@ -9,31 +9,27 @@ Why Dimscord?
  * The other nim discord library has bunch of issues and it's unmaintained.
  
  ## FAQ:
- What is Nim?
+ * What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
 
- Where is the Documentation for the library in devel?
+ * Where is the Documentation for the library in devel?
    * https://krisppurg.github.io/dimscord-devel-docs
 
 ## Notes:
- * For compressing data and stuff you would need zlib1.(dll,dylib,so.1) to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
- * Voice support will be added on later.
+ * For compressing data and stuff you would need a zlib1 file to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder. They have to be either a dylib, dll or so.1 file.
+ * Voice support will be added.
  * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member use the requestGuildMembers proc, that way you can get a specific guild member from a large guild; if you have presence intent enabled and you are debugging with a large guild,
  dont debug because it will slow down your bot.
- * If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.
 
-## How to install Dimscord:
-### Step 1: Install Nim
+## Getting Started:
+1. Install Nim using [choosenim](https://github.com/dom96/choosenim) or [Nim's website](https://nim-lang.org/install.html)
 
- You can use [choosenim](https://github.com/dom96/choosenim) or you could download it from [Nim's website](https://nim-lang.org/install.html)
-
- ### Step 2: Install Dimscord
- You'd can install Dimscord via Nimble using `nimble install dimscord` or Github `git clone https://github.com/krisppurg/dimscord`
-
-You will need at least Nim 1.2.0 to install dimscord
+2. Install Dimscord via Nimble using `nimble install dimscord` or Github `git clone https://github.com/krisppurg/dimscord`
+   * You will need at least Nim 1.2.0 to install dimscord
  
- ### Step 3: Enjoy.
- Stay up-to-date with the latest Dimscord release and stuff.
+3. Read the Wiki or Examples for referencing. Maybe even rewrite your bot if you want to switch.
+ 
+4. Start coding! Stay up-to-date with the latest Dimscord release and stuff.
 
 ## Quick Example:
 ```nim
@@ -74,3 +70,6 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
 waitFor discord.startSession()
 ```
 Please make sure that when you are running your discord bot you would need to define `-d:ssl` example: `nim c -r -d:ssl main.nim`, you can use `-d:dimscordDebug`, if you want to debug.
+
+## Contributing
+* If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.

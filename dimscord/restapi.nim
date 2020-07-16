@@ -40,7 +40,7 @@ proc parseRoute(endpoint, meth: string): string =
 
     result = route
 
-proc delayRoutes(api: RestApi; global = false; route = "") {.async.} =
+proc handleRoute(api: RestApi, global = false; route = "") {.async.} =
     var rl: tuple[retry_after: float, ratelimited: bool]
 
     if global:
@@ -112,9 +112,9 @@ proc request(api: RestApi, meth, endpoint: string;
             raise newException(RestError, msg)
 
         if global:
-            await api.delayRoutes(global)
+            await api.handleRoute(global)
         else:
-            await api.delayRoutes(false, route)
+            await api.handleRoute(false, route)
 
         let
             client = newAsyncHttpClient(libAgent)
@@ -229,10 +229,10 @@ proc request(api: RestApi, meth, endpoint: string;
                 ratelimited = true
                 r.ratelimited = true
 
-                await api.delayRoutes(global)
+                await api.handleRoute(global)
             else:
                 r.ratelimited = true
-                await api.delayRoutes(false, route)
+                await api.handleRoute(false, route)
 
         r.processing = false
     try:
@@ -714,7 +714,7 @@ proc createGuildRole*(api: RestApi, guild_id: string;
     ## Creates a guild role.
     result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
         "name": name,
-        "permissions": %(+pobj),
+        "permissions": %(pobj.perms),
         "color": color,
         "hoist": hoist,
         "mentionable": mentionable
@@ -738,7 +738,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     payload.loadNullableOptInt(color)
 
     if pobj.isSome:
-        payload["permissions"] = %(+(get pobj))
+        payload["permissions"] = %(perms(get pobj))
 
     result = (await api.request(
         "PATCH",
@@ -815,7 +815,7 @@ proc createGuildBan*(api: RestApi, guild_id, user_id: string;
     ## Creates a guild ban.
     discard await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
         "delete-message-days": $deletemsgdays,
-        "reason": reason
+        "reason": encodeUrl(reason)
     }), reason)
 
 proc removeGuildBan*(api: RestApi, guild_id, user_id: string; reason = "") {.async.} =
@@ -893,11 +893,11 @@ proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
     )
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
-    max_age = 86400,
-    max_uses = 0,
-    temp, unique = false,
-    target_user = none string,
-    target_user_type = none int; reason = ""): Future[Invite] {.async.} =
+        max_age = 86400;
+        max_uses = 0;
+        temp, unique = false;
+        target_user = none string;
+        target_user_type = none int; reason = ""): Future[Invite] {.async.} =
     ## Creates an instant invite.
     let payload = %*{
         "max_age": max_age,

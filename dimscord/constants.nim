@@ -1,12 +1,77 @@
+when defined(dimscordDebug):
+    import strformat
 {.hint[XDeclaredButNotUsed]: off.}
-import strutils
-var restVer* = "7"
-var base* = "https://discordapp.com/api/v" & restVer & "/"
+
+type
+    PermEnum* = enum
+        permCreateInstantInvite
+        permKickMembers
+        permBanMembers
+        permAdministrator
+        permManageChannels
+        permManageGuild
+        permAddReactions
+        permViewAuditLogs
+        permPrioritySpeaker
+        permVoiceStream
+        permViewChannel
+        permSendMessages
+        permSendTTSMessage
+        permManageMessages
+        permEmbedLinks
+        permAttachFiles
+        permReadMessageHistory
+        permMentionEveryone
+        permUseExternalEmojis
+        permViewGuildInsights
+        permVoiceConnect
+        permVoiceSpeak
+        permVoiceMuteMembers
+        permVoiceDeafenMembers
+        permVoiceMoveMembers
+        permUseVAD
+        permChangeNickname
+        permManageNicknames
+        permManageRoles
+        permManageWebhooks
+        permManageEmojis
+    GatewayIntent* = enum
+        giGuilds,
+        giGuildMembers,
+        giGuildBans,
+        giGuildEmojis,
+        giGuildIntegrations,
+        giGuildWebhooks,
+        giGuildInvites,
+        giGuildVoiceStates,
+        giGuildPresences,
+        giGuildMessages,
+        giGuildMessageReactions,
+        giGuildMessageTyping,
+        giDirectMessages,
+        giDirectMessageReactions,
+        giDirectMessageTyping
+    AuditLogChangeKind* = enum
+        alcString,
+        alcInt,
+        alcBool,
+        alcRoles,
+        alcOverwrites,
+        alcNil
+    ActivityFlags* = enum
+        afInstance,
+        afJoin,
+        afSpectate,
+        afJoinRequest,
+        afSync,
+        afPlay
 const
     libName* = "Dimscord"
-    libVer* = "0.0.8"
+    libVer* = "1.0.0"
+    libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"
+    restBase* = "https://discord.com/api/"
     cdnCustomEmojis* = cdnBase & "emojis/"
     cdnAttachments* = cdnBase & "attachments/"
     cdnAvatars* = cdnBase & "avatars/"
@@ -18,20 +83,6 @@ const
     cdnDiscoverySplashes* = cdnBase & "discovery-splashes/"
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAppIcons* = cdnBase & "app-icons/"
-
-    gatewayVer* = "6"
-
-    opDispatch* = 0
-    opHeartbeat* = 1
-    opIdentify* = 2
-    opStatusUpdate* = 3
-    opVoiceStateUpdate* = 4
-    opResume* = 6
-    opReconnect* = 7
-    opRequestGuildMembers* = 8
-    opInvalidSession* = 9
-    opHello* = 10
-    opHeartbeatAck* = 11
 
     mtDefault* = 0
     mtRecipientAdd* = 1
@@ -63,9 +114,9 @@ const
     mnlAllMessages* = 0
     mnlOnlyMentions* = 1
 
-    eclDisabled* = 0
-    eclMembersWithoutRoles* = 1
-    eclAllMembers* = 2
+    ecfDisabled* = 0
+    ecfMembersWithoutRoles* = 1
+    ecfAllMembers* = 2
 
     mfaNone* = 0
     mfaElevated* = 1
@@ -87,113 +138,154 @@ const
     gatWatching* = 3 # shhhh, this is a secret
     gatCustom* = 4
 
-    permCreateInstantInvite* = 0x00000001
-    permKickMembers* = 0x00000002
-    permBanMembers* = 0x00000004
-    permAdministrator* = 0x00000008
-    permManageChannels* = 0x00000010
-    permManageGuild* = 0x00000020
-    permAddReactions* = 0x00000040
-    permViewAuditLogs* = 0x00000080
-    permPrioritySpeaker* = 0x00000100
-    permViewChannel* = 0x00000400
-    permSendMessages* = 0x00000800
-    permSendTTSMessage* = 0x00001000
-    permManageMessages* = 0x00002000
-    permEmbedLinks* = 0x00004000
-    permAttachFiles* = 0x00008000
-    permReadMessageHistory* = 0x00010000
-    permMentionEveryone* = 0x00020000
-    permUseExternalEmojis* = 0x00040000
-    permVoiceConnect* = 0x00100000
-    permVoiceSpeak* = 0x00200000
-    permVoiceMuteMembers* = 0x00400000
-    permVoiceDeafenMemebers* = 0x00800000
-    permVoiceMoveMembers* = 0x01000000
-    permUseVAD* = 0x02000000
-    permChangeNickname* = 0x04000000
-    permManageNicknames* = 0x08000000
-    permManageRoles* = 0x10000000
-    permManageWebhooks* = 0x20000000
-    permManageEmojis* = 0x40000000
-    permAllText* = 261120
-    permAllVoice* = 66060288
-    permAllChannel* = 334757073
-    permAll* = 334757119
-
-    intentGuilds* = 1 shl 0
-    intentGuildMembers* = 1 shl 1
-    intentGuildBans* = 1 shl 2
-    intentGuildEmojis* = 1 shl 3
-    intentGuildIntegrations* = 1 shl 4
-    intentGuildWebhooks* = 1 shl 5
-    intentGuildInvites* = 1 shl 6
-    intentGuildVoiceStates* = 1 shl 7
-    intentGuildPresences* = 1 shl 8
-    intentGuildMessages* = 1 shl 9
-    intentGuildMessageReactions* = 1 shl 10
-    intentGuildMessageTyping* = 1 shl 11
-    intentDirectMessages* = 1 shl 12
-    intentDirectMessageReactions* = 1 shl 13
-    intentDirectMessageTyping* = 1 shl 14
-
     whIncoming* = 1
     whFollower* = 2
 
-proc changeApiVersion*(ver: string = "7") =
-    ## Changes the Discord API REST Version
-    assert parseInt(ver) >= 6 and parseInt(ver) < 8 # min max number conditions are quite tricky for me.
-    restVer = ver
+    iebRemoveRole* = 0
+    iebKick* = 1
+
+    aleGuildUpdate* = 1
+    aleChannelCreate* = 10
+    aleChannelUpdate* = 11
+    aleChannelDelete* = 12
+    aleChannelOverwriteCreate* = 13
+    aleChannelOverwriteUpdate* = 14
+    aleChannelOverwriteDelete* = 15
+    aleMemberKick* = 20
+    aleMemberPrune* = 21
+    aleMemberBanAdd* = 22
+    aleMemberBanRemove* = 23
+    aleMemberUpdate* = 24
+    aleMemberRoleUpdate* = 25
+    aleMemberMove* = 26
+    aleMemberDisconnect* = 27
+    aleBotAdd* = 28
+    aleRoleCreate* = 30
+    aleRoleUpdate* = 31
+    aleRoleDelete* = 32
+    aleInviteCreate* = 40
+    aleInviteUpdate* = 41
+    aleInviteDelete* = 42 # these type numbers are killing me tbh.
+    aleWebhookCreate* = 50
+    aleWebhookUpdate* = 51
+    aleWebhookDelete* = 52
+    aleEmojiCreate* = 60
+    aleEmojiUpdate* = 61
+    aleEmojiDelete* = 62
+    aleMessageDelete* = 72
+    aleMessageBulkDelete* = 73
+    aleMessagePin* = 74
+    aleMessageUnpin* = 75
+    aleIntegrationCreate* = 80
+    aleIntegrationUpdate* = 81
+    aleIntegrationDelete* = 82
+
+    tmsInvited* = 1 # not to be confused with "The Mysterious Song" lol
+    tmsAccepted* = 2
+
+    permAllText* = {permSendTTSMessage,
+        permEmbedLinks,
+        permReadMessageHistory,
+        permUseExternalEmojis,
+        permSendMessages,
+        permManageMessages,
+        permAttachFiles,
+        permMentionEveryone,
+        permAddReactions}
+    permAllVoice* = {permVoiceConnect,
+        permVoiceMuteMembers,
+        permVoiceMoveMembers,
+        permVoiceSpeak,
+        permVoiceDeafenMembers,
+        permPrioritySpeaker,
+        permUseVAD,
+        permVoiceStream}
+    permAllChannel* = permAllText + permAllVoice
+    permAll* = {permAdministrator,
+        permManageRoles,
+        permKickMembers,
+        permCreateInstantInvite,
+        permManageNicknames,
+        permManageGuild,
+        permManageChannels,
+        permBanMembers,
+        permChangeNickname,
+        permManageWebhooks,
+        permViewGuildInsights,
+        permManageEmojis,
+        permViewAuditLogs,
+        permViewChannel} + permAllChannel
+
+# Logging stuffs
+proc log*(msg: string, info: seq[string] = @[]) =
+    when defined(dimscordDebug):
+        var finalmsg = &"[Lib]: {msg}"
+
+        if info.len > 0:
+            finalmsg = &"{finalmsg}:"
+            for i, e in info:
+                finalmsg &= (if (i and 1) == 0: &"\n  {e}: " else: &"{e}")
+
+        echo finalmsg
 
 # Rest Endpoints
 
-proc endpointUsers*(uid: string = "@me"): string =
+proc endpointUsers*(uid = "@me"): string =
     result = "users/" & uid
 
 proc endpointUserChannels*(): string =
     result = endpointUsers("@me") & "/channels"
 
+proc endpointVoiceRegions*(): string =
+    result = "voice/regions"
+
 proc endpointUserGuilds*(gid: string): string =
     result = endpointUsers("@me") & "/guilds/" & gid
 
-proc endpointChannels*(cid: string = ""): string =
+proc endpointChannels*(cid = ""): string =
     result = "channels"
     if cid != "": result = result & "/" & cid
 
-proc endpointGuilds*(gid: string = ""): string =
+proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")
 
-proc endpointGuildMembers*(gid: string, mid: string = ""): string =
-    result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
-
-proc endpointGuildMembersNick*(gid: string, mid: string = "@me"): string =
-    result = endpointGuildMembers(gid, mid) & "/nick"
-
-proc endpointGuildMembersRole*(gid: string, mid: string, rid: string): string =
-    result = endpointGuildMembers(gid, mid) & "/roles/" & rid
+proc endpointGuildPreview*(gid: string): string =
+    result = endpointGuilds(gid) & "/preview"
 
 proc endpointGuildRegions*(gid: string): string =
     result = endpointGuilds(gid) & "/regions"
 
-proc endpointGuildIntegrations*(gid: string, iid: string = ""): string =
+proc endpointGuildAuditLogs*(gid: string): string =
+    result = endpointGuilds(gid) & "/audit-logs"
+
+proc endpointGuildMembers*(gid: string; mid = ""): string =
+    result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
+
+proc endpointGuildMembersNick*(gid: string; mid = "@me"): string =
+    result = endpointGuildMembers(gid, mid) & "/nick"
+
+proc endpointGuildMembersRole*(gid, mid, rid: string): string =
+    result = endpointGuildMembers(gid, mid) & "/roles/" & rid
+
+proc endpointGuildIntegrations*(gid: string; iid = ""): string =
     result = endpointGuilds(gid) & "/integrations" & (if iid != "": "/" & iid else: "")
 
-proc endpointGuildIntegrationsSync*(gid: string, iid: string): string =
+proc endpointGuildIntegrationsSync*(gid, iid: string): string =
     result = endpointGuildIntegrations(gid, iid) & "/sync"
 
 proc endpointGuildEmbed*(gid: string): string =
     result = endpointGuilds(gid) & "/embed"
 
-proc endpointGuildEmojis*(gid: string, eid: string = ""): string =
+proc endpointGuildEmojis*(gid: string; eid = ""): string =
     result = endpointGuilds(gid) & "/emojis" & (if eid != "": "/" & eid else: "")
 
-proc endpointGuildRoles*(gid: string, rid: string = ""): string =
+proc endpointGuildRoles*(gid: string; rid = ""): string =
     result = endpointGuilds(gid) & "/roles" & (if rid != "": "/" & rid else: "")
 
 proc endpointGuildPrune*(gid: string): string =
     result = endpointGuilds(gid) & "/prune"
 
-proc endpointInvites*(code: string = ""): string =
+proc endpointInvites*(code = ""): string =
     result = "invites" & (if code != "": "/" & code else: "")
 
 proc endpointGuildInvites*(gid: string): string =
@@ -202,23 +294,41 @@ proc endpointGuildInvites*(gid: string): string =
 proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
 
-proc endpointGuildChannels*(gid: string, cid = ""): string =
+proc endpointGuildChannels*(gid: string; cid = ""): string =
     result = endpointGuilds(gid) & "/channels" & (if cid != "": "/" & cid else: "")
 
-proc endpointChannelOverwrites*(cid: string, oid: string): string =
+proc endpointChannelOverwrites*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
 
-proc endpointChannelMessages*(cid: string; mid: string = ""): string =
+proc endpointWebhooks*(wid: string): string =
+    result = "webhooks/" & wid
+
+proc endpointChannelWebhooks*(cid: string): string =
+    result = endpointChannels(cid) & "/webhooks"
+
+proc endpointGuildWebhooks*(gid: string): string =
+    result = endpointGuilds(gid) & "/webhooks"
+
+proc endpointWebhookToken*(wid, tok: string): string =
+    result = endpointWebhooks(wid) & "/" & tok
+
+proc endpointWebhookTokenSlack*(wid, tok: string): string =
+    result = endpointWebhookToken(wid, tok) & "/slack"
+
+proc endpointWebhookTokenGithub*(wid, tok: string): string =
+    result = endpointWebhookToken(wid, tok) & "/github"
+
+proc endpointChannelMessages*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/messages"
     if mid != "": result = result & "/" & mid
 
 proc endpointChannelInvites*(cid: string): string =
     result = endpointChannels(cid) & "/invites"
 
-proc endpointChannelPermissions*(cid: string, oid: string): string =
+proc endpointChannelPermissions*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
 
-proc endpointGuildBans*(gid: string, uid: string = ""): string =
+proc endpointGuildBans*(gid: string; uid = ""): string =
     result = endpointGuilds(gid) & "/bans" & (if uid != "": "/" & uid else: "")
 
 proc endpointBulkDeleteMessages*(cid: string): string =
@@ -227,17 +337,20 @@ proc endpointBulkDeleteMessages*(cid: string): string =
 proc endpointTriggerTyping*(cid: string): string =
     result = endpointChannels(cid) & "/typing"
 
-proc endpointChannelPins*(cid: string; mid: string = ""): string =
+proc endpointChannelPins*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/pins"
     if mid != "":
         result = result & "/" & $mid
 
-proc endpointGroupRecipient*(cid: string, rid: string): string =
+proc endpointGroupRecipient*(cid, rid: string): string =
     result = endpointChannels(cid) & "/recipients/" & rid
 
-proc endpointReactions*(cid: string, mid: string; e: string = ""; uid: string = ""): string =
+proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     result = endpointChannels(cid) & "/messages/" & mid & "/reactions"
     if e != "":
         result = result & "/" & e
-    if uid != "": # Actually I could just add "/@me"
+    if uid != "":
         result = result & "/" & uid
+
+proc endpointOAuth2Application*(): string =
+    result = "oauth2/applications/@me"

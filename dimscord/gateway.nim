@@ -1,1142 +1,568 @@
-import zip/zlib, math, httpclient, websocket, asyncdispatch, json, locks, tables, strutils, times, constants, asyncnet, strformat, options, sequtils, random, objects, cacher
+import zip/zlib, httpclient, ws, asyncnet, asyncdispatch
+import strformat, options, sequtils, strutils, restapi, dispatch
+import tables, random, times, constants, objects, json, math
+import nativesockets
 
-randomize() # I hate that function.
+randomize()
 {.hint[XDeclaredButNotUsed]: off.}
-{.warning[UnusedImport]: off.} # It says that it's not used, but it actually is used in unexported procedures. 
+{.warning[UnusedImport]: off.}
 
-type
-    Events* = ref object ## Event handler object. Exists param checks message is cached or not. Other cachable objects dont have them.
-        message_create*: proc (s: Shard, m: Message)
-        on_ready*: proc (s: Shard, r: Ready)
-        message_delete*: proc (s: Shard, m: Message, exists: bool)
-        channel_create*: proc (s: Shard, g: Option[Guild], c: Option[GuildChannel], d: Option[DMChannel])
-        channel_update*: proc (s: Shard, g: Guild, c: GuildChannel, o: Option[GuildChannel])
-        channel_delete*: proc (s: Shard, g: Option[Guild], c: Option[GuildChannel], d: Option[DMChannel])
-        channel_pins_update*: proc (s: Shard, c: string, g: Option[Guild], last_pin: Option[string])
-        presence_update*: proc (s: Shard, p: Presence, o: Option[Presence])
-        message_update*: proc (s: Shard, m: Message, o: Option[Message], exists: bool)
-        message_reaction_add*: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool)
-        message_reaction_remove*: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool)
-        message_reaction_remove_all*: proc (s: Shard, m: Message, exists: bool)
-        message_reaction_remove_emoji*: proc (s: Shard, m: Message, e: Emoji, exists: bool)
-        message_delete_bulk*: proc (s: Shard, m: seq[tuple[msg: Message, exists: bool]])
-        typing_start*: proc (s: Shard, t: TypingStart)
-        guild_ban_add*: proc (s: Shard, g: Guild, u: User)
-        guild_ban_remove*: proc (s: Shard, g: Guild, u: User)
-        guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji])
-        guild_integrations_update*: proc (s: Shard, g: Guild)
-        guild_member_add*: proc (s: Shard, g: Guild, m: Member)
-        guild_member_update*: proc (s: Shard, g: Guild, m: Member, o: Option[Member])
-        guild_member_remove*: proc (s: Shard, g: Guild, m: Member)
-        guild_update*: proc (s: Shard, g: Guild, o: Option[Guild])
-        guild_create*: proc (s: Shard, g: Guild)
-        guild_delete*: proc (s: Shard, g: Guild)
-        guild_members_chunk*: proc (s: Shard, g: Guild, m: GuildMembersChunk)
-        guild_role_create*: proc (s: Shard, g: Guild, r: Role)
-        guild_role_update*: proc (s: Shard, g: Guild, r: Role, o: Option[Role])
-        guild_role_delete*: proc (s: Shard, g: Guild, r: Role)
-        invite_create*: proc (s: Shard, c: GuildChannel, i: InviteMetadata)
-        invite_delete*: proc (s: Shard, c: GuildChannel, code: string, g: Option[Guild])
-        user_update*: proc (s: Shard, u: User, o: Option[User])
-        voice_state_update*: proc (s: Shard, v: VoiceState, o: Option[VoiceState])
-        webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel)
-    DiscordClient* = ref object ## The Discord Client.
-        token*: string
-        api*: RestApi
-        user*: User
-        restMode*: bool
-        events*: Events
-        cache*: CacheTable
-        shards*: Table[int, Shard] ## A table of shard indexes
-        gateway: tuple[shards: int, url: string]
-        shard*: int
-        limiter: GatewayLimiter
-        intents*: seq[int] ## A sequence of gateway intents
-        autoreconnect*: bool
-        debug*: bool
-    Shard* = ref object
-        id*: int
-        client*: DiscordClient
-        compress*: bool
-        heartbeating: bool
-        resuming: bool
-        reconnecting: bool
-        authenticating: bool
-        retryInfo: tuple[ms: int, attempts: int]
-        networkError: bool
-        lastHBTransmit*: float
-        lastHBReceived*: float
-        hbAck*: bool
-        hbSent*: bool
-        connection*: AsyncWebsocket
-        stop*: bool
-        session_id: string
-        interval: int
-        sequence: int
-    GatewayLimiter = ref object
-        limit: int
-        remaining: int
-        interval: int
-        reset: int
-        processing: bool
-        queue: seq[proc (cb: proc ()){.closure.}]
-    SessionLimit = ref object
-        total: int
-        remaining: int
-        reset_after: int
-    GatewayInfo = ref object
-        url: string 
-        shards: int
-        session_start_limit: SessionLimit
+const
+    opDispatch = 0
+    opHeartbeat = 1
+    opIdentify = 2
+    opStatusUpdate = 3
+    opVoiceStateUpdate = 4
+    opResume = 6
+    opReconnect = 7
+    opRequestGuildMembers = 8
+    opInvalidSession = 9
+    opHello = 10
+    opHeartbeatAck = 11
 
-var reconnectable = true
-var encode = "json"
-var gateway: tuple[shards: int, url: string] = (shards: 0, url: "")
+var
+    gateway: tuple[shards: int, url: string]
+    backoff = false
+    reconnectable = true
 
-proc newGatewayLimiter(limit: int, interval: int): GatewayLimiter =
-    result = GatewayLimiter(
-        limit: limit,
-        remaining: limit,
-        interval: interval,
-        reset: int(getTime().utc.toTime.toUnix + interval)
-    )
+proc logShard(s: Shard, msg: string, info: seq[string] = @[]) =
+    when defined(dimscordDebug):
+        var finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
 
-proc newDiscordClient*(token: string; rest_mode: bool = false; debug: bool = false;
-            cache_users: bool = true; cache_guilds: bool = true;
-            cache_guild_channels: bool = true; cache_dm_channels: bool = true): DiscordClient =
-    ## Construct a client.
-    result = DiscordClient(
-        token: token,
-        api: newRestApi(token = if token.startsWith("Bot "): token else: "Bot " & token),
-        shard: 1,
-        restMode: rest_mode,
-        debug: debug,
-        cache: newCacheTable(cache_users, cache_guilds, cache_guild_channels, cache_dm_channels),
-        events: Events(
-            message_create: proc (s: Shard, m: Message) = return,
-            on_ready: proc (s: Shard, r: Ready) = return,
-            message_delete: proc (s: Shard, m: Message, exists: bool) = return,
-            channel_create: proc (s: Shard, g: Option[Guild], c: Option[GuildChannel], d: Option[DMChannel]) = return,
-            channel_update: proc (s: Shard, g: Guild, c: GuildChannel, o: Option[GuildChannel]) = return,
-            channel_delete: proc (s: Shard, g: Option[Guild], c: Option[GuildChannel], d: Option[DMChannel]) = return,
-            channel_pins_update: proc (s: Shard, c: string, g: Option[Guild], last_pin: Option[string]) = return,
-            presence_update: proc (s: Shard, p: Presence, o: Option[Presence]) = return,
-            message_update: proc (s: Shard, m: Message, o: Option[Message], exists: bool) = return,
-            message_reaction_add: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool) = return,
-            message_reaction_remove: proc (s: Shard, m: Message, u: User, r: Reaction, exists: bool) = return,
-            message_reaction_remove_all: proc (s: Shard, m: Message, exists: bool) = return,
-            message_reaction_remove_emoji: proc (s: Shard, m: Message, e: Emoji, exists: bool) = return,
-            message_delete_bulk: proc (s: Shard, m: seq[tuple[msg: Message, exists: bool]]) = return,
-            typing_start: proc (s: Shard, t: TypingStart) = return,
-            guild_ban_add: proc (s: Shard, g: Guild, u: User) = return,
-            guild_ban_remove: proc (s: Shard, g: Guild, u: User) = return,
-            guild_emojis_update: proc (s: Shard, g: Guild, e: seq[Emoji]) = return,
-            guild_integrations_update: proc (s: Shard, g: Guild) = return,
-            guild_member_add: proc (s: Shard, g: Guild, m: Member) = return,
-            guild_member_update: proc (s: Shard, g: Guild, m: Member, o: Option[Member]) = return,
-            guild_member_remove: proc (s: Shard, g: Guild, m: Member) = return,
-            guild_update: proc (s: Shard, g: Guild, o: Option[Guild]) = return,
-            guild_create: proc (s: Shard, g: Guild) = return,
-            guild_delete: proc (s: Shard, g: Guild) = return,
-            guild_members_chunk: proc (s: Shard, g: Guild, m: GuildMembersChunk) = return,
-            guild_role_create: proc (s: Shard, g: Guild, r: Role) = return,
-            guild_role_update: proc (s: Shard, g: Guild, r: Role, o: Option[Role]) = return,
-            guild_role_delete: proc (s: Shard, g: Guild, r: Role) = return,
-            invite_create: proc (s: Shard, c: GuildChannel, i: InviteMetadata) = return,
-            invite_delete: proc (s: Shard, c: GuildChannel, code: string, g: Option[Guild]) = return,
-            user_update: proc (s: Shard, u: User, o: Option[User]) = return,
-            voice_state_update: proc (s: Shard, v: VoiceState, o: Option[VoiceState]) = return,
-            webhooks_update: proc (s: Shard, g: Guild, c: GuildChannel) = return
-        ))
+        if info.len > 0:
+            finalmsg = &"{finalmsg}:"
+            for i, e in info:
+                finalmsg &= (if (i and 1) == 0: &"\n  {e}: " else: &"{e}")
 
-proc getShardID*(id: string, shard: int): SomeInteger =
-    result = (parseBiggestInt(id) shl 22) mod shard
+        echo finalmsg
 
-proc newShard*(id: int, client: DiscordClient): Shard =
-    result = Shard(
-        id: id,
-        client: client,
-        retryInfo: (ms: 1000, attempts: 0)
-    )
+proc sendSock(s: Shard,
+            opcode: int,
+            data: JsonNode,
+            ignore = false) {.async.} =
+    if not ignore and s.session_id == "": return
 
-proc getGatewayBot(cl: DiscordClient): Future[GatewayInfo] {.async.} =
-    let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
+    s.logShard("Sending OP: " & $opcode)
 
-    client.headers["Authorization"] = if cl.token.startsWith("Bot "): cl.token else: "Bot " & cl.token
-    let resp = await client.get(base & "/gateway/bot")
+    if len($data) > 4096:
+        raise newException(Exception,
+            "There was an attempt on sending a payload over 4096 characters.")
 
-    if int(resp.code) == 200:
-        result = (await resp.body).parseJson.to(GatewayInfo)
+    await s.connection.send($(%*{
+        "op": opcode,
+        "d": data
+    }))
 
-proc getGateway(): Future[string] {.async.} =
-    let client = newAsyncHttpClient("DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")")
-    let resp = await client.get(base & "/gateway")
+proc waitWhenReady(s: Shard) {.async.} =
+    while not s.ready:
+        await sleepAsync 500
 
-    result = (await resp.body).parseJson()["url"].str
+proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code from: https://github.com/niv/websocket.nim/blame/master/websocket/shared.nim#L230
+    var data = data
+    result.code =
+        if data.len >= 2:
+            cast[ptr uint16](addr data[0])[].htons.int
+        else:
+            0
+    result.reason = if data.len > 2: data[2..^1] else: ""
 
-proc debugMsg(cl: DiscordClient, msg: string, info: Option[seq[string]] = none(seq[string])) =
-    var finalmsg = msg
-    if not cl.debug: return
-
-    finalmsg = &"[Lib]: {msg}"
-
-    if info.isSome:
-        finalmsg = &"{finalmsg}:"
-        var infoSeq = get(info)
-        var index = 0
-
-        for e in infoSeq:
-            index += 1
-
-            if (index and 1) != 0:
-                finalmsg = finalmsg & (&"\n  {e}: ")
-            else:
-                finalmsg = finalmsg & e
-    echo finalmsg
-
-proc debugMsg(s: Shard, msg: string, mentionWhere: bool = false, info: Option[seq[string]] = none(seq[string])) =
-    var finalmsg = msg
-    if not s.client.debug: return
-
-    if mentionWhere:
-        finalmsg = &"[gateway - SHARD: {s.id}]: {msg}"
-
-    if info.isSome:
-        finalmsg = &"{finalmsg}:"
-        var infoSeq = get(info)
-        var index = 0
-
-        for e in infoSeq:
-            index += 1
-
-            if (index and 1) != 0:
-                finalmsg = finalmsg & (&"\n  {e}: ")
-            else:
-                finalmsg = finalmsg & e
-    echo finalmsg
-
-proc handleDisconnect(s: Shard, msg: string): bool = # handle disconnect actually prints out sock suspended then returns a bool whether to reconnect.
+proc handleDisconnect(s: Shard, msg: string): bool =
     let closeData = extractCloseData(msg)
 
-    s.debugMsg("Socket suspended", true, some(@["code", $closeData.code, "reason", $closeData.reason]))
+    s.logShard("Socket suspended", @[
+        "code", $closeData.code,
+        "reason", closeData.reason
+    ])
 
-    if s.authenticating: s.authenticating = false
-    if s.resuming:
-        s.resuming = false
+    s.authenticating = false
+    s.resuming = false
 
     s.hbAck = false
     s.hbSent = false
-    s.retryInfo = (ms: 1000, attempts: 0)
+    s.ready = false
+    backoff = false
+    s.heartbeating = false
+    s.retry_info = (ms: 1000, attempts: 0)
     s.lastHBTransmit = 0
     s.lastHBReceived = 0
 
     result = true
 
-    var unreconnectableCodes = @[4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013]
-    if unreconnectableCodes.contains(closeData.code):
+    if closeData.code in [4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013, 4014]:
         result = false
-        s.client.debugMsg("Unable to reconnect to gateway, because one your options sent to gateway are invalid.")
+        log("Fatal error: " & closeData.reason)
 
-proc updateStatus*(s: Shard; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
+proc sockClosed(s: Shard): bool =
+    return s.connection == nil or s.connection.readyState == Closed
+
+proc updateStatus*(s: Shard, game = none GameStatus;
+        status = "online";
+        afk = false) {.async.} =
     ## Updates the shard's status.
-    if s.stop or (s.connection == nil or s.connection.sock.isClosed): return
-    var payload = %*{
+    if s.stop or s.sockClosed and not s.ready: return
+    let payload = %*{
         "since": 0,
         "afk": afk,
         "status": status
     }
 
     if game.isSome:
-        payload["game"] = %*{}
-        payload["game"]["type"] = %* get(game).kind
-        payload["game"]["name"] = %* get(game).name
+        payload["game"] = newJObject()
+        payload["game"]["type"] = %game.get.kind
+        payload["game"]["name"] = %game.get.name
 
-        if get(game).url.isSome:
-            payload["game"]["url"] = %* get(get(game).url)
+        if game.get.url.isSome:
+            payload["game"]["url"] = %get game.get.url
 
-    await s.connection.sendText($(%*{
-        "op": opStatusUpdate,
-        "d": payload
-    }))
-
-proc check(l: GatewayLimiter) {.async.} =
-    if l.processing: return
-    l.processing = true
-
-    if getTime().utc.toTime.toUnix > l.reset:
-        l.remaining = l.limit
-        l.reset = int(getTime().utc.toTime.toUnix) + l.interval
-
-    if l.remaining == 0:
-        l.remaining = l.limit
-        await sleepAsync l.interval
-
-    if l.queue.len > 0:
-        l.remaining -= 1
-
-        procCall(l.queue[0](proc () =
-            l.processing = false
-            l.queue.del(0)
-            waitFor l.check()
-        ))
-
-proc updateStatus*(cl: DiscordClient; game: Option[GameStatus] = none(GameStatus); status: string = "online"; afk: bool = false) {.async.} =
-    ## Updates all the client's shard's status.
-    for i in 0..cl.shards.len - 1:
-        let s = cl.shards[i]
-        await s.updateStatus(game, status, afk)
+    asyncCheck s.sendSock(opStatusUpdate, payload)
 
 proc identify(s: Shard) {.async.} =
-    if s.authenticating and not s.connection.sock.isClosed: return
+    if s.authenticating or s.sockClosed: return
 
-    s.client.limiter.queue.add(proc (cb: proc ()) =
-        s.authenticating = true
+    if backoff:
+        await sleepAsync 5000
+        await s.identify()
+        return
 
-        var payload = %*{
-            "token": s.client.token,
-            "properties": %*{
-                "$os": system.hostOS,
-                "$browser": libName,
-                "$device": libName
-            },
-            "compress": s.compress
-        }
+    s.authenticating = true
+    backoff = true
 
-        if s.client.shard > 1:
-            payload["shard"] = %[s.id, s.client.shard]
+    s.logShard("Identifying...")
 
-        if s.client.intents.len > 0:
-            var intent = 0
+    let payload = %*{
+        "token": s.client.token,
+        "properties": %*{
+            "$os": system.hostOS,
+            "$browser": libName,
+            "$device": libName
+        },
+        "compress": s.compress,
+        "guild_subscriptions": s.client.guildSubscriptions
+    }
 
-            for itent in s.client.intents:
-                intent = intent or itent
-            payload["intents"] = %intent
+    if s.client.max_shards > 1:
+        payload["shard"] = %[s.id, s.client.max_shards]
 
-        waitFor s.connection.sendText($(%*{
-            "op": opIdentify,
-            "d": payload
-        }))
+    if s.client.largeThreshold >= 50 and s.client.largeThreshold <= 250:
+        payload["large_threshold"] = %s.client.largeThreshold
 
-        cb())
+    if s.client.intents.len > 0:
+        payload["intents"] = %cast[int](s.client.intents)
 
-    await s.client.limiter.check()
+    await s.sendSock(opIdentify, payload, ignore = true)
+    if s.client.max_shards > 1: await sleepAsync 5000
+
+proc resume(s: Shard) {.async.} =
+    if s.authenticating or s.sockClosed: return
+
+    s.authenticating = true
+    s.resuming = true
+
+    s.logShard("Attempting to resume", @[
+        "session_id", s.session_id,
+        "events", $s.sequence
+    ])
+    await s.sendSock(opResume, %*{
+        "token": s.client.token,
+        "session_id": s.session_id,
+        "seq": s.sequence
+    })
+
+proc requestGuildMembers*(s: Shard, guild_id: seq[string];
+        limit: int;
+        query, nonce = "";
+        presences = false;
+        user_ids: seq[string] = @[]) {.async.} =
+    ## Requests the offline members to a guild.
+    ## (See: https://discord.com/developers/docs/topics/gateway#request-guild-members)
+    if s.sockClosed or not s.ready: return
+
+    if guild_id.len == 0:
+        raise newException(Exception, "You need to specify a guild id.")
+
+    let payload = %*{
+        "guild_id": guild_id,
+        "query": query,
+        "limit": limit,
+        "presences": presences
+    }
+    if user_ids.len > 0:
+        payload["user_ids"] = %user_ids
+    if nonce != "":
+        payload["nonce"] = %nonce
+
+    await s.sendSock(opRequestGuildMembers, payload)
+
+proc voiceStateUpdate*(s: Shard, guild_id: string,
+        channel_id = none string;
+        self_mute, self_deaf = false) {.async.} =
+    ## Allows the shard to either join, move to, or disconnect.
+    ## If channel_id param is not provided. It will disconnect.
+    if s.sockClosed or not s.ready: return
+
+    if guild_id == "":
+        raise newException(Exception, "You need to specify a guild id.")
+
+    await s.sendSock(opVoiceStateUpdate, %*{
+        "guild_id": guild_id,
+        "channel_id": channel_id
+    })
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
-    let cl = s.client
-    if cl.debug: echo event
+    s.logShard("Received event: " & event) # please do not enable dimscordDebug while you are on a large guild.
 
     case event:
         of "READY":
             s.session_id = data["session_id"].str
             s.authenticating = false
-            cl.user = newUser(data["user"])
+            s.user = newUser(data["user"])
+            s.ready = true
+            backoff = false
+            var shards = 0
 
-            s.debugMsg("Successfully identified.", true)
-
-            cl.events.on_ready(s, newReady(data))
-        of "VOICE_STATE_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
-            let voiceState = newVoiceState(data)
-            var oldVoiceState: Option[VoiceState] = none(VoiceState)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                guild.members[voiceState.user_id].voice_state = some(voiceState)
-
-                if guild.voice_states.hasKey(voiceState.user_id):
-                    oldVoiceState = some(guild.voice_states[voiceState.user_id])
-                    guild.voice_states[voiceState.user_id] = voiceState
-                else:
-                    guild.voice_states.add(voiceState.user_id, voiceState)
-
-            cl.events.voice_state_update(s, voiceState, oldVoiceState)
-        of "CHANNEL_PINS_UPDATE":
-            var guild: Option[Guild] = none(Guild)
-            var last_pin: Option[string] = none(string)
-
-            if data.hasKey("last_pin_timestamp"):
-                last_pin = some(data["last_pin_timestamp"].str)
-
-            if data.hasKey("guild_id"):
-                guild = some(Guild(id: data["guild_id"].str))
-                if cl.cache.preferences.cache_guilds:
-                    guild = some(cl.cache.guilds[data["guild_id"].str])
-
-            cl.events.channel_pins_update(s, data["channel_id"].str, guild, last_pin)
-        of "GUILD_EMOJIS_UPDATE":
-            var g = Guild(id: data["guild_id"].str)
-
-            if cl.cache.preferences.cache_guilds:
-                g = cl.cache.guilds[g.id]
-
-            var emojis: seq[Emoji] = @[]
-            for emji in data["emojis"]:
-                emojis.add(newEmoji(emji))
-                g.emojis.add(emji["id"].str, newEmoji(emji))
-
-            cl.events.guild_emojis_update(s, g, emojis)
-        of "USER_UPDATE":
-            let user = newUser(data)
-            var oldUser: Option[User] = none(User)
-            cl.user = user
-
-            cl.events.user_update(s, user, oldUser)
-        of "PRESENCE_UPDATE":
-            var oldPresence: Option[Presence] = none(Presence)
-            var presence = newPresence(data)
-            if cl.cache.preferences.cache_guilds:
-                let guild = cl.cache.guilds[presence.guild_id]
-
-                if guild.presences.hasKey(presence.user.id):
-                    oldPresence = some(guild.presences[presence.user.id])
-
-                var member = guild.members[presence.user.id]
-
-                if (presence.user.username != "" and presence.user.username != member.user.username) or (presence.user.discriminator != "" and presence.user.discriminator != member.user.discriminator) or (presence.user.avatar.isSome and get(presence.user.avatar) != get(member.user.avatar)):
-                        if presence.user.username != "": member.user.username = presence.user.username
-                        if presence.user.discriminator != "": member.user.discriminator = presence.user.discriminator
-                        if presence.user.avatar.isSome: member.user.avatar = presence.user.avatar
-
-                if presence.status == "offline":
-                    guild.presences.del(presence.user.id)
-                elif @["offline", ""].contains(member.presence.status) and presence.status != "offline":
-                    guild.presences.add(presence.user.id, presence)
-
-                if guild.presences.hasKey(presence.user.id):
-                    guild.presences[presence.user.id] = presence
-
-                member.presence = presence
-
-            cl.events.presence_update(s, presence, oldPresence)
-        of "MESSAGE_CREATE":
-            let msg = newMessage(data)
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        chan.messages.add(msg.id, msg)
-                        chan.last_message_id = msg.id
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        chan.messages.add(msg.id, msg)
-                        chan.last_message_id = msg.id
-
-            cl.events.message_create(s, msg)
-        of "MESSAGE_REACTION_ADD":
-            var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
-            var emoji = newEmoji(data["emoji"])
-            var user = User(id: data["user_id"].str)
-            var reaction = Reaction(emoji: emoji)
-            var exists = false
-
-            if cl.cache.preferences.cache_users:
-                user = cl.cache.users[user.id]
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-
-            if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-                msg.member = newMember(data["member"])
-
-            if msg.reactions.hasKey($emoji):
-                reaction.count = msg.reactions[$emoji].count + 1
-
-                if data["user_id"].str == cl.user.id:
-                    reaction.reacted = true
-
-                msg.reactions[$emoji] = reaction
+            if s.client.shards.len == s.client.max_shards:
+                for sh in s.client.shards.values:
+                    if sh.ready:
+                        shards += 1
             else:
-                reaction.count += 1
-                reaction.reacted = data["user_id"].str == cl.user.id
-                msg.reactions.add($emoji, reaction)
+                shards = s.id + 1
 
-            cl.events.message_reaction_add(s, msg, user, reaction, exists)
-        of "MESSAGE_REACTION_REMOVE":
-            var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
-            var emoji = newEmoji(data["emoji"])
-            var user = User(id: data["user_id"].str)
-            var reaction = Reaction(emoji: emoji)
-            var exists = false
+            log(&"{shards}/{s.client.max_shards} shards authenticated.")
 
-            if cl.cache.preferences.cache_users:
-                user = cl.cache.users[user.id]
+            s.logShard("Successfully identified.")
 
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-
-            if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-
-            if msg.reactions.hasKey($emoji) and msg.reactions[$emoji].count != 1:
-                reaction.count = msg.reactions[$emoji].count - 1
-
-                if data["user_id"].str == cl.user.id:
-                    reaction.reacted = false
-
-                msg.reactions[$emoji] = reaction
-            else:
-                msg.reactions.del($emoji)
-
-            cl.events.message_reaction_remove(s, msg, user, reaction, exists)
-        of "MESSAGE_REACTION_REMOVE_EMOJI":
-            var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
-            var emoji = newEmoji(data["emoji"])
-            var exists = false
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-
-            if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-
-            if msg.reactions.hasKey($emoji):
-                msg.reactions.del($emoji)
-
-            cl.events.message_reaction_remove_emoji(s, msg, emoji, exists)
-        of "MESSAGE_REACTION_REMOVE_ALL":
-            var msg = Message(id: data["message_id"].str, channel_id: data["channel_id"].str)
-            var exists = false
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            exists = true
-
-            if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-
-            if msg.reactions.len > 0:
-                msg.reactions.clear()
-
-            cl.events.message_reaction_remove_all(s, msg, exists)
-        of "MESSAGE_DELETE":
-            var msg = Message(id: data["id"].str, channel_id: data["channel_id"].str)
-            var exists = false
-
-            if data.hasKey("guild_id"):
-                msg.guild_id = data["guild_id"].str
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if not cl.cache.dmChannels.hasKey(msg.channel_id):
-                    return
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            chan.messages.del(msg.id)
-                            exists = true
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            msg = chan.messages[msg.id]
-                            chan.messages.del(msg.id)
-                            exists = true
-
-            cl.events.message_delete(s, msg, exists)
-        of "MESSAGE_UPDATE":
-            var msg = Message(id: data["id"].str, channel_id: data["channel_id"].str)
-            var oldMessage: Option[Message] = none(Message)
-            var exists = false
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if not cl.cache.dmChannels.hasKey(msg.channel_id):
-                    return
-                if cl.cache.kind(msg.channel_id) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        let chan = cl.cache.guildChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            oldMessage = some(chan.messages[msg.id])
-                            chan.messages[msg.id] = chan.messages[msg.id].update(data)
-                            msg = chan.messages[msg.id]
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        let chan = cl.cache.dmChannels[msg.channel_id]
-
-                        if chan.messages.hasKey(msg.id):
-                            oldMessage = some(chan.messages[msg.id])
-                            chan.messages[msg.id] = chan.messages[msg.id].update(data)
-                            msg = chan.messages[msg.id]
-            else:
-                msg = msg.update(data)
-
-            cl.events.message_update(s, msg, oldMessage, exists)
-        of "MESSAGE_DELETE_BULK":
-            var ids: seq[tuple[msg: Message, exists: bool]] = @[]
-
-            for msg in data["ids"].elems:
-                var exists = false
-                var m = Message(id: msg.str, channel_id: data["channel_id"].str)
-
-                if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                    if cl.cache.kind(m.channel_id) != ctDirect:
-                        if cl.cache.preferences.cache_guild_channels:
-                            let chan = cl.cache.guildChannels[m.channel_id]
-
-                            if chan.messages.hasKey(m.id):
-                                m = chan.messages[m.id]
-                                chan.messages.del(m.id)
-                                exists = true
-                    else:
-                        if cl.cache.preferences.cache_dm_channels:
-                            let chan = cl.cache.dmChannels[m.channel_id]
-                            if chan.messages.hasKey(m.id):
-                                m = chan.messages[m.id]
-                                chan.messages.del(m.id)
-                                exists = true
-
-                if data.hasKey("guild_id"):
-                    m.guild_id = data["guild_id"].str
-                ids.add((msg: m, exists: exists))
-
-            cl.events.message_delete_bulk(s, ids)
-        of "CHANNEL_CREATE":
-            var guild: Option[Guild] = none(Guild)
-            var chan: Option[GuildChannel] = none(GuildChannel)
-            var dmChan: Option[DMChannel] = none(DMChannel)
-
-            if data["type"].getInt() != ctDirect:
-                guild = some(Guild(id: data["guild_id"].str))
-
-                if cl.cache.preferences.cache_guilds:
-                    guild = some(cl.cache.guilds[get(guild).id])
-
-                chan = some(newGuildChannel(data))
-
-                if cl.cache.preferences.cache_guild_channels:
-                    cl.cache.guildChannels.add(get(chan).id, get(chan))
-            elif data["type"].getInt() == ctDirect and not cl.cache.dmChannels.hasKey(data["id"].str):
-                dmChan = some(newDMChannel(data))
-                cl.cache.dmChannels.add(data["id"].str, get(dmChan))
-
-            cl.events.channel_create(s, guild, chan, dmChan)
-        of "CHANNEL_UPDATE":
-            var gchan = newGuildChannel(data)
-            var oldChan: Option[GuildChannel] = none(GuildChannel) 
-
-            var guild = Guild(id: data["guild_id"].str)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                oldChan = some(guild.channels[gchan.id])
-
-                if cl.cache.preferences.cache_guild_channels:
-                    cl.cache.guildChannels[gchan.id] = gchan
-            cl.events.channel_update(s, guild, gchan, oldChan)
-        of "CHANNEL_DELETE":
-            var guild: Option[Guild] = none(Guild)
-            var gc: Option[GuildChannel] = none(GuildChannel)
-            var dm: Option[DMChannel] = none(DMChannel)
-
-            if data.hasKey("guild_id"):
-                guild = some(Guild(id: data["guild_id"].str))
-                if cl.cache.preferences.cache_guilds:
-                    guild = some(cl.cache.guilds[get(guild).id])
-
-            if cl.cache.preferences.cache_guild_channels or cl.cache.preferences.cache_dm_channels:
-                if cl.cache.kind(data["id"].str) != ctDirect:
-                    if cl.cache.preferences.cache_guild_channels:
-                        gc = some(newGuildChannel(data))
-                        cl.cache.guildChannels.del(get(gc).id)
-                else:
-                    if cl.cache.preferences.cache_dm_channels:
-                        dm = some(newDMChannel(data))
-                        cl.cache.dmChannels.del(get(dm).id)
-
-            cl.events.channel_delete(s, guild, gc, dm)
-        of "GUILD_MEMBER_ADD":
-            var guild = Guild(id: data["guild_id"].str)
-            let member = newMember(data)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                guild.members.add(member.user.id, member)
-                guild.member_count = some(get(guild.member_count) + 1)
-                if cl.cache.preferences.cache_users:
-                    cl.cache.users.add(member.user.id, member.user)
-
-            cl.events.guild_member_add(s, guild, member)
-        of "GUILD_MEMBER_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
-            var member = new(Member)
-            var oldMember: Option[Member] = none(Member)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                member = guild.members[data["user"]["id"].str]
-                oldMember = some(member)
-
-            member.user = newUser(data["user"])
-            cl.cache.users[member.user.id] = member.user
-
-            if data.hasKey("nick") and data["nick"].kind != JNull:
-                member.nick = data["nick"].str
-
-            if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-                member.premium_since = data["premium_since"].str
-
-            for role in data["roles"].elems:
-                member.roles.add(role.str)
-
-            cl.events.guild_member_update(s, guild, member, oldMember)
-        of "GUILD_MEMBER_REMOVE":
-            var guild = Guild(id: data["guild_id"].str)
-            var member = Member(user: newUser(data))
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                member = guild.members[member.user.id]
-
-                guild.members.del(member.user.id)
-                guild.member_count = some(get(guild.member_count) - 1)
-    
-                if cl.cache.preferences.cache_users:
-                    cl.cache.users.del(member.user.id)
-
-            cl.events.guild_member_remove(s, guild, member)
-        of "GUILD_UPDATE":
-            let guild = newGuild(data)
-            var oldGuild: Option[Guild] = none(Guild)
-            if cl.cache.preferences.cache_guilds:
-                oldGuild = some(cl.cache.guilds[guild.id])
-                cl.cache.guilds[guild.id] = guild
-            
-            cl.events.guild_update(s, guild, oldGuild)
-        of "GUILD_DELETE":
-            var guild = Guild(id: data["id"].str)
-            var oldGuild: Option[Guild] = none(Guild)
-
-            if cl.cache.preferences.cache_guilds:
-                cl.cache.guilds[guild.id].unavailable = some((if data.hasKey("unavailable"): data["unavailable"].bval else: false))
-                guild = cl.cache.guilds[guild.id]
-                cl.cache.guilds.del(guild.id)
-
-            cl.events.guild_delete(s, guild)
-        of "GUILD_ROLE_CREATE":
-            var guild = Guild(id: data["guild_id"].str)
-            let role = newRole(data)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                guild.roles.add(role.id, role)
-
-            cl.events.guild_role_create(s, guild, role)
-        of "GUILD_ROLE_UPDATE":
-            var guild = Guild(id: data["guild_id"].str)
-            let role = newRole(data["role"])
-            var oldRole: Option[Role] = none(Role)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                oldRole = some(guild.roles[role.id])
-
-                guild.roles[role.id] = role
-
-            cl.events.guild_role_update(s, guild, role, oldRole)
-        of "GUILD_ROLE_DELETE":
-            var guild = Guild(id: data["guild_id"].str)
-            var role = Role(id: data["role_id"].str)
-
-            if cl.cache.preferences.cache_guilds:
-                guild = cl.cache.guilds[guild.id]
-                role = guild.roles[role.id]
-
-            cl.events.guild_role_delete(s, guild, role)
+            await s.client.events.on_ready(s, newReady(data))
         of "RESUMED":
             s.resuming = false
             s.authenticating = false
-            s.debugMsg("Successfuly resumed.", true)
-        of "GUILD_CREATE": # TODO: finish
-            s.debugMsg("Recieved GUILD_CREATE event", true, some(@["id", data["id"].str]))
+            s.ready = true
 
-            if data["channels"].elems.len > 0:
-                for chan in data["channels"].elems:
-                    if cl.cache.preferences.cache_guild_channels:
-                        cl.cache.guildChannels.add(chan["id"].str, newGuildChannel(chan))
-
-            if cl.cache.preferences.cache_users:
-                if data["members"].elems.len > 0:
-                    for m in data["members"].elems:
-                        cl.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
-            if cl.cache.preferences.cache_guilds:
-                let guild = newGuild(data)
-                cl.cache.guilds.add(guild.id, guild)
+            s.logShard("Successfuly resumed.")
         else:
-            discard
-            # asyncCheck cl.emitHandler(unknown_event, (data: data))
+            await s.client.events.on_dispatch(s, event, data)
+            await s.handleEventDispatch(event, data)
 
-proc resume(s: Shard) {.async.} =
-    if s.authenticating: return
-    if s.connection.sock.isClosed: return
-
-    s.authenticating = true
-    s.resuming = true
-
-    s.debugMsg("Attempting to resume", true, some(@["session_id", s.session_id, "events", $s.sequence]))
-    await s.connection.sendText($(%*{
-        "op": opResume,
-        "d": %*{
-            "token": s.client.token,
-            "session_id": s.session_id,
-            "seq": s.sequence
-        }
-    }))
-
-proc handleConnection(cl: DiscordClient): Future[tuple[shards: int, url: string]] {.async.} =
-    cl.debugMsg("Connecting to the discord gateway.")
-    var info: GatewayInfo
-
-    try:
-        info = await cl.getGatewayBot()
-    except OSError:
-        if getCurrentExceptionMsg().startsWith("No such host is known."):
-            cl.debugMsg("A network error has been detected.")
-
-    cl.debugMsg("Successfully retrived gateway information from Discord", some(@[
-        "url", info.url,
-        "shards", $info.shards,
-        "session_start_limit", $info.session_start_limit[]
-    ]))
-
-    if info.session_start_limit.remaining == 0:
-        let time = getTime().utc.toTime.toUnix - info.session_start_limit.reset_after
-
-        cl.debugMsg("Your session start limit has reached its limit", some(@[
-            "sleep_time", $time
-        ]))
-        await sleepAsync time.int
-    
-    result = (info.shards, info.url)
-
-proc reconnect*(s: Shard; resumable: bool = false) {.async.} =
-    if s.reconnecting: return
+proc reconnect(s: Shard) {.async.} =
+    if s.reconnecting or not s.stop: return
     s.reconnecting = true
-    s.retryInfo.attempts += 1
+    s.retry_info.attempts += 1
 
-    var url: string = ""
+    var url = s.gatewayUrl
 
-    try: 
-        url = await getGateway()
-    except:
-        s.debugMsg("Error occurred:: \n" & getCurrentExceptionMsg())
-        s.reconnecting = false
+    if s.retry_info.attempts > 3:
+        try:
+            url = await s.client.api.getGateway()
+            s.gatewayUrl = url
+        except:
+            s.logShard("Error occurred:: \n" & getCurrentExceptionMsg())
+            s.reconnecting = false
 
-        s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
+            s.retry_info.ms = min(s.retry_info.ms + max(rand(6000), 3000), 30000)
 
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", true, some(@["attempt", $s.retryInfo.attempts]))
+            s.logShard(&"Reconnecting in {s.retry_info.ms}ms", @[
+                "attempt", $s.retry_info.attempts
+            ])
 
-        await sleepAsync s.retryInfo.ms
-        await s.reconnect(resumable = resumable)
+            await sleepAsync s.retry_info.ms
+            await s.reconnect()
+            return
 
-    s.debugMsg("Connecting to " & (if url.startsWith("wss://"): url[6..url.high] else: url) & "/?v=" & $gatewayVer & "&encoding=" & encode)
+    let prefix = if url.startsWith("gateway"): "ws://" & url else: url
+
+    s.logShard("Connecting to " & $prefix & "/?v=" & $s.client.gatewayVer)
 
     try:
-        s.connection = await newAsyncWebsocketClient(
-            if url.startsWith("wss://"): url[6..url.high] else: url,
-            Port(443),
-            "/?v=" & $gatewayVer & "&encoding=" & encode,
-            true
-        )
+        s.connection = await newWebSocket(prefix &
+            "/?v=" & $s.client.gatewayVer)
         s.hbAck = true
         s.stop = false
         s.reconnecting = false
+        s.retry_info.attempts = 0
+        s.retry_info.ms = max(s.retry_info.ms - 5000, 1000)
 
         if s.networkError:
-            s.debugMsg("Successfully established a gateway connection after network error.")
-            s.retryInfo = (ms: 1000, attempts: 0)
+            s.logShard("Connection established after network error.")
+            s.retry_info = (ms: 1000, attempts: 0)
             s.networkError = false
     except:
-        s.debugMsg("Error occurred: \n" & getCurrentExceptionMsg())
+        s.logShard("Error occurred: \n" & getCurrentExceptionMsg())
+
+        s.logShard(&"Failed to connect, reconnecting in {s.retry_info.ms}ms",@[
+            "attempt", $s.retry_info.attempts
+        ])
         s.reconnecting = false
+        await sleepAsync s.retry_info.ms
+        await s.reconnect()
+        return
 
-        s.retryInfo.ms = min(s.retryInfo.ms + max(rand(6000), 3000), 30000)
-
-        s.debugMsg(&"Reconnecting in {s.retryInfo.ms}ms", true, some(@["attempt", $s.retryInfo.attempts]))
-
-        await sleepAsync s.retryInfo.ms
-        await s.reconnect(resumable = resumable)
-
-    if not resumable or s.session_id == "":
-        s.sequence = 0
-        s.session_id = ""
-
+    if s.session_id == "" and s.sequence == 0:
         await s.identify()
     else:
         await s.resume()
 
-proc disconnect*(s: Shard, code: int = 4000, shouldReconnect: bool = true) {.async.} =
+proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
+    ## Disconnects a shard.
     if s.stop: return
     s.stop = true
 
-    if s.connection != nil or not s.connection.sock.isClosed:
-        s.debugMsg("Sending close code: " & $code & " to disconnect")
-        await s.connection.close(code)
+    if not s.stop or not s.sockClosed:
+        s.connection.close()
 
-    if s.client.autoreconnect or shouldReconnect: await s.reconnect(resumable = true)
+    if should_reconnect:
+        await s.reconnect()
+    else:
+        reconnectable = false
 
-proc heartbeat(s: Shard) {.async.} =
-    if not s.hbAck and s.session_id != "":
-        s.debugMsg("Last heartbeat was not acknowledged by Discord, possibly zombied connection.", true)
-        await s.disconnect()
+proc heartbeat(s: Shard, requested = false) {.async.} =
+    if not s.hbAck and not requested:
+        s.logShard("A zombied connection has been detected.")
+        await s.disconnect(should_reconnect = true)
         return
 
-    s.debugMsg("Sending heartbeat.", true)
+    s.logShard("Sending heartbeat.")
     s.hbAck = false
 
-    await s.connection.sendText($(%*{
-        "op": 1,
-        "d": s.sequence
-    }))
-    s.lastHBTransmit = epochTime() * 1000
+    await s.sendSock(opHeartbeat, %* s.sequence, ignore = true)
+    s.lastHBTransmit = getTime().toUnixFloat()
     s.hbSent = true
 
 proc setupHeartbeatInterval(s: Shard) {.async.} =
     if not s.heartbeating: return
+    s.heartbeating = true
 
-    while not s.stop and not s.connection.sock.isClosed():
-        await s.heartbeat()
+    while not s.sockClosed or not s.stop:
+        let hbTime = int((getTime().toUnixFloat() - s.lastHBTransmit) * 1000)
+
+        if hbTime < s.interval - 8000 and s.lastHBTransmit != 0.0:
+            break
+
+        asyncCheck s.heartbeat()
         await sleepAsync s.interval
 
-proc handleSocketMessage*(s: Shard) {.async.} =
-    waitFor s.identify()
+proc handleSocketMessage(s: Shard) {.async.} =
+    await s.identify()
 
-    var packet: tuple[opcode: Opcode, data: string]
-    var shouldReconnect = true
+    var packet: (Opcode, string)
+    var shouldReconnect = s.client.autoreconnect
 
-    while not isClosed(s.connection.sock) and not s.stop:
+    while not s.sockClosed and not s.stop:
         try:
-            packet = await s.connection.readData()
+            packet = await s.connection.receivePacket()
         except:
-            var exception = getCurrentExceptionMsg()
-            echo "Error while reading websocket data ::\n", getCurrentExceptionMsg()
+            var exceptn = getCurrentExceptionMsg()
+            s.logShard(
+                "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
+            )
+
             if not s.stop: s.stop = true
             if s.heartbeating: s.heartbeating = false
 
-            if exception.startsWith("The semaphore timeout period has expired."):
-                s.debugMsg("A network error has been detected.", true)
+            if exceptn.startsWith("The semaphore timeout period has expired."):
+                s.logShard("A network error has been detected.")
 
                 s.networkError = true
-            elif exception.startsWith("socket closed"):
-                s.debugMsg("Received 'socket closed'.\n\nGetting time since last heartbeat recieved from discord.")
-
-                if (epochTime() * 1000 - s.lastHBReceived) > 60000 or exception.startsWith("The network connection was aborted by the local system."): # this is my clever way of detecting a sleep
-                    echo """It appears that the library has detected that you put your computer to sleep.
-                    - Unfortunately, this error is fatal resulting in some errors."""
-                    shouldReconnect = false
+                break
+            else:
                 break
 
         var data: JsonNode
 
-        if s.compress and packet.opcode == Opcode.Binary:
-            packet.data = zlib.uncompress(packet.data)
+        if s.compress and packet[0] == Binary:
+            packet[1] = zlib.uncompress(packet[1])
 
         try:
-            data = parseJson(packet.data)
+            data = parseJson(packet[1])
         except:
-            echo "An error occurred while parsing data: " & packet.data
-            shouldReconnect = s.handleDisconnect(packet.data)
+            s.logShard("An error occurred while parsing data: " & packet[1])
+            shouldReconnect = s.handleDisconnect(packet[1])
 
-            await s.disconnect(shouldReconnect = shouldReconnect)
-            await s.handleSocketMessage()
+            await s.disconnect(should_reconnect = shouldReconnect)
+            break
 
         if data["s"].kind != JNull and not s.resuming:
             s.sequence = data["s"].getInt()
 
         case data["op"].num
             of opHello:
-                s.debugMsg("Received 'HELLO' from the gateway.", true)
+                s.logShard("Received 'HELLO' from the gateway.")
                 s.interval = data["d"]["heartbeat_interval"].getInt()
 
                 if not s.heartbeating:
                     s.heartbeating = true
                     asyncCheck s.setupHeartbeatInterval()
             of opHeartbeatAck:
-                s.lastHBReceived = epochTime() * 1000
+                s.lastHBReceived = getTime().toUnixFloat()
                 s.hbSent = false
-                s.debugMsg("Heartbeat Acknowledged by Discord.", true)
+                s.logShard("Heartbeat Acknowledged by Discord.")
 
                 s.hbAck = true
             of opHeartbeat:
-                s.debugMsg("Discord has requested a heartbeat.")
-                await s.heartbeat()
+                s.logShard("Discord is requesting for a heartbeat.")
+                await s.heartbeat(true)
             of opDispatch:
                 asyncCheck s.handleDispatch(data["t"].str, data["d"])
             of opReconnect:
-                s.debugMsg("Discord is requesting for a client reconnect.")
-                await s.disconnect(shouldReconnect = shouldReconnect)
+                s.logShard("Discord is requesting for a client reconnect.")
+                await s.disconnect(should_reconnect = shouldReconnect)
             of opInvalidSession:
-                s.resuming = false
+                var interval = 5000
+
+                if s.resuming:
+                    interval = rand(1000..5000)
+                    s.resuming = false
                 s.authenticating = false
 
-                s.debugMsg("Received 'INVALID_SESSION'", true, some(@["resumable", $data["d"].getBool()]))
+                s.logShard("Session invalidated", @[
+                    "resumable", $data["d"].getBool
+                ])
 
-                if data["d"].getBool():
+                if data["d"].getBool:
                     await s.resume()
                 else:
-                    s.debugMsg("Sending the IDENTIFY packet in 5000ms.", true)
+                    s.session_id = ""
+                    s.sequence = 0
+                    s.cache.clear()
 
-                    await sleepAsync 5000
-                    s.client.limiter = newGatewayLimiter(limit = 1, interval = 5500)
+                    s.logShard(&"Identifying in {interval}ms...")
 
+                    await sleepAsync interval
                     await s.identify()
             else:
                 discard
-    if packet.opcode == Close:
-        if not shouldReconnect:
-            shouldReconnect = s.handleDisconnect(packet.data)
-        else:
-            reconnectable = false
+    if packet[0] == Close:
+        shouldReconnect = s.handleDisconnect(packet[1])
 
     s.stop = true
     s.resuming = false
     s.authenticating = false
+    s.ready = false
     s.hbAck = false
     s.hbSent = false
     s.lastHBReceived = 0
     s.lastHBTransmit = 0
 
-    if shouldReconnect:
-        await s.reconnect(resumable = true)
-        if not s.networkError: await handleSocketMessage(s)
+    if shouldReconnect and reconnectable:
+        await s.reconnect()
+        await sleepAsync 2000
+        if not s.networkError: await s.handleSocketMessage()
     else:
-        reconnectable = false
-
-proc handleSocketMessageExceptions(s: Shard) {.async.} =
-    try:
-        await handleSocketMessage(s)
-    except:
-        if not reconnectable or getCurrentExceptionMsg()[0].isAlphaNumeric: return
-
-        await s.connection.close()
-        echo "An error occurred while handling socket messages :: " & getCurrentExceptionMsg()
-
-        if s.resuming: s.resuming = false
-        if s.authenticating: s.authenticating = false
-
-        await s.reconnect(resumable = true)
-        await handleSocketMessageExceptions(s)
-
-proc startSession(s: Shard, url: string, query: string) {.async.} =
-    try:
-        s.connection = await newAsyncWebsocketClient(
-                url[6..url.high],
-                Port 443,
-                query,
-                true
-            )
-        s.hbAck = true
-        s.debugMsg("Socket is open.")
-    except:
-        echo getCurrentExceptionMsg()
-        s.stop = true
         return
 
-    await s.handleSocketMessageExceptions() # hope dis works *sweats*
+proc endSession*(cl: DiscordClient) {.async.} =
+    ## Ends the session.
+    for shard in cl.shards.values:
+        await shard.disconnect(should_reconnect = false)
+        shard.cache.clear()
+
+proc setupShard(cl: DiscordClient, i: int;
+        compress: bool; cache_prefs: CacheTablePrefs): Shard =
+    result = newShard(i, cl)
+    cl.shards.add(i, result)
+    result.compress = compress
+
+    result.cache.preferences = cache_prefs
+
+proc startSession(s: Shard, url, query: string) {.async.} =
+    s.logShard("Connecting to " & url & query)
+
+    try:
+        s.connection = await newWebsocket(url & query)
+        s.hbAck = true
+        s.logShard("Socket is open.")
+    except:
+        s.stop = true
+        raise newException(Exception, getCurrentExceptionMsg())
+
+    try:
+        await s.handleSocketMessage()
+    except:
+        if getCurrentExceptionMsg()[0].isAlphaNumeric: return
 
 proc startSession*(cl: DiscordClient,
-            autoreconnect: bool = false;
-            gateway_intents: seq[int] = @[];
-            shards: int = 1;
-            compress: bool = false;
-            encoding: string = "json") {.async.} =
-    ## Connects the client to Discord via gateway.
-    ## 
-    ## - gateway_intents | Allows you to subscribe to pre-defined events (info: https://discordapp.com/developers/docs/topics/gateway#gateway-intents)
-    ## - shards | An amount of shards.
-    ## - encoding | Sets gateway encoding.
-    ## - compress | Whether or not to compress. zlib1.dll needs to be in your directory.
+            compress = false;
+            autoreconnect = true;
+            gateway_intents: set[GatewayIntent] = {};
+            large_message_threshold, large_threshold = 50;
+            max_message_size = 5_000_000;
+            gateway_version = 6;
+            max_shards = 1;
+            cache_users, cache_guilds, guild_subscriptions = true;
+            cache_guild_channels, cache_dm_channels = true) {.async.} =
+    ##[
+        Connects the client to Discord via gateway.
 
+        - `gateway_intents` Allows you to subscribe to pre-defined events.
+        - `compress` The zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
+        - `large_threshold` The number that would be considered a large guild (50-250).
+        - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
+        - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
+        - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
+        - `large_message_threshold` Max message limit (MESSAGE_CREATE)
+    ]##
     if cl.restMode:
-        raise newException(Exception, "(╯°□°)╯︵ ┻━┻ ! You cannot connect to the gateway while rest mode is enabled ! (╯°□°)╯︵ ┻━┻")
+        raise newException(Exception, "(╯°□°)╯ REST mode is enabled! (╯°□°)╯")
+    elif cl.token == "Bot  ":
+        raise newException(Exception, "The token you specified was empty.")
 
     cl.autoreconnect = autoreconnect
-    encode = encoding
     cl.intents = gateway_intents
-    cl.shard = shards
+    cl.largeThreshold = large_threshold
+    cl.guildSubscriptions = guild_subscriptions
+    cl.max_shards = max_shards
+    cl.gatewayVer = gateway_version
 
-    cl.limiter = newGatewayLimiter(limit = 1, interval = 5500)
+    var
+        query = "/?v=" & $gateway_version
+        info: GatewayBot
 
-    var query = "/?v=" & $gatewayVer & "&encoding=" & encoding
-    # if compress:
-    #     query = query & "&compress=zlib-stream"
+    if cl.shards.len == 0:
+        log("Starting gateway session.")
 
-    if gateway.url == "":
-        gateway = await cl.handleConnection()
+        try:
+            info = await cl.api.getGatewayBot()
+        except OSError:
+            if getCurrentExceptionMsg().startsWith("No such host is known."):
+                log("A network error has been detected.")
+                return
 
-    if shards == 1 and gateway.shards > 1:
-        cl.shard = gateway.shards
+        log("Successfully retrived gateway information from Discord", @[
+            "url", info.url,
+            "shards", $info.shards,
+            "session_start_limit", $info.session_start_limit
+        ])
 
-    if shards > 1:
-        for i in 0..cl.shard - 2:
-            let ss = newShard(i, cl)
-            cl.shards.add(i, ss)
-            ss.compress = compress
-            asyncCheck ss.startSession(gateway.url, query)
+        if info.session_start_limit.remaining == 10:
+            log("WARNING: Your session start limit has reached to 10.")
 
-    let ss = newShard(cl.shard - 1, cl)
-    cl.shards.add(cl.shard - 1, ss)
-    ss.compress = compress
-    waitFor ss.startSession(gateway.url, query)
+        if info.session_start_limit.remaining == 0:
+            let time = getTime().toUnix() - info.session_start_limit.reset_after
 
-proc getPing*(s: Shard): int =
-    ## Gets the shard's ping ms.
-    result = (s.lastHBReceived - s.lastHBTransmit).int
+            log("Your session start limit has reached its limit", @[
+                "sleep_time", $time
+            ])
+            await sleepAsync time.int
+
+        if max_shards == 1 and info.shards > 1:
+            cl.max_shards = info.shards
+
+    for id in 0..cl.max_shards - 1:
+        let s = cl.setupShard(id, compress, CacheTablePrefs(
+            cache_users: cache_users,
+            cache_guilds: cache_guilds,
+            cache_guild_channels: cache_guild_channels,
+            cache_dm_channels: cache_dm_channels,
+            large_message_threshold: large_message_threshold,
+            max_message_size: max_message_size
+        ))
+        s.gatewayUrl = info.url
+
+        if id == max_shards - 1: # Last shard.
+            await s.startSession(s.gatewayUrl, query)
+        else:
+            asyncCheck s.startSession(s.gatewayUrl, query)
+
+        await s.waitWhenReady()
+
+proc latency*(s: Shard): int =
+    ## Gets the shard's latency ms.
+    result = int((s.lastHBReceived - s.lastHBTransmit) * 1000)

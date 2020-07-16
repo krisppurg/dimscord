@@ -1,67 +1,75 @@
 
-# <img src="assets/dimscord.png" width="32px" height="32px"/>  Dimscord
-A Discord Bot & REST Library for Nim.
+# <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
+A Discord Bot & REST Library for Nim. [Discord Server](https://discord.gg/bw4mHUV)
 
 Why Dimscord?
- * It is a bit more straightforward.
- * Nim is a good programming language and I believe that Nim should stand a chance on having a good enough discord library.
- * It has REST mode feature.
- * The other nim discord library has bunch of issues and also the way of handling.
+ * It is minimalistic and efficient. 
+ * Nim is a good programming language and I believe that Nim should stand a chance on having an up-to-date good enough discord library.
+ * It has REST mode only feature, which isn't cache reliant.
+ * The other nim discord library has bunch of issues and it's unmaintained.
  
  ## FAQ:
- What is Nim?
+ * What is Nim?
    * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
 
+ * Where is the Documentation for the library in devel?
+   * https://krisppurg.github.io/dimscord-devel-docs
+
 ## Notes:
- * This library is 90% finished (estimate).
- * When running your discord bot you would need to define `-d:ssl` e.g. `nim c -r -d:ssl yourfilename.nim`
+ * For compressing data and stuff you would need a zlib1 file to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder. They have to be either a dylib, dll or so.1 file.
+ * Voice support will be added.
+ * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member use the requestGuildMembers proc, that way you can get a specific guild member from a large guild; if you have presence intent enabled and you are debugging with a large guild,
+ dont debug because it will slow down your bot.
 
- * For compressing data and stuff you would need zlib1.dll to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder.
+## Getting Started:
+1. Install Nim using [choosenim](https://github.com/dom96/choosenim) or [Nim's website](https://nim-lang.org/install.html)
 
- * For contributing you should use the devel branch.
+2. Install Dimscord via Nimble using `nimble install dimscord` or Github `git clone https://github.com/krisppurg/dimscord`
+   * You will need at least Nim 1.2.0 to install dimscord
  
- * You should either use the devel branch, if there's issues with this branch.
-
- * The documentation for the library is https://krisppurg.github.io/dimscord/0.0.9/dimscord.html
+3. Read the Wiki or Examples for referencing. Maybe even rewrite your bot if you want to switch.
  
- * There is an issue with the websocket.nim library (0.5.0), where if you connect your discord bot the socket will close, try using either 0.4.0 or 0.4.1. 
-
- * Voice support will be added on later.
-
-## How to install Dimscord:
-### Step 1: Install Nim
-
- You can use [choosenim](https://github.com/dom96/choosenim) or you could download it from [Nim's website](https://nim-lang.org/install.html)
-
- ### Step 2: Install Dimscord
-You'd can install Dimscord via Nimble using `nimble install dimscord` or Github `git clone https://github.com/krisppurg/dimscord`
-
-You will need at least Nim 1.0.0 to install dimscord
- 
- ### Step 3: Enjoy.
-Stay up-to-date with the latest Dimscord release and stuff.
+4. Start coding! Stay up-to-date with the latest Dimscord release and stuff.
 
 ## Quick Example:
 ```nim
-import dimscord, asyncdispatch, times
+import dimscord, asyncdispatch, times, options
 
-let cl = newDiscordClient("<token>")
+let discord = newDiscordClient("<your bot token goes here>")
 
-cl.events.on_ready = proc (s: Shard, r: Ready) = # Add Event Handler for on_ready.
-    echo "Connected to Discord as " & $r.user
+# Handle event for on_ready.
+discord.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
+    echo "Ready as " & $r.user
 
-cl.events.message_create = proc (s: Shard, m: Message) = #  Add Event Handler for message_create.
+# Handle event for message_create.
+discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
     if m.author.bot: return
-    if m.content == "!ping": # if message content is "!ping"
-        let before = getTime().utc.toTime.toUnix
-        let msg = waitFor cl.api.sendMessage(m.channel_id, "ping?")
-        let after = getTime().utc.toTime.toUnix 
-        asyncCheck cl.api.editMessage(m.channel_id, msg.id, "Pong! took " & $int(after - before) & "ms | " & $s.getPing() & "ms.") # Edit the message as pong! asyncCheck means that it  will only raise an exception if it fails.
-    elif m.content == "!embed": # otherwise if content is embed
-        asyncCheck cl.api.sendMessage(m.channel_id, embed = ?Embed( # Sends a messge with embed. The '?' symbol is a shorthand for 'some' in options.
-            title: ?"Hello there!", 
-            description: ?"This is a cool embed",
-            color: ?5))
+    if m.content == "!ping": # If message content is "!ping".
+        let
+            before = epochTime() * 1000
+            msg = await discord.api.sendMessage(m.channel_id, "ping?")
+            after = epochTime() * 1000
+        # Edit the message as pong! Use 'discard' because editMessage returns a new message.
+        discard await discord.api.editMessage(
+            m.channel_id,
+            msg.id, 
+            "Pong! took " & $int(after - before) & "ms | " & $s.latency() & "ms."
+        )
+    elif m.content == "!embed": # Otherwise if content is embed.
+        # Sends a messge with embed.
+        discard await discord.api.sendMessage(
+            m.channel_id,
+            embed = some Embed(
+                title: some "Hello there!", 
+                description: some "This is description",
+                color: some 0x7789ec
+            )
+        )
 
-waitFor cl.startSession(compress=true)
+# Connect to Discord and run the bot.
+waitFor discord.startSession()
 ```
+Please make sure that when you are running your discord bot you would need to define `-d:ssl` example: `nim c -r -d:ssl main.nim`, you can use `-d:dimscordDebug`, if you want to debug.
+
+## Contributing
+* If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.

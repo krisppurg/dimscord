@@ -1,11 +1,54 @@
-import options, json, tables, constants
+##[
+    All Optional fields in these object are:
+    
+    * Fields that cannot be assumed. such as bools
+    * Optional fields for example embeds, which they may not be
+      present.
+    
+    Some may not be optional, but they can be assumable or always present.
+]##
+
+import options, json, tables, constants, macros
+import sequtils, strutils, asyncdispatch, ws
+
 type
-    Embed* = ref object
-        title*: Option[string]
-        `type`*: Option[string]
-        description*: Option[string]
-        url*: Option[string]
-        timestamp*: Option[string]
+    DiscordClient* = ref object
+        ## The Discord Client, itself.
+        api*: RestApi
+        events*: Events
+        token*: string
+        shards*: Table[int, Shard]
+        restMode*, autoreconnect*, guildSubscriptions*: bool
+        largeThreshold*, gatewayVer*, max_shards*: int
+        intents*: set[GatewayIntent]
+    Shard* = ref object
+        id*, sequence*: int
+        client*: DiscordClient
+        user*: User
+        gatewayUrl*, session_id*: string
+        cache*: CacheTable
+        connection*: Websocket
+        hbAck*, hbSent*, stop*, compress*: bool
+        lastHBTransmit*, lastHBReceived*: float
+        retry_info*: tuple[ms, attempts: int]
+        heartbeating*, resuming*, reconnecting*: bool
+        authenticating*, networkError*, ready*: bool
+        interval*: int
+    CacheTable* = ref object
+        ## An object of stored things.
+        preferences*: CacheTablePrefs
+        users*: Table[string, User]
+        guilds*: Table[string, Guild]
+        guildChannels*: Table[string, GuildChannel]
+        dmChannels*: Table[string, DMChannel]
+    CacheTablePrefs* = object
+        cache_users*, cache_guilds*: bool
+        cache_guild_channels*, cache_dm_channels*: bool
+        large_message_threshold*, max_message_size*: int
+    CacheError* = object of KeyError
+    Embed* = object
+        title*, `type`*, description*: Option[string]
+        url*, timestamp*: Option[string]
         color*: Option[int]
         footer*: Option[EmbedFooter]
         image*: Option[EmbedImage]
@@ -14,285 +57,233 @@ type
         provider*: Option[EmbedProvider]
         author*: Option[EmbedAuthor]
         fields*: Option[seq[EmbedField]]
-    EmbedThumbnail* = ref object
+    EmbedThumbnail* = object
+        url*, proxy_url*: Option[string]
+        height*, width*: Option[int]
+    EmbedVideo* = object
         url*: Option[string]
-        proxy_url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
-    EmbedVideo* = ref object
-        url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
-    EmbedImage* = ref object
-        url*: Option[string]
-        proxy_url*: Option[string]
-        height*: Option[int]
-        width*: Option[int]
-    EmbedProvider* = ref object
-        name*: Option[string]
-        url*: Option[string]
-    EmbedAuthor* = ref object
-        name*: Option[string]
-        url*: Option[string]
-        icon_url*: Option[string]
-        proxy_icon_url*: Option[string]
-    EmbedFooter* = ref object
+        height*, width*: Option[int]
+    EmbedImage* = object
+        url*, proxy_url*: Option[string]
+        height*, width*: Option[int]
+    EmbedProvider* = object
+        name*, url*: Option[string]
+    EmbedAuthor* = object
+        name*, url*: Option[string]
+        icon_url*, proxy_icon_url*: Option[string]
+    EmbedFooter* = object
         text*: string
-        icon_url*: Option[string]
-        proxy_icon_url*: Option[string]
-    EmbedField* = ref object
-        name*: string
-        value*: string
+        icon_url*, proxy_icon_url*: Option[string]
+    EmbedField* = object
+        name*, value*: string
         inline*: Option[bool]
-    MentionChannel* = ref object
-        id*: string
-        guild_id*: string
+    MentionChannel* = object
+        id*, guild_id*, name*: string
         kind*: int
-        name*: string
-    Message* = ref object
-        id*: string
+    MessageReference* = object
         channel_id*: string
-        guild_id*: string ## Message.guild_id by default will be ""
+        message_id*, guild_id*: Option[string]
+    Message* = ref object
+        id*, channel_id*: string
+        content*, timestamp*: string
+        edited_timestamp*, guild_id*: Option[string]
+        webhook_id*, nonce*: Option[string]
+        tts*, mention_everyone*, pinned*: bool
+        kind*, flags*: int
         author*: User
-        member*: Member ## Member will be nilable
-        content*: string
-        timestamp*: string
-        edited_timestamp*: string
-        tts*: bool
-        mention_everyone*: bool
+        member*: Option[Member]
         mention_users*: seq[User]
         mention_roles*: seq[string]
         mention_channels*: seq[MentionChannel]
         attachments*: seq[Attachment]
         embeds*: seq[Embed]
         reactions*: Table[string, Reaction]
-        nonce*: string ## It will always be a string, if it can be parsed as an int you can use parseInt from strutils.
-        pinned*: bool
-        webhook_id*: string
-        kind*: int
-        activity*: tuple[kind: int, party_id: string]
-        application*: Application
-        message_reference*: tuple[channel_id: string, message_id: string, guild_id: string]
-        flags*: int
+        activity*: Option[tuple[kind: int, party_id: string]]
+        application*: Option[Application]
+        message_reference*: Option[MessageReference]
     User* = ref object
-        id*: string
-        username*: string
-        discriminator*: string
+        id*, username*, discriminator*: string
+        bot*, system*: bool
         avatar*: Option[string]
-        bot*: bool
-        system*: bool
     Member* = ref object
         user*: User
-        nick*: string
-        roles*: seq[string]
+        nick*, premium_since*: Option[string]
         joined_at*: string
+        roles*: seq[string]
+        deaf*, mute*: bool
         presence*: Presence
-        premium_since*: string
         voice_state*: Option[VoiceState]
-        deaf*: bool
-        mute*: bool
-    Attachment* = ref object
-        id*: string
-        filename*: string
+    Attachment* = object
+        id*, filename*: string
+        proxy_url*, url*: string
+        height*, width*: Option[int]
         size*: int
-        url*: string
-        proxy_url*: string
-        height*: Option[int]
-        width*: Option[int]
-    Reaction* = ref object
+    Reaction* = object
         count*: int
         emoji*: Emoji
         reacted*: bool
-    Emoji* = ref object
-        id*: string
-        name*: string
+    Emoji* = object
+        id*, name*: string
+        require_colons*, managed*, animated*: Option[bool]
         user*: User
         roles*: seq[string]
-        require_colons*: bool
-        managed*: bool
-        animated*: bool
-    Application* = ref object
-        id*: string
-        cover_image*: string
-        description*: string
-        icon*: string
-        name*: string
+    Application* = object
+        id*, cover_image*: string
+        description*, icon*, name*: string
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
+        rest_ver*: int
     Ratelimit* = ref object
-        reset*: int
-        ratelimited*: bool
+        retry_after*: float
+        processing*, ratelimited*: bool
     UnavailableGuild* = object
         id*: string
         unavailable*: bool
-    Ready* = ref object
+    Ready* = object
         v*: int
         user*: User
         guilds*: seq[UnavailableGuild]
         session_id*: string
         shard*: Option[seq[int]]
-    AnyChannel* = ref object
-        id*: string
-        name*: string
-        kind*: int
     DMChannel* = ref object
-        id*: string
-        last_message_id*: string
+        id*, last_message_id*: string
         kind*: int
         recipients*: seq[User]
         messages*: Table[string, Message]
     GuildChannel* = ref object
-        id*: string
-        name*: string
-        kind*: int
-        parent_id*: Option[string]
-        position*: int
+        id*, name*, guild_id*: string
+        last_message_id*: string
+        kind*, position*, rate_limit_per_user*: int
+        bitrate*, user_limit*: int
+        parent_id*, topic*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
         messages*: Table[string, Message]
-        guild_id*: Option[string]
         nsfw*: bool
-        topic*: string
-        last_message_id*: string
-        rate_limit_per_user*: int
-        bitrate*: int
-        user_limit*: int
     GameAssets* = object
-        large_text*: string
-        large_image*: string
-        small_text*: string
-        small_image*: string
+        small_text*, small_image*: string
+        large_text*, large_image*: string
     GameActivity* = object # A user game activity
         name*: string
-        kind*: int
-        url*: Option[string]
+        kind*, flags*: int
+        url*, application_id*, details*, state*: Option[string]
         created_at*: BiggestInt
-        timestamps*: Option[tuple[start: BiggestInt, final: BiggestInt]]
-        application_id*: Option[string]
-        details*: Option[string]
-        state*: Option[string]
+        timestamps*: Option[tuple[start, final: BiggestInt]]
         emoji*: Option[Emoji]
-        party*: Option[tuple[id: string, size: string]]
+        party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[GameAssets]
-        secrets*: Option[tuple[join: string, spectate: string, match: string]]
-        instance*: bool # Useful field if its instanced session
-        flags*: int
-    Presence* = ref object
+        secrets*: Option[tuple[join, spectate, match: string]]
+        instance*: bool
+    Presence* = object
         user*: User
         roles*: seq[string]
         game*: Option[GameActivity]
-        guild_id*: string
-        status*: string
+        guild_id*, status*: string
         activities*: seq[GameActivity]
-        client_status*: tuple[web: string, desktop: string, mobile: string]
-        premium_since*: Option[string]
-        nick*: Option[string]
-    Guild* = ref object ## A guild object. All option fields are cached only fields or fields that cannot be assumed (e.g. permissions) or nilable
-        id*: string
-        name*: string
-        icon*: Option[string]
-        splash*: Option[string]
-        discovery_splash*: Option[string]
-        owner*: bool
-        owner_id*: string
-        permissions*: Option[int]
-        region*: string
-        afk_channel_id*: Option[string]
-        afk_timeout*: Option[int] # thx yasmin from #api
-        embed_enabled*: bool
-        embed_channel_id*: string
-        verification_level*: int
-        default_message_notification*: int
-        explicit_content_filter*: int
+        client_status*: tuple[web, desktop, mobile: string]
+        premium_since*, nick*: Option[string]
+    Guild* = ref object
+        ## A guild object.
+        id*, name*, owner_id*: string
+        region*, preferred_locale*: string
+        description*, banner*: Option[string]
+        public_updates_channel_id*: Option[string]
+        icon*, splash*, discovery_splash*: Option[string]
+        afk_channel_id*, vanity_url_code*, application_id*: Option[string]
+        widget_channel_id*, system_channel_id*, joined_at*: Option[string]
+        owner*, widget_enabled*: bool
+        large*, unavailable*: Option[bool]
+        max_video_channel_uses*: Option[int]
+        permissions*, afk_timeout*, member_count*: Option[int]
+        approximate_member_count*, approximate_presence_count*: Option[int]
+        max_presences*, max_members*, premium_subscription_count*: Option[int]
+        explicit_content_filter*, mfa_level*, premium_tier*: int
+        verification_level*, default_message_notifications*: int
+        features*: seq[string]
         roles*: Table[string, Role]
         emojis*: Table[string, Emoji]
-        features*: seq[string]
-        mfa_level*: int
-        application_id*: Option[string]
-        widget_enabled*: bool
-        widget_channel_id*: Option[string]
-        system_channel_id*: Option[string]
-        joined_at*: Option[string]
-        large*: Option[bool]
-        unavailable*: Option[bool]
-        member_count*: Option[int]
         voice_states*: Table[string, VoiceState]
         members*: Table[string, Member]
         channels*: Table[string, GuildChannel]
         presences*: Table[string, Presence]
-        max_presences*: Option[int]
-        max_members*: Option[int]
-        vanity_url_code*: Option[string]
-        description*: Option[string]
-        banner*: Option[string]
-        premium_tier*: int
-        premium_subscription_count*: Option[int]
-        preferred_locale*: string
     VoiceState* = ref object
-        guild_id*: Option[string]
-        channel_id*: Option[string]
-        user_id*: string
-        session_id*: string
-        deaf*: bool
-        mute*: bool
-        self_deaf*: bool
-        self_mute*: bool
-        self_stream*: bool # owo whats this
-        suppress*: bool
-    Role* = ref object
-        id*: string
-        name*: string
-        color*: int
-        hoist*: bool
-        position*: int
-        permissions*: int
-        managed*: bool
-        mentionable*: bool
+        guild_id*, channel_id*: Option[string]
+        user_id*, session_id*: string
+        deaf*, mute*, suppress*: bool
+        self_deaf*, self_mute*, self_stream*: bool
+    Role* = object
+        id*, name*: string
+        color*, position*, permissions*: int
+        hoist*, managed*, mentionable*: bool
     GameStatus* = object
         name*: string
         kind*: int
         url*: Option[string]
     Overwrite* = object
-        id*: string
-        kind*: string
-        allow*: int
-        deny*: int
+        id*, kind*: string
+        allow*, deny*: int
         permObj*: PermObj
-    PermObj* = ref object
-        allowed*: seq[int]
-        denied*: seq[int]
+    PermObj* = object
+        allowed*, denied*: set[PermEnum]
         perms*: int
     PartialGuild* = object
-        id*: string
-        name*: string
-        icon*: Option[string]
-        splash*: Option[string]
+        id*, name*: string
+        icon*, splash*: Option[string]
     PartialChannel* = object
-        id*: string
-        name*: string
+        id*, name*: string
         kind*: int
+    Channel* = object
+        ## Used for creating guilds.
+        name*, parent_id*: string
+        id*, kind*: int
+    TeamMember* = object
+        membership_state*: int
+        permissions*: seq[string] ## always would be @["*"]
+        team_id*: string
+        user*: User
+    Team* = object
+        icon*: Option[string]
+        id*, owner_user_id*: string
+        members*: seq[TeamMember]
+    OAuth2Application* = object
+        id*, name*: string
+        description*, summary*: string
+        verify_key*: string
+        icon*, guild_id*, primary_sku_id*: Option[string]
+        slug*, cover_image*: Option[string]
+        rpc_origins*: seq[string]
+        bot_public*, bot_require_code_grant*: bool
+        owner*: User
+        team*: Option[Team]
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
         channel*: PartialChannel
-        inviter*: Option[User]
-        target_user*: Option[User]
+        inviter*, target_user*: Option[User]
         target_user_type*: Option[int]
-        approximate_presence_count*: Option[int]
-        approximate_member_count*: Option[int]
+        approximate_presence_count*, approximate_member_count*: Option[int]
     InviteMetadata* = object
-        code*: string
+        code*, created_at*: string
         guild_id*: Option[string]
-        uses*: int
-        max_uses*: int
-        max_age*: int
+        uses*, max_uses*, max_age*: int
         temporary*: bool
-        created_at*: string
-    TypingStart* = object
+    InviteCreate* = object
+        code*, created_at*: string
+        guild_id*: Option[string]
+        uses*, max_uses*, max_age*: int
         channel_id*: string
-        user_id*: string
+        inviter*, target_user*: Option[User]
+        target_user_type*: Option[int]
+        temporary*: bool
+    TypingStart* = object
+        channel_id*, user_id*: string
+        guild_id*: Option[string]
+        member*: Option[Member]
         timestamp*: int
-    GuildMembersChunk* = ref object
+    GuildMembersChunk* = object
+        guild_id*: string
+        nonce*: Option[string]
+        chunk_index*, chunk_count*: int
         members*: seq[Member]
         not_found*: seq[string]
         presences*: seq[Presence]
@@ -300,106 +291,329 @@ type
         user*: User
         reason*: Option[string]
     Webhook* = object
-        id*: string
+        id*, channel_id*: string
         kind*: int
-        guild_id*: Option[string]
-        channel_id*: string
+        guild_id*, avatar*: Option[string]
+        name*, token*: Option[string]
         user*: Option[User]
-        name*: Option[string]
-        avatar*: Option[string]
-        token*: Option[string]
+    Integration* = object
+        id*, name*, kind*: string
+        role_id*, synced_at*: string
+        enabled*, syncing*: bool
+        enable_emoticons*: Option[bool]
+        expire_behavior*, expire_grace_period*: int
+        user*: User
+        account*: tuple[id, name: string]
+    GuildPreview* = object
+        id*, name*: string
+        icon*, splash, emojis*: Option[string]
+        discovery_splash*, description*: Option[string]
+        approximate_member_count*, approximate_presence_count*: int
+    VoiceRegion* = object
+        id*, name*: string
+        vip*, optimal*: bool
+        deprecated*, custom*: bool
+    AuditLogOptions* = object
+        delete_member_days*, members_removed*: Option[string]
+        channel_id*, count*: Option[string]
+        id*, role_name*: Option[string]
+        kind*: Option[string] ## ("member" or "role")
+    AuditLogChangeValue* = object
+        case kind*: AuditLogChangeKind
+        of alcString:
+            str*: string
+        of alcInt:
+            ival*: int
+        of alcBool:
+            bval*: bool
+        of alcRoles:
+            roles*: seq[tuple[id, name: string]]
+        of alcOverwrites:
+            overwrites*: seq[Overwrite]
+        of alcNil:
+            nil
+    AuditLogEntry* = ref object
+        target_id*, reason*: Option[string]
+        before*, after*: Table[string, AuditLogChangeValue]
+        opts*: Option[AuditLogOptions]
+        user_id*, id*: string
+        action_type*: int
+    AuditLog* = object
+        webhooks*: seq[Webhook]
+        users*: seq[User]
+        audit_log_entries*: seq[AuditLogEntry]
+        integrations*: seq[Integration]
+    GatewaySession* = object
+        total*, remaining*: int
+        reset_after*, max_concurrency*: int
+    GatewayBot* = object
+        url*: string
+        shards*: int
+        session_start_limit*: GatewaySession
+    Events* = ref object
+        ## An object containing events that can be changed.
+        ## 
+        ## `exists` param checks message is cached or not.
+        ## Other cachable objects dont have them.
+        ## 
+        ## - `on_dispatch` event gives you the raw event data for you to handle things.
+        ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
+        on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
+        on_ready*: proc (s: Shard, r: Ready) {.async.}
+        message_create*: proc (s: Shard, m: Message) {.async.}
+        message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
+        message_update*: proc (s: Shard, m: Message,
+                o: Option[Message], exists: bool) {.async.}
+        message_reaction_add*, message_reaction_remove*: proc (s: Shard,
+                m: Message, u: User,
+                r: Reaction, exists: bool) {.async.}
+        message_reaction_remove_all*: proc (s: Shard, m: Message,
+                exists: bool) {.async.}
+        message_reaction_remove_emoji*: proc (s: Shard, m: Message,
+                e: Emoji, exists: bool) {.async.}
+        message_delete_bulk*: proc (s: Shard, m: seq[tuple[
+                msg: Message, exists: bool]]) {.async.}
+        channel_create*: proc (s: Shard, g: Option[Guild],
+                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
+        channel_update*: proc (s: Shard, g: Guild,
+                c: GuildChannel, o: Option[GuildChannel]) {.async.}
+        channel_delete*: proc (s: Shard, g: Option[Guild],
+                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
+        channel_pins_update*: proc (s: Shard, cid: string,
+                g: Option[Guild], last_pin: Option[string]) {.async.}
+        presence_update*: proc (s: Shard, p: Presence,
+                o: Option[Presence]) {.async.}
+        typing_start*: proc (s: Shard, t: TypingStart) {.async.}
+        guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
+        guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
+                u: User) {.async.}
+        guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
+        guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
+                m: Member) {.async.}
+        guild_member_update*: proc (s: Shard, g: Guild,
+                m: Member, o: Option[Member]) {.async.}
+        guild_update*: proc (s: Shard, g: Guild, o: Option[Guild]) {.async.}
+        guild_create*, guild_delete*: proc (s: Shard, g: Guild) {.async.}
+        guild_members_chunk*: proc (s: Shard, g: Guild,
+                m: GuildMembersChunk) {.async.}
+        guild_role_create*, guild_role_delete*: proc (s: Shard, g: Guild,
+                r: Role) {.async.}
+        guild_role_update*: proc (s: Shard, g: Guild,
+                r: Role, o: Option[Role]) {.async.}
+        invite_create*: proc (s: Shard, i: InviteCreate) {.async.}
+        invite_delete*: proc (s: Shard, g: Option[Guild],
+                cid, code: string) {.async.}
+        user_update*: proc (s: Shard, u: User) {.async.}
+        voice_state_update*: proc (s: Shard, v: VoiceState,
+                o: Option[VoiceState]) {.async.}
+        voice_server_update*: proc (s: Shard, g: Guild,
+                token: string, e: Option[string]) {.async.}
+        webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
+
+proc kind*(c: CacheTable, channel_id: string): int =
+    ## Checks for a channel kind. (Shortcut)
+    if channel_id in c.dmChannels:
+        result = c.dmChannels[channel_id].kind
+    elif channel_id in c.guildChannels:
+        result = c.guildChannels[channel_id].kind
+    else:
+        raise newException(CacheError, "Channel doesn't exist in cache.")
+
+proc clear*(c: CacheTable) =
+    ## Empties cache.
+    c.users.clear()
+    c.guilds.clear()
+    c.guildChannels.clear()
+    c.dmChannels.clear()
 
 proc `$`*(e: Emoji): string =
     result = if e.id != "": e.name & ":" & e.id else: e.name
 
-proc `$`*(r: Reaction): string =
-    result = $r[]
+macro keyCheckOptInt(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some `obj`[`fieldName`].getInt
 
-proc `+`*(p: PermObj): int =
-    ## Sums up the total permissions.
-    result = 0
-    if p.allowed.len > 0:
-        for it in p.allowed:
-            result = result or it
-    if p.denied.len > 0:
-        for it in p.denied:
-            result = result and (it - it - it)
+macro keyCheckInt(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = `obj`[`fieldName`].getInt
 
-proc `+`*(p: seq[int]): int =
-    ## Sums up the total permissions for a specific permission.
-    result = 0
-    for it in p:
-        result = result or it
+macro keyCheckOptBool(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some `obj`[`fieldName`].getBool
 
-proc permCheck*(perms: int, p: int): bool =
-    ## Checks if the set of permissions has the specific permission.
-    result = (perms and p) == p
+macro keyCheckBool(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = `obj`[`fieldName`].getBool
 
-proc permCheck*(perms: int, p: PermObj): bool =
-    ## Just like permCheck, but with a PermObj.
-    var allowed: Option[bool] = none(bool)
-    var denied: Option[bool] = none(bool) 
+macro keyCheckOptStr(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = some `obj`[`fieldName`].getStr
 
-    if p.allowed.len > 0:
-        allowed = some(permCheck(perms, +(p.allowed)))
-    if p.denied.len > 0:
-        denied = some(permCheck(perms, +(p.denied)))
+macro keyCheckStr(obj: typed, obj2: typed,
+                        lits: varargs[untyped]): untyped =
+  result = newStmtList()
+  for lit in lits:
+    let fieldName = lit.strVal
+    result.add quote do:
+      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
+        `obj2`.`lit` = `obj`[`fieldName`].getStr
 
-    if allowed.isSome and denied.isSome:
-        if allowed.get != denied.get:
-            result = false
-    elif allowed.isSome:
-        result = allowed.get
-    elif denied.isSome:
-        result = denied.get
-    else:
-        if p.perms != 0:
-            result = permCheck(perms, p.perms)
+proc newShard*(id: int, client: DiscordClient): Shard =
+    result = Shard(
+        id: id,
+        client: client,
+        cache: CacheTable(
+            users: initTable[string, User](),
+            guilds: initTable[string, Guild](),
+            guildChannels: initTable[string, GuildChannel](),
+            dmChannels: initTable[string, DMChannel]()
+        ),
+        retry_info: (ms: 1000, attempts: 0)
+    )
 
-proc boolCheck(data: JsonNode, key: string): bool =
-    result = if data.hasKey(key): data[key].bval else: false
+proc newDiscordClient*(token: string;
+        rest_mode = false;
+        rest_ver = 6): DiscordClient =
+    ## Creates a Discord Client.
+    var auth_token = token
+    if not token.startsWith("Bot "):
+        auth_token = "Bot " & token
+
+    result = DiscordClient(
+        token: auth_token,
+        api: RestApi(token: auth_token, rest_ver: rest_ver),
+        max_shards: 1,
+        restMode: rest_mode,
+        events: Events(
+            on_dispatch: proc (s: Shard, evt: string,
+                    data: JsonNode) {.async.} = discard,
+            on_ready: proc (s: Shard, r: Ready) {.async.} = discard,
+            message_create: proc (s: Shard, m: Message) {.async.} = discard,
+            message_delete: proc (s: Shard, m: Message,
+                    exists: bool) {.async.} = discard,
+            message_update: proc (s: Shard, m: Message,
+                    o: Option[Message], exists: bool) {.async.} = discard,
+            message_reaction_add: proc (s: Shard, m: Message,
+                    u: User, r: Reaction, exists: bool) {.async.} = discard,
+            message_reaction_remove: proc (s: Shard, m: Message,
+                    u: User, r: Reaction, exists: bool) {.async.} = discard,
+            message_reaction_remove_all: proc (s: Shard, m: Message,
+                    exists: bool) {.async.} = discard,
+            message_reaction_remove_emoji: proc (s: Shard, m: Message,
+                    e: Emoji, exists: bool) {.async.} = discard,
+            message_delete_bulk: proc (s: Shard, m: seq[tuple[
+                    msg: Message, exists: bool]]) {.async.} = discard,
+            channel_create: proc (s: Shard, g: Option[Guild],
+                    c: Option[GuildChannel],
+                    d: Option[DMChannel]) {.async.} = discard,
+            channel_update: proc (s: Shard, g: Guild,
+                    c: GuildChannel,
+                    o: Option[GuildChannel]) {.async.} = discard,
+            channel_delete: proc (s: Shard, g: Option[Guild],
+                    c: Option[GuildChannel],
+                    d: Option[DMChannel]) {.async.} = discard,
+            channel_pins_update: proc (s: Shard, cid: string,
+                    g: Option[Guild],
+                    last_pin: Option[string]) {.async.} = discard,
+            presence_update: proc (s: Shard, p: Presence,
+                    o: Option[Presence]) {.async.} = discard,
+            typing_start: proc (s: Shard, t: TypingStart) {.async.} = discard,
+            guild_emojis_update: proc (s: Shard, g: Guild,
+                    e: seq[Emoji]) {.async.} = discard,
+            guild_ban_add: proc (s: Shard, g: Guild,
+                    u: User) {.async.} = discard,
+            guild_ban_remove: proc (s: Shard, g: Guild,
+                    u: User) {.async.} = discard,
+            guild_integrations_update: proc (s: Shard,
+                    g: Guild) {.async.} = discard,
+            guild_member_add: proc (s: Shard, g: Guild,
+                    m: Member) {.async.} = discard,
+            guild_member_remove: proc (s: Shard, g: Guild,
+                    m: Member) {.async.} = discard,
+            guild_member_update: proc (s: Shard, g: Guild,
+                    m: Member, o: Option[Member]) {.async.} = discard,
+            guild_update: proc (s: Shard, g: Guild,
+                    o: Option[Guild]) {.async.} = discard,
+            guild_create: proc (s: Shard, g: Guild) {.async.} = discard,
+            guild_delete: proc (s: Shard, g: Guild) {.async.} = discard,
+            guild_members_chunk: proc (s: Shard, g: Guild,
+                    m: GuildMembersChunk) {.async.} = discard,
+            guild_role_create: proc (s: Shard, g: Guild,
+                    r: Role) {.async.} = discard,
+            guild_role_delete: proc (s: Shard, g: Guild,
+                    r: Role) {.async.} = discard,
+            guild_role_update: proc (s: Shard, g: Guild,
+                    r: Role, o: Option[Role]) {.async.} = discard,
+            invite_create: proc (s: Shard, i: InviteCreate) {.async.} = discard,
+            invite_delete: proc (s: Shard, g: Option[Guild],
+                    c, code: string) {.async.} = discard,
+            user_update: proc (s: Shard, u: User) {.async.} = discard,
+            voice_state_update: proc (s: Shard, v: VoiceState,
+                    o: Option[VoiceState]) {.async.} = discard,
+            voice_server_update: proc (s: Shard, g: Guild,
+                    token: string,
+                    e: Option[string]) {.async.} = discard,
+            webhooks_update: proc (s: Shard, g: Guild,
+                    c: GuildChannel) {.async.} = discard
+        ))
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = InviteMetadata(
         code: data["code"].str,
-        uses: data["uses"].getInt(),
-        max_uses: data["max_uses"].getInt(),
+        uses: data["uses"].getInt,
+        max_uses: data["max_uses"].getInt,
         max_age: data["max_age"].getInt,
         temporary: data["temporary"].bval,
         created_at: data["created_at"].str
     )
 
-proc `%`*(o: Overwrite): JsonNode =
-    var json = %* {}
-    json["id"] = % o.id
-    json["type"] = % o.kind
-    json["allow"] = % o.allow
-    json["deny"] = % o.deny
-
-    return json
-
 proc newOverwrite*(data: JsonNode): Overwrite =
     result = Overwrite(
         id: data["id"].str,
         kind: data["type"].str,
-        allow: data["allow"].getInt(),
-        deny: data["deny"].getInt()
+        allow: data["allow"].getInt,
+        deny: data["deny"].getInt
     )
 
-    result.permObj = new(PermObj)
     if result.allow != 0:
-        result.permObj.perms = result.permObj.perms or result.allow
+        result.permObj.allowed = cast[set[PermEnum]](result.allow)
+
     if result.deny != 0:
-        result.permObj.perms = result.permObj.perms and (result.deny - result.deny - result.deny)
+        result.permObj.denied = cast[set[PermEnum]](result.deny)
 
 proc newRole*(data: JsonNode): Role =
     result = Role(
         id: data["id"].str,
         name: data["name"].str,
-        color: data["color"].getInt(),
+        color: data["color"].getInt,
         hoist: data["hoist"].bval,
-        position: data["position"].getInt(),
-        permissions: data["permissions"].getInt(),
+        position: data["position"].getInt,
+        permissions: data["permissions"].getInt,
         managed: data["managed"].bval,
         mentionable: data["mentionable"].bval
     )
@@ -408,139 +622,139 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = GuildChannel(
         id: data["id"].str,
         name: data["name"].str,
-        kind: data["type"].getInt(),
-        position: data["position"].getInt())
+        kind: data["type"].getInt,
+        guild_id: data["guild_id"].str,
+        position: data["position"].getInt,
+        last_message_id: data{"last_message_id"}.getStr
+    )
 
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
-
-    if data["permission_overwrites"].elems.len > 0:
-        for ow in data["permission_overwrites"].elems:
-            result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
+    for ow in data["permission_overwrites"].getElems:
+        result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
 
     case result.kind:
         of ctGuildText:
-            result.rate_limit_per_user = data["rate_limit_per_user"].getInt()
+            result.rate_limit_per_user = data["rate_limit_per_user"].getInt
 
-            if data["last_message_id"].kind != JNull:
-                result.last_message_id = data["last_message_id"].str
-                result.messages = initTable[string, Message]()
-            if data.hasKey("nsfw"):
-                result.nsfw = data["nsfw"].bval
-            if data.hasKey("topic") and data["topic"].kind != JNull:
-                result.topic = data["topic"].str
+            data.keyCheckOptStr(result, topic)
+            data.keyCheckBool(result, nsfw)
+
+            result.messages = initTable[string, Message]()
         of ctGuildNews:
-            result.nsfw = data["nsfw"].bval
-            result.topic = data["topic"].str
-            result.last_message_id = data["last_message_id"].str
+            data.keyCheckOptStr(result, topic)
+
+            data.keyCheckBool(result, nsfw)
         of ctGuildVoice:
-            result.bitrate = data["bitrate"].getInt()
-            result.user_limit = data["user_limit"].getInt()
+            result.bitrate = data["bitrate"].getInt
+            result.user_limit = data["user_limit"].getInt
         else:
             discard
 
-    if data.hasKey("parent_id") and data["parent_id"].kind != JNull:
-        result.parent_id = some(data["parent_id"].str)
-    if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
-       result.guild_id = some(data["guild_id"].str)
-
-proc newRestApi*(token: string): RestApi =
-    result = RestApi(token: token)
-    result.endpoints = initTable[string, Ratelimit]()
+    data.keyCheckOptStr(result, parent_id)
 
 proc newUser*(data: JsonNode): User =
     result = User(
         id: data["id"].str,
-        username: if data.hasKey("username"): data["username"].str else: "",
-        discriminator: if data.hasKey("discriminator"): data["discriminator"].str else: "",
-        bot: if data.hasKey("bot"): data.boolCheck("bot") else: false,
-        system: if data.hasKey("system"): data.boolCheck("system") else: false
+        username: data{"username"}.getStr,
+        discriminator: data{"discriminator"}.getStr,
+        bot: data{"bot"}.getBool,
+        system: data{"system"}.getBool
     )
-    if data.hasKey("avatar") and data["avatar"].kind != JNull:
-        result.avatar = some(data["avatar"].str)
+
+    data.keyCheckOptStr(result, avatar)
 
 proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
         id: data["id"].str,
-        kind: data["type"].getInt(),
+        kind: data["type"].getInt,
         channel_id: data["channel_id"].str)
-    
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
-    if data.hasKey("user"):
-        result.user = some(newUser(data["user"]))
-    if data.hasKey("token"):
-        result.token = some(data["token"].str)
-    if data["name"].kind != JNull:
-        result.name = some(data["name"].str)
-    if data["avatar"].kind != JNull:
-        result.avatar = some(data["avatar"].str)
+
+    if "user" in data:
+        result.user = some newUser(data["user"])
+
+    data.keyCheckOptStr(result, guild_id, token, name, avatar)
 
 proc newGuildBan*(data: JsonNode): GuildBan =
     result = GuildBan(user: newUser(data["user"]))
-    if data["reason"].kind != JNull:
-        result.reason = some(data["reason"].str)
+
+    data.keyCheckOptStr(result, reason)
 
 proc newDMChannel*(data: JsonNode): DMChannel =
     result = DMChannel(
         id: data["id"].str,
-        kind: data["type"].getInt(),
+        kind: data["type"].getInt,
         messages: initTable[string, Message]()
     )
-    result.recipients = @[]
+
     for r in data["recipients"].elems:
         result.recipients.add(newUser(r))
 
 proc newInvite*(data: JsonNode): Invite =
-    result = Invite(code: data["code"].str, channel: PartialChannel(
-        id: data["channel"]["id"].str,
-        kind: data["channel"]["type"].getInt(),
-        name: data["channel"]["name"].str))
+    result = Invite(
+        code: data["code"].str,
+        channel: PartialChannel(
+            id: data["channel"]["id"].str,
+            kind: data["channel"]["type"].getInt,
+            name: data["channel"]["name"].str
+        )
+    )
 
-    if data.hasKey("guild"):
-        result.guild = some(data["guild"].to(PartialGuild))
-    if data.hasKey("inviter"):
-        result.inviter = some(newUser(data["inviter"]))
+    if "guild" in data:
+        result.guild = some data["guild"].to(PartialGuild)
+    if "inviter" in data:
+        result.inviter = some newUser(data["inviter"])
+    if "target_user" in data:
+        result.target_user = some newUser(data["target_user"])
 
-    if data.hasKey("target_user"):
-        result.target_user = some(newUser(data["inviter"]))
-    if data.hasKey("target_user_type"):
-        result.target_user_type = some(data["target_user_type"].getInt())
-    if data.hasKey("approximate_presence_count"):
-        result.approximate_presence_count = some(data["approximate_presence_count"].getInt())
-    if data.hasKey("approximate_member_count"):
-        result.approximate_member_count = some(data["approximate_member_count"].getInt())
+    data.keyCheckOptInt(result, target_user_type,
+        approximate_presence_count, approximate_member_count)
+
+proc newInviteCreate*(data: JsonNode): InviteCreate =
+    result = InviteCreate(
+        code: data["code"].str,
+        created_at: data["created_at"].str,
+        uses: data["uses"].getInt,
+        max_uses: data["max_uses"].getInt,
+        max_age: data["max_age"].getInt,
+        channel_id: data["channel_id"].str,
+        temporary: data["temporary"].bval
+    )
+
+    if "target_user" in data:
+        result.target_user = some newUser(data["target_user"])
+    if "inviter" in data:
+        result.inviter = some newUser(data["inviter"])
+
+    data.keyCheckOptStr(result, guild_id)
+    data.keyCheckOptInt(result, target_user_type)
 
 proc newReady*(data: JsonNode): Ready =
     result = Ready(
-        v: data["v"].getInt(),
+        v: data["v"].getInt,
         user: newUser(data["user"]),
-        guilds: @[],
         session_id: data["session_id"].str
     )
 
-    if data["guilds"].elems.len > 0:
-        for guild in data["guilds"].elems:
-            result.guilds.add(UnavailableGuild(id: guild["id"].str, unavailable: guild["unavailable"].bval))
+    for guild in data{"guilds"}.getElems:
+        result.guilds.add(UnavailableGuild(
+            id: guild["id"].str,
+            unavailable: guild["unavailable"].bval
+        ))
 
-    if data.hasKey("shard"):
-        result.shard = some(newSeq[int]())
+    if "shard" in data:
+        result.shard = some newSeq[int]()
 
         for s in data["shard"].elems:
-            get(result.shard).add(s.getInt())
+            get(result.shard).add(s.getInt)
 
 proc newAttachment(data: JsonNode): Attachment =
     result = Attachment(
         id: data["id"].str,
         filename: data["filename"].str,
-        size: data["size"].getInt(),
+        size: data["size"].getInt,
         url: data["url"].str,
         proxy_url: data["proxy_url"].str,
     )
-    if data.hasKey("height"):
-        result.height = some(data["height"].getInt())
-    if data.hasKey("width"):
-        result.width = some(data["width"].getInt())
+    data.keyCheckOptInt(result, height, width)
 
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = VoiceState(
@@ -552,204 +766,172 @@ proc newVoiceState*(data: JsonNode): VoiceState =
         self_mute: data["self_mute"].bval,
         suppress: data["suppress"].bval
     )
-    if data.hasKey("self_stream"):
-        result.self_stream = data["self_stream"].bval
-    if data.hasKey("guild_id"):
-        result.guild_id = some(data["guild_id"].str)
-    if data.hasKey("channel_id") and data["channel_id"].kind != JNull:
-        result.channel_id = some(data["channel_id"].str)
+
+    data.keyCheckBool(result, self_stream)
+    data.keyCheckOptStr(result, guild_id, channel_id)
 
 proc newEmoji*(data: JsonNode): Emoji =
-    result = Emoji(
-        name: data["name"].str
-    )
+    result = Emoji(name: data["name"].str)
 
-    if data.hasKey("roles"):
-        result.roles = @[]
-        for r in data["roles"].elems:
-            result.roles.add(r.str)
+    for r in data{"roles"}.getElems:
+        result.roles.add(r.str)
 
-    if data.haskey("id") and data["id"].kind != JNull:
-        result.id = data["id"].str
+    data.keyCheckStr(result, id)
+    data.keyCheckOptBool(result, require_colons, managed, animated)
 
-    if data.hasKey("user"):
+    if "user" in data:
         result.user = newUser(data["user"])
-    if data.hasKey("require_colons"):
-        result.require_colons = data["require_colons"].bval
-    if data.hasKey("managed"):
-        result.managed = data["managed"].bval
-    if data.hasKey("animated"):
-        result.animated = data["animated"].bval
 
 proc newGameActivity*(data: JsonNode): GameActivity =
     result = GameActivity(
         name: data["name"].str,
-        kind: data["type"].getInt(),
-        created_at: data["created_at"].num
+        kind: data["type"].getInt,
+        created_at: data["created_at"].num,
+        flags: data{"flags"}.getInt
     )
-    if data.hasKey("url") and data["url"].kind != JNull:
-        result.url = some(data["url"].str)
-    
-    if data.hasKey("timestamps"):
-        result.timestamps = some((start: toBiggestInt(0), final: toBiggestInt(0)))
-        if data["timestamps"].hasKey("start"):
-            get(result.timestamps).start = data["timestamps"]["start"].num
-        if data["timestamps"].hasKey("end"):
-            get(result.timestamps).final = data["timestamps"]["end"].num
-    
-    if data.hasKey("application_id"):
-        result.application_id = some(data["application_id"].str)
-    if data.hasKey("details") and data["details"].kind != JNull:
-        result.details = some(data["details"].str)
-    if data.hasKey("state") and data["state"].kind != JNull:
-        result.state = some(data["state"].str)
-    if data.hasKey("emoji"):
-        result.emoji = some(newEmoji(data["emoji"]))
-    if data.hasKey("party"):
-        result.party = some((id: "", size: ""))
-        if data["party"].hasKey("id"):
-            get(result.party).id = data["party"]["id"].str
-        if data["party"].hasKey("size"):
-            get(result.party).size = data["party"]["size"].str
 
-    if data.hasKey("assets"):
-        result.assets = some(GameAssets())
-        if data["assets"].hasKey("small_text"):
-            get(result.assets).small_text = data["assets"]["small_text"].str
-        if data["assets"].hasKey("small_image"):
-            get(result.assets).small_image = data["assets"]["small_image"].str
-        if data["assets"].hasKey("large_text"):
-            get(result.assets).large_text = data["assets"]["large_text"].str
-        if data["assets"].hasKey("large_image"):
-            get(result.assets).large_image = data["assets"]["large_image"].str
+    data.keyCheckOptStr(result, url, application_id, details, state)
+    data.keyCheckBool(result, instance)
 
-    if data.hasKey("secrets"):
-        result.secrets = some((join: "", spectate: "", match: ""))
-        if data["secrets"].hasKey("join"):
-            get(result.secrets).join = data["secrets"].str
-        if data["secrets"].hasKey("spectate"):
-            get(result.secrets).spectate = data["spectate"].str
-        if data["secrets"].hasKey("match"):
-            get(result.secrets).match = data["match"].str
+    if "timestamps" in data:
+        result.timestamps = some (
+            start: data["timestamps"]{"start"}.getBiggestInt,
+            final: data["timestamps"]{"end"}.getBiggestInt
+        )
 
-    if data.hasKey("instance"):
-        result.instance = data["instance"].bval
-    if data.hasKey("flags"):
-        result.flags = data["flags"].getInt()
+    if "emoji" in data:
+        result.emoji = some newEmoji(data["emoji"])
+
+    if "party" in data:
+        result.party = some (
+            id: data["party"]{"id"}.getStr,
+            size: data["party"]{"size"}.getElems.mapIt(it.getInt)
+        )
+
+    if "assets" in data:
+        result.assets = some GameAssets(
+            small_text: data["assets"]{"small_text"}.getStr,
+            small_image: data["assets"]{"small_image"}.getStr,
+            large_text: data["assets"]{"large_text"}.getStr,
+            large_image: data["assets"]{"large_image"}.getStr
+        )
+
+    if "secrets" in data:
+        result.secrets = some (
+            join: data["secrets"]{"join"}.getStr,
+            spectate: data["secrets"]{"spectate"}.getStr,
+            match: data["secrets"]{"match"}.getStr
+        )
 
 proc newPresence*(data: JsonNode): Presence =
     result = Presence(
         user: newUser(data["user"]),
-        roles: @[],
+        guild_id: data{"guild_id"}.getStr,
         status: data["status"].str,
-        activities: @[],
-        client_status: (web: "offline", desktop: "offline", mobile: "offline"))
+        client_status: (
+            web: "offline",
+            desktop: "offline",
+            mobile: "offline"
+        )
+    )
+    data.keyCheckOptStr(result, nick, premium_since)
 
-    if data.hasKey("guild_id"):
-        result.guild_id = data["guild_id"].str
-    if data.hasKey("roles") and data["roles"].elems.len > 0:
-        for role in data["roles"]:
-            result.roles.add(role.str)
-    if data["activities"].elems.len > 0:
-        for activity in data["activities"].elems:
-            result.activities.add(newGameActivity(activity))
+    for role in data{"roles"}.getElems:
+        result.roles.add(role.str)
+
+    for activity in data["activities"].elems:
+        result.activities.add(newGameActivity(activity))
 
     if data["game"].kind != JNull:
-        result.game = some(newGameActivity(data["game"]))
+        result.game = some newGameActivity(data["game"])
 
-    if data["client_status"].hasKey("desktop"):
-        result.client_status.desktop = data["client_status"]["desktop"].str
-    if data["client_status"].hasKey("web"):
-        result.client_status.web = data["client_status"]["web"].str
-    if data["client_status"].hasKey("mobile"):
-        result.client_status.mobile = data["client_status"]["mobile"].str
-
-    if data.hasKey("nick") and data["nick"].kind != JNull:
-        result.nick = some(data["nick"].str)
-    if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-        result.premium_since = some(data["premium_since"].str)
+    data["client_status"].keyCheckStr(result.client_status,
+        desktop, web, mobile)
 
 proc newMember*(data: JsonNode): Member =
     result = Member(
         joined_at: data["joined_at"].str,
+        roles: data["roles"].elems.mapIt(it.str),
         deaf: data["deaf"].bval,
-        mute: data["mute"].bval
+        mute: data["mute"].bval,
+        presence: Presence(
+            status: "offline",
+            client_status: ("offline", "offline", "offline")
+        )
     )
 
-    if data.hasKey("user") and data["user"].kind != JNull:
+    if "user" in data and data["user"].kind != JNull:
         result.user = newUser(data["user"])
 
-    if data.hasKey("roles"):
-        result.roles = @[]
-        for r in data["roles"].elems:
-            result.roles.add(r.str)
+    data.keyCheckOptStr(result, nick, premium_since)
 
-    if data.hasKey("nick") and data["nick"].kind != JNull:
-        result.nick = data["nick"].str
-    if data.hasKey("premium_since") and data["premium_since"].kind != JNull:
-        result.premium_since = data["premium_since"].str
+proc newTypingStart*(data: JsonNode): TypingStart =
+    result = TypingStart(
+        channel_id: data["channel_id"].str,
+        user_id: data["user_id"].str,
+        timestamp: data["timestamp"].getInt
+    )
 
-    result.presence = Presence(status: "offline", client_status: ("offline", "offline", "offline"))
+    if "member" in data and data["member"].kind != JNull:
+        result.member = some newMember(data["member"])
+
+    data.keyCheckOptStr(result, guild_id)
+
+proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
+    result = GuildMembersChunk(
+        guild_id: data["guild_id"].str,
+        chunk_index: data["chunk_index"].getInt,
+        chunk_count: data["chunk_count"].getInt,
+        members: data["members"].elems.map(newMember),
+        not_found: data{"not_found"}.getElems.mapIt(it.getStr()),
+        presences: data{"presences"}.getElems.map(newPresence)
+    )
+    data.keyCheckOptStr(result, nonce)
 
 proc newReaction*(data: JsonNode): Reaction =
-    result = Reaction(count: data["count"].getInt(), emoji: newEmoji(data["emoji"]), reacted: data["me"].bval)
+    result = Reaction(
+        count: data["count"].getInt,
+        emoji: newEmoji(data["emoji"]),
+        reacted: data["me"].bval
+    )
 
-proc update*(m: Message, data: JsonNode): Message =
+proc updateMessage*(m: Message, data: JsonNode): Message =
     result = m
-    if data.hasKey("type"):
-        result.kind = data["type"].getInt()
-    if data.hasKey("author"):
+
+    result.mention_users = data{"mentions"}.getElems.map(newUser)
+    result.attachments = data{"attachments"}.getElems.map(newAttachment)
+    result.embeds = data{"embeds"}.getElems.map(
+        proc (x: JsonNode): Embed =
+            x.to(Embed)
+    )
+
+    data.keyCheckInt(result, kind, flags)
+    data.keyCheckStr(result, content, timestamp)
+    data.keyCheckOptStr(result, edited_timestamp, guild_id)
+    data.keyCheckBool(result, mention_everyone, pinned, tts)
+
+    if "author" in data:
         result.author = newUser(data["author"])
-    if data.hasKey("flags"):
-        result.flags = data["flags"].getInt()
-    if data.hasKey("content"):
-        result.content = data["content"].str
-    if data.hasKey("mention_everyone"):
-        result.mention_everyone = data["mention_everyone"].bval
-    if data.hasKey("edited_timestamp") and data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
+    if "activity" in data:
+        let activity = data["activity"]
 
-    if data.hasKey("pinned"):
-        result.pinned = data["pinned"].bval
-    if data.hasKey("mentions"):
-        result.mention_users = @[]
-    
-        for usr in data["mentions"].elems:
-            result.mention_users.add(newUser(usr))
+        result.activity = some (
+            kind: activity["type"].getInt,
+            party_id: activity{"party_id"}.getStr
+        )
 
-    if data.hasKey("tts"):
-        m.tts = data["tts"].bval
+    if "application" in data:
+        let app = data["application"]
 
-    if data.hasKey("attachments"):
-        result.attachments = @[]
-
-        for attach in data["attachments"].elems:
-            result.attachments.add(newAttachment(attach))
-
-    if data.hasKey("embeds") and data["embeds"].len > 0:
-        result.embeds = @[]
-
-        for embed in data["embeds"].elems:
-            result.embeds.add(embed.to(Embed))
-
-    if data.hasKey("activity"):
-        var activity = data["activity"]
-
-        result.activity = (kind: activity["type"].getInt(), party_id: "")
-        if activity.hasKey("party_id"):
-            result.activity.party_id = activity["party_id"].str
-
-    if data.hasKey("application"):
-        var app = data["application"]
-    
-        result.application = Application(
+        result.application = some Application(
             id: app["id"].str,
             description: app["description"].str,
-            icon: if app["icon"].kind != JNull: app["icon"].str else: "",
+            cover_image: app{"cover_image"}.getStr,
+            icon: app{"icon"}.getStr,
             name: app["name"].str
         )
 
-proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object structure I've done on this library and that took me some effort
+proc newMessage*(data: JsonNode): Message =
     result = Message(
         id: data["id"].str,
         channel_id: data["channel_id"].str,
@@ -758,181 +940,212 @@ proc newMessage*(data: JsonNode): Message = # this thing was the 2nd object stru
         tts: data["tts"].bval,
         mention_everyone: data["mention_everyone"].bval,
         pinned: data["pinned"].bval,
-        kind: data["type"].getInt(),
-        flags: data["flags"].getInt()
+        kind: data["type"].getInt,
+        flags: data["flags"].getInt,
+        reactions: initTable[string, Reaction]()
     )
-    if data["edited_timestamp"].kind != JNull:
-        result.edited_timestamp = data["edited_timestamp"].str
+    data.keyCheckOptStr(result, edited_timestamp,
+        guild_id, nonce, webhook_id)
 
-    if data.hasKey("mention_roles"):
-        result.mention_roles = @[]
-
-        for r in data["mention_roles"].elems:
-            result.mention_roles.add(r.str)
-
-    if data.hasKey("guild_id") and data["guild_id"].kind != JNull:
-        result.guild_id = data["guild_id"].str
-    if data.hasKey("author"):
+    if "author" in data:
         result.author = newUser(data["author"])
-    if data.hasKey("member") and data["member"].kind != JNull:
-        result.member = newMember(data["member"])
+    if "member" in data and data["member"].kind != JNull:
+        result.member = some newMember(data["member"])
 
-    if data.hasKey("mentions"):
-        result.mention_users = @[]
-    
-        for usr in data["mentions"].elems:
-            result.mention_users.add(newUser(usr))
-    if data.hasKey("mention_channels"):
-        result.mention_channels = @[]
-    
-        for chan in data["mention_channels"].elems:
-            result.mention_channels.add(MentionChannel(
-                id: chan["id"].str,
-                guild_id: chan["guild_id"].str,
-                kind: chan["type"].getInt(),
-                name: chan["name"].str
-            ))
-    if data.hasKey("attachments"):
-        result.attachments = @[]
+    for r in data{"mention_roles"}.getElems:
+        result.mention_roles.add(r.str)
 
-        for attach in data["attachments"].elems:
-            result.attachments.add(newAttachment(attach))
-    if data.hasKey("embeds"):
-        result.embeds = @[]
+    for usr in data{"mentions"}.getElems:
+        result.mention_users.add(newUser(usr))
 
-        for embed in data["embeds"].elems:
-            result.embeds.add(embed.to(Embed))
-    if data.hasKey("reactions"):
-        result.reactions = initTable[string, Reaction]()
+    for chan in data{"mention_channels"}.getElems:
+        result.mention_channels.add(MentionChannel(
+            id: chan["id"].str,
+            guild_id: chan["guild_id"].str,
+            kind: chan["type"].getInt,
+            name: chan["name"].str
+        ))
 
-        for reaction in data["reactions"].elems:
-            var rtn = newReaction(reaction)
-            result.reactions.add($rtn.emoji, rtn)
+    for attach in data{"attachments"}.getElems:
+        result.attachments.add(newAttachment(attach))
 
-    if data.hasKey("nonce") and data["nonce"].kind != JNull:
-        result.nonce = if data["nonce"].getInt(-1) != -1: $(data["nonce"].getInt()) else: data["nonce"].str
-    if data.hasKey("webhook_id"):
-        result.webhook_id = data["webhook_id"].str
+    for embed in data{"embeds"}.getElems:
+        result.embeds.add(embed.to(Embed))
+    for reaction in data{"reactions"}.getElems:
+        let rtn = newReaction(reaction)
+        result.reactions.add($rtn.emoji, rtn)
 
-    if data.hasKey("activity"):
-        var activity = data["activity"]
+    if "activity" in data:
+        let activity = data["activity"]
 
-        result.activity = (kind: activity["type"].getInt(), party_id: "")
-        if activity.hasKey("party_id"):
-            result.activity.party_id = activity["party_id"].str
+        result.activity = some (
+            kind: activity["type"].getInt,
+            party_id: activity{"party_id"}.getStr
+        )
 
-    if data.hasKey("application"):
-        var app = data["application"]
-    
-        result.application = Application(
+    if "application" in data:
+        let app = data["application"]
+
+        result.application = some Application(
             id: app["id"].str,
             description: app["description"].str,
-            icon: if app["icon"].kind != JNull: app["icon"].str else: "",
+            cover_image: app{"cover_image"}.getStr,
+            icon: app{"icon"}.getStr,
             name: app["name"].str
         )
 
-        if app.hasKey("cover_image"):
-            result.application.cover_image = app["cover_image"].str
+    if "message_reference" in data:
+        let reference = data["message_reference"]
 
-    if data.hasKey("message_reference"):
-        var reference = data["message_reference"]
-        result.message_reference = (channel_id: reference["channel_id"].str, message_id: "", guild_id: "")
+        var message_reference = MessageReference(
+            channel_id: reference["channel_id"].str
+        )
+        reference.keyCheckOptStr(message_reference, message_id, guild_id)
+        result.message_reference = some message_reference
 
-        if reference.hasKey("message_id"):
-            result.message_reference.message_id = reference["message_id"].str
-        if reference.hasKey("guild_id") and reference["guild_id"].kind != JNull:
-            result.message_reference.guild_id = reference["guild_id"].str
+proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
+    case data.kind:
+        of JString:
+            result = AuditLogChangeValue(kind: alcString)
+            result.str = data.str
+        of JInt:
+            result = AuditLogChangeValue(kind: alcInt)
+            result.ival = data.getInt
+        of JBool:
+            result = AuditLogChangeValue(kind: alcBool)
+            result.bval = data.bval
+        of JArray:
+            if key in ["$add", "$remove"]:
+                result = AuditLogChangeValue(kind: alcRoles)
+                result.roles = data.elems.map(
+                    proc (x: JsonNode): tuple[id, name: string] =
+                        x.to(tuple[id, name: string])
+                )
+            elif "permission_overwrites" in key:
+                result = AuditLogChangeValue(kind: alcOverwrites)
+                result.overwrites = data.elems.map(newOverwrite)
+        else:
+            discard
+
+proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
+    result = AuditLogEntry(
+        before: initTable[string, AuditLogChangeValue](),
+        after: initTable[string, AuditLogChangeValue](),
+        user_id: data["user_id"].str,
+        id: data["id"].str,
+        action_type: data["action_type"].getInt
+    )
+    data.keyCheckOptStr(result, target_id, reason)
+
+    if "options" in data:
+        result.opts = some data.to(AuditLogOptions)
+
+    for change in data{"changes"}.getElems:
+        if "new_value" in change:
+            result.after.add(change["key"].str, newAuditLogChangeValue(
+                change["new_value"],
+                change["key"].str
+            ))
+        if "old_value" in change:
+            result.before.add(change["key"].str, newAuditLogChangeValue(
+                change["old_value"],
+                change["key"].str
+            ))
+
+proc newAuditLog*(data: JsonNode): AuditLog =
+    result = AuditLog(
+        webhooks: data["webhooks"].elems.map(newWebhook),
+        users: data["users"].elems.map(newUser),
+        audit_log_entries: data["audit_log_entries"].elems.map(newAuditLogEntry),
+        integrations: data["integrations"].elems.map(proc (x: JsonNode): Integration =
+            result = x.to(Integration)
+        )
+    )
+
+proc newTeam(data: JsonNode): Team =
+    result = Team(
+        id: data["id"].str,
+        owner_user_id: data["owner_user_id"].str,
+        members: data["members"].elems.map(
+            proc (x: JsonNode): TeamMember =
+                result = TeamMember(
+                    membership_state: x["membership_state"].getInt,
+                    permissions: x["permissions"].elems.mapIt(it.str),
+                    team_id: x["team_id"].str,
+                    user: newUser(x["user"])
+                )
+        )
+    )
+    data.keyCheckOptStr(result, icon)
+
+proc newOAuth2Application*(data: JsonNode): OAuth2Application =
+    result = OAuth2Application(
+        id: data["id"].str,
+        name: data["name"].str,
+        description: data["description"].str,
+        rpc_origins: data{"rpc_orgins"}.getElems.mapIt(it.str),
+        bot_public: data["bot_public"].bval,
+        bot_require_code_grant: data["bot_require_code_grant"].bval,
+        owner: newUser(data["owner"]),
+        summary: data["summary"].str,
+        verify_key: data["verify_key"].str,
+    )
+    data.keyCheckOptStr(result, icon, guild_id,
+        primary_sku_id, slug, cover_image)
+
+    if "team" in data:
+        result.team = some newTeam(data["team"])
 
 proc newGuild*(data: JsonNode): Guild =
     result = Guild(
         id: data["id"].str,
         name: data["name"].str,
-        owner: data.boolCheck("owner"),
+        owner: data{"owner"}.getBool,
         owner_id: data["owner_id"].str,
         region: data["region"].str,
-        embed_enabled: data.boolCheck("embed_enabled"),
-        verification_level: data["verification_level"].getInt(),
-        explicit_content_filter: data["explicit_content_filter"].getInt(),
-        default_message_notification: data["default_message_notifications"].getInt(),
+        widget_enabled: data{"widget_enabled"}.getBool,
+        verification_level: data["verification_level"].getInt,
+        explicit_content_filter: data["explicit_content_filter"].getInt,
+        default_message_notifications: data["default_message_notifications"].getInt,
         roles: initTable[string, Role](),
         emojis: initTable[string, Emoji](),
         voice_states: initTable[string, VoiceState](),
         members: initTable[string, Member](),
         channels: initTable[string, GuildChannel](),
         presences: initTable[string, Presence](),
-        mfa_level: data["mfa_level"].getInt(),
-        premium_tier: data["premium_tier"].getInt(),
+        mfa_level: data["mfa_level"].getInt,
+        premium_tier: data["premium_tier"].getInt,
         preferred_locale: data["preferred_locale"].str)
 
-    if data.hasKey("afk_timeout"):
-        result.afk_timeout = some(data["afk_timeout"].getInt())
-    if data.hasKey("permissions"):
-        result.permissions = some(data["permissions"].getInt()) 
+    for r in data["roles"].elems:
+        result.roles.add(r["id"].str, newRole(r))
+    for e in data["emojis"].elems:
+        result.emojis.add(e["id"].str, newEmoji(e))
 
-    if data.hasKey("widget_channel_id"):
-        result.widget_channel_id = some(data["widget_channel_id"].str)
-    if data.hasKey("joined_at"):
-        result.joined_at = some(data["joined_at"].str)
-    if data.hasKey("large"):
-        result.large = some(data["large"].bval)
-    if data.hasKey("unavailable"):
-        result.unavailable = some(data["unavailable"].bval)
-    if data.hasKey("member_count"):
-        result.member_count = some(data["member_count"].getInt())
-    if data.hasKey("premium_subscription_count"):
-        result.premium_subscription_count = some(data["premium_subscription_count"].getInt())
+    data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
+        premium_subscription_count, max_presences, approximate_member_count,
+        approximate_presence_count, max_video_channel_uses)
+    data.keyCheckOptStr(result, joined_at, icon, splash, afk_channel_id,
+        application_id, system_channel_id, vanity_url_code, discovery_splash,
+        description, banner, widget_channel_id, public_updates_channel_id)
+    data.keyCheckOptBool(result, large, unavailable)
 
-    if data.hasKey("max_presences") and data["max_presences"].kind != JNull:
-        result.max_presences = some(data["max_presences"].getInt())
-    if data.hasKey("embed_channel_id") and data["embed_channel_id"].kind != JNull:
-        result.embed_channel_id = data["embed_channel_id"].str
+    for m in data{"members"}.getElems:
+        result.members.add(m["user"]["id"].str, newMember(m))
 
-    if data["icon"].kind != JNull:
-        result.icon = some(data["icon"].str)
-    if data["splash"].kind != JNull:
-        result.splash = some(data["splash"].str)
-    if data["afk_channel_id"].kind != JNull:
-        result.afk_channel_id = some(data["afk_channel_id"].str)
-    if data["application_id"].kind != JNull:
-        result.application_id = some(data["application_id"].str)
-    if data["system_channel_id"].kind != JNull:
-        result.system_channel_id = some(data["system_channel_id"].str)
-    if data["vanity_url_code"].kind != JNull:
-        result.vanity_url_code = some(data["vanity_url_code"].str)
-    if data["description"].kind != JNull:
-        result.description = some(data["description"].str)
-    if data["banner"].kind != JNull:
-        result.banner = some(data["banner"].str)
-    if data["discovery_splash"].kind != JNull:
-        result.discovery_splash = some(data["discovery_splash"].str)
+    for v in data{"voice_states"}.getElems:
+        let state = newVoiceState(v)
 
-    if data.hasKey("members") and data["members"].elems.len > 0:
-        for m in data["members"].elems:
-            result.members.add(m["user"]["id"].str, newMember(m))
+        result.members[v["user_id"].str].voice_state = some state
+        result.voice_states.add(v["user_id"].str, state)
 
-    if data.hasKey("voice_states") and data["voice_states"].elems.len > 0:
-        for vs in data["voice_states"].elems:
-            let state = newVoiceState(vs)
+    for chan in data{"channels"}.getElems:
+        chan["guild_id"] = %result.id
+        result.channels.add(chan["id"].str, newGuildChannel(chan))
 
-            result.members[vs["user_id"].str].voice_state = some(state)
-            result.voice_states.add(vs["user_id"].str, state)
+    for p in data{"presences"}.getElems:
+        let presence = newPresence(p)
+        let uid = presence.user.id
 
-    if data.hasKey("channels") and data["channels"].elems.len > 0:
-        for c in data["channels"].elems:
-
-            result.channels.add(c["id"].str, newGuildChannel(c))
-
-    if data.hasKey("presences") and data["presences"].elems.len > 0:
-        for p in data["presences"].elems:
-            let presence = newPresence(p)
-            let uid = presence.user.id
-
-            result.members[uid].presence = presence
-            result.presences.add(uid, presence)
-
-    if data["roles"].elems.len > 0:
-        for r in data["roles"].elems:
-            result.roles.add(r["id"].str, newRole(r))
-    if data["emojis"].elems.len > 0:
-        for e in data["emojis"].elems:
-            result.emojis.add(e["id"].str, newEmoji(e))
+        result.members[uid].presence = presence
+        result.presences.add(uid, presence)

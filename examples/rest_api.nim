@@ -1,4 +1,4 @@
-import ../dimscord/dimscord, asyncdispatch, json, sequtils
+import dimscord, asyncdispatch, json, sequtils
 
 let discord = newDiscordClient(
     "<your bot token goes here>",

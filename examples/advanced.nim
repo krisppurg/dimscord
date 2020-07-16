@@ -1,15 +1,7 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
 let discord = newDiscordClient("<your bot token goes here>") 
 
-discord.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
-    echo "Ready as: " & $r.user
-
-    await s.updateStatus(game = some GameStatus(
-        name: "around.",
-        kind: gatPlaying
-    ), status = "idle")
-
-discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
+proc messageCreate(s: Shard, m: Message) {.async.} =
     let args = m.content.split(" ") # Splits a message.
     if m.author.bot or not args[0].startsWith("$$"): return
     let command = args[0][2..args[0].high]
@@ -61,8 +53,19 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
     else:
         discard
 
-discord.events.message_delete = proc (s: Shard, m: Message,
-        exists: bool) {.async.} =
+proc onReady(s: Shard, r: Ready) {.async.} =
+    echo "Ready as: " & $r.user
+
+    await s.updateStatus(game = some GameStatus(
+        name: "around.",
+        kind: gatPlaying
+    ), status = "idle")
+
+proc messageDelete(s: Shard, m: Message, exists: bool) {.async.} =
     echo "A wild message has been deleted!"
+
+discord.events.onReady = onReady
+discord.events.messageCreate = messageCreate
+discord.events.messageDelete = messageDelete
 
 waitFor discord.startSession()

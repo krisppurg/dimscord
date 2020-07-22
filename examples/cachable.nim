@@ -12,10 +12,7 @@ proc getGuildChannel(s: Shard, guild_id, chan_id: string): Future[GuildChannel] 
     if chan_id in s.cache.guildChannels:
         return s.cache.guildChannels[chan_id]
 
-    let channels = await discord.api.getGuildChannels(guild_id) # We would to find the channel we are looking for,
-    for channel in channels: # by iterating through every channel,
-        if chan_id == channel.id: # then checking the channel id is equal,
-            return channel # and finally returning the channel if it is.
+    result = await discord.api.getGuildChannel(guild_id, chan_id)
 
 proc getUser(s: Shard, user_id: string): Future[User] {.async.} =
     if user_id in s.cache.users:

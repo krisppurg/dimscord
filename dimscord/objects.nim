@@ -13,7 +13,6 @@ import sequtils, strutils, asyncdispatch, ws
 
 type
     DiscordClient* = ref object
-        ## The Discord Client, itself.
         api*: RestApi
         events*: Events
         token*: string
@@ -22,6 +21,8 @@ type
         largeThreshold*, gatewayVer*, max_shards*: int
         intents*: set[GatewayIntent]
     Shard* = ref object
+        ## This is where you interact with the gateway api with.
+        ## It's basically a gateway connection.
         id*, sequence*: int
         client*: DiscordClient
         user*: User
@@ -35,7 +36,6 @@ type
         authenticating*, networkError*, ready*: bool
         interval*: int
     CacheTable* = ref object
-        ## An object of stored things.
         preferences*: CacheTablePrefs
         users*: Table[string, User]
         guilds*: Table[string, Guild]
@@ -163,7 +163,7 @@ type
     GameAssets* = object
         small_text*, small_image*: string
         large_text*, large_image*: string
-    GameActivity* = object # A user game activity
+    GameActivity* = object
         name*: string
         kind*, flags*: int
         url*, application_id*, details*, state*: Option[string]
@@ -183,7 +183,6 @@ type
         client_status*: tuple[web, desktop, mobile: string]
         premium_since*, nick*: Option[string]
     Guild* = ref object
-        ## A guild object.
         id*, name*, owner_id*: string
         region*, preferred_locale*: string
         description*, banner*: Option[string]
@@ -216,6 +215,7 @@ type
         color*, position*, permissions*: int
         hoist*, managed*, mentionable*: bool
     GameStatus* = object
+        ## This is used for status updates.
         name*: string
         kind*: int
         url*: Option[string]
@@ -353,8 +353,7 @@ type
     Events* = ref object
         ## An object containing events that can be changed.
         ## 
-        ## `exists` param checks message is cached or not.
-        ## Other cachable objects dont have them.
+        ## - `exists` Checks message is cached or not. Other cachable objects dont have them.
         ## 
         ## - `on_dispatch` event gives you the raw event data for you to handle things.
         ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)

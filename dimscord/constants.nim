@@ -165,7 +165,7 @@ const
     aleRoleDelete* = 32
     aleInviteCreate* = 40
     aleInviteUpdate* = 41
-    aleInviteDelete* = 42 # these type numbers are killing me tbh.
+    aleInviteDelete* = 42
     aleWebhookCreate* = 50
     aleWebhookUpdate* = 51
     aleWebhookDelete* = 52

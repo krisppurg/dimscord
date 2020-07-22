@@ -144,6 +144,7 @@ proc request(api: RestApi, meth, endpoint: string;
             else:
                 resp = (await client.post(url, pl, mp))
         except:
+            r.processing = false
             raise newException(Exception, getCurrentExceptionMsg())
 
         log("Got response.")
@@ -160,7 +161,7 @@ proc request(api: RestApi, meth, endpoint: string;
 
         if status >= 200:
             if status >= 300:
-                error = fin & "Unknown error."
+                error = fin & "Client error."
 
                 if status != 429: r.processing = false
                 if status >= 400:
@@ -818,13 +819,22 @@ proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         "reason": encodeUrl(reason)
     }), reason)
 
-proc removeGuildBan*(api: RestApi, guild_id, user_id: string; reason = "") {.async.} =
+proc removeGuildBan*(api: RestApi,
+        guild_id, user_id: string; reason = "") {.async.} =
     ## Removes a guild ban.
     discard await api.request(
         "DELETE",
         endpointGuildBans(guild_id, user_id),
         reason
     )
+
+proc getGuildChannel*(api: RestApi,
+        guild_id, channel_id: string): Future[GuildChannel] {.async.} =
+    ## Gets a guild channel.
+    result = (await api.request(
+        "GET",
+        endpointGuildChannels(guild_id, channel_id),
+    )).newGuildChannel
 
 proc getGuildChannels*(api: RestApi,
         guild_id: string): Future[seq[GuildChannel]] {.async.} =

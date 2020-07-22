@@ -93,13 +93,13 @@ proc handleDisconnect(s: Shard, msg: string): bool =
         log("Fatal error: " & closeData.reason)
 
 proc sockClosed(s: Shard): bool =
-    return s.connection == nil or s.connection.readyState == Closed
+    return s.connection == nil or s.stop
 
 proc updateStatus*(s: Shard, game = none GameStatus;
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
-    if s.stop or s.sockClosed and not s.ready: return
+    if s.sockClosed and not s.ready: return
     let payload = %*{
         "since": 0,
         "afk": afk,
@@ -305,7 +305,7 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
     if s.stop: return
     s.stop = true
 
-    if not s.stop or not s.sockClosed:
+    if s.connection != nil:
         s.connection.close()
 
     if should_reconnect:
@@ -330,7 +330,7 @@ proc setupHeartbeatInterval(s: Shard) {.async.} =
     if not s.heartbeating: return
     s.heartbeating = true
 
-    while not s.sockClosed or not s.stop:
+    while not s.sockClosed:
         let hbTime = int((getTime().toUnixFloat() - s.lastHBTransmit) * 1000)
 
         if hbTime < s.interval - 8000 and s.lastHBTransmit != 0.0:
@@ -345,7 +345,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
     var packet: (Opcode, string)
     var shouldReconnect = s.client.autoreconnect
 
-    while not s.sockClosed and not s.stop:
+    while not s.sockClosed:
         try:
             packet = await s.connection.receivePacket()
         except:
@@ -354,8 +354,8 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
             )
 
-            if not s.stop: s.stop = true
-            if s.heartbeating: s.heartbeating = false
+            s.stop = true
+            s.heartbeating = false
 
             if exceptn.startsWith("The semaphore timeout period has expired."):
                 s.logShard("A network error has been detected.")

@@ -7,7 +7,6 @@
 * If you have an idea you could discuss it on the Discord server.
 
 #### Please Do:
-* Use the devel branch, if PR.
 * Make sure that when you make your pull request to your changes, test them first.
 * Provide some details to your issue for example your nim version and what have you tried to do. Branches included too.
 * Make the code consistant or just make like look the others, like for example: `func` needs to be `proc` (I am aware of them being the same thing.)

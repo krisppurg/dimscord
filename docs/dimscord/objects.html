@@ -644,7 +644,7 @@ function main() {
 </pre></dt>
 <dd>
 
-The Discord Client, itself.
+
 
 </dd>
 <a id="Shard"></a>
@@ -664,7 +664,7 @@ The Discord Client, itself.
 </pre></dt>
 <dd>
 
-
+This is where you interact with the gateway api with. It's basically a gateway connection.
 
 </dd>
 <a id="CacheTable"></a>
@@ -677,7 +677,7 @@ The Discord Client, itself.
 </pre></dt>
 <dd>
 
-An object of stored things.
+
 
 </dd>
 <a id="CacheTablePrefs"></a>
@@ -1043,7 +1043,7 @@ An object of stored things.
 </pre></dt>
 <dd>
 
-A guild object.
+
 
 </dd>
 <a id="VoiceState"></a>
@@ -1077,7 +1077,7 @@ A guild object.
 </pre></dt>
 <dd>
 
-
+This is used for status updates.
 
 </dd>
 <a id="Overwrite"></a>
@@ -1428,9 +1428,8 @@ Used for creating guilds.
 </pre></dt>
 <dd>
 
-<p>An object containing events that can be changed.</p>
-<p><tt class="docutils literal"><span class="pre">exists</span></tt> param checks message is cached or not. Other cachable objects dont have them.</p>
-<ul class="simple"><li><tt class="docutils literal"><span class="pre">on_dispatch</span></tt> event gives you the raw event data for you to handle things.</li>
+An object containing events that can be changed.<ul class="simple"><li><tt class="docutils literal"><span class="pre">exists</span></tt> Checks message is cached or not. Other cachable objects dont have them.</li>
+<li><tt class="docutils literal"><span class="pre">on_dispatch</span></tt> event gives you the raw event data for you to handle things.</li>
 </ul>
 <p><a class="reference external" href="https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events">For reference</a></p>
 
@@ -1662,7 +1661,7 @@ Creates a Discord Client.
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-16 11:07:46 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-22 15:13:04 UTC</small>
       </div>
     </div>
   </div>

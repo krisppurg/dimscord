@@ -246,6 +246,8 @@ function main() {
     Future[void])"><wbr />create<wbr />Guild<wbr />Ban<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#removeGuildBan%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="removeGuildBan(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(Future[void])"><wbr />remove<wbr />Guild<wbr />Ban<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#getGuildChannel%2CRestApi%2Cstring%2Cstring"
+    title="getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]"><wbr />get<wbr />Guild<wbr />Channel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#getGuildChannels%2CRestApi%2Cstring"
     title="getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]"><wbr />get<wbr />Guild<wbr />Channels<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring"
@@ -807,6 +809,15 @@ Creates a guild ban.
 Removes a guild ban.
 
 </dd>
+<a id="getGuildChannel,RestApi,string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getGuildChannel%2CRestApi%2Cstring%2Cstring"><span class="Identifier">getGuildChannel</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Gets a guild channel.
+
+</dd>
 <a id="getGuildChannels,RestApi,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#getGuildChannels%2CRestApi%2Cstring"><span class="Identifier">getGuildChannels</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
@@ -1217,7 +1228,7 @@ Gets the current application for the current user (bot user).
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-16 11:07:52 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-22 15:13:10 UTC</small>
       </div>
     </div>
   </div>

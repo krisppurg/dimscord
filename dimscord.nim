@@ -3,6 +3,11 @@
 ## Reference
 ## ===================================
 ## 
+## - If you have any errors like for example getGuildChannel doesn't exist in
+##   v1.0.0, then you can just simply do `nimble install dimscord@#head` if
+##   this does not work then uninstall the version you were using,
+##   or you could replace the folder from the `.nimble/pkgs` directory.
+## 
 ## - For objects, this file includes the discord objects,
 ##   such as Message, Guild, User, Shard, etc.
 ## 

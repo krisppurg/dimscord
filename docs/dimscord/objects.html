@@ -112,8 +112,9 @@ function main() {
   events*: Events
   token*: string
   shards*: Table[int, Shard]
-  restMode*, autoreconnect*, guildSubscriptions*: bool
-  largeThreshold*, gatewayVer*, max_shards*: int
+  compress*, restMode*: bool
+  autoreconnect*, guildSubscriptions*: bool
+  largeThreshold*, gatewayVersion*, maxShards*: int
   intents*: set[GatewayIntent]"><wbr />Discord<wbr />Client<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Shard"
     title="Shard = ref object
@@ -123,7 +124,7 @@ function main() {
   gatewayUrl*, session_id*: string
   cache*: CacheTable
   connection*: WebSocket
-  hbAck*, hbSent*, stop*, compress*: bool
+  hbAck*, hbSent*, stop*: bool
   lastHBTransmit*, lastHBReceived*: float
   retry_info*: tuple[ms, attempts: int]
   heartbeating*, resuming*, reconnecting*: bool
@@ -248,7 +249,7 @@ function main() {
     title="RestApi = ref object
   token*: string
   endpoints*: Table[string, Ratelimit]
-  rest_ver*: int"><wbr />Rest<wbr />Api<span class="attachedType"></span></a></li>
+  restVersion*: int"><wbr />Rest<wbr />Api<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Ratelimit"
     title="Ratelimit = ref object
   retry_after*: float
@@ -352,8 +353,7 @@ function main() {
   permObj*: PermObj"><wbr />Overwrite<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#PermObj"
     title="PermObj = object
-  allowed*, denied*: set[PermEnum]
-  perms*: int"><wbr />Perm<wbr />Obj<span class="attachedType"></span></a></li>
+  allowed*, denied*: set[PermEnum]"><wbr />Perm<wbr />Obj<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#PartialGuild"
     title="PartialGuild = object
   id*, name*: string
@@ -560,7 +560,7 @@ function main() {
   <li><a class="reference" href="#newShard%2Cint%2CDiscordClient"
     title="newShard(id: int; client: DiscordClient): Shard"><wbr />new<wbr />Shard<span class="attachedType">Shard</span></a></li>
   <li><a class="reference" href="#newDiscordClient%2Cstring%2Cint"
-    title="newDiscordClient(token: string; rest_mode = false; rest_ver = 6): DiscordClient"><wbr />new<wbr />Discord<wbr />Client<span class="attachedType">DiscordClient</span></a></li>
+    title="newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient"><wbr />new<wbr />Discord<wbr />Client<span class="attachedType">DiscordClient</span></a></li>
   <li><a class="reference" href="#newInviteMetadata%2CJsonNode"
     title="newInviteMetadata(data: JsonNode): InviteMetadata"><wbr />new<wbr />Invite<wbr />Metadata<span class="attachedType">InviteMetadata</span></a></li>
   <li><a class="reference" href="#newOverwrite%2CJsonNode"
@@ -638,8 +638,9 @@ function main() {
   <span class="Identifier">events</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#Events"><span class="Identifier">Events</span></a>
   <span class="Identifier">token</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">shards</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">,</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">]</span>
-  <span class="Identifier">restMode</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">autoreconnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guildSubscriptions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">largeThreshold</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">gatewayVer</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">max_shards</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">compress</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">restMode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">autoreconnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guildSubscriptions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">largeThreshold</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">gatewayVersion</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">maxShards</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">intents</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span>
 </pre></dt>
 <dd>
@@ -655,7 +656,7 @@ function main() {
   <span class="Identifier">gatewayUrl</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">session_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">cache</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#CacheTable"><span class="Identifier">CacheTable</span></a>
   <span class="Identifier">connection</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">WebSocket</span>
-  <span class="Identifier">hbAck</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">hbSent</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">stop</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">compress</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">hbAck</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">hbSent</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">stop</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">lastHBTransmit</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">lastHBReceived</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
   <span class="Identifier">retry_info</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">ms</span><span class="Other">,</span> <span class="Identifier">attempts</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">]</span>
   <span class="Identifier">heartbeating</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">resuming</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">reconnecting</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
@@ -905,7 +906,7 @@ This is where you interact with the gateway api with. It's basically a gateway c
 <dt><pre><a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">token</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">endpoints</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#Ratelimit"><span class="Identifier">Ratelimit</span></a><span class="Other">]</span>
-  <span class="Identifier">rest_ver</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">restVersion</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
 </pre></dt>
 <dd>
 
@@ -1094,7 +1095,6 @@ This is used for status updates.
 <a id="PermObj"></a>
 <dt><pre><a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">allowed</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">denied</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermEnum"><span class="Identifier">PermEnum</span></a><span class="Other">]</span>
-  <span class="Identifier">perms</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
 </pre></dt>
 <dd>
 
@@ -1470,7 +1470,7 @@ Empties cache.
 
 </dd>
 <a id="newDiscordClient,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newDiscordClient%2Cstring%2Cint"><span class="Identifier">newDiscordClient</span></a><span class="Other">(</span><span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">rest_mode</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">rest_ver</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#newDiscordClient%2Cstring%2Cint"><span class="Identifier">newDiscordClient</span></a><span class="Other">(</span><span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">rest_mode</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">restVersion</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
@@ -1661,7 +1661,7 @@ Creates a Discord Client.
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-22 15:13:04 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-02 13:38:13 UTC</small>
       </div>
     </div>
   </div>

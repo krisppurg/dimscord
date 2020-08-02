@@ -17,8 +17,9 @@ type
         events*: Events
         token*: string
         shards*: Table[int, Shard]
-        restMode*, autoreconnect*, guildSubscriptions*: bool
-        largeThreshold*, gatewayVer*, max_shards*: int
+        compress*, restMode*: bool
+        autoreconnect*, guildSubscriptions*: bool
+        largeThreshold*, gatewayVersion*, maxShards*: int
         intents*: set[GatewayIntent]
     Shard* = ref object
         ## This is where you interact with the gateway api with.
@@ -29,7 +30,7 @@ type
         gatewayUrl*, session_id*: string
         cache*: CacheTable
         connection*: Websocket
-        hbAck*, hbSent*, stop*, compress*: bool
+        hbAck*, hbSent*, stop*: bool
         lastHBTransmit*, lastHBReceived*: float
         retry_info*: tuple[ms, attempts: int]
         heartbeating*, resuming*, reconnecting*: bool
@@ -133,7 +134,7 @@ type
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
-        rest_ver*: int
+        restVersion*: int
     Ratelimit* = ref object
         retry_after*: float
         processing*, ratelimited*: bool
@@ -225,7 +226,6 @@ type
         permObj*: PermObj
     PermObj* = object
         allowed*, denied*: set[PermEnum]
-        perms*: int
     PartialGuild* = object
         id*, name*: string
         icon*, splash*: Option[string]
@@ -497,7 +497,7 @@ proc newShard*(id: int, client: DiscordClient): Shard =
 
 proc newDiscordClient*(token: string;
         rest_mode = false;
-        rest_ver = 6): DiscordClient =
+        restVersion = 6): DiscordClient =
     ## Creates a Discord Client.
     var auth_token = token
     if not token.startsWith("Bot "):
@@ -505,7 +505,7 @@ proc newDiscordClient*(token: string;
 
     result = DiscordClient(
         token: auth_token,
-        api: RestApi(token: auth_token, rest_ver: rest_ver),
+        api: RestApi(token: auth_token, restVersion: restVersion),
         max_shards: 1,
         restMode: rest_mode,
         events: Events(
@@ -631,22 +631,22 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
 
     case result.kind:
-        of ctGuildText:
-            result.rate_limit_per_user = data["rate_limit_per_user"].getInt
+    of ctGuildText:
+        result.rate_limit_per_user = data["rate_limit_per_user"].getInt
 
-            data.keyCheckOptStr(result, topic)
-            data.keyCheckBool(result, nsfw)
+        data.keyCheckOptStr(result, topic)
+        data.keyCheckBool(result, nsfw)
 
-            result.messages = initTable[string, Message]()
-        of ctGuildNews:
-            data.keyCheckOptStr(result, topic)
+        result.messages = initTable[string, Message]()
+    of ctGuildNews:
+        data.keyCheckOptStr(result, topic)
 
-            data.keyCheckBool(result, nsfw)
-        of ctGuildVoice:
-            result.bitrate = data["bitrate"].getInt
-            result.user_limit = data["user_limit"].getInt
-        else:
-            discard
+        data.keyCheckBool(result, nsfw)
+    of ctGuildVoice:
+        result.bitrate = data["bitrate"].getInt
+        result.user_limit = data["user_limit"].getInt
+    else:
+        discard
 
     data.keyCheckOptStr(result, parent_id)
 
@@ -1004,27 +1004,27 @@ proc newMessage*(data: JsonNode): Message =
 
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     case data.kind:
-        of JString:
-            result = AuditLogChangeValue(kind: alcString)
-            result.str = data.str
-        of JInt:
-            result = AuditLogChangeValue(kind: alcInt)
-            result.ival = data.getInt
-        of JBool:
-            result = AuditLogChangeValue(kind: alcBool)
-            result.bval = data.bval
-        of JArray:
-            if key in ["$add", "$remove"]:
-                result = AuditLogChangeValue(kind: alcRoles)
-                result.roles = data.elems.map(
-                    proc (x: JsonNode): tuple[id, name: string] =
-                        x.to(tuple[id, name: string])
-                )
-            elif "permission_overwrites" in key:
-                result = AuditLogChangeValue(kind: alcOverwrites)
-                result.overwrites = data.elems.map(newOverwrite)
-        else:
-            discard
+    of JString:
+        result = AuditLogChangeValue(kind: alcString)
+        result.str = data.str
+    of JInt:
+        result = AuditLogChangeValue(kind: alcInt)
+        result.ival = data.getInt
+    of JBool:
+        result = AuditLogChangeValue(kind: alcBool)
+        result.bval = data.bval
+    of JArray:
+        if key in ["$add", "$remove"]:
+            result = AuditLogChangeValue(kind: alcRoles)
+            result.roles = data.elems.map(
+                proc (x: JsonNode): tuple[id, name: string] =
+                    x.to(tuple[id, name: string])
+            )
+        elif "permission_overwrites" in key:
+            result = AuditLogChangeValue(kind: alcOverwrites)
+            result.overwrites = data.elems.map(newOverwrite)
+    else:
+        discard
 
 proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
     result = AuditLogEntry(

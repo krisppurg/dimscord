@@ -18,9 +18,14 @@ var
     global_retry_after = 0.0
     invalid_requests, expiry = 0'i64
 
+proc `<=`(x, y: HttpCode): bool =
+    result = x.int <= y.int
+
 proc parseRoute(endpoint, meth: string): string =
-    let majorParams = @["channels", "guilds", "webhooks"]
-    let params = endpoint.findAndCaptureAll(re"([a-z-]+)")
+    let
+        majorParams = @["channels", "guilds", "webhooks"]
+        params = endpoint.findAndCaptureAll(re"([a-z-]+)")
+
     var route = endpoint.split("?", 2)[0]
 
     for param in params:
@@ -61,29 +66,29 @@ proc handleRoute(api: RestApi, global = false; route = "") {.async.} =
         else:
             ratelimited = false
 
-proc clean(errors: JsonNode, extra = ""): seq[string] =
+proc discordDetailedErrors(errors: JsonNode, extra = ""): seq[string] =
     var ext = extra
 
     case errors.kind:
-        of JArray:
-            var err: seq[string] = @[]
+    of JArray:
+        var err: seq[string] = @[]
 
-            for e in errors.elems:
-                err.add("\n    - " & ext & ": " & e["message"].str)
-            result = result.concat(err)
-        of JObject:
-            for err in errors.pairs:
-                return clean(err.val, (if ext == "":
-                        err.key & "." & err.key else: ext & "." & err.key))
-        else:
-            discard
+        for e in errors.elems:
+            err.add("\n    - " & ext & ": " & e["message"].str)
+        result = result.concat(err)
+    of JObject:
+        for err in errors.pairs:
+            return discordDetailedErrors(err.val, (if ext == "":
+                    err.key & "." & err.key else: ext & "." & err.key))
+    else:
+        discard
 
-proc getErrorDetails(data: JsonNode): string =
+proc discordErrors(data: JsonNode): string =
     result = "[Discord Exception]:: " &
         data["message"].str & " (" & $data["code"].getInt & ")"
 
     if "errors" in data:
-        result &= "\n" & clean(data["errors"]).join("\n")
+        result &= "\n" & discordDetailedErrors(data["errors"]).join("\n")
 
 proc request(api: RestApi, meth, endpoint: string;
             pl, reason = ""; mp: MultipartData = nil;
@@ -108,8 +113,8 @@ proc request(api: RestApi, meth, endpoint: string;
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
-            let msg = "You are sending too many invalid requests."
-            raise newException(RestError, msg)
+            raise newException(RestError,
+                "You are sending too many invalid requests.")
 
         if global:
             await api.handleRoute(global)
@@ -118,7 +123,7 @@ proc request(api: RestApi, meth, endpoint: string;
 
         let
             client = newAsyncHttpClient(libAgent)
-            url = restBase & "v" & $api.rest_ver & "/" & endpoint
+            url = restBase & "v" & $api.restVersion & "/" & endpoint
 
         var resp: AsyncResponse
 
@@ -131,18 +136,16 @@ proc request(api: RestApi, meth, endpoint: string;
         client.headers["Content-Length"] = $pl.len
         client.headers["X-RateLimit-Precision"] = "millisecond"
 
-        log("Sending HTTP request", @[
-            "method", meth,
-            "endpoint", url,
-            "payload_size", $pl.len,
-            "reason", if reason != "": reason else: "\"\""
-        ])
+        log("Making request to " & meth & " " & url, (
+            size: pl.len,
+            reason: if reason != "": reason else: ""
+        ))
 
         try:
             if mp == nil:
-                resp = (await client.request(url, meth, pl))
+                resp = await client.request(url, meth, pl)
             else:
-                resp = (await client.post(url, pl, mp))
+                resp = await client.post(url, pl, mp)
         except:
             r.processing = false
             raise newException(Exception, getCurrentExceptionMsg())
@@ -153,72 +156,77 @@ proc request(api: RestApi, meth, endpoint: string;
             retry_header = resp.headers.getOrDefault(
                 "X-RateLimit-Reset-After",
                 @["1.000"].HttpHeaderValues).parseFloat
-            status = resp.code.int
-            fin = "[" & $status & "] "
+            status = resp.code
+            fin = "[" & $status.int & "] "
 
         if retry_header > r.retry_after:
             r.retry_after = retry_header
 
-        if status >= 200:
-            if status >= 300:
-                error = fin & "Client error."
+        if status >= Http300:
+            error = fin & "Client error."
 
-                if status != 429: r.processing = false
-                if status >= 400:
-                    if resp.headers["content-type"] == "application/json":
-                        expiry = getTime().toUnix() + (retry_header.int + 3)
-                        data = (await resp.body).parseJson
-                        expiry = 0
+            if status != Http429: r.processing = false
 
-                    error = fin & "Bad request."
-                    if status == 401:
-                        error = fin & "Invalid authorization."
-                        invalid_requests += 1
-                    elif status == 403:
-                        error = fin & "Missing permissions/access."
-                        invalid_requests += 1
-                    elif status == 404:
-                        error = fin & "Not found."
-                    elif status == 429:
-                        fatalErr = false
-                        ratelimited = true
-
-                        invalid_requests += 1
-
-                        error = fin & "You are being rate-limited."
-                        if resp.headers.hasKey("Retry-After"): # ;-; no `in` support
-                            await sleepAsync resp.headers["Retry-After"].parseInt
-
-                        await doreq()
-
-                    if "code" in data and "message" in data:
-                        error &= "\n\n - " & data.getErrorDetails()
-                if status >= 500:
-                    error = fin & "Internal Server Error."
-                    if status == 503:
-                        error = fin & "Service Unavailable."
-                    elif status == 504:
-                        error = fin & "Gateway timed out."
-
-                if fatalErr:
-                    raise newException(RestError, error)
-                else:
-                    echo error
-
-            if status < 300:
+            if status.is4xx:
                 if resp.headers["content-type"] == "application/json":
-                    try:
-                        log("Awaiting for body to be parsed")
+                    expiry = getTime().toUnix() + (retry_header.int + 3)
+                    data = (await resp.body).parseJson
+                    expiry = 0
 
-                        expiry = getTime().toUnix() + (retry_header.int + 3)
-                        data = (await resp.body).parseJson
-                        expiry = 0
-                    except:
-                        raise newException(RestError, "An error occurred.")
+                case status:
+                of Http400:
+                    error = fin & "Bad request."
+                of Http401:
+                    error = fin & "Invalid authorization."
+                    invalid_requests += 1
+                of Http403:
+                    error = fin & "Missing permissions/access."
+                    invalid_requests += 1
+                of Http404:
+                    error = fin & "Not found."
+                of Http429:
+                    fatalErr = false
+                    ratelimited = true
+
+                    invalid_requests += 1
+
+                    error = fin & "You are being rate-limited."
+                    if resp.headers.hasKey("Retry-After"): # ;-; no `in` support
+                        await sleepAsync resp.headers["Retry-After"].parseInt
+
+                    await doreq()
                 else:
-                    data = nil
+                    error = fin & "Unknown error"
 
-                if invalid_requests > 0: invalid_requests -= 250
+                if "code" in data and "message" in data:
+                    error &= "\n\n - " & data.discordErrors()
+
+            if status.is5xx:
+                error = fin & "Internal Server Error."
+                if status == Http503:
+                    error = fin & "Service Unavailable."
+                elif status == Http504:
+                    error = fin & "Gateway timed out."
+
+            if fatalErr:
+                raise newException(RestError, error)
+            else:
+                echo error
+
+        if status.is2xx:
+            if resp.headers["content-type"] == "application/json":
+                try:
+                    log("Awaiting for body to be parsed")
+
+                    expiry = getTime().toUnix() + (retry_header.int + 3)
+                    data = (await resp.body).parseJson
+                    expiry = 0
+                except:
+                    raise newException(RestError, "An error occurred.")
+            else:
+                data = nil
+
+            if invalid_requests > 0: invalid_requests -= 250
 
         let headerLimited = resp.headers.getOrDefault(
             "X-RateLimit-Remaining",
@@ -261,7 +269,7 @@ proc `%`(o: Overwrite): JsonNode =
 proc sendMessage*(api: RestApi, channel_id: string;
             content = ""; tts = false; embed = none Embed;
             allowed_mentions = none AllowedMentions;
-            nonce: tuple[ival: int, str: string] = (-1, "");
+            nonce: Option[string] or Option[int] = none(int);
             files = none seq[DiscordFile]): Future[Message] {.async.} =
     ## Sends a discord message.
     ## * `nonce` This can be used for optimistic message sending
@@ -276,10 +284,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if allowed_mentions.isSome:
         payload["allowed_mentions"] = %get allowed_mentions
 
-    if nonce.ival != -1:
-        payload["nonce"] = %nonce.ival
-    if nonce.str != "":
-        payload["nonce"] = %nonce.str
+    if nonce.isSome:
+        payload["nonce"] = %get nonce
 
     if files.isSome:
         var mpd = newMultipartData()

@@ -217,16 +217,18 @@ const
         permViewChannel} + permAllChannel
 
 # Logging stuffs
-proc log*(msg: string, info: seq[string] = @[]) =
+proc log*(msg: string, info: tuple) =
     when defined(dimscordDebug):
-        var finalmsg = &"[Lib]: {msg}"
+        var finalmsg = "[Lib]: " & msg
+        let tup = $info
 
-        if info.len > 0:
-            finalmsg = &"{finalmsg}:"
-            for i, e in info:
-                finalmsg &= (if (i and 1) == 0: &"\n  {e}: " else: &"{e}")
+        finalmsg = finalmsg & "\n    " & tup[1..tup.high - 1]
 
         echo finalmsg
+
+proc log*(msg: string) =
+    when defined(dimscordDebug):
+        echo "[Lib]: " & msg
 
 # Rest Endpoints
 

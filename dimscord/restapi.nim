@@ -387,8 +387,7 @@ proc addMessageReaction*(api: RestApi,
         channel_id, message_id, emoji: string) {.async.} =
     ## Adds a message reaction to a Discord message.
     ##
-    ## The `emoji` param can be like 👀💩.
-    ## For custom emojis, use 'likethis:123456789012345678'.
+    ## * `emoji` Example: '👀', '💩', `likethis:123456789012345678`
 
     var emj = emoji
     if emoji == decodeUrl(emoji):
@@ -553,7 +552,7 @@ proc editGuildChannelPermissions*(api: RestApi,
         channel_id, perm_id, kind: string;
         perms: PermObj; reason = "") {.async.} =
     ## Modify the channel's permissions.
-    ## The `kind` param needs to be either "member" or "role".
+    ## * `kind` Must be "member" or "role".
     let payload = %*{"type": kind}
 
     if perms.allowed.len > 0:

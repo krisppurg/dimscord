@@ -1,47 +1,29 @@
 import constants, objects, options
 import strformat, strutils, times
-import tables
+import tables, regex
 
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.
     result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
 
-proc avatarUrl*(u: User, fmt = ""; size = 128): string =
+proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
     ## Gets a user's avatar url.
     ## If user does not have an avatar it will return default avatar of the user.
-    var ift = fmt
-    if fmt == "":
-        ift = "jpg"
-        if u.avatar.isSome and (get(u.avatar)).startsWith("a_"):
-            ift = "gif"
-
     if u.avatar.isNone:
         return defaultAvatarUrl(u)
-    result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{ift}?size={size}"
+    result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{fmt}?size={size}"
 
-proc iconUrl*(e: Emoji, fmt = ""; size = 128): string =
+proc iconUrl*(e: Emoji, fmt = "png"; size = 128): string =
     ## Gets an emoji's url.
     if e.id == "" or e.name == "":
         return ""
 
-    var ift = fmt
-    if fmt == "":
-        ift = "png"
-        if e.animated.isSome and e.animated.get: # this field is troublesome.
-            ift = "gif"
+    result = &"{cdnCustomEmojis}{e.id}.{fmt}?size={size}"
 
-    result = &"{cdnCustomEmojis}{e.id}.{ift}?size={size}"
-
-proc iconUrl*(g: Guild, fmt = ""; size = 128): string =
+proc iconUrl*(g: Guild, fmt = "png"; size = 128): string =
     ## Get icon url for guild.
-    var ift = fmt
-    if fmt == "":
-        ift = "png"
-        if g.icon.isSome and get(g.icon).startsWith("a_"):
-            ift = "gif"
-
     if g.icon.isSome:
-        result = &"{cdnIcons}{g.id}/{get(g.icon)}.{ift}?size={size}"
+        result = &"{cdnIcons}{g.id}/{get(g.icon)}.{fmt}?size={size}"
     else:
         result = ""
 
@@ -50,14 +32,14 @@ proc `$`*(u: User): string =
     ## This would return something like `MrDude#6969`
     result = &"{u.username}#{u.discriminator}"
 
-proc `@`*(u: User; nick = false): string =
+proc `@`*(u: User, nick = false): string =
     ## Mentions a user.
-    var n = if nick: "!" else: ""
+    let n = if nick: "!" else: ""
     result = &"<@{n}{u.id}>"
 
 proc `@`*(r: Role): string =
     ## Mentions a role.
-    result = &"<@{r.id}>"
+    result = &"<@&{r.id}>"
 
 proc `@`*(g: GuildChannel): string =
     ## Mentions a guild channel.
@@ -190,3 +172,42 @@ proc genInviteLink*(client_id: string, permissions: set[PermEnum] = {};
     if guild_id != "":
         result &= "&guild_id=" & guild_id &
             "&disable_guild_select=" & $disable_guild_select
+
+proc stripUserMentions*(m: Message): string =
+    ## Strips out user mentions.
+    ## Example: `<@1234567890>` to `@TheMostMysteriousUser#0000`
+    result = m.content
+    for user in m.mention_users:
+        result = result.replace(re("<@!?" & user.id & ">"), "@" & $user)
+
+proc stripRoleMentions*(m: Message): string =
+    ## Strips out role mentions.
+    ## Example: `<@&123456890>` to `@1243456890`
+    result = m.content
+    for role in m.mention_roles:
+        result = result.replace(re("<@&?" & role & ">"), "@" & role)
+
+proc stripChannelMentions*(m: Message): string =
+    ## Strips out channel mentions.
+    ## Example: `<#123456790>` to `#such-a_long-time-ago` or `#123456790`
+    result = m.content
+    if m.mention_channels.len == 0:
+        result = result.replace(re"<(#\d{17,19})>", "$1")
+    else:
+        for chan in m.mention_channels:
+            result = result.replace(re"<#\d{17,19}>", "#" & chan.name)
+
+proc stripMentions*(m: Message): string =
+    ## Strips all mentions.
+    result = m.content
+    for user in m.mention_users:
+        result = result.replace(re("<@!?" & user.id & ">"), "@" & $user)
+
+    for role in m.mention_roles:
+        result = result.replace(re("<@&?" & role & ">"), "@" & role)
+
+    if m.mention_channels.len == 0:
+        result = result.replace(re"<(#\d{17,19})>", "$1")
+    else:
+        for chan in m.mention_channels:
+            result = result.replace(re"<#\d{17,19}>", "#" & chan.name)

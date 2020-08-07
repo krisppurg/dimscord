@@ -109,11 +109,11 @@ function main() {
       <li><a class="reference" href="#defaultAvatarUrl%2CUser"
     title="defaultAvatarUrl(u: User): string"><wbr />default<wbr />Avatar<wbr />Url<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#avatarUrl%2CUser%2Cstring%2Cint"
-    title="avatarUrl(u: User; fmt = &quot;&quot;; size = 128): string"><wbr />avatar<wbr />Url<span class="attachedType"></span></a></li>
+    title="avatarUrl(u: User; fmt = &quot;png&quot;; size = 128): string"><wbr />avatar<wbr />Url<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#iconUrl%2CEmoji%2Cstring%2Cint"
-    title="iconUrl(e: Emoji; fmt = &quot;&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
+    title="iconUrl(e: Emoji; fmt = &quot;png&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#iconUrl%2CGuild%2Cstring%2Cint"
-    title="iconUrl(g: Guild; fmt = &quot;&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
+    title="iconUrl(g: Guild; fmt = &quot;png&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#%24%2CUser"
     title="`$`(u: User): string"><wbr />`$`<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#%40%2CUser"
@@ -143,6 +143,14 @@ function main() {
   <li><a class="reference" href="#genInviteLink%2Cstring%2Cset%5BPermEnum%5D%2Cstring"
     title="genInviteLink(client_id: string; permissions: set[PermEnum] = {}; guild_id = &quot;&quot;;
               disable_guild_select = false): string"><wbr />gen<wbr />Invite<wbr />Link<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#stripUserMentions%2CMessage"
+    title="stripUserMentions(m: Message): string"><wbr />strip<wbr />User<wbr />Mentions<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#stripRoleMentions%2CMessage"
+    title="stripRoleMentions(m: Message): string"><wbr />strip<wbr />Role<wbr />Mentions<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#stripChannelMentions%2CMessage"
+    title="stripChannelMentions(m: Message): string"><wbr />strip<wbr />Channel<wbr />Mentions<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#stripMentions%2CMessage"
+    title="stripMentions(m: Message): string"><wbr />strip<wbr />Mentions<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -170,24 +178,23 @@ Returns the default avatar for a user.
 
 </dd>
 <a id="avatarUrl,User,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets a user's avatar url. If user does not have an avatar it will return default avatar of the user.
 
 </dd>
 <a id="iconUrl,Emoji,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CEmoji%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CEmoji%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets an emoji's url.
 
 </dd>
 <a id="iconUrl,Guild,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Get icon url for guild.
@@ -298,6 +305,35 @@ Returns the permissions for the guild member of the channel. For permission chec
 
 
 </dd>
+<a id="stripUserMentions,Message"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripUserMentions%2CMessage"><span class="Identifier">stripUserMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Strips out user mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@1234567890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@TheMostMysteriousUser#0000</span></tt>
+
+</dd>
+<a id="stripRoleMentions,Message"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripRoleMentions%2CMessage"><span class="Identifier">stripRoleMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Strips out role mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@&amp;123456890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@1243456890</span></tt>
+
+</dd>
+<a id="stripChannelMentions,Message"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripChannelMentions%2CMessage"><span class="Identifier">stripChannelMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Strips out channel mentions. Example: <tt class="docutils literal"><span class="pre">&lt;#123456790&gt;</span></tt> to <tt class="docutils literal"><span class="pre">#such-a_long-time-ago</span></tt> or <tt class="docutils literal"><span class="pre">#123456790</span></tt>
+
+</dd>
+<a id="stripMentions,Message"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripMentions%2CMessage"><span class="Identifier">stripMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Strips all mentions.
+
+</dd>
 
 </dl></div>
 
@@ -308,7 +344,7 @@ Returns the permissions for the guild member of the channel. For permission chec
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-02 13:38:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-07 17:20:43 UTC</small>
       </div>
     </div>
   </div>

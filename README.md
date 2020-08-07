@@ -1,4 +1,3 @@
-
 # <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
 A Discord Bot & REST Library for Nim. [Discord Server](https://discord.gg/bw4mHUV)
 
@@ -10,7 +9,12 @@ Why Dimscord?
  
  ## FAQ:
  * What is Nim?
-   * Nim is a young statically-typed programming language that compiles to C/C++/JavaScript. It's similar to python and it's syntax is more clear. [You can read it more in the official website for Nim](https://nim-lang.org)
+   * Nim is a statically-typed programming language (older than go and rust) that compiles to C/C++/JavaScript.
+   It is similar to Python, easier to learn and it's flexible. [You can read it more in the official website for Nim.](https://nim-lang.org)
+ * Why even use Nim for discord bots?
+   * Since it's easier to learn, it's more faster than any other interpreted languages,
+    which is beneficial, for larger discord bots, so they could run faster.
+    [You can read the Nim FAQ here](https://nim-lang.org/faq.html)
 
 ## Notes:
  * For compressing data and stuff you would need a zlib1 file to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder. They have to be either a dylib, dll or so.1 file.
@@ -46,13 +50,14 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
             before = epochTime() * 1000
             msg = await discord.api.sendMessage(m.channel_id, "ping?")
             after = epochTime() * 1000
-        # Edit the message as pong! Use 'discard' because editMessage returns a new message.
+        # Edit the message!
+        # Use 'discard' because editMessage returns a new message.
         discard await discord.api.editMessage(
             m.channel_id,
             msg.id, 
             "Pong! took " & $int(after - before) & "ms | " & $s.latency() & "ms."
         )
-    elif m.content == "!embed": # Otherwise if content is embed.
+    elif m.content == "!embed": # Otherwise if message content is "!embed".
         # Sends a messge with embed.
         discard await discord.api.sendMessage(
             m.channel_id,

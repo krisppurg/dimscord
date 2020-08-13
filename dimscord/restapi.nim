@@ -109,7 +109,7 @@ proc request(api: RestApi, meth, endpoint: string;
         if getTime().toUnix() >= expiry and expiry != 0: # if there is a hang up we do not want to wait forever.
             r.processing = false
             expiry = 0
-        await sleepAsync 750
+        await sleepAsync 250
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
@@ -571,7 +571,7 @@ proc getInvite*(api: RestApi, code: string;
         with_counts, auth = false): Future[Invite] {.async.} =
     ## Get's a channel invite.
     ##
-    ## The auth param is whether you should get the invite while authenticated.
+    ## * `auth` Whether you should get the invite while authenticated.
     result = (await api.request(
         "GET",
         endpointInvites(code) & fmt"?with_counts={with_counts}",

@@ -112,8 +112,7 @@ function main() {
   events*: Events
   token*: string
   shards*: Table[int, Shard]
-  compress*, restMode*: bool
-  autoreconnect*, guildSubscriptions*: bool
+  restMode*, autoreconnect*, guildSubscriptions*: bool
   largeThreshold*, gatewayVersion*, maxShards*: int
   intents*: set[GatewayIntent]"><wbr />Discord<wbr />Client<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Shard"
@@ -638,8 +637,7 @@ function main() {
   <span class="Identifier">events</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#Events"><span class="Identifier">Events</span></a>
   <span class="Identifier">token</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">shards</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">,</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">]</span>
-  <span class="Identifier">compress</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">restMode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">autoreconnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guildSubscriptions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">restMode</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">autoreconnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guildSubscriptions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">largeThreshold</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">gatewayVersion</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">maxShards</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">intents</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span>
 </pre></dt>
@@ -1661,7 +1659,7 @@ Creates a Discord Client.
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-07 18:10:12 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-13 09:26:42 UTC</small>
       </div>
     </div>
   </div>

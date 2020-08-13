@@ -120,7 +120,7 @@ function main() {
   <li><a class="reference" href="#endSession%2CDiscordClient"
     title="endSession(cl: DiscordClient): owned(Future[void])"><wbr />end<wbr />Session<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"
-    title="startSession(cl: DiscordClient; compress = false; autoreconnect = true;
+    title="startSession(cl: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 6; max_shards = none int;
@@ -196,7 +196,7 @@ Ends the session.
 
 </dd>
 <a id="startSession,DiscordClient,set[GatewayIntent],int,int,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">cl</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">compress</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">cl</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                  <span class="Identifier">gateway_intents</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
                  <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
                  <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">;</span>
@@ -207,8 +207,9 @@ Ends the session.
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Connects the client to Discord via gateway.<ul class="simple"><li><tt class="docutils literal"><span class="pre">gateway_intents</span></tt> Allows you to subscribe to pre-defined events.</li>
-<li><tt class="docutils literal"><span class="pre">compress</span></tt> The zlib1(.dll|.so.1|.dylib) file needs to be in your directory.</li>
+<p>Connects the client to Discord via gateway.</p>
+<p>If you want to compress add <tt class="docutils literal"><span class="pre">-d:discordCompress</span></tt>, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.</p>
+<ul class="simple"><li><tt class="docutils literal"><span class="pre">gateway_intents</span></tt> Allows you to subscribe to pre-defined events.</li>
 <li><tt class="docutils literal"><span class="pre">large_threshold</span></tt> The number that would be considered a large guild (50-250).</li>
 <li><tt class="docutils literal"><span class="pre">guild_subscriptions</span></tt> Whether or not to receive presence_update, typing_start events.</li>
 <li><tt class="docutils literal"><span class="pre">autoreconnect</span></tt> Whether the client should reconnect whenever a network error occurs.</li>
@@ -235,7 +236,7 @@ Gets the shard's latency ms.
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-07 18:10:20 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-13 09:26:54 UTC</small>
       </div>
     </div>
   </div>

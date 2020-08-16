@@ -67,7 +67,7 @@ type
         afPlay
 const
     libName* = "Dimscord"
-    libVer* = "1.0.1"
+    libVer* = "1.0.6"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"

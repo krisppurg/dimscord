@@ -102,14 +102,26 @@ function main() {
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#PermEnum"
     title="PermEnum = enum
-  permCreateInstantInvite, permKickMembers, permBanMembers, permAdministrator,
-  permManageChannels, permManageGuild, permAddReactions, permViewAuditLogs,
-  permPrioritySpeaker, permVoiceStream, permViewChannel, permSendMessages,
-  permSendTTSMessage, permManageMessages, permEmbedLinks, permAttachFiles,
-  permReadMessageHistory, permMentionEveryone, permUseExternalEmojis,
-  permViewGuildInsights, permVoiceConnect, permVoiceSpeak, permVoiceMuteMembers,
-  permVoiceDeafenMembers, permVoiceMoveMembers, permUseVAD, permChangeNickname,
-  permManageNicknames, permManageRoles, permManageWebhooks, permManageEmojis"><wbr />Perm<wbr />Enum<span class="attachedType"></span></a></li>
+  permCreateInstantInvite = &quot;Create Instant Invite&quot;,
+  permKickMembers = &quot;Kick Members&quot;, permBanMembers = &quot;Ban Members&quot;,
+  permAdministrator = &quot;Administrator&quot;, permManageChannels = &quot;Manage Channels&quot;,
+  permManageGuild = &quot;Manage Server&quot;, permAddReactions = &quot;Add Reactions&quot;,
+  permViewAuditLogs = &quot;View Audit Log&quot;, permPrioritySpeaker = &quot;Priority Speaker&quot;,
+  permVoiceStream = &quot;Voice Stream&quot;, permViewChannel = &quot;View Channel&quot;,
+  permSendMessages = &quot;Send Messages&quot;, permSendTTSMessage = &quot;Send TTS Messages&quot;,
+  permManageMessages = &quot;Manage Messages&quot;, permEmbedLinks = &quot;Embed Links&quot;,
+  permAttachFiles = &quot;Attach Files&quot;,
+  permReadMessageHistory = &quot;Read Message History&quot;,
+  permMentionEveryone = &quot;Mention @everyone, @here and All Roles&quot;,
+  permUseExternalEmojis = &quot;Use External Emojis&quot;,
+  permViewGuildInsights = &quot;View Guild Insights&quot;,
+  permVoiceConnect = &quot;Voice Connect&quot;, permVoiceSpeak = &quot;Voice Speak&quot;,
+  permVoiceMuteMembers = &quot;Voice Mute Members&quot;,
+  permVoiceDeafenMembers = &quot;Voice Deafen Members&quot;,
+  permVoiceMoveMembers = &quot;Voice Move Members&quot;, permUseVAD = &quot;Use VAD&quot;,
+  permChangeNickname = &quot;Change Nickname&quot;, permManageNicknames = &quot;Manage Nicknames&quot;,
+  permManageRoles = &quot;Manage Roles&quot;, permManageWebhooks = &quot;Manage Webhooks&quot;,
+  permManageEmojis = &quot;Manage Emojis&quot;"><wbr />Perm<wbr />Enum<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GatewayIntent"
     title="GatewayIntent = enum
   giGuilds, giGuildMembers, giGuildBans, giGuildEmojis, giGuildIntegrations,
@@ -131,9 +143,9 @@ function main() {
       <li><a class="reference" href="#libName"
     title="libName = &quot;Dimscord&quot;"><wbr />lib<wbr />Name<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#libVer"
-    title="libVer = &quot;1.0.1&quot;"><wbr />lib<wbr />Ver<span class="attachedType"></span></a></li>
+    title="libVer = &quot;1.0.6&quot;"><wbr />lib<wbr />Ver<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#libAgent"
-    title="libAgent = &quot;DiscordBot (https://github.com/krisppurg/dimscord, v1.0.1)&quot;"><wbr />lib<wbr />Agent<span class="attachedType"></span></a></li>
+    title="libAgent = &quot;DiscordBot (https://github.com/krisppurg/dimscord, v1.0.6)&quot;"><wbr />lib<wbr />Agent<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#cdnBase"
     title="cdnBase = &quot;https://cdn.discordapp.com/&quot;"><wbr />cdn<wbr />Base<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#restBase"
@@ -450,14 +462,26 @@ function main() {
 <dl class="item">
 <a id="PermEnum"></a>
 <dt><pre><a href="constants.html#PermEnum"><span class="Identifier">PermEnum</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">permCreateInstantInvite</span><span class="Other">,</span> <span class="Identifier">permKickMembers</span><span class="Other">,</span> <span class="Identifier">permBanMembers</span><span class="Other">,</span> <span class="Identifier">permAdministrator</span><span class="Other">,</span>
-  <span class="Identifier">permManageChannels</span><span class="Other">,</span> <span class="Identifier">permManageGuild</span><span class="Other">,</span> <span class="Identifier">permAddReactions</span><span class="Other">,</span> <span class="Identifier">permViewAuditLogs</span><span class="Other">,</span>
-  <span class="Identifier">permPrioritySpeaker</span><span class="Other">,</span> <span class="Identifier">permVoiceStream</span><span class="Other">,</span> <span class="Identifier">permViewChannel</span><span class="Other">,</span> <span class="Identifier">permSendMessages</span><span class="Other">,</span>
-  <span class="Identifier">permSendTTSMessage</span><span class="Other">,</span> <span class="Identifier">permManageMessages</span><span class="Other">,</span> <span class="Identifier">permEmbedLinks</span><span class="Other">,</span> <span class="Identifier">permAttachFiles</span><span class="Other">,</span>
-  <span class="Identifier">permReadMessageHistory</span><span class="Other">,</span> <span class="Identifier">permMentionEveryone</span><span class="Other">,</span> <span class="Identifier">permUseExternalEmojis</span><span class="Other">,</span>
-  <span class="Identifier">permViewGuildInsights</span><span class="Other">,</span> <span class="Identifier">permVoiceConnect</span><span class="Other">,</span> <span class="Identifier">permVoiceSpeak</span><span class="Other">,</span> <span class="Identifier">permVoiceMuteMembers</span><span class="Other">,</span>
-  <span class="Identifier">permVoiceDeafenMembers</span><span class="Other">,</span> <span class="Identifier">permVoiceMoveMembers</span><span class="Other">,</span> <span class="Identifier">permUseVAD</span><span class="Other">,</span> <span class="Identifier">permChangeNickname</span><span class="Other">,</span>
-  <span class="Identifier">permManageNicknames</span><span class="Other">,</span> <span class="Identifier">permManageRoles</span><span class="Other">,</span> <span class="Identifier">permManageWebhooks</span><span class="Other">,</span> <span class="Identifier">permManageEmojis</span></pre></dt>
+  <span class="Identifier">permCreateInstantInvite</span> <span class="Other">=</span> <span class="StringLit">&quot;Create Instant Invite&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permKickMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Kick Members&quot;</span><span class="Other">,</span> <span class="Identifier">permBanMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Ban Members&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permAdministrator</span> <span class="Other">=</span> <span class="StringLit">&quot;Administrator&quot;</span><span class="Other">,</span> <span class="Identifier">permManageChannels</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Channels&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageGuild</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Server&quot;</span><span class="Other">,</span> <span class="Identifier">permAddReactions</span> <span class="Other">=</span> <span class="StringLit">&quot;Add Reactions&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permViewAuditLogs</span> <span class="Other">=</span> <span class="StringLit">&quot;View Audit Log&quot;</span><span class="Other">,</span> <span class="Identifier">permPrioritySpeaker</span> <span class="Other">=</span> <span class="StringLit">&quot;Priority Speaker&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permVoiceStream</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Stream&quot;</span><span class="Other">,</span> <span class="Identifier">permViewChannel</span> <span class="Other">=</span> <span class="StringLit">&quot;View Channel&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permSendMessages</span> <span class="Other">=</span> <span class="StringLit">&quot;Send Messages&quot;</span><span class="Other">,</span> <span class="Identifier">permSendTTSMessage</span> <span class="Other">=</span> <span class="StringLit">&quot;Send TTS Messages&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageMessages</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Messages&quot;</span><span class="Other">,</span> <span class="Identifier">permEmbedLinks</span> <span class="Other">=</span> <span class="StringLit">&quot;Embed Links&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permAttachFiles</span> <span class="Other">=</span> <span class="StringLit">&quot;Attach Files&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permReadMessageHistory</span> <span class="Other">=</span> <span class="StringLit">&quot;Read Message History&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permMentionEveryone</span> <span class="Other">=</span> <span class="StringLit">&quot;Mention @everyone, @here and All Roles&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permUseExternalEmojis</span> <span class="Other">=</span> <span class="StringLit">&quot;Use External Emojis&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permViewGuildInsights</span> <span class="Other">=</span> <span class="StringLit">&quot;View Guild Insights&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permVoiceConnect</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Connect&quot;</span><span class="Other">,</span> <span class="Identifier">permVoiceSpeak</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Speak&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permVoiceMuteMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Mute Members&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permVoiceDeafenMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Deafen Members&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permVoiceMoveMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Move Members&quot;</span><span class="Other">,</span> <span class="Identifier">permUseVAD</span> <span class="Other">=</span> <span class="StringLit">&quot;Use VAD&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permChangeNickname</span> <span class="Other">=</span> <span class="StringLit">&quot;Change Nickname&quot;</span><span class="Other">,</span> <span class="Identifier">permManageNicknames</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Nicknames&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageRoles</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Roles&quot;</span><span class="Other">,</span> <span class="Identifier">permManageWebhooks</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Webhooks&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageEmojis</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Emojis&quot;</span></pre></dt>
 <dd>
 
 
@@ -503,14 +527,14 @@ function main() {
 
 </dd>
 <a id="libVer"></a>
-<dt><pre><a href="constants.html#libVer"><span class="Identifier">libVer</span></a> <span class="Other">=</span> <span class="StringLit">&quot;1.0.1&quot;</span></pre></dt>
+<dt><pre><a href="constants.html#libVer"><span class="Identifier">libVer</span></a> <span class="Other">=</span> <span class="StringLit">&quot;1.0.6&quot;</span></pre></dt>
 <dd>
 
 
 
 </dd>
 <a id="libAgent"></a>
-<dt><pre><a href="constants.html#libAgent"><span class="Identifier">libAgent</span></a> <span class="Other">=</span> <span class="StringLit">&quot;DiscordBot (https://github.com/krisppurg/dimscord, v1.0.1)&quot;</span></pre></dt>
+<dt><pre><a href="constants.html#libAgent"><span class="Identifier">libAgent</span></a> <span class="Other">=</span> <span class="StringLit">&quot;DiscordBot (https://github.com/krisppurg/dimscord, v1.0.6)&quot;</span></pre></dt>
 <dd>
 
 
@@ -1545,7 +1569,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-13 09:26:41 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-16 19:30:03 UTC</small>
       </div>
     </div>
   </div>

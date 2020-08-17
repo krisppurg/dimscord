@@ -820,7 +820,7 @@ proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     discard await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
-        "delete-message-days": $deletemsgdays,
+        "delete-message-days": deletemsgdays,
         "reason": encodeUrl(reason)
     }), reason)
 

@@ -1,7 +1,10 @@
-import zip/zlib, httpclient, ws, asyncnet, asyncdispatch
+import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, sequtils, strutils, restapi, dispatch
 import tables, random, times, constants, objects, json, math
 import nativesockets
+
+when defined(discordCompress):
+    import zip/zlib
 
 randomize()
 {.hint[XDeclaredButNotUsed]: off.}
@@ -138,7 +141,7 @@ proc identify(s: Shard) {.async.} =
             "$browser": libName,
             "$device": libName
         },
-        "compress": s.client.compress,
+        "compress": defined(discordCompress),
         "guild_subscriptions": s.client.guildSubscriptions
     }
 
@@ -380,8 +383,9 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
         var data: JsonNode
 
-        if s.client.compress and packet[0] == Binary:
-            packet[1] = zlib.uncompress(packet[1])
+        when defined(discordCompress):
+            if packet[0] == Binary:
+                packet[1] = zlib.uncompress(packet[1])
 
         try:
             data = parseJson(packet[1])
@@ -486,7 +490,6 @@ proc startSession(s: Shard, url, query: string) {.async.} =
         if getCurrentExceptionMsg()[0].isAlphaNumeric: return
 
 proc startSession*(cl: DiscordClient,
-            compress = false;
             autoreconnect = true;
             gateway_intents: set[GatewayIntent] = {};
             large_message_threshold, large_threshold = 50;
@@ -498,8 +501,10 @@ proc startSession*(cl: DiscordClient,
     ##[
         Connects the client to Discord via gateway.
 
+        If you want to compress add `-d:discordCompress`, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
+
         - `gateway_intents` Allows you to subscribe to pre-defined events.
-        - `compress` The zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
+
         - `large_threshold` The number that would be considered a large guild (50-250).
         - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
         - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
@@ -517,7 +522,6 @@ proc startSession*(cl: DiscordClient,
     cl.guildSubscriptions = guild_subscriptions
     cl.max_shards = max_shards.get(-1)
     cl.gatewayVersion = gateway_version
-    cl.compress = compress
 
     var
         query = "/?v=" & $gateway_version

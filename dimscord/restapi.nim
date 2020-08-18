@@ -91,7 +91,7 @@ proc discordErrors(data: JsonNode): string =
         result &= "\n" & discordDetailedErrors(data["errors"]).join("\n")
 
 proc request(api: RestApi, meth, endpoint: string;
-            pl, reason = ""; mp: MultipartData = nil;
+            pl, audit_reason = ""; mp: MultipartData = nil;
             auth = true): Future[JsonNode] {.async.} =
     if api.token == "Bot  ":
         raise newException(Exception, "The token you specified was empty.")
@@ -109,7 +109,7 @@ proc request(api: RestApi, meth, endpoint: string;
         if getTime().toUnix() >= expiry and expiry != 0: # if there is a hang up we do not want to wait forever.
             r.processing = false
             expiry = 0
-        await sleepAsync 750
+        await sleepAsync 250
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
@@ -127,8 +127,8 @@ proc request(api: RestApi, meth, endpoint: string;
 
         var resp: AsyncResponse
 
-        if reason != "":
-            client.headers["X-Audit-Log-Reason"] = encodeUrl(reason)
+        if audit_reason != "":
+            client.headers["X-Audit-Log-Reason"] = encodeUrl(audit_reason)
         if auth:
             client.headers["Authorization"] = api.token
 
@@ -138,7 +138,7 @@ proc request(api: RestApi, meth, endpoint: string;
 
         log("Making request to " & meth & " " & url, (
             size: pl.len,
-            reason: if reason != "": reason else: ""
+            reason: if audit_reason != "": audit_reason else: ""
         ))
 
         try:
@@ -343,7 +343,7 @@ proc deleteMessage*(api: RestApi, channel_id, message_id: string;
     discard await api.request(
         "DELETE",
         endpointChannelMessages(channel_id, message_id),
-        reason
+        audit_reason = reason
     )
 
 proc getChannelMessages*(api: RestApi, channel_id: string;
@@ -380,7 +380,7 @@ proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         $(%*{
             "messages": message_ids
         }),
-        reason
+        audit_reason = reason
     )
 
 proc addMessageReaction*(api: RestApi,
@@ -460,7 +460,7 @@ proc addChannelMessagePin*(api: RestApi,
     discard await api.request(
         "PUT",
         endpointChannelPins(channel_id, message_id),
-        reason
+        audit_reason = reason
     )
 
 proc deleteChannelMessagePin*(api: RestApi,
@@ -469,7 +469,7 @@ proc deleteChannelMessagePin*(api: RestApi,
     discard await api.request(
         "DELETE",
         endpointChannelPins(channel_id, message_id),
-        reason
+        audit_reason = reason
     )
 
 proc getChannelPins*(api: RestApi,
@@ -524,7 +524,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string;
         "PATCH",
         endpointChannels(channel_id),
         $payload,
-        reason
+        audit_reason = reason
     )).newGuildChannel
 
 proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
@@ -564,14 +564,14 @@ proc editGuildChannelPermissions*(api: RestApi,
         "PUT",
         endpointChannelOverwrites(channel_id, perm_id),
         $payload,
-        reason
+        audit_reason = reason
     )
 
 proc getInvite*(api: RestApi, code: string;
         with_counts, auth = false): Future[Invite] {.async.} =
     ## Get's a channel invite.
     ##
-    ## The auth param is whether you should get the invite while authenticated.
+    ## * `auth` Whether you should get the invite while authenticated.
     result = (await api.request(
         "GET",
         endpointInvites(code) & fmt"?with_counts={with_counts}",
@@ -631,7 +631,7 @@ proc editGuild*(api: RestApi, guild_id: string;
         "PATCH",
         endpointGuilds(guild_id),
         $payload,
-        reason
+        audit_reason = reason
     )).newGuild
 
 proc createGuild*(api: RestApi, name, region = none string;
@@ -750,7 +750,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
         "PATCH",
         endpointGuildRoles(guild_id, role_id),
         $payload,
-        reason
+        audit_reason = reason
     )).newRole
 
 proc editGuildRolePosition*(api: RestApi, guild_id, role_id: string;
@@ -797,7 +797,7 @@ proc removeGuildMember*(api: RestApi, guild_id, user_id: string;
     discard await api.request(
         "DELETE",
         endpointGuildMembers(guild_id, user_id),
-        reason
+        audit_reason = reason
     )
 
 proc getGuildBan*(api: RestApi,
@@ -820,7 +820,7 @@ proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     discard await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
-        "delete-message-days": $deletemsgdays,
+        "delete-message-days": deletemsgdays,
         "reason": encodeUrl(reason)
     }), reason)
 
@@ -830,7 +830,7 @@ proc removeGuildBan*(api: RestApi,
     discard await api.request(
         "DELETE",
         endpointGuildBans(guild_id, user_id),
-        reason
+        audit_reason = reason
     )
 
 proc getGuildChannel*(api: RestApi,
@@ -859,7 +859,7 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
             "id": channel_id,
             "position": %position
         }),
-        reason
+        audit_reason = reason
     )
 
 proc getGuildMember*(api: RestApi,
@@ -886,7 +886,7 @@ proc setGuildNick*(api: RestApi, guild_id: string; nick, reason = "") {.async.} 
         $(%*{
             "nick": nick
         }),
-        reason
+        audit_reason = reason
     )
 
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
@@ -895,7 +895,7 @@ proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
     discard await api.request(
         "PUT",
         endpointGuildMembersRole(guild_id, user_id, role_id),
-        reason
+        audit_reason = reason
     )
 
 proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
@@ -904,7 +904,7 @@ proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
     discard await api.request(
         "DELETE",
         endpointGuildMembersRole(guild_id, user_id, role_id),
-        reason
+        audit_reason = reason
     )
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
@@ -926,7 +926,7 @@ proc createChannelInvite*(api: RestApi, channel_id: string;
         "POST",
         endpointChannelInvites(channel_id),
         $payload,
-        reason
+        audit_reason = reason
     )).newInvite
 
 proc deleteGuildChannelPermission*(api: RestApi, channel_id, overwrite: string;
@@ -935,7 +935,7 @@ proc deleteGuildChannelPermission*(api: RestApi, channel_id, overwrite: string;
     discard await api.request(
         "DELETE",
         endpointChannelOverwrites(channel_id, overwrite),
-        reason
+        audit_reason = reason
     )
 
 proc deleteInvite*(api: RestApi, code: string; reason = "") {.async.} =
@@ -988,7 +988,7 @@ proc createWebhook*(api: RestApi, channel_id, username: string;
             "username": username,
             "avatar": avatar
         }),
-        reason
+        audit_reason = reason
     )).newWebhook
 
 proc executeWebhook*(api: RestApi, webhook_id, token: string; wait = true;
@@ -1060,7 +1060,7 @@ proc deleteWebhook*(api: RestApi, webhook_id: string; reason = "") {.async.} =
     discard await api.request(
         "DELETE",
         endpointWebhooks(webhook_id),
-        reason
+        audit_reason = reason
     )
 
 proc editWebhook*(api: RestApi, webhook_id: string;
@@ -1074,7 +1074,7 @@ proc editWebhook*(api: RestApi, webhook_id: string;
     discard await api.request("PATCH",
         endpointWebhooks(webhook_id),
         $payload,
-        reason
+        audit_reason = reason
     )
 
 proc syncGuildIntegration*(api: RestApi, guild_id, integ_id: string) {.async.} =
@@ -1097,7 +1097,7 @@ proc editGuildIntegration*(api: RestApi, guild_id, integ_id: string;
         "PATCH",
         endpointGuildIntegrationsSync(guild_id, integ_id),
         $payload,
-        reason
+        audit_reason = reason
     )
 
 proc deleteGuildIntegration*(api: RestApi, integ_id: string;
@@ -1106,7 +1106,7 @@ proc deleteGuildIntegration*(api: RestApi, integ_id: string;
     discard await api.request(
         "DELETE",
         endpointGuildIntegrations(integ_id),
-        reason
+        audit_reason = reason
     )
 
 proc getGuildEmbed*(api: RestApi,
@@ -1156,7 +1156,7 @@ proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
 
     let member = await api.request("PUT",
         endpointGuildMembers(guild_id, user_id),
-        reason
+        audit_reason = reason
     )
 
     if member.kind == JNull:
@@ -1197,7 +1197,7 @@ proc editGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
             "name": name,
             "roles": roles
         }),
-        reason
+        audit_reason = reason
     )).newEmoji
 
 proc deleteGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
@@ -1205,7 +1205,7 @@ proc deleteGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
     ## Deletes a guild emoji.
     discard await api.request("DELETE",
         endpointGuildEmojis(guild_id, emoji_id),
-        reason
+        audit_reason = reason
     )
 
 proc getUser*(api: RestApi, user_id: string): Future[User] {.async.} =

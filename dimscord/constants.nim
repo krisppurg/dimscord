@@ -4,37 +4,37 @@ when defined(dimscordDebug):
 
 type
     PermEnum* = enum
-        permCreateInstantInvite
-        permKickMembers
-        permBanMembers
-        permAdministrator
-        permManageChannels
-        permManageGuild
-        permAddReactions
-        permViewAuditLogs
-        permPrioritySpeaker
-        permVoiceStream
-        permViewChannel
-        permSendMessages
-        permSendTTSMessage
-        permManageMessages
-        permEmbedLinks
-        permAttachFiles
-        permReadMessageHistory
-        permMentionEveryone
-        permUseExternalEmojis
-        permViewGuildInsights
-        permVoiceConnect
-        permVoiceSpeak
-        permVoiceMuteMembers
-        permVoiceDeafenMembers
-        permVoiceMoveMembers
-        permUseVAD
-        permChangeNickname
-        permManageNicknames
-        permManageRoles
-        permManageWebhooks
-        permManageEmojis
+        permCreateInstantInvite = "Create Instant Invite"
+        permKickMembers = "Kick Members"
+        permBanMembers = "Ban Members"
+        permAdministrator = "Administrator"
+        permManageChannels = "Manage Channels"
+        permManageGuild = "Manage Server"
+        permAddReactions = "Add Reactions"
+        permViewAuditLogs = "View Audit Log"
+        permPrioritySpeaker = "Priority Speaker"
+        permVoiceStream = "Voice Stream"
+        permViewChannel = "View Channel"
+        permSendMessages = "Send Messages"
+        permSendTTSMessage = "Send TTS Messages"
+        permManageMessages = "Manage Messages"
+        permEmbedLinks = "Embed Links"
+        permAttachFiles = "Attach Files"
+        permReadMessageHistory = "Read Message History"
+        permMentionEveryone = "Mention @everyone, @here and All Roles"
+        permUseExternalEmojis = "Use External Emojis"
+        permViewGuildInsights = "View Guild Insights"
+        permVoiceConnect = "Voice Connect"
+        permVoiceSpeak = "Voice Speak"
+        permVoiceMuteMembers = "Voice Mute Members"
+        permVoiceDeafenMembers = "Voice Deafen Members"
+        permVoiceMoveMembers = "Voice Move Members"
+        permUseVAD = "Use VAD"
+        permChangeNickname = "Change Nickname"
+        permManageNicknames = "Manage Nicknames"
+        permManageRoles = "Manage Roles"
+        permManageWebhooks = "Manage Webhooks"
+        permManageEmojis = "Manage Emojis"
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
@@ -67,7 +67,7 @@ type
         afPlay
 const
     libName* = "Dimscord"
-    libVer* = "1.0.1"
+    libVer* = "1.0.6"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"

@@ -17,8 +17,7 @@ type
         events*: Events
         token*: string
         shards*: Table[int, Shard]
-        compress*, restMode*: bool
-        autoreconnect*, guildSubscriptions*: bool
+        restMode*, autoreconnect*, guildSubscriptions*: bool
         largeThreshold*, gatewayVersion*, maxShards*: int
         intents*: set[GatewayIntent]
     Shard* = ref object

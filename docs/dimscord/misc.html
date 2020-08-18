@@ -20,7 +20,7 @@
 <title>dimscord/misc</title>
 <link rel="stylesheet" type="text/css" href="../nimdoc.out.css">
 
-<script type="text/javascript" src="dochack.js"></script>
+<script type="text/javascript" src="../dochack.js"></script>
 
 <script type="text/javascript">
 function main() {
@@ -47,21 +47,12 @@ function main() {
 
   toggleSwitch.addEventListener('change', switchTheme, false);
 
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', "dark");
-    toggleSwitch.checked = true;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.setAttribute('data-theme', "light");
-    toggleSwitch.checked = false;
-  } else {
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-    if (currentTheme) {
-      document.documentElement.setAttribute('data-theme', currentTheme);
-
-      if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-      }
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true;
     }
   }
 }
@@ -83,6 +74,9 @@ function main() {
   </div>
   <div id="global-links">
     <ul class="simple">
+    <li>
+      <a href="../theindex.html">Index</a>
+    </li>
     </ul>
   </div>
   <div id="searchInputDiv">
@@ -175,14 +169,21 @@ function main() {
 <dd>
 
 Returns the default avatar for a user.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L5"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L5" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="avatarUrl,User,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets a user's avatar url. If user does not have an avatar it will return default avatar of the user.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L9"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L9" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="iconUrl,Emoji,string,int"></a>
@@ -190,14 +191,21 @@ Gets a user's avatar url. If user does not have an avatar it will return default
 <dd>
 
 Gets an emoji's url.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L16"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L16" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="iconUrl,Guild,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Get icon url for guild.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L23"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="$,User"></a>
@@ -205,6 +213,10 @@ Get icon url for guild.
 <dd>
 
 Stringifies a user. This would return something like <tt class="docutils literal"><span class="pre">MrDude#6969</span></tt>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L30"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L30" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="@,User"></a>
@@ -212,6 +224,10 @@ Stringifies a user. This would return something like <tt class="docutils literal
 <dd>
 
 Mentions a user.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L35"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L35" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="@,Role"></a>
@@ -219,6 +235,10 @@ Mentions a user.
 <dd>
 
 Mentions a role.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L40"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="@,GuildChannel"></a>
@@ -226,6 +246,10 @@ Mentions a role.
 <dd>
 
 Mentions a guild channel.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L44"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L44" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="$,GuildChannel"></a>
@@ -233,6 +257,10 @@ Mentions a guild channel.
 <dd>
 
 Stringifies a guild channel. This would return something like <tt class="docutils literal"><span class="pre">#general</span></tt>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L48"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L48" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildWidget,string,string"></a>
@@ -240,6 +268,10 @@ Stringifies a guild channel. This would return something like <tt class="docutil
 <dd>
 
 Gets a guild widget. <a class="reference external" href="https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options">https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options</a>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L53"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L53" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="timestamp,string"></a>
@@ -247,6 +279,10 @@ Gets a guild widget. <a class="reference external" href="https://discord.com/dev
 <dd>
 
 Gets a timestamp from a Discord ID.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L58"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L58" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="perms,PermObj"></a>
@@ -254,6 +290,10 @@ Gets a timestamp from a Discord ID.
 <dd>
 
 Gets the total permissions.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L63"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="permCheck,int,int"></a>
@@ -261,13 +301,21 @@ Gets the total permissions.
 <dd>
 
 Checks if the set of permissions has the specific permission.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L73"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L73" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="permCheck,int,PermObj"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#permCheck%2Cint%2CPermObj"><span class="Identifier">permCheck</span></a><span class="Other">(</span><span class="Identifier">perms</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">p</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#permCheck%2Cint%2CPermObj"><span class="Identifier">permCheck</span></a><span class="Other">(</span><span class="Identifier">perms</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">p</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Just like permCheck, but with a PermObj.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L77"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L77" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Role"></a>
@@ -275,6 +323,10 @@ Just like permCheck, but with a PermObj.
 <dd>
 
 Computes the guild permissions for a role.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L99"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L99" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Member"></a>
@@ -282,6 +334,10 @@ Computes the guild permissions for a role.
 <dd>
 
 Computes the guild permissions for a member.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L110"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L110" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Member,GuildChannel"></a>
@@ -292,6 +348,10 @@ Computes the guild permissions for a member.
 Returns the permissions for the guild member of the channel. For permission checking you can do something like this:<pre class="listing"><span class="Keyword">cast</span><span class="Punctuation">[</span><span class="Identifier">int</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="Identifier">setofpermshere</span><span class="Punctuation">)</span><span class="Operator">.</span><span class="Identifier">permCheck</span><span class="Punctuation">(</span><span class="Identifier">PermObj</span><span class="Punctuation">(</span>
     <span class="Identifier">allowed</span><span class="Punctuation">:</span> <span class="Punctuation">{</span><span class="Identifier">permExample</span><span class="Punctuation">}</span>
 <span class="Punctuation">)</span><span class="Punctuation">)</span></pre>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="genInviteLink,string,set[PermEnum],string"></a>
@@ -303,6 +363,10 @@ Returns the permissions for the guild member of the channel. For permission chec
 <p>Example: <tt class="docutils literal"><span class="pre">https://discord.com/api/oauth2/authorize?client_id=666&amp;scope=bot&amp;permissions=1</span></tt></p>
 <p>See <a class="reference external" href="https://discord.com/developers/docs/topics/oauth2#bots">https://discord.com/developers/docs/topics/oauth2#bots</a> for more information.</p>
 
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L161"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L161" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripUserMentions,Message"></a>
@@ -310,6 +374,10 @@ Returns the permissions for the guild member of the channel. For permission chec
 <dd>
 
 Strips out user mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@1234567890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@TheMostMysteriousUser#0000</span></tt>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L176"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L176" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripRoleMentions,Message"></a>
@@ -317,14 +385,21 @@ Strips out user mentions. Example: <tt class="docutils literal"><span class="pre
 <dd>
 
 Strips out role mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@&amp;123456890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@1243456890</span></tt>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L183"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L183" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripChannelMentions,Message"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stripChannelMentions%2CMessage"><span class="Identifier">stripChannelMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripChannelMentions%2CMessage"><span class="Identifier">stripChannelMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Strips out channel mentions. Example: <tt class="docutils literal"><span class="pre">&lt;#123456790&gt;</span></tt> to <tt class="docutils literal"><span class="pre">#such-a_long-time-ago</span></tt> or <tt class="docutils literal"><span class="pre">#123456790</span></tt>
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L190"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L190" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripMentions,Message"></a>
@@ -332,6 +407,10 @@ Strips out channel mentions. Example: <tt class="docutils literal"><span class="
 <dd>
 
 Strips all mentions.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/misc.nim#L200"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/misc.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -344,7 +423,7 @@ Strips all mentions.
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-16 19:30:10 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-18 23:27:41 UTC</small>
       </div>
     </div>
   </div>

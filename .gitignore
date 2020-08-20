@@ -1,5 +1,6 @@
 nimcache/
 nimblecache/
-htmldocs/
+docs/dimscord.idx
+docs/dimscord/*.idx
 examples/basic_bot.exe
 examples/archtest.exe

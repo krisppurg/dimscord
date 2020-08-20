@@ -13,8 +13,7 @@ task genDoc, "Generates the documentation for dimscord":
     rmDir("docs") # Clean old doc folder
     rmFile("dimscord.idx") # Remove the old index
     
-    exec("nim doc --project --index:on --git.url:https://github.com/krisppurg/dimscord --git.commit:master dimscord.nim")
-    mvDir("htmldocs", "docs")
+    exec("nimble doc --outdir=docs --project --index:on --git.url:https://github.com/krisppurg/dimscord --git.commit:master dimscord.nim")
     exec("nim buildindex -o:docs/theindex.html docs/") # This builds the index to allow search to work
 
     writeFile("docs/index.html", """

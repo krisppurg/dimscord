@@ -12,7 +12,7 @@ requires "nim >= 1.2.0", "zip >= 0.2.1", "ws <= 0.4.0", "regex >= 0.15.0"
 task genDoc, "Generates the documentation for dimscord":
     rmDir("docs") # Clean old doc folder
     
-    exec("nimble doc --outdir=docs --project --index:on --git.url:https://github.com/krisppurg/dimscord --git.commit:master dimscord.nim")
+    exec("nim doc2 --outdir=docs --project --index:on --git.url:https://github.com/krisppurg/dimscord --git.commit:master dimscord.nim")
     exec("nim buildindex -o:docs/theindex.html docs/") # This builds the index to allow search to work
 
     writeFile("docs/index.html", """

@@ -1,17 +1,16 @@
 ## Welcome to the Dimscord Documentation!
-## 
-## Reference
-## ===================================
-## 
+##
 ## - If you have any errors like for example getGuildChannel doesn't exist in
 ##   v1.0.0, then you can just simply do `nimble install dimscord@#head` if
 ##   this does not work then uninstall the version you were using,
 ##   or you could replace the folder from the `.nimble/pkgs` directory.
-## 
-## - For objects, this file includes the discord objects,
+##
+## Reference
+## ===================================
+## - `objects` This file includes the discord objects,
 ##   such as Message, Guild, User, Shard, etc.
 ## 
-## - For gateway, this file allows you to
+## - `gateway` This file allows you to
 ##   connect, disconnect, send gateway messages to the gateway.
 ##   Like updating your status with updateStatus,
 ##   requesting guild members with requestGuildMembers,
@@ -23,7 +22,7 @@
 ##   make sure you make a PR to it. You can use on_dispatch for now.
 ## 
 ## 
-## - For restapi, this file would be pretty self-explantory,
+## - `restapi` This file would be pretty self-explantory,
 ##   as this file would handle ratelimits if you receive lots of 403s or 429s,
 ##   I'd recommend either stopping your bot or at least check your code
 ##   like if the bot has the permissions to do this and that,
@@ -34,16 +33,27 @@
 ##   (OAuth2 support will be added)
 ## 
 ## 
-## - For misc, this includes helper methods such as mentioning a user
+## - `misc` This includes helper methods such as mentioning a user
 ##   @ify channels, users, roles, etc, this includes iconUrls too.
 ## 
 ## 
-## - For constants, say if you were to check what verification level is the guild
+## - `constants` Say if you were to check what verification level is the guild
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ##   If any of these types are enums and you want to compare them like
 ##   for example ActivityFlags use `cast[int]({myEnum})` e.g. `cast[int]({afSync})`
+## 
+## Modules required
+## ===================
+## Sometimes you would need some modules in order to use in procedures,
+## for example if you were to edit a guild member you would need to
+## import options to provide an Option type.
+## 
+## - [`asyncdispatch`](https://nim-lang.org/docs/asyncdispatch.html) This one is needed.
+## - [`options`](https://nim-lang.org/docs/options.html) Optional parameters.
+## - [`base64`](https://nim-lang.org/docs/base64.html) File sending.
+## - [`json`](https://nim-lang.org/docs/json.html) Raw data handling (`on_dispatch`)
 
 import dimscord/[gateway, restapi, constants, objects, misc]
 

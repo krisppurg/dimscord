@@ -120,24 +120,23 @@ function main() {
   
   <p class="module-desc">Welcome to the Dimscord Documentation!<ul class="simple"><li>If you have any errors like for example getGuildChannel doesn't exist in v1.0.0, then you can just simply do <tt class="docutils literal"><span class="pre">nimble install dimscord@#head</span></tt> if this does not work then uninstall the version you were using, or you could replace the folder from the <tt class="docutils literal"><span class="pre">.nimble/pkgs</span></tt> directory.</li>
 </ul>
+<p>You can search for symbols by going to <a class="reference external" href="https://krisppurg.github.io/dimscord/theindex.html">https://krisppurg.github.io/dimscord/theindex.html</a>.</p>
 
-<h1><a class="toc-backref" id="reference" href="#reference">Reference</a></h1><ul class="simple"><li><tt class="docutils literal"><span class="pre">objects</span></tt> This file includes the discord objects, such as Message, Guild, User, Shard, etc.</li>
-<li><p><tt class="docutils literal"><span class="pre">gateway</span></tt> This file allows you to connect, disconnect, send gateway messages to the gateway. Like updating your status with updateStatus, requesting guild members with requestGuildMembers, joining/moving/leaving a voice channel with voiceStateUpdate</p>
+<h1><a class="toc-backref" id="reference" href="#reference">Reference</a></h1><ul class="simple"><li><tt class="docutils literal"><span class="pre">objects</span></tt> Includes the discord objects, such as Message, Guild, User, Shard, etc.</li>
+<li><p><tt class="docutils literal"><span class="pre">gateway</span></tt> Allows you to connect, disconnect, send gateway messages to the gateway. Like updating your status with updateStatus, requesting guild members with requestGuildMembers, joining/moving/leaving a voice channel with voiceStateUpdate.</p>
 <p>Please note that if you are compiling with ARC or ORC, old objects will be none due to the deepCopy feature being removed, if there are alternatives to this, I'll update, if you do have alternatives, make sure you make a PR to it. You can use on_dispatch for now.</p>
 </li>
 </ul>
-<ul class="simple"><li><tt class="docutils literal"><span class="pre">restapi</span></tt> This file would be pretty self-explantory, as this file would handle ratelimits if you receive lots of 403s or 429s, I'd recommend either stopping your bot or at least check your code like if the bot has the permissions to do this and that, for 429s the lib would at least try to re-send the request, the common ways to get 429s is reactions and you may get 429s, though this is more common in other libraries, if you were to add more reactions, I'd recommend adding some sort of cooldowns to it. (OAuth2 support will be added)</li>
-</ul>
-<ul class="simple"><li><tt class="docutils literal"><span class="pre">misc</span></tt> This includes helper methods such as mentioning a user @ify channels, users, roles, etc, this includes iconUrls too.</li>
-</ul>
-<ul class="simple"><li><tt class="docutils literal"><span class="pre">constants</span></tt> Say if you were to check what verification level is the guild you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium, this file includes permission enums like permAddReactions, permViewAuditLogs, permCreateInstantInvite, etc. Intents are also included there. If any of these types are enums and you want to compare them like for example ActivityFlags use <tt class="docutils literal"><span class="pre">cast[int]({myEnum})</span></tt> e.g. <tt class="docutils literal"><span class="pre">cast[int]({afSync})</span></tt></li>
+<ul class="simple"><li><tt class="docutils literal"><span class="pre">restapi</span></tt> Interfaces with Discord's REST API, as this file would handle ratelimits if you receive lots of 403s or 429s, I'd recommend either stopping your bot or at least check your code like if the bot has the permissions to do this and that, for 429s the lib would at least try to re-send the request, the common ways to get 429s is reactions and you may get 429s, though this is more common in other libraries, if you were to add more reactions, I'd recommend adding some sort of cooldowns to it. (OAuth2 support will be added)</li>
+<li><tt class="docutils literal"><span class="pre">misc</span></tt> Includes helper methods such as mentioning a user @ify channels, users, roles, etc, this includes iconUrls too.</li>
+<li><tt class="docutils literal"><span class="pre">constants</span></tt> Say if you were to check what verification level is the guild you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium, this file includes permission enums like permAddReactions, permViewAuditLogs, permCreateInstantInvite, etc. Intents are also included there. If any of these types are enums and you want to compare them like for example ActivityFlags use <tt class="docutils literal"><span class="pre">cast[int]({myEnum})</span></tt> e.g. <tt class="docutils literal"><span class="pre">cast[int]({afSync})</span></tt></li>
 </ul>
 
 <h1><a class="toc-backref" id="modules-required" href="#modules-required">Modules required</a></h1><p>Sometimes you would need some modules in order to use in procedures, for example if you were to edit a guild member you would need to import options to provide an Option type.</p>
-<ul class="simple"><li><a class="reference external" href="https://nim-lang.org/docs/asyncdispatch.html">`asyncdispatch`</a> This one is needed.</li>
-<li><a class="reference external" href="https://nim-lang.org/docs/options.html">`options`</a> Optional parameters.</li>
-<li><a class="reference external" href="https://nim-lang.org/docs/base64.html">`base64`</a> File sending.</li>
-<li><a class="reference external" href="https://nim-lang.org/docs/json.html">`json`</a> Raw data handling (<tt class="docutils literal"><span class="pre">on_dispatch</span></tt>)</li>
+<ul class="simple"><li><a class="reference external" href="https://nim-lang.org/docs/asyncdispatch.html">asyncdispatch</a> This one is needed.</li>
+<li><a class="reference external" href="https://nim-lang.org/docs/options.html">options</a> Optional parameters.</li>
+<li><a class="reference external" href="https://nim-lang.org/docs/base64.html">base64`</a> File sending.</li>
+<li><a class="reference external" href="https://nim-lang.org/docs/json.html">json</a> Raw data handling (<tt class="docutils literal"><span class="pre">on_dispatch</span></tt>)</li>
 </ul>
 </p>
   <div class="section" id="6">
@@ -158,7 +157,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-21 12:59:01 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-21 16:58:23 UTC</small>
       </div>
     </div>
   </div>

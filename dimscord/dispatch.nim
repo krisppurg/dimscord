@@ -480,8 +480,8 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
     if "premium_since" in data and data["premium_since"].kind != JNull:
         member.premium_since = some data["premium_since"].str
 
+    member.roles = @[]
     for role in data["roles"].elems:
-        member.roles = @[]
         member.roles.add(role.str)
 
     await s.client.events.guild_member_update(s, guild, member, oldMember)

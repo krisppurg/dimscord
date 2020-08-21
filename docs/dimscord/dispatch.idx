@@ -1,0 +1,1 @@
+handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,string,JsonNode	dispatch: handleEventDispatch(s: Shard; event: string; data: JsonNode): owned(Future[void])	

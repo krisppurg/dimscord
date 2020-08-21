@@ -1,0 +1,7 @@
+updateStatus	dimscord/gateway.html#updateStatus,Shard,string	gateway: updateStatus(s: Shard; game = none GameStatus; status = &quot;online&quot;; afk = false): owned(\n    Future[void])	
+requestGuildMembers	dimscord/gateway.html#requestGuildMembers,Shard,seq[string],int,string,string,seq[string]	gateway: requestGuildMembers(s: Shard; guild_id: seq[string]; limit: int; query, nonce = &quot;&quot;;\n                    presences = false; user_ids: seq[string] = @[]): owned(Future[void])	
+voiceStateUpdate	dimscord/gateway.html#voiceStateUpdate,Shard,string	gateway: voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;\n                 self_mute, self_deaf = false): owned(Future[void])	
+disconnect	dimscord/gateway.html#disconnect,Shard	gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])	
+endSession	dimscord/gateway.html#endSession,DiscordClient	gateway: endSession(cl: DiscordClient): owned(Future[void])	
+startSession	dimscord/gateway.html#startSession,DiscordClient,set[GatewayIntent],int,int,int,int	gateway: startSession(cl: DiscordClient; autoreconnect = true;\n             gateway_intents: set[GatewayIntent] = {};\n             large_message_threshold, large_threshold = 50;\n             max_message_size = 5000000; gateway_version = 6; max_shards = none int;\n             cache_users, cache_guilds, guild_subscriptions = true;\n             cache_guild_channels, cache_dm_channels = true): owned(Future[void])	
+latency	dimscord/gateway.html#latency,Shard	gateway: latency(s: Shard): int	

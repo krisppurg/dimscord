@@ -1,0 +1,209 @@
+permCreateInstantInvite	dimscord/constants.html#permCreateInstantInvite	PermEnum.permCreateInstantInvite	
+permKickMembers	dimscord/constants.html#permKickMembers	PermEnum.permKickMembers	
+permBanMembers	dimscord/constants.html#permBanMembers	PermEnum.permBanMembers	
+permAdministrator	dimscord/constants.html#permAdministrator	PermEnum.permAdministrator	
+permManageChannels	dimscord/constants.html#permManageChannels	PermEnum.permManageChannels	
+permManageGuild	dimscord/constants.html#permManageGuild	PermEnum.permManageGuild	
+permAddReactions	dimscord/constants.html#permAddReactions	PermEnum.permAddReactions	
+permViewAuditLogs	dimscord/constants.html#permViewAuditLogs	PermEnum.permViewAuditLogs	
+permPrioritySpeaker	dimscord/constants.html#permPrioritySpeaker	PermEnum.permPrioritySpeaker	
+permVoiceStream	dimscord/constants.html#permVoiceStream	PermEnum.permVoiceStream	
+permViewChannel	dimscord/constants.html#permViewChannel	PermEnum.permViewChannel	
+permSendMessages	dimscord/constants.html#permSendMessages	PermEnum.permSendMessages	
+permSendTTSMessage	dimscord/constants.html#permSendTTSMessage	PermEnum.permSendTTSMessage	
+permManageMessages	dimscord/constants.html#permManageMessages	PermEnum.permManageMessages	
+permEmbedLinks	dimscord/constants.html#permEmbedLinks	PermEnum.permEmbedLinks	
+permAttachFiles	dimscord/constants.html#permAttachFiles	PermEnum.permAttachFiles	
+permReadMessageHistory	dimscord/constants.html#permReadMessageHistory	PermEnum.permReadMessageHistory	
+permMentionEveryone	dimscord/constants.html#permMentionEveryone	PermEnum.permMentionEveryone	
+permUseExternalEmojis	dimscord/constants.html#permUseExternalEmojis	PermEnum.permUseExternalEmojis	
+permViewGuildInsights	dimscord/constants.html#permViewGuildInsights	PermEnum.permViewGuildInsights	
+permVoiceConnect	dimscord/constants.html#permVoiceConnect	PermEnum.permVoiceConnect	
+permVoiceSpeak	dimscord/constants.html#permVoiceSpeak	PermEnum.permVoiceSpeak	
+permVoiceMuteMembers	dimscord/constants.html#permVoiceMuteMembers	PermEnum.permVoiceMuteMembers	
+permVoiceDeafenMembers	dimscord/constants.html#permVoiceDeafenMembers	PermEnum.permVoiceDeafenMembers	
+permVoiceMoveMembers	dimscord/constants.html#permVoiceMoveMembers	PermEnum.permVoiceMoveMembers	
+permUseVAD	dimscord/constants.html#permUseVAD	PermEnum.permUseVAD	
+permChangeNickname	dimscord/constants.html#permChangeNickname	PermEnum.permChangeNickname	
+permManageNicknames	dimscord/constants.html#permManageNicknames	PermEnum.permManageNicknames	
+permManageRoles	dimscord/constants.html#permManageRoles	PermEnum.permManageRoles	
+permManageWebhooks	dimscord/constants.html#permManageWebhooks	PermEnum.permManageWebhooks	
+permManageEmojis	dimscord/constants.html#permManageEmojis	PermEnum.permManageEmojis	
+PermEnum	dimscord/constants.html#PermEnum	constants: PermEnum	
+giGuilds	dimscord/constants.html#giGuilds	GatewayIntent.giGuilds	
+giGuildMembers	dimscord/constants.html#giGuildMembers	GatewayIntent.giGuildMembers	
+giGuildBans	dimscord/constants.html#giGuildBans	GatewayIntent.giGuildBans	
+giGuildEmojis	dimscord/constants.html#giGuildEmojis	GatewayIntent.giGuildEmojis	
+giGuildIntegrations	dimscord/constants.html#giGuildIntegrations	GatewayIntent.giGuildIntegrations	
+giGuildWebhooks	dimscord/constants.html#giGuildWebhooks	GatewayIntent.giGuildWebhooks	
+giGuildInvites	dimscord/constants.html#giGuildInvites	GatewayIntent.giGuildInvites	
+giGuildVoiceStates	dimscord/constants.html#giGuildVoiceStates	GatewayIntent.giGuildVoiceStates	
+giGuildPresences	dimscord/constants.html#giGuildPresences	GatewayIntent.giGuildPresences	
+giGuildMessages	dimscord/constants.html#giGuildMessages	GatewayIntent.giGuildMessages	
+giGuildMessageReactions	dimscord/constants.html#giGuildMessageReactions	GatewayIntent.giGuildMessageReactions	
+giGuildMessageTyping	dimscord/constants.html#giGuildMessageTyping	GatewayIntent.giGuildMessageTyping	
+giDirectMessages	dimscord/constants.html#giDirectMessages	GatewayIntent.giDirectMessages	
+giDirectMessageReactions	dimscord/constants.html#giDirectMessageReactions	GatewayIntent.giDirectMessageReactions	
+giDirectMessageTyping	dimscord/constants.html#giDirectMessageTyping	GatewayIntent.giDirectMessageTyping	
+GatewayIntent	dimscord/constants.html#GatewayIntent	constants: GatewayIntent	
+alcString	dimscord/constants.html#alcString	AuditLogChangeKind.alcString	
+alcInt	dimscord/constants.html#alcInt	AuditLogChangeKind.alcInt	
+alcBool	dimscord/constants.html#alcBool	AuditLogChangeKind.alcBool	
+alcRoles	dimscord/constants.html#alcRoles	AuditLogChangeKind.alcRoles	
+alcOverwrites	dimscord/constants.html#alcOverwrites	AuditLogChangeKind.alcOverwrites	
+alcNil	dimscord/constants.html#alcNil	AuditLogChangeKind.alcNil	
+AuditLogChangeKind	dimscord/constants.html#AuditLogChangeKind	constants: AuditLogChangeKind	
+afInstance	dimscord/constants.html#afInstance	ActivityFlags.afInstance	
+afJoin	dimscord/constants.html#afJoin	ActivityFlags.afJoin	
+afSpectate	dimscord/constants.html#afSpectate	ActivityFlags.afSpectate	
+afJoinRequest	dimscord/constants.html#afJoinRequest	ActivityFlags.afJoinRequest	
+afSync	dimscord/constants.html#afSync	ActivityFlags.afSync	
+afPlay	dimscord/constants.html#afPlay	ActivityFlags.afPlay	
+ActivityFlags	dimscord/constants.html#ActivityFlags	constants: ActivityFlags	
+libName	dimscord/constants.html#libName	constants: libName	
+libVer	dimscord/constants.html#libVer	constants: libVer	
+libAgent	dimscord/constants.html#libAgent	constants: libAgent	
+cdnBase	dimscord/constants.html#cdnBase	constants: cdnBase	
+restBase	dimscord/constants.html#restBase	constants: restBase	
+cdnCustomEmojis	dimscord/constants.html#cdnCustomEmojis	constants: cdnCustomEmojis	
+cdnAttachments	dimscord/constants.html#cdnAttachments	constants: cdnAttachments	
+cdnAvatars	dimscord/constants.html#cdnAvatars	constants: cdnAvatars	
+cdnIcons	dimscord/constants.html#cdnIcons	constants: cdnIcons	
+cdnSplashes	dimscord/constants.html#cdnSplashes	constants: cdnSplashes	
+cdnChannelIcons	dimscord/constants.html#cdnChannelIcons	constants: cdnChannelIcons	
+cdnTeamIcons	dimscord/constants.html#cdnTeamIcons	constants: cdnTeamIcons	
+cdnAppAssets	dimscord/constants.html#cdnAppAssets	constants: cdnAppAssets	
+cdnDiscoverySplashes	dimscord/constants.html#cdnDiscoverySplashes	constants: cdnDiscoverySplashes	
+cdnDefaultUserAvatars	dimscord/constants.html#cdnDefaultUserAvatars	constants: cdnDefaultUserAvatars	
+cdnAppIcons	dimscord/constants.html#cdnAppIcons	constants: cdnAppIcons	
+mtDefault	dimscord/constants.html#mtDefault	constants: mtDefault	
+mtRecipientAdd	dimscord/constants.html#mtRecipientAdd	constants: mtRecipientAdd	
+mtRecipientRemove	dimscord/constants.html#mtRecipientRemove	constants: mtRecipientRemove	
+mtCall	dimscord/constants.html#mtCall	constants: mtCall	
+mtChannelNameChange	dimscord/constants.html#mtChannelNameChange	constants: mtChannelNameChange	
+mtChannelIconChange	dimscord/constants.html#mtChannelIconChange	constants: mtChannelIconChange	
+mtChannelPinnedMessage	dimscord/constants.html#mtChannelPinnedMessage	constants: mtChannelPinnedMessage	
+mtGuildMemberJoin	dimscord/constants.html#mtGuildMemberJoin	constants: mtGuildMemberJoin	
+mtUserGuildBoost	dimscord/constants.html#mtUserGuildBoost	constants: mtUserGuildBoost	
+mtUserGuildBoostTier1	dimscord/constants.html#mtUserGuildBoostTier1	constants: mtUserGuildBoostTier1	
+mtUserGuildBoostTier2	dimscord/constants.html#mtUserGuildBoostTier2	constants: mtUserGuildBoostTier2	
+mtUserGuildBoostTier3	dimscord/constants.html#mtUserGuildBoostTier3	constants: mtUserGuildBoostTier3	
+mtChannelFollowAdd	dimscord/constants.html#mtChannelFollowAdd	constants: mtChannelFollowAdd	
+matJoin	dimscord/constants.html#matJoin	constants: matJoin	
+matSpectate	dimscord/constants.html#matSpectate	constants: matSpectate	
+matListen	dimscord/constants.html#matListen	constants: matListen	
+matJoinRequest	dimscord/constants.html#matJoinRequest	constants: matJoinRequest	
+ctGuildText	dimscord/constants.html#ctGuildText	constants: ctGuildText	
+ctDirect	dimscord/constants.html#ctDirect	constants: ctDirect	
+ctGuildVoice	dimscord/constants.html#ctGuildVoice	constants: ctGuildVoice	
+ctGroupDM	dimscord/constants.html#ctGroupDM	constants: ctGroupDM	
+ctGuildParent	dimscord/constants.html#ctGuildParent	constants: ctGuildParent	
+ctGuildNews	dimscord/constants.html#ctGuildNews	constants: ctGuildNews	
+ctGuildStore	dimscord/constants.html#ctGuildStore	constants: ctGuildStore	
+mnlAllMessages	dimscord/constants.html#mnlAllMessages	constants: mnlAllMessages	
+mnlOnlyMentions	dimscord/constants.html#mnlOnlyMentions	constants: mnlOnlyMentions	
+ecfDisabled	dimscord/constants.html#ecfDisabled	constants: ecfDisabled	
+ecfMembersWithoutRoles	dimscord/constants.html#ecfMembersWithoutRoles	constants: ecfMembersWithoutRoles	
+ecfAllMembers	dimscord/constants.html#ecfAllMembers	constants: ecfAllMembers	
+mfaNone	dimscord/constants.html#mfaNone	constants: mfaNone	
+mfaElevated	dimscord/constants.html#mfaElevated	constants: mfaElevated	
+vlNone	dimscord/constants.html#vlNone	constants: vlNone	
+vlLow	dimscord/constants.html#vlLow	constants: vlLow	
+vlMedium	dimscord/constants.html#vlMedium	constants: vlMedium	
+vlHigh	dimscord/constants.html#vlHigh	constants: vlHigh	
+vlVeryHigh	dimscord/constants.html#vlVeryHigh	constants: vlVeryHigh	
+ptNone	dimscord/constants.html#ptNone	constants: ptNone	
+ptTier1	dimscord/constants.html#ptTier1	constants: ptTier1	
+ptTier2	dimscord/constants.html#ptTier2	constants: ptTier2	
+ptTier3	dimscord/constants.html#ptTier3	constants: ptTier3	
+gatPlaying	dimscord/constants.html#gatPlaying	constants: gatPlaying	
+gatSteaming	dimscord/constants.html#gatSteaming	constants: gatSteaming	
+gatListening	dimscord/constants.html#gatListening	constants: gatListening	
+gatWatching	dimscord/constants.html#gatWatching	constants: gatWatching	
+gatCustom	dimscord/constants.html#gatCustom	constants: gatCustom	
+whIncoming	dimscord/constants.html#whIncoming	constants: whIncoming	
+whFollower	dimscord/constants.html#whFollower	constants: whFollower	
+iebRemoveRole	dimscord/constants.html#iebRemoveRole	constants: iebRemoveRole	
+iebKick	dimscord/constants.html#iebKick	constants: iebKick	
+aleGuildUpdate	dimscord/constants.html#aleGuildUpdate	constants: aleGuildUpdate	
+aleChannelCreate	dimscord/constants.html#aleChannelCreate	constants: aleChannelCreate	
+aleChannelUpdate	dimscord/constants.html#aleChannelUpdate	constants: aleChannelUpdate	
+aleChannelDelete	dimscord/constants.html#aleChannelDelete	constants: aleChannelDelete	
+aleChannelOverwriteCreate	dimscord/constants.html#aleChannelOverwriteCreate	constants: aleChannelOverwriteCreate	
+aleChannelOverwriteUpdate	dimscord/constants.html#aleChannelOverwriteUpdate	constants: aleChannelOverwriteUpdate	
+aleChannelOverwriteDelete	dimscord/constants.html#aleChannelOverwriteDelete	constants: aleChannelOverwriteDelete	
+aleMemberKick	dimscord/constants.html#aleMemberKick	constants: aleMemberKick	
+aleMemberPrune	dimscord/constants.html#aleMemberPrune	constants: aleMemberPrune	
+aleMemberBanAdd	dimscord/constants.html#aleMemberBanAdd	constants: aleMemberBanAdd	
+aleMemberBanRemove	dimscord/constants.html#aleMemberBanRemove	constants: aleMemberBanRemove	
+aleMemberUpdate	dimscord/constants.html#aleMemberUpdate	constants: aleMemberUpdate	
+aleMemberRoleUpdate	dimscord/constants.html#aleMemberRoleUpdate	constants: aleMemberRoleUpdate	
+aleMemberMove	dimscord/constants.html#aleMemberMove	constants: aleMemberMove	
+aleMemberDisconnect	dimscord/constants.html#aleMemberDisconnect	constants: aleMemberDisconnect	
+aleBotAdd	dimscord/constants.html#aleBotAdd	constants: aleBotAdd	
+aleRoleCreate	dimscord/constants.html#aleRoleCreate	constants: aleRoleCreate	
+aleRoleUpdate	dimscord/constants.html#aleRoleUpdate	constants: aleRoleUpdate	
+aleRoleDelete	dimscord/constants.html#aleRoleDelete	constants: aleRoleDelete	
+aleInviteCreate	dimscord/constants.html#aleInviteCreate	constants: aleInviteCreate	
+aleInviteUpdate	dimscord/constants.html#aleInviteUpdate	constants: aleInviteUpdate	
+aleInviteDelete	dimscord/constants.html#aleInviteDelete	constants: aleInviteDelete	
+aleWebhookCreate	dimscord/constants.html#aleWebhookCreate	constants: aleWebhookCreate	
+aleWebhookUpdate	dimscord/constants.html#aleWebhookUpdate	constants: aleWebhookUpdate	
+aleWebhookDelete	dimscord/constants.html#aleWebhookDelete	constants: aleWebhookDelete	
+aleEmojiCreate	dimscord/constants.html#aleEmojiCreate	constants: aleEmojiCreate	
+aleEmojiUpdate	dimscord/constants.html#aleEmojiUpdate	constants: aleEmojiUpdate	
+aleEmojiDelete	dimscord/constants.html#aleEmojiDelete	constants: aleEmojiDelete	
+aleMessageDelete	dimscord/constants.html#aleMessageDelete	constants: aleMessageDelete	
+aleMessageBulkDelete	dimscord/constants.html#aleMessageBulkDelete	constants: aleMessageBulkDelete	
+aleMessagePin	dimscord/constants.html#aleMessagePin	constants: aleMessagePin	
+aleMessageUnpin	dimscord/constants.html#aleMessageUnpin	constants: aleMessageUnpin	
+aleIntegrationCreate	dimscord/constants.html#aleIntegrationCreate	constants: aleIntegrationCreate	
+aleIntegrationUpdate	dimscord/constants.html#aleIntegrationUpdate	constants: aleIntegrationUpdate	
+aleIntegrationDelete	dimscord/constants.html#aleIntegrationDelete	constants: aleIntegrationDelete	
+tmsInvited	dimscord/constants.html#tmsInvited	constants: tmsInvited	
+tmsAccepted	dimscord/constants.html#tmsAccepted	constants: tmsAccepted	
+permAllText	dimscord/constants.html#permAllText	constants: permAllText	
+permAllVoice	dimscord/constants.html#permAllVoice	constants: permAllVoice	
+permAllChannel	dimscord/constants.html#permAllChannel	constants: permAllChannel	
+permAll	dimscord/constants.html#permAll	constants: permAll	
+log	dimscord/constants.html#log,string,	constants: log(msg: string; info: tuple)	
+log	dimscord/constants.html#log,string	constants: log(msg: string)	
+endpointUsers	dimscord/constants.html#endpointUsers,string	constants: endpointUsers(uid = &quot;@me&quot;): string	
+endpointUserChannels	dimscord/constants.html#endpointUserChannels	constants: endpointUserChannels(): string	
+endpointVoiceRegions	dimscord/constants.html#endpointVoiceRegions	constants: endpointVoiceRegions(): string	
+endpointUserGuilds	dimscord/constants.html#endpointUserGuilds,string	constants: endpointUserGuilds(gid: string): string	
+endpointChannels	dimscord/constants.html#endpointChannels,string	constants: endpointChannels(cid = &quot;&quot;): string	
+endpointGuilds	dimscord/constants.html#endpointGuilds,string	constants: endpointGuilds(gid = &quot;&quot;): string	
+endpointGuildPreview	dimscord/constants.html#endpointGuildPreview,string	constants: endpointGuildPreview(gid: string): string	
+endpointGuildRegions	dimscord/constants.html#endpointGuildRegions,string	constants: endpointGuildRegions(gid: string): string	
+endpointGuildAuditLogs	dimscord/constants.html#endpointGuildAuditLogs,string	constants: endpointGuildAuditLogs(gid: string): string	
+endpointGuildMembers	dimscord/constants.html#endpointGuildMembers,string,string	constants: endpointGuildMembers(gid: string; mid = &quot;&quot;): string	
+endpointGuildMembersNick	dimscord/constants.html#endpointGuildMembersNick,string,string	constants: endpointGuildMembersNick(gid: string; mid = &quot;@me&quot;): string	
+endpointGuildMembersRole	dimscord/constants.html#endpointGuildMembersRole,string,string,string	constants: endpointGuildMembersRole(gid, mid, rid: string): string	
+endpointGuildIntegrations	dimscord/constants.html#endpointGuildIntegrations,string,string	constants: endpointGuildIntegrations(gid: string; iid = &quot;&quot;): string	
+endpointGuildIntegrationsSync	dimscord/constants.html#endpointGuildIntegrationsSync,string,string	constants: endpointGuildIntegrationsSync(gid, iid: string): string	
+endpointGuildEmbed	dimscord/constants.html#endpointGuildEmbed,string	constants: endpointGuildEmbed(gid: string): string	
+endpointGuildEmojis	dimscord/constants.html#endpointGuildEmojis,string,string	constants: endpointGuildEmojis(gid: string; eid = &quot;&quot;): string	
+endpointGuildRoles	dimscord/constants.html#endpointGuildRoles,string,string	constants: endpointGuildRoles(gid: string; rid = &quot;&quot;): string	
+endpointGuildPrune	dimscord/constants.html#endpointGuildPrune,string	constants: endpointGuildPrune(gid: string): string	
+endpointInvites	dimscord/constants.html#endpointInvites,string	constants: endpointInvites(code = &quot;&quot;): string	
+endpointGuildInvites	dimscord/constants.html#endpointGuildInvites,string	constants: endpointGuildInvites(gid: string): string	
+endpointGuildVanity	dimscord/constants.html#endpointGuildVanity,string	constants: endpointGuildVanity(gid: string): string	
+endpointGuildChannels	dimscord/constants.html#endpointGuildChannels,string,string	constants: endpointGuildChannels(gid: string; cid = &quot;&quot;): string	
+endpointChannelOverwrites	dimscord/constants.html#endpointChannelOverwrites,string,string	constants: endpointChannelOverwrites(cid, oid: string): string	
+endpointWebhooks	dimscord/constants.html#endpointWebhooks,string	constants: endpointWebhooks(wid: string): string	
+endpointChannelWebhooks	dimscord/constants.html#endpointChannelWebhooks,string	constants: endpointChannelWebhooks(cid: string): string	
+endpointGuildWebhooks	dimscord/constants.html#endpointGuildWebhooks,string	constants: endpointGuildWebhooks(gid: string): string	
+endpointWebhookToken	dimscord/constants.html#endpointWebhookToken,string,string	constants: endpointWebhookToken(wid, tok: string): string	
+endpointWebhookTokenSlack	dimscord/constants.html#endpointWebhookTokenSlack,string,string	constants: endpointWebhookTokenSlack(wid, tok: string): string	
+endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,string,string	constants: endpointWebhookTokenGithub(wid, tok: string): string	
+endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string	
+endpointChannelInvites	dimscord/constants.html#endpointChannelInvites,string	constants: endpointChannelInvites(cid: string): string	
+endpointChannelPermissions	dimscord/constants.html#endpointChannelPermissions,string,string	constants: endpointChannelPermissions(cid, oid: string): string	
+endpointGuildBans	dimscord/constants.html#endpointGuildBans,string,string	constants: endpointGuildBans(gid: string; uid = &quot;&quot;): string	
+endpointBulkDeleteMessages	dimscord/constants.html#endpointBulkDeleteMessages,string	constants: endpointBulkDeleteMessages(cid: string): string	
+endpointTriggerTyping	dimscord/constants.html#endpointTriggerTyping,string	constants: endpointTriggerTyping(cid: string): string	
+endpointChannelPins	dimscord/constants.html#endpointChannelPins,string,string	constants: endpointChannelPins(cid: string; mid = &quot;&quot;): string	
+endpointGroupRecipient	dimscord/constants.html#endpointGroupRecipient,string,string	constants: endpointGroupRecipient(cid, rid: string): string	
+endpointReactions	dimscord/constants.html#endpointReactions,string,string,string,string	constants: endpointReactions(cid, mid: string; e, uid = &quot;&quot;): string	
+endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	constants: endpointOAuth2Application(): string	

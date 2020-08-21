@@ -1,0 +1,89 @@
+DiscordClient	dimscord/objects.html#DiscordClient	objects: DiscordClient	
+Shard	dimscord/objects.html#Shard	objects: Shard	
+CacheTable	dimscord/objects.html#CacheTable	objects: CacheTable	
+CacheTablePrefs	dimscord/objects.html#CacheTablePrefs	objects: CacheTablePrefs	
+CacheError	dimscord/objects.html#CacheError	objects: CacheError	
+Embed	dimscord/objects.html#Embed	objects: Embed	
+EmbedThumbnail	dimscord/objects.html#EmbedThumbnail	objects: EmbedThumbnail	
+EmbedVideo	dimscord/objects.html#EmbedVideo	objects: EmbedVideo	
+EmbedImage	dimscord/objects.html#EmbedImage	objects: EmbedImage	
+EmbedProvider	dimscord/objects.html#EmbedProvider	objects: EmbedProvider	
+EmbedAuthor	dimscord/objects.html#EmbedAuthor	objects: EmbedAuthor	
+EmbedFooter	dimscord/objects.html#EmbedFooter	objects: EmbedFooter	
+EmbedField	dimscord/objects.html#EmbedField	objects: EmbedField	
+MentionChannel	dimscord/objects.html#MentionChannel	objects: MentionChannel	
+MessageReference	dimscord/objects.html#MessageReference	objects: MessageReference	
+Message	dimscord/objects.html#Message	objects: Message	
+User	dimscord/objects.html#User	objects: User	
+Member	dimscord/objects.html#Member	objects: Member	
+Attachment	dimscord/objects.html#Attachment	objects: Attachment	
+Reaction	dimscord/objects.html#Reaction	objects: Reaction	
+Emoji	dimscord/objects.html#Emoji	objects: Emoji	
+Application	dimscord/objects.html#Application	objects: Application	
+RestApi	dimscord/objects.html#RestApi	objects: RestApi	
+Ratelimit	dimscord/objects.html#Ratelimit	objects: Ratelimit	
+UnavailableGuild	dimscord/objects.html#UnavailableGuild	objects: UnavailableGuild	
+Ready	dimscord/objects.html#Ready	objects: Ready	
+DMChannel	dimscord/objects.html#DMChannel	objects: DMChannel	
+GuildChannel	dimscord/objects.html#GuildChannel	objects: GuildChannel	
+GameAssets	dimscord/objects.html#GameAssets	objects: GameAssets	
+GameActivity	dimscord/objects.html#GameActivity	objects: GameActivity	
+Presence	dimscord/objects.html#Presence	objects: Presence	
+Guild	dimscord/objects.html#Guild	objects: Guild	
+VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
+Role	dimscord/objects.html#Role	objects: Role	
+GameStatus	dimscord/objects.html#GameStatus	objects: GameStatus	
+Overwrite	dimscord/objects.html#Overwrite	objects: Overwrite	
+PermObj	dimscord/objects.html#PermObj	objects: PermObj	
+PartialGuild	dimscord/objects.html#PartialGuild	objects: PartialGuild	
+PartialChannel	dimscord/objects.html#PartialChannel	objects: PartialChannel	
+Channel	dimscord/objects.html#Channel	objects: Channel	
+TeamMember	dimscord/objects.html#TeamMember	objects: TeamMember	
+Team	dimscord/objects.html#Team	objects: Team	
+OAuth2Application	dimscord/objects.html#OAuth2Application	objects: OAuth2Application	
+Invite	dimscord/objects.html#Invite	objects: Invite	
+InviteMetadata	dimscord/objects.html#InviteMetadata	objects: InviteMetadata	
+InviteCreate	dimscord/objects.html#InviteCreate	objects: InviteCreate	
+TypingStart	dimscord/objects.html#TypingStart	objects: TypingStart	
+GuildMembersChunk	dimscord/objects.html#GuildMembersChunk	objects: GuildMembersChunk	
+GuildBan	dimscord/objects.html#GuildBan	objects: GuildBan	
+Webhook	dimscord/objects.html#Webhook	objects: Webhook	
+Integration	dimscord/objects.html#Integration	objects: Integration	
+GuildPreview	dimscord/objects.html#GuildPreview	objects: GuildPreview	
+VoiceRegion	dimscord/objects.html#VoiceRegion	objects: VoiceRegion	
+AuditLogOptions	dimscord/objects.html#AuditLogOptions	objects: AuditLogOptions	
+AuditLogChangeValue	dimscord/objects.html#AuditLogChangeValue	objects: AuditLogChangeValue	
+AuditLogEntry	dimscord/objects.html#AuditLogEntry	objects: AuditLogEntry	
+AuditLog	dimscord/objects.html#AuditLog	objects: AuditLog	
+GatewaySession	dimscord/objects.html#GatewaySession	objects: GatewaySession	
+GatewayBot	dimscord/objects.html#GatewayBot	objects: GatewayBot	
+Events	dimscord/objects.html#Events	objects: Events	
+kind	dimscord/objects.html#kind,CacheTable,string	objects: kind(c: CacheTable; channel_id: string): int	
+clear	dimscord/objects.html#clear,CacheTable	objects: clear(c: CacheTable)	
+`$`	dimscord/objects.html#$,Emoji	objects: `$`(e: Emoji): string	
+newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
+newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	objects: newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient	
+newInviteMetadata	dimscord/objects.html#newInviteMetadata,JsonNode	objects: newInviteMetadata(data: JsonNode): InviteMetadata	
+newOverwrite	dimscord/objects.html#newOverwrite,JsonNode	objects: newOverwrite(data: JsonNode): Overwrite	
+newRole	dimscord/objects.html#newRole,JsonNode	objects: newRole(data: JsonNode): Role	
+newGuildChannel	dimscord/objects.html#newGuildChannel,JsonNode	objects: newGuildChannel(data: JsonNode): GuildChannel	
+newUser	dimscord/objects.html#newUser,JsonNode	objects: newUser(data: JsonNode): User	
+newWebhook	dimscord/objects.html#newWebhook,JsonNode	objects: newWebhook(data: JsonNode): Webhook	
+newGuildBan	dimscord/objects.html#newGuildBan,JsonNode	objects: newGuildBan(data: JsonNode): GuildBan	
+newDMChannel	dimscord/objects.html#newDMChannel,JsonNode	objects: newDMChannel(data: JsonNode): DMChannel	
+newInvite	dimscord/objects.html#newInvite,JsonNode	objects: newInvite(data: JsonNode): Invite	
+newInviteCreate	dimscord/objects.html#newInviteCreate,JsonNode	objects: newInviteCreate(data: JsonNode): InviteCreate	
+newReady	dimscord/objects.html#newReady,JsonNode	objects: newReady(data: JsonNode): Ready	
+newVoiceState	dimscord/objects.html#newVoiceState,JsonNode	objects: newVoiceState(data: JsonNode): VoiceState	
+newEmoji	dimscord/objects.html#newEmoji,JsonNode	objects: newEmoji(data: JsonNode): Emoji	
+newGameActivity	dimscord/objects.html#newGameActivity,JsonNode	objects: newGameActivity(data: JsonNode): GameActivity	
+newPresence	dimscord/objects.html#newPresence,JsonNode	objects: newPresence(data: JsonNode): Presence	
+newMember	dimscord/objects.html#newMember,JsonNode	objects: newMember(data: JsonNode): Member	
+newTypingStart	dimscord/objects.html#newTypingStart,JsonNode	objects: newTypingStart(data: JsonNode): TypingStart	
+newGuildMembersChunk	dimscord/objects.html#newGuildMembersChunk,JsonNode	objects: newGuildMembersChunk(data: JsonNode): GuildMembersChunk	
+newReaction	dimscord/objects.html#newReaction,JsonNode	objects: newReaction(data: JsonNode): Reaction	
+updateMessage	dimscord/objects.html#updateMessage,Message,JsonNode	objects: updateMessage(m: Message; data: JsonNode): Message	
+newMessage	dimscord/objects.html#newMessage,JsonNode	objects: newMessage(data: JsonNode): Message	
+newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	objects: newAuditLog(data: JsonNode): AuditLog	
+newOAuth2Application	dimscord/objects.html#newOAuth2Application,JsonNode	objects: newOAuth2Application(data: JsonNode): OAuth2Application	
+newGuild	dimscord/objects.html#newGuild,JsonNode	objects: newGuild(data: JsonNode): Guild	

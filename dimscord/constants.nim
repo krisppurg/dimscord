@@ -133,7 +133,7 @@ const
     ptTier3* = 3
 
     gatPlaying* = 0
-    gatSteaming* = 1
+    gatStreaming* = 1
     gatListening* = 2
     gatWatching* = 3 # shhhh, this is a secret
     gatCustom* = 4

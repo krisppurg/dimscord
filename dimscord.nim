@@ -50,7 +50,7 @@
 ## 
 ## - [asyncdispatch](https://nim-lang.org/docs/asyncdispatch.html) This one is needed.
 ## - [options](https://nim-lang.org/docs/options.html) Optional parameters.
-## - [base64`](https://nim-lang.org/docs/base64.html) File sending.
+## - [base64](https://nim-lang.org/docs/base64.html) File sending.
 ## - [json](https://nim-lang.org/docs/json.html) Raw data handling (`on_dispatch`)
 
 import dimscord/[gateway, restapi, constants, objects, misc]

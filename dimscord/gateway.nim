@@ -174,8 +174,8 @@ proc resume(s: Shard) {.async.} =
         "seq": s.sequence
     })
 
-proc requestGuildMembers*(s: Shard, guild_id: seq[string];
-        limit: int; query, nonce = "";
+proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
+        limit = none int; query = none string; nonce = "";
         presences = false; user_ids: seq[string] = @[]) {.async.} =
     ## Requests the offline members to a guild.
     ## (See: https://discord.com/developers/docs/topics/gateway#request-guild-members)
@@ -186,10 +186,12 @@ proc requestGuildMembers*(s: Shard, guild_id: seq[string];
 
     let payload = %*{
         "guild_id": guild_id,
-        "query": query,
-        "limit": limit,
         "presences": presences
     }
+    if query.isSome:
+        payload["query"] = %query
+    if limit.isSome:
+        payload["limit"] = %limit
     if user_ids.len > 0:
         payload["user_ids"] = %user_ids
     if nonce != "":

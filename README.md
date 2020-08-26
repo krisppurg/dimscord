@@ -61,10 +61,10 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
         # Sends a messge with embed.
         discard await discord.api.sendMessage(
             m.channel_id,
-            embed = some Embed(
-                title: some "Hello there!", 
-                description: some "This is description",
-                color: some 0x7789ec
+            embed = Embed(
+                title: "Hello there!", 
+                description: "This is description",
+                color: 0x7789ec
             )
         )
 

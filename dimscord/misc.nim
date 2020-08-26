@@ -211,3 +211,7 @@ proc stripMentions*(m: Message): string =
     else:
         for chan in m.mention_channels:
             result = result.replace(re"<#\d{17,19}>", "#" & chan.name)
+
+converter toOption*[T](value: T): Option[T] =
+    ## Automatically converts a value to an `Option[T]` when needed.
+    return some value

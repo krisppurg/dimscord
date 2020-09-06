@@ -104,6 +104,8 @@ type
     User* = ref object
         id*, username*, discriminator*: string
         bot*, system*: bool
+        premium_type*, flags*: Option[int]
+        public_flags*: Option[int]
         avatar*: Option[string]
     Member* = ref object
         user*: User
@@ -185,6 +187,7 @@ type
     Guild* = ref object
         id*, name*, owner_id*: string
         region*, preferred_locale*: string
+        permissions_new*: Option[string]
         description*, banner*: Option[string]
         public_updates_channel_id*: Option[string]
         icon*, splash*, discovery_splash*: Option[string]
@@ -211,7 +214,7 @@ type
         deaf*, mute*, suppress*: bool
         self_deaf*, self_mute*, self_stream*: bool
     Role* = object
-        id*, name*: string
+        id*, name*, permissions_new*: string
         color*, position*, permissions*: int
         hoist*, managed*, mentionable*: bool
     GameStatus* = object
@@ -222,6 +225,7 @@ type
     Overwrite* = object
         id*, kind*: string
         allow*, deny*: int
+        allow_new*, deny_new*: string
         permObj*: PermObj
     PermObj* = object
         allowed*, denied*: set[PermEnum]
@@ -595,7 +599,9 @@ proc newOverwrite*(data: JsonNode): Overwrite =
         id: data["id"].str,
         kind: data["type"].str,
         allow: data["allow"].getInt,
-        deny: data["deny"].getInt
+        deny: data["deny"].getInt,
+        allow_new: data["allow_new"].str,
+        deny_new: data["deny_new"].str
     )
 
     if result.allow != 0:
@@ -612,6 +618,7 @@ proc newRole*(data: JsonNode): Role =
         hoist: data["hoist"].bval,
         position: data["position"].getInt,
         permissions: data["permissions"].getInt,
+        permissions_new: data["permissions_new"].str,
         managed: data["managed"].bval,
         mentionable: data["mentionable"].bval
     )
@@ -659,6 +666,7 @@ proc newUser*(data: JsonNode): User =
     )
 
     data.keyCheckOptStr(result, avatar)
+    data.keyCheckOptInt(result, public_flags)
 
 proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
@@ -1124,8 +1132,9 @@ proc newGuild*(data: JsonNode): Guild =
         premium_subscription_count, max_presences, approximate_member_count,
         approximate_presence_count, max_video_channel_uses)
     data.keyCheckOptStr(result, joined_at, icon, splash, afk_channel_id,
-        application_id, system_channel_id, vanity_url_code, discovery_splash,
-        description, banner, widget_channel_id, public_updates_channel_id)
+        permissions_new, application_id, system_channel_id, vanity_url_code,
+        discovery_splash, description, banner, widget_channel_id,
+        public_updates_channel_id)
     data.keyCheckOptBool(result, large, unavailable)
 
     for m in data{"members"}.getElems:

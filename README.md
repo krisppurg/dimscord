@@ -11,7 +11,7 @@ Why Dimscord?
  * What is Nim?
    * Nim is a statically-typed programming language (older than go and rust) that compiles to C/C++/JavaScript.
    It is similar to Python, easier to learn and it's flexible. [You can read it more in the official website for Nim.](https://nim-lang.org)
- * Why even use Nim for discord bots?
+ * Why use Nim for discord bots?
    * Since it's easier to learn, it's more faster than any other interpreted languages,
     which is beneficial, for larger discord bots, so they could run faster.
     [You can read the Nim FAQ here](https://nim-lang.org/faq.html)

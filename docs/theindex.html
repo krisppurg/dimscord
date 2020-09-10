@@ -484,9 +484,9 @@ function main() {
 <dt><a name="createGuildRole" href="#createGuildRole"><span>createGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
-                hoist, mentionable = false; pobj: PermObj; color = 0; reason = &quot;&quot;): Future[
+                hoist, mentionable = false; permissions: PermObj; color = 0; reason = &quot;&quot;): Future[
     Role]" href="dimscord/restapi.html#createGuildRole%2CRestApi%2Cstring%2Cstring%2CPermObj%2Cint%2Cstring">restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
-                hoist, mentionable = false; pobj: PermObj; color = 0; reason = &quot;&quot;): Future[
+                hoist, mentionable = false; permissions: PermObj; color = 0; reason = &quot;&quot;): Future[
     Role]</a></li>
           </ul></dd>
 <dt><a name="createUserDm" href="#createUserDm"><span>createUserDm:</span></a></dt><dd><ul class="simple">
@@ -704,10 +704,10 @@ function main() {
 <dt><a name="editGuildRole" href="#editGuildRole"><span>editGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
-              pobj = none PermObj; color = none int; hoist, mentionable = none bool;
-              reason = &quot;&quot;): Future[Role]" href="dimscord/restapi.html#editGuildRole%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
-              pobj = none PermObj; color = none int; hoist, mentionable = none bool;
-              reason = &quot;&quot;): Future[Role]</a></li>
+              permissions = none PermObj; color = none int;
+              hoist, mentionable = none bool; reason = &quot;&quot;): Future[Role]" href="dimscord/restapi.html#editGuildRole%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
+              permissions = none PermObj; color = none int;
+              hoist, mentionable = none bool; reason = &quot;&quot;): Future[Role]</a></li>
           </ul></dd>
 <dt><a name="editGuildRolePosition" href="#editGuildRolePosition"><span>editGuildRolePosition:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -985,9 +985,9 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="constants: gatPlaying" href="dimscord/constants.html#gatPlaying">constants: gatPlaying</a></li>
           </ul></dd>
-<dt><a name="gatSteaming" href="#gatSteaming"><span>gatSteaming:</span></a></dt><dd><ul class="simple">
+<dt><a name="gatStreaming" href="#gatStreaming"><span>gatStreaming:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="constants: gatSteaming" href="dimscord/constants.html#gatSteaming">constants: gatSteaming</a></li>
+          data-doc-search-tag="constants: gatStreaming" href="dimscord/constants.html#gatStreaming">constants: gatStreaming</a></li>
           </ul></dd>
 <dt><a name="gatWatching" href="#gatWatching"><span>gatWatching:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1707,9 +1707,11 @@ function main() {
           </ul></dd>
 <dt><a name="requestGuildMembers" href="#requestGuildMembers"><span>requestGuildMembers:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="gateway: requestGuildMembers(s: Shard; guild_id: seq[string]; limit: int; query, nonce = &quot;&quot;;
-                    presences = false; user_ids: seq[string] = @[]): owned(Future[void])" href="dimscord/gateway.html#requestGuildMembers%2CShard%2Cseq%5Bstring%5D%2Cint%2Cstring%2Cstring%2Cseq%5Bstring%5D">gateway: requestGuildMembers(s: Shard; guild_id: seq[string]; limit: int; query, nonce = &quot;&quot;;
-                    presences = false; user_ids: seq[string] = @[]): owned(Future[void])</a></li>
+          data-doc-search-tag="gateway: requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;
+                    query = none string; nonce = &quot;&quot;; presences = false;
+                    user_ids: seq[string] = @[]): owned(Future[void])" href="dimscord/gateway.html#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D">gateway: requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;
+                    query = none string; nonce = &quot;&quot;; presences = false;
+                    user_ids: seq[string] = @[]): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="RestApi" href="#RestApi"><span>RestApi:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1722,6 +1724,10 @@ function main() {
 <dt><a name="RestError" href="#RestError"><span>RestError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: RestError" href="dimscord/restapi.html#RestError">restapi: RestError</a></li>
+          </ul></dd>
+<dt><a name="resume" href="#resume"><span>resume:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="gateway: resume(s: Shard): owned(Future[void])" href="dimscord/gateway.html#resume%2CShard">gateway: resume(s: Shard): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="Role" href="#Role"><span>Role:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1876,7 +1882,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-21 16:58:24 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-09-10 17:47:39 UTC</small>
       </div>
     </div>
   </div>

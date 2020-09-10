@@ -1,5 +1,6 @@
 updateStatus	dimscord/gateway.html#updateStatus,Shard,string	gateway: updateStatus(s: Shard; game = none GameStatus; status = &quot;online&quot;; afk = false): owned(\n    Future[void])	
-requestGuildMembers	dimscord/gateway.html#requestGuildMembers,Shard,seq[string],int,string,string,seq[string]	gateway: requestGuildMembers(s: Shard; guild_id: seq[string]; limit: int; query, nonce = &quot;&quot;;\n                    presences = false; user_ids: seq[string] = @[]): owned(Future[void])	
+resume	dimscord/gateway.html#resume,Shard	gateway: resume(s: Shard): owned(Future[void])	
+requestGuildMembers	dimscord/gateway.html#requestGuildMembers,Shard,,string,seq[string]	gateway: requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;\n                    query = none string; nonce = &quot;&quot;; presences = false;\n                    user_ids: seq[string] = @[]): owned(Future[void])	
 voiceStateUpdate	dimscord/gateway.html#voiceStateUpdate,Shard,string	gateway: voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;\n                 self_mute, self_deaf = false): owned(Future[void])	
 disconnect	dimscord/gateway.html#disconnect,Shard	gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])	
 endSession	dimscord/gateway.html#endSession,DiscordClient	gateway: endSession(cl: DiscordClient): owned(Future[void])	

@@ -719,12 +719,12 @@ proc getGuildRoles*(api: RestApi,
 proc createGuildRole*(api: RestApi, guild_id: string;
         name = "new role";
         hoist, mentionable = false;
-        pobj: PermObj;
+        permissions: PermObj;
         color = 0; reason = ""): Future[Role] {.async.} =
     ## Creates a guild role.
     result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
         "name": name,
-        "permissions": %(pobj.perms),
+        "permissions": %(permissions.perms),
         "color": color,
         "hoist": hoist,
         "mentionable": mentionable
@@ -736,7 +736,7 @@ proc deleteGuildRole*(api: RestApi, guild_id, role_id: string) {.async.} =
 
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none string;
-            pobj = none PermObj; color = none int;
+            permissions = none PermObj; color = none int;
             hoist, mentionable = none bool;
             reason = ""): Future[Role] {.async.} =
     ## Modifies a guild role.
@@ -747,8 +747,8 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     payload.loadNullableOptStr(name)
     payload.loadNullableOptInt(color)
 
-    if pobj.isSome:
-        payload["permissions"] = %(perms(get pobj))
+    if permissions.isSome:
+        payload["permissions"] = %(perms(get permissions))
 
     result = (await api.request(
         "PATCH",

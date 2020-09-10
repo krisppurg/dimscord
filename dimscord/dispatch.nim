@@ -61,7 +61,7 @@ proc guildEmojisUpdate(s: Shard, data: JsonNode) {.async.} =
     for emoji in data["emojis"]:
         let emji = newEmoji(emoji)
         emojis.add(emji)
-        guild.emojis[emji.id] = emji
+        guild.emojis[get emji.id] = emji
 
     await s.client.events.guild_emojis_update(s, guild, emojis)
 

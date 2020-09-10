@@ -1,5 +1,5 @@
 import httpclient, ws, asyncnet, asyncdispatch
-import strformat, options, sequtils, strutils, restapi, dispatch
+import strformat, options, strutils, restapi, dispatch
 import tables, random, times, constants, objects, json, math
 import nativesockets
 
@@ -7,8 +7,6 @@ when defined(discordCompress):
     import zip/zlib
 
 randomize()
-{.hint[XDeclaredButNotUsed]: off.}
-{.warning[UnusedImport]: off.}
 
 const
     opDispatch = 0
@@ -27,7 +25,7 @@ var
     backoff = false
     reconnectable = true
 
-proc reset(s: Shard) =
+proc reset(s: Shard) {.used.} =
     s.authenticating = false
     s.resuming = false
 
@@ -81,7 +79,7 @@ proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code f
             0
     result.reason = if data.len > 2: data[2..^1] else: ""
 
-proc handleDisconnect(s: Shard, msg: string): bool =
+proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
     let closeData = extractCloseData(msg)
 
     s.logShard("Socket suspended", (
@@ -97,7 +95,7 @@ proc handleDisconnect(s: Shard, msg: string): bool =
         result = false
         log("Fatal error: " & closeData.reason)
 
-proc sockClosed(s: Shard): bool =
+proc sockClosed(s: Shard): bool {.used.} =
     return s.connection == nil or s.connection.tcpSocket.isClosed or s.stop
 
 proc updateStatus*(s: Shard, game = none GameStatus;
@@ -121,7 +119,7 @@ proc updateStatus*(s: Shard, game = none GameStatus;
 
     asyncCheck s.sendSock(opStatusUpdate, payload)
 
-proc identify(s: Shard) {.async.} =
+proc identify(s: Shard) {.async, used.} =
     if s.authenticating or s.sockClosed: return
 
     if backoff:
@@ -157,7 +155,7 @@ proc identify(s: Shard) {.async.} =
     await s.sendSock(opIdentify, payload, ignore = true)
     if s.client.max_shards > 1: await sleepAsync 5000
 
-proc resume(s: Shard) {.async.} =
+proc resume*(s: Shard) {.async.} =
     if s.authenticating or s.sockClosed: return
 
     s.authenticating = true
@@ -214,7 +212,7 @@ proc voiceStateUpdate*(s: Shard,
         "channel_id": channel_id
     })
 
-proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async.} =
+proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
     s.logShard("Received event: " & event) # please do not enable dimscordDebug while you are on a large guild.
 
     case event:
@@ -469,7 +467,7 @@ proc endSession*(cl: DiscordClient) {.async.} =
         shard.cache.clear()
 
 proc setupShard(cl: DiscordClient, i: int;
-        cache_prefs: CacheTablePrefs): Shard =
+        cache_prefs: CacheTablePrefs): Shard {.used.} =
     result = newShard(i, cl)
     cl.shards.add(i, result)
 

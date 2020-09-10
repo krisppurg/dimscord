@@ -125,7 +125,7 @@ type
         emoji*: Emoji
         reacted*: bool
     Emoji* = object
-        id*, name*: string
+        id*, name*: Option[string]
         require_colons*, managed*, animated*: Option[bool]
         user*: User
         roles*: seq[string]
@@ -178,12 +178,10 @@ type
         instance*: bool
     Presence* = object
         user*: User
-        roles*: seq[string]
         game*: Option[GameActivity]
         guild_id*, status*: string
         activities*: seq[GameActivity]
         client_status*: tuple[web, desktop, mobile: string]
-        premium_since*, nick*: Option[string]
     Guild* = ref object
         id*, name*, owner_id*: string
         region*, preferred_locale*: string
@@ -429,7 +427,10 @@ proc clear*(c: CacheTable) =
     c.dmChannels.clear()
 
 proc `$`*(e: Emoji): string =
-    result = if e.id != "": e.name & ":" & e.id else: e.name
+    result = if e.id.isSome:
+            e.name.get("?") & ":" & e.id.get
+        else:
+            e.name.get("?")
 
 macro keyCheckOptInt(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -777,16 +778,13 @@ proc newVoiceState*(data: JsonNode): VoiceState =
     data.keyCheckOptStr(result, guild_id, channel_id)
 
 proc newEmoji*(data: JsonNode): Emoji =
-    result = Emoji(name: data["name"].str)
+    result = Emoji(user: newUser(data["user"]))
 
     for r in data{"roles"}.getElems:
         result.roles.add(r.str)
 
-    data.keyCheckStr(result, id)
+    data.keyCheckOptStr(result, id, name)
     data.keyCheckOptBool(result, require_colons, managed, animated)
-
-    if "user" in data:
-        result.user = newUser(data["user"])
 
 proc newGameActivity*(data: JsonNode): GameActivity =
     result = GameActivity(
@@ -840,10 +838,6 @@ proc newPresence*(data: JsonNode): Presence =
             mobile: "offline"
         )
     )
-    data.keyCheckOptStr(result, nick, premium_since)
-
-    for role in data{"roles"}.getElems:
-        result.roles.add(role.str)
 
     for activity in data["activities"].elems:
         result.activities.add(newGameActivity(activity))

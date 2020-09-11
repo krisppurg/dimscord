@@ -15,7 +15,7 @@ proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
 
 proc iconUrl*(e: Emoji, fmt = "png"; size = 128): string =
     ## Gets an emoji's url.
-    if e.id == some("") or e.name == some(""):
+    if e.id.isNone() or e.name.isNone():
         return ""
 
     result = &"{cdnCustomEmojis}{e.id}.{fmt}?size={size}"

@@ -68,7 +68,7 @@ proc sendSock(s: Shard, opcode: int, data: JsonNode;
 
 proc waitWhenReady(s: Shard) {.async.} =
     while not s.ready:
-        await sleepAsync 500
+        await sleepAsync 500 # Incase if we get INVALID_SESSIONs.
 
 proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code from: https://github.com/niv/websocket.nim/blame/master/websocket/shared.nim#L230
     var data = data
@@ -281,11 +281,21 @@ proc reconnect(s: Shard) {.async.} =
     s.logShard("Connecting to " & $prefix & "/?v=" & $s.client.gatewayVersion)
 
     try:
-        s.connection = await newWebSocket(prefix &
+        let future = newWebSocket(prefix &
             "/?v=" & $s.client.gatewayVersion)
-        s.hbAck = true
-        s.stop = false
+
         s.reconnecting = false
+        s.stop = false
+
+        if (await withTimeout(future, 25000)) == false:
+            s.logShard("Websocket timed out.\n\n  Retrying connection...")
+
+            await s.reconnect()
+            return
+
+        s.connection = await future
+        s.hbAck = true
+
         s.retry_info.attempts = 0
         s.retry_info.ms = max(s.retry_info.ms - 5000, 1000)
 
@@ -332,6 +342,7 @@ proc heartbeat(s: Shard, requested = false) {.async.} =
     if not s.hbAck and not requested:
         s.logShard("A zombied connection has been detected.")
         await s.disconnect(should_reconnect = true)
+        await s.client.events.on_disconnect(s)
         return
 
     s.logShard("Sending heartbeat.")
@@ -351,7 +362,7 @@ proc setupHeartbeatInterval(s: Shard) {.async.} =
         if hbTime < s.interval - 8000 and s.lastHBTransmit != 0.0:
             break
 
-        asyncCheck s.heartbeat()
+        await s.heartbeat()
         await sleepAsync s.interval
 
 proc handleSocketMessage(s: Shard) {.async.} =
@@ -365,7 +376,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
         try:
             packet = await s.connection.receivePacket()
         except:
-            var exceptn = getCurrentExceptionMsg()
+            let exceptn = getCurrentExceptionMsg()
             s.logShard(
                 "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
             )
@@ -394,6 +405,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
             shouldReconnect = s.handleDisconnect(packet[1])
 
             await s.disconnect(should_reconnect = shouldReconnect)
+            await s.client.events.on_disconnect(s)
             break
 
         if data["s"].kind != JNull and not s.resuming:
@@ -420,7 +432,9 @@ proc handleSocketMessage(s: Shard) {.async.} =
             asyncCheck s.handleDispatch(data["t"].str, data["d"])
         of opReconnect:
             s.logShard("Discord is requesting for a client reconnect.")
+
             await s.disconnect(should_reconnect = shouldReconnect)
+            await s.client.events.on_disconnect(s)
         of opInvalidSession:
             var interval = 5000
 
@@ -446,16 +460,19 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 await s.identify()
         else:
             discard
+    if not reconnectable: return
+
     if packet[0] == Close:
         shouldReconnect = s.handleDisconnect(packet[1])
+        await s.client.events.on_disconnect(s)
 
     s.stop = true
-
     s.reset()
 
-    if shouldReconnect and reconnectable:
+    if shouldReconnect:
         await s.reconnect()
         await sleepAsync 2000
+
         if not s.networkError: await s.handleSocketMessage()
     else:
         return
@@ -477,9 +494,15 @@ proc startSession(s: Shard, url, query: string) {.async.} =
     s.logShard("Connecting to " & url & query)
 
     try:
-        s.connection = await newWebsocket(url & query)
+        let future = newWebsocket(url & query)
+
+        if (await withTimeout(future, 25000)) == false:
+            s.logShard("Websocket timed out.\n\n  Retrying connection...")
+            await s.startSession(url, query)
+            return
+        s.connection = await future
         s.hbAck = true
-        s.logShard("Socket is open.")
+        s.logShard("Socket opened.")
     except:
         s.stop = true
         raise newException(Exception, getCurrentExceptionMsg())

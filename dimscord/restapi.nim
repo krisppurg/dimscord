@@ -16,7 +16,7 @@ var
     fatalErr = true
     ratelimited, global = false
     global_retry_after = 0.0
-    invalid_requests, expiry = 0'i64
+    invalid_requests = 0
 
 proc `<=`(x, y: HttpCode): bool =
     result = x.int <= y.int
@@ -67,7 +67,7 @@ proc handleRoute(api: RestApi, global = false; route = "") {.async.} =
             ratelimited = false
 
 proc discordDetailedErrors(errors: JsonNode, extra = ""): seq[string] =
-    var ext = extra
+    let ext = extra
 
     case errors.kind:
     of JArray:
@@ -84,7 +84,7 @@ proc discordDetailedErrors(errors: JsonNode, extra = ""): seq[string] =
         discard
 
 proc discordErrors(data: JsonNode): string =
-    result = "[Discord Exception]:: " &
+    result = "[DiscordError]:: " &
         data["message"].str & " (" & $data["code"].getInt & ")"
 
     if "errors" in data:
@@ -106,10 +106,7 @@ proc request(api: RestApi, meth, endpoint: string;
 
     let r = api.endpoints[route]
     while r.processing:
-        if getTime().toUnix() >= expiry and expiry != 0: # if there is a hang up we do not want to wait forever.
-            r.processing = false
-            expiry = 0
-        await sleepAsync 250
+        poll()
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
@@ -169,9 +166,12 @@ proc request(api: RestApi, meth, endpoint: string;
 
             if status.is4xx:
                 if resp.headers["content-type"] == "application/json":
-                    expiry = getTime().toUnix() + (retry_header.int + 3)
-                    data = (await resp.body).parseJson
-                    expiry = 0
+                    let body = resp.body
+
+                    if (await withTimeout(body, 60_000)) == false:
+                        raise newException(RestError, "Body took too long to parse.")
+                    else:
+                        data = (await body).parseJson
 
                 case status:
                 of Http400:
@@ -215,14 +215,13 @@ proc request(api: RestApi, meth, endpoint: string;
 
         if status.is2xx:
             if resp.headers["content-type"] == "application/json":
-                try:
-                    log("Awaiting for body to be parsed")
+                log("Awaiting for body to be parsed")
+                let body = resp.body
 
-                    expiry = getTime().toUnix() + (retry_header.int + 3)
-                    data = (await resp.body).parseJson
-                    expiry = 0
-                except:
-                    raise newException(RestError, "An error occurred.")
+                if (await withTimeout(body, 60_000)) == false:
+                    raise newException(RestError, "Body took too long to parse.")
+                else:
+                    data = (await body).parseJson
             else:
                 data = nil
 

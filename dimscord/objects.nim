@@ -127,7 +127,7 @@ type
     Emoji* = object
         id*, name*: Option[string]
         require_colons*, managed*, animated*: Option[bool]
-        user*: User
+        user*: Option[User]
         roles*: seq[string]
     Application* = object
         id*, cover_image*: string
@@ -360,6 +360,7 @@ type
         ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
         on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
         on_ready*: proc (s: Shard, r: Ready) {.async.}
+        on_disconnect*: proc (s: Shard) {.async.}
         message_create*: proc (s: Shard, m: Message) {.async.}
         message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
         message_update*: proc (s: Shard, m: Message,
@@ -778,10 +779,12 @@ proc newVoiceState*(data: JsonNode): VoiceState =
     data.keyCheckOptStr(result, guild_id, channel_id)
 
 proc newEmoji*(data: JsonNode): Emoji =
-    result = Emoji(user: newUser(data["user"]))
+    result = Emoji(
+        roles: data{"roles"}.getElems.mapIt(it.str)
+    )
 
-    for r in data{"roles"}.getElems:
-        result.roles.add(r.str)
+    if "user" in data:
+        result.user = some newUser(data["user"])
 
     data.keyCheckOptStr(result, id, name)
     data.keyCheckOptBool(result, require_colons, managed, animated)

@@ -564,6 +564,7 @@ proc newDiscordClient*(token: string;
             on_dispatch: proc (s: Shard, evt: string,
                     data: JsonNode) {.async.} = discard,
             on_ready: proc (s: Shard, r: Ready) {.async.} = discard,
+            on_disconnect: proc (s: Shard) {.async.} = discard,
             message_create: proc (s: Shard, m: Message) {.async.} = discard,
             message_delete: proc (s: Shard, m: Message,
                     exists: bool) {.async.} = discard,

@@ -16,11 +16,7 @@
 ##   requesting guild members with requestGuildMembers,
 ##   joining/moving/leaving a voice channel with voiceStateUpdate.
 ## 
-##   Please note that if you are compiling with ARC or ORC, old objects
-##   will be none due to the deepCopy feature being removed, if there are
-##   alternatives to this, I'll update, if you do have alternatives,
-##   make sure you make a PR to it. You can use on_dispatch for now.
-## 
+##   Please note that if you are compiling with ARC or ORC, use `--deepCopy`.
 ## 
 ## - `restapi` Interfaces with Discord's REST API,
 ##   as this file would handle ratelimits if you receive lots of 403s or 429s,
@@ -30,9 +26,9 @@
 ##   ways to get 429s is reactions and you may get 429s, though this is
 ##   more common in other libraries, if you were to add more reactions,
 ##   I'd recommend adding some sort of cooldowns to it.
-##   (OAuth2 support will be added)
+##   (`OAuth2` support will be added)
 ## 
-## - `misc` Includes helper methods such as mentioning a user
+## - `helpers` Includes helper methods such as mentioning a user
 ##   @ify channels, users, roles, etc, this includes iconUrls too.
 ## 
 ## - `constants` Say if you were to check what verification level is the guild
@@ -42,6 +38,19 @@
 ##   If any of these types are enums and you want to compare them like
 ##   for example ActivityFlags use `cast[int]({myEnum})` e.g. `cast[int]({afSync})`
 ## 
+## - `voice` Allows you to connect to the voice gateway (Sending audio is postponed),
+##    handle voice gateway, etc.
+##
+##   For joining/leaving a voice channel, see `gateway`.
+## 
+##   **Keep in mind that:**
+##    When you join a channel `Shard.voiceConnections` will store the `guild_id`,
+##    and the VoiceClient information such as the `endpoint` and `channel_id` for example.
+##    With `VoiceClient` you can connect to the voice client gateway
+##    so you can play audio on `on_ready`.
+##
+##   For further details about `voice` click `dimscord/voice`.
+## 
 ## Modules required
 ## ===================
 ## Sometimes you would need some modules in order to use in procedures,
@@ -49,10 +58,16 @@
 ## import options to provide an Option type.
 ## 
 ## - [asyncdispatch](https://nim-lang.org/docs/asyncdispatch.html) This one is needed.
-## - [options](https://nim-lang.org/docs/options.html) Optional parameters.
-## - [base64](https://nim-lang.org/docs/base64.html) File sending.
+## - [options](https://nim-lang.org/docs/options.html) Optional parameters, e.g. `mute = some true`.
+## - [base64](https://nim-lang.org/docs/base64.html) Icons such as Guild icons or emoji image.
 ## - [json](https://nim-lang.org/docs/json.html) Raw data handling (`on_dispatch`)
+## 
+## Definable options
+## ==============
+## - `-d:dimscordDebug` For debugging rest, gateway and voice.
+## - `-d:discordCompress` For zlib compression a zlib1 file needs to be in your folder.
+## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
 
-import dimscord/[gateway, restapi, constants, objects, misc]
+import dimscord/[gateway, restapi, constants, objects, helpers, voice]
 
-export gateway, restapi, constants, objects, misc
+export gateway, restapi, constants, objects, helpers, voice

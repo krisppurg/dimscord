@@ -1,7 +1,9 @@
+## This is where you interact with the api:
+## `sendMessages`, `deleteMessages`, `getGuild`, `banGuildMember` etc.
+
 import httpclient, mimetypes, asyncdispatch, json, options, objects, constants
 import tables, regex, times, os, sequtils, strutils, strformat
-import uri, macros, random, misc
-randomize()
+import uri, macros, helpers
 
 type
     RestError* = object of CatchableError
@@ -131,7 +133,6 @@ proc request(api: RestApi, meth, endpoint: string;
 
         client.headers["Content-Type"] = "application/json"
         client.headers["Content-Length"] = $pl.len
-        client.headers["X-RateLimit-Precision"] = "millisecond"
 
         log("Making request to " & meth & " " & url, (
             size: pl.len,
@@ -262,8 +263,11 @@ proc `%`(o: Overwrite): JsonNode =
     result = newJObject()
     result["id"] = %o.id
     result["type"] = %o.kind
-    result["allow"] = %o.allow
-    result["deny"] = %o.deny
+    result["allow"] = %cast[int](o.allow)
+    result["deny"] = %cast[int](o.deny)
+
+proc `%`(flags: set[PermissionFlags]): JsonNode =
+    return %cast[int](flags)
 
 proc sendMessage*(api: RestApi, channel_id: string;
             content = ""; tts = false; embed = none Embed;
@@ -271,7 +275,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
             nonce: Option[string] or Option[int] = none(int);
             files = none seq[DiscordFile]): Future[Message] {.async.} =
     ## Sends a discord message.
-    ## * `nonce` This can be used for optimistic message sending
+    ## - `nonce` This can be used for optimistic message sending
     let payload = %*{
         "content": content,
         "tts": tts
@@ -386,7 +390,7 @@ proc addMessageReaction*(api: RestApi,
         channel_id, message_id, emoji: string) {.async.} =
     ## Adds a message reaction to a Discord message.
     ##
-    ## * `emoji` Example: '👀', '💩', `likethis:123456789012345678`
+    ## - `emoji` Example: '👀', '💩', `likethis:123456789012345678`
 
     var emj = emoji
     if emoji == decodeUrl(emoji):
@@ -552,11 +556,18 @@ proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     )
 
 proc editGuildChannelPermissions*(api: RestApi,
-        channel_id, perm_id, kind: string;
+        channel_id, perm_id, kind: string or int;
         perms: PermObj; reason = "") {.async.} =
     ## Modify the channel's permissions.
-    ## * `kind` Must be "member" or "role".
-    let payload = %*{"type": kind}
+    ## 
+    ## - `kind` Must be "role" or "member", or 0 or 1 if v8.
+    let payload = newJObject()
+
+    when kind is int and not defined(discordv8):
+        payload["type"] = %(if kind == 0: "role" else: "member") 
+
+    when kind is string and defined(discordv8):
+        payload["type"] = %(if kind == "role": 0 else: 1)
 
     if perms.allowed.len > 0:
         payload["allow"] = %(cast[int](perms.allowed))
@@ -574,7 +585,7 @@ proc getInvite*(api: RestApi, code: string;
         with_counts, auth = false): Future[Invite] {.async.} =
     ## Get's a channel invite.
     ##
-    ## * `auth` Whether you should get the invite while authenticated.
+    ## - `auth` Whether you should get the invite while authenticated.
     result = (await api.request(
         "GET",
         endpointInvites(code) & fmt"?with_counts={with_counts}",
@@ -664,7 +675,7 @@ proc createGuild*(api: RestApi, name, region = none string;
                 "name": c.name,
                 "type": c.kind
             }
-            if c.kind == ctGuildParent:
+            if c.kind == int ctGuildParent:
                 channel["id"] = %c.id
                 channel["parent_id"] = %c.parent_id
 
@@ -672,7 +683,7 @@ proc createGuild*(api: RestApi, name, region = none string;
 
     if roles.isSome:
         payload["roles"] = %[]
-        for r in roles.get:
+        for r, i in roles.get:
             payload["roles"].add(%r)
 
     result = (await api.request(
@@ -826,10 +837,18 @@ proc getGuildBans*(api: RestApi,
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays = 0; reason = "") {.async.} =
     ## Creates a guild ban.
-    discard await api.request("PUT", endpointGuildBans(guild_id, user_id), $(%*{
-        "delete-message-days": deletemsgdays,
+    let payload = %*{
         "reason": reason
-    }), audit_reason = reason)
+    }
+    when defined(discordv8):
+        payload["delete-message-days"] = %deletemsgdays
+
+    discard await api.request(
+        "PUT",
+        endpointGuildBans(guild_id, user_id),
+        $payload,
+        audit_reason = reason
+    )
 
 proc removeGuildBan*(api: RestApi,
         guild_id, user_id: string; reason = "") {.async.} =
@@ -916,10 +935,8 @@ proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
     )
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
-        max_age = 86400;
-        max_uses = 0;
-        temp, unique = false;
-        target_user = none string;
+        max_age = 86400; max_uses = 0;
+        temp, unique = false; target_user = none string;
         target_user_type = none int; reason = ""): Future[Invite] {.async.} =
     ## Creates an instant invite.
     let payload = %*{
@@ -1121,16 +1138,16 @@ proc deleteGuildIntegration*(api: RestApi, integ_id: string;
         audit_reason = reason
     )
 
-proc getGuildEmbed*(api: RestApi,
+proc getGuildWidget*(api: RestApi,
         guild_id: string): Future[tuple[enabled: bool,
                                         channel_id: Option[string]]] {.async.} =
     ## Gets a guild embed.
     result = (await api.request(
         "GET",
-        endpointGuildEmbed(guild_id)
+        endpointGuildWidget(guild_id)
     )).to(tuple[enabled: bool, channel_id: Option[string]])
 
-proc editGuildEmbed*(api: RestApi, guild_id: string,
+proc editGuildWidget*(api: RestApi, guild_id: string,
         enabled = none bool;
         channel_id = none string): Future[tuple[enabled: bool,
                                         channel_id: Option[string]]] {.async.} =
@@ -1142,7 +1159,7 @@ proc editGuildEmbed*(api: RestApi, guild_id: string,
 
     result = (await api.request(
         "PATCH",
-        endpointGuildEmbed(guild_id),
+        endpointGuildWidget(guild_id),
         $payload
     )).to(tuple[enabled: bool, channel_id: Option[string]])
 
@@ -1281,7 +1298,7 @@ proc createGroupDm*(api: RestApi,
         access_tokens: seq[string];
         nicks: Table[string, string]): Future[DMChannel] {.async.} =
     ## Creates a Group DM Channel.
-    ## * `nicks` Example: `{"2123450": "MrDude"}.toTable`
+    ## - `nicks` Example: `{"2123450": "MrDude"}.toTable`
     result = (await api.request(
         "POST",
         endpointUserChannels(),

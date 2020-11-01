@@ -22,4 +22,6 @@ proc onDispatch(s: Shard, evt: string, data: JsonNode) {.async.} =
 
 discord.events.onDispatch = onDispatch
 
-waitFor discord.startSession()
+waitFor discord.startSession(
+    gateway_intents = {giGuilds, giGuildMessages, giGuildMessageReactions}
+)

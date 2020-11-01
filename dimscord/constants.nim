@@ -1,9 +1,12 @@
+## This file contains types/enums for every discord object or permission types
+## NOTE: Every bitwise enum ends with "Flags", an exception to this,
+## is GatewayIntent.
 when defined(dimscordDebug):
     import strformat
 {.hint[XDeclaredButNotUsed]: off.}
 
 type
-    PermEnum* = enum
+    PermissionFlags* = enum
         permCreateInstantInvite = "Create Instant Invite"
         permKickMembers = "Kick Members"
         permBanMembers = "Ban Members"
@@ -51,7 +54,7 @@ type
         giDirectMessages,
         giDirectMessageReactions,
         giDirectMessageTyping
-    AuditLogChangeKind* = enum
+    AuditLogChangeType* = enum
         alcString,
         alcInt,
         alcBool,
@@ -65,9 +68,19 @@ type
         afJoinRequest,
         afSync,
         afPlay
+    VoiceSpeakingFlags* = enum
+        vsfMicrophone,
+        vsfSoundshare,
+        vsfPriority
+    MessageFlags* = enum
+        mfCrossposted,
+        mfIsCrosspost,
+        mfSupressEmbeds,
+        mfSourceMessageDeleted
+        mfUrgent
 const
     libName* = "Dimscord"
-    libVer* = "1.0.6"
+    libVer* = "1.2.0"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"
@@ -84,105 +97,108 @@ const
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAppIcons* = cdnBase & "app-icons/"
 
-    mtDefault* = 0
-    mtRecipientAdd* = 1
-    mtRecipientRemove* = 2
-    mtCall* = 3
-    mtChannelNameChange* = 4
-    mtChannelIconChange* = 5
-    mtChannelPinnedMessage* = 6
-    mtGuildMemberJoin* = 7
-    mtUserGuildBoost* = 8
-    mtUserGuildBoostTier1* = 9
-    mtUserGuildBoostTier2* = 10
-    mtUserGuildBoostTier3* = 11
-    mtChannelFollowAdd* = 12
+type
+    MessageType* = enum
+        mtDefault = 0
+        mtRecipientAdd = 1
+        mtRecipientRemove = 2
+        mtCall = 3
+        mtChannelNameChange = 4
+        mtChannelIconChange = 5
+        mtChannelPinnedMessage = 6
+        mtGuildMemberJoin = 7
+        mtUserGuildBoost = 8
+        mtUserGuildBoostTier1 = 9
+        mtUserGuildBoostTier2 = 10
+        mtUserGuildBoostTier3 = 11
+        mtChannelFollowAdd = 12
+    MessageActivityType* = enum
+        matJoin = 1
+        matSpectate = 2
+        matListen = 3
+        matJoinRequest = 4
+    ChannelType* = enum
+        ctGuildText = 0
+        ctDirect = 1
+        ctGuildVoice = 2
+        ctGroupDM = 3
+        ctGuildParent = 4
+        ctGuildNews = 5
+        ctGuildStore = 6
+    MessageNotificationLevel* = enum
+        mnlAllMessages = 0
+        mnlOnlyMentions = 1
+    ExplicitContentFilter* = enum
+        ecfDisabled = 0
+        ecfMembersWithoutRoles = 1
+        ecfAllMembers = 2
+    MFALevel* = enum
+        mfaNone = 0
+        mfaElevated = 1
+    VerificationLevel* = enum
+        vlNone = 0
+        vlLow = 1
+        vlMedium = 2
+        vlHigh = 3
+        vlVeryHigh = 4
+    PremiumTier* = enum
+        ptNone = 0
+        ptTier1 = 1
+        ptTier2 = 2
+        ptTier3 = 3
+    ActivityType* = enum
+        atPlaying = 0
+        atStreaming = 1
+        atListening = 2
+        atWatching = 3 # shhhh, this is a secret
+        atCustom = 4
+    WebhookType* = enum
+        whIncoming = 1
+        whFollower = 2
+    IntegrationExpireBehavior* = enum
+        iebRemoveRole = 0
+        iebKick = 1
+    AuditLogEntryType* = enum
+        aleGuildUpdate = 1
+        aleChannelCreate = 10
+        aleChannelUpdate = 11
+        aleChannelDelete = 12
+        aleChannelOverwriteCreate = 13
+        aleChannelOverwriteUpdate = 14
+        aleChannelOverwriteDelete = 15
+        aleMemberKick = 20
+        aleMemberPrune = 21
+        aleMemberBanAdd = 22
+        aleMemberBanRemove = 23
+        aleMemberUpdate = 24
+        aleMemberRoleUpdate = 25
+        aleMemberMove = 26
+        aleMemberDisconnect = 27
+        aleBotAdd = 28
+        aleRoleCreate = 30
+        aleRoleUpdate = 31
+        aleRoleDelete = 32
+        aleInviteCreate = 40
+        aleInviteUpdate = 41
+        aleInviteDelete = 42
+        aleWebhookCreate = 50
+        aleWebhookUpdate = 51
+        aleWebhookDelete = 52
+        aleEmojiCreate = 60
+        aleEmojiUpdate = 61
+        aleEmojiDelete = 62
+        aleMessageDelete = 72
+        aleMessageBulkDelete = 73
+        aleMessagePin = 74
+        aleMessageUnpin = 75
+        aleIntegrationCreate = 80
+        aleIntegrationUpdate = 81
+        aleIntegrationDelete = 82
+    TeamMembershipState* = enum
+        tmsInvited = 1 # not to be confused with "The Mysterious Song" lol
+        tmsAccepted = 2
 
-    matJoin* = 1
-    matSpectate* = 2
-    matListen* = 3
-    matJoinRequest* = 4
-
-    ctGuildText* = 0
-    ctDirect* = 1
-    ctGuildVoice* = 2
-    ctGroupDM* = 3
-    ctGuildParent* = 4
-    ctGuildNews* = 5
-    ctGuildStore* = 6
-
-    mnlAllMessages* = 0
-    mnlOnlyMentions* = 1
-
-    ecfDisabled* = 0
-    ecfMembersWithoutRoles* = 1
-    ecfAllMembers* = 2
-
-    mfaNone* = 0
-    mfaElevated* = 1
-
-    vlNone* = 0
-    vlLow* = 1
-    vlMedium* = 2
-    vlHigh* = 3
-    vlVeryHigh* = 4
-
-    ptNone* = 0
-    ptTier1* = 1
-    ptTier2* = 2
-    ptTier3* = 3
-
-    gatPlaying* = 0
-    gatStreaming* = 1
-    gatListening* = 2
-    gatWatching* = 3 # shhhh, this is a secret
-    gatCustom* = 4
-
-    whIncoming* = 1
-    whFollower* = 2
-
-    iebRemoveRole* = 0
-    iebKick* = 1
-
-    aleGuildUpdate* = 1
-    aleChannelCreate* = 10
-    aleChannelUpdate* = 11
-    aleChannelDelete* = 12
-    aleChannelOverwriteCreate* = 13
-    aleChannelOverwriteUpdate* = 14
-    aleChannelOverwriteDelete* = 15
-    aleMemberKick* = 20
-    aleMemberPrune* = 21
-    aleMemberBanAdd* = 22
-    aleMemberBanRemove* = 23
-    aleMemberUpdate* = 24
-    aleMemberRoleUpdate* = 25
-    aleMemberMove* = 26
-    aleMemberDisconnect* = 27
-    aleBotAdd* = 28
-    aleRoleCreate* = 30
-    aleRoleUpdate* = 31
-    aleRoleDelete* = 32
-    aleInviteCreate* = 40
-    aleInviteUpdate* = 41
-    aleInviteDelete* = 42
-    aleWebhookCreate* = 50
-    aleWebhookUpdate* = 51
-    aleWebhookDelete* = 52
-    aleEmojiCreate* = 60
-    aleEmojiUpdate* = 61
-    aleEmojiDelete* = 62
-    aleMessageDelete* = 72
-    aleMessageBulkDelete* = 73
-    aleMessagePin* = 74
-    aleMessageUnpin* = 75
-    aleIntegrationCreate* = 80
-    aleIntegrationUpdate* = 81
-    aleIntegrationDelete* = 82
-
-    tmsInvited* = 1 # not to be confused with "The Mysterious Song" lol
-    tmsAccepted* = 2
-
+const
     permAllText* = {permSendTTSMessage,
         permEmbedLinks,
         permReadMessageHistory,
@@ -275,8 +291,8 @@ proc endpointGuildIntegrations*(gid: string; iid = ""): string =
 proc endpointGuildIntegrationsSync*(gid, iid: string): string =
     result = endpointGuildIntegrations(gid, iid) & "/sync"
 
-proc endpointGuildEmbed*(gid: string): string =
-    result = endpointGuilds(gid) & "/embed"
+proc endpointGuildWidget*(gid: string): string =
+    result = endpointGuilds(gid) & "/widget"
 
 proc endpointGuildEmojis*(gid: string; eid = ""): string =
     result = endpointGuilds(gid) & "/emojis" & (if eid != "": "/" & eid else: "")

@@ -5,7 +5,7 @@ Why Dimscord?
  * It is minimalistic and efficient. 
  * Nim is a good programming language and I believe that Nim should stand a chance on having an up-to-date good enough discord library.
  * It has REST mode only feature, which isn't cache reliant.
- * The other nim discord library has bunch of issues and it's unmaintained.
+ * The other nim discord library (discordnim) has bunch of issues and it's unmaintained.
  
  ## FAQ:
  * What is Nim?
@@ -18,7 +18,6 @@ Why Dimscord?
 
 ## Notes:
  * For compressing data and stuff you would need a zlib1 file to be installed, you can put it at your `.nimble/bin` directory or just simply put it at your folder. They have to be either a dylib, dll or so.1 file.
- * Voice support will be added.
  * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member use the requestGuildMembers proc, that way you can get a specific guild member from a large guild; if you have presence intent enabled and you are debugging with a large guild,
  dont debug because it will slow down your bot.
 
@@ -50,7 +49,7 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
             before = epochTime() * 1000
             msg = await discord.api.sendMessage(m.channel_id, "ping?")
             after = epochTime() * 1000
-        # Edit the message!
+        # Now edit the message.
         # Use 'discard' because editMessage returns a new message.
         discard await discord.api.editMessage(
             m.channel_id,
@@ -58,7 +57,7 @@ discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
             "Pong! took " & $int(after - before) & "ms | " & $s.latency() & "ms."
         )
     elif m.content == "!embed": # Otherwise if message content is "!embed".
-        # Sends a messge with embed.
+        # Sends a message with embed.
         discard await discord.api.sendMessage(
             m.channel_id,
             embed = some Embed(

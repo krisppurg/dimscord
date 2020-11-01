@@ -32,6 +32,27 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
             when declared(deepCopy):
                 oldVoiceState = some deepCopy guild.voice_states[voiceState.user_id]
             guild.voice_states[voiceState.user_id] = voiceState
+    
+    if voiceState.user_id == s.user.id:
+        if voiceState.channel_id.isNone:
+            s.voiceConnections.del(guild.id)
+        else:
+            if guild.id notin s.voiceConnections:
+                s.voiceConnections[guild.id] = VoiceClient(
+                    shard: s,
+                    voice_events: VoiceEvents(
+                        on_dispatch: proc (v: VoiceClient,
+                                d: JsonNode, event: string) {.async.} = discard,
+                        on_speaking: proc (v: VoiceClient,
+                                speaking: bool) {.async.} = discard,
+                        on_ready: proc (v: VoiceClient) {.async.} = discard,
+                        on_disconnect: proc (v: VoiceClient) {.async.} = discard
+                    )
+                )
+            let v = s.voiceConnections[guild.id]
+            v.guild_id = guild.id
+            v.channel_id = get voiceState.channel_id
+            v.session_id = voiceState.session_id
 
     await s.client.events.voice_state_update(s, voiceState,
         oldVoiceState)
@@ -155,7 +176,7 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
         reaction.reacted = data["user_id"].str == s.user.id
         msg.reactions.add($emoji, reaction)
 
-    await s.client.events.message_reaction_add(s, msg, user, reaction, exists)
+    await s.client.events.message_reaction_add(s, msg, user, exists)
 
 proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
     let emoji = newEmoji(data["emoji"])
@@ -357,7 +378,7 @@ proc channelCreate(s: Shard, data: JsonNode) {.async.} =
         chan: Option[GuildChannel]
         dmChan: Option[DMChannel]
 
-    if data["type"].getInt != ctDirect:
+    if data["type"].getInt != int ctDirect:
         guild = some Guild(id: data["guild_id"].str)
 
         if guild.get.id in s.cache.guilds:
@@ -645,12 +666,21 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
     )
+
     var endpoint: Option[string]
 
     if "endpoint" in data and data["endpoint"].kind != JNull:
         # apparently this field could be nullable, so we'll need to check it.
         # incase if it crashes.
+
         endpoint = some data["endpoint"].str
+
+        let exists = guild.id in s.voiceConnections
+
+        if exists and s.voiceConnections[guild.id].endpoint == "":
+            let v = s.voiceConnections[guild.id]
+            v.endpoint = "wss://" & endpoint.get & "/?v=4"
+            v.token = data["token"].str
 
     await s.client.events.voice_server_update(s, guild,
         data["token"].str, endpoint)

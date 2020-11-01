@@ -1,5 +1,7 @@
 DiscordClient	dimscord/objects.html#DiscordClient	objects: DiscordClient	
 Shard	dimscord/objects.html#Shard	objects: Shard	
+VoiceClient	dimscord/objects.html#VoiceClient	objects: VoiceClient	
+VoiceEvents	dimscord/objects.html#VoiceEvents	objects: VoiceEvents	
 CacheTable	dimscord/objects.html#CacheTable	objects: CacheTable	
 CacheTablePrefs	dimscord/objects.html#CacheTablePrefs	objects: CacheTablePrefs	
 CacheError	dimscord/objects.html#CacheError	objects: CacheError	
@@ -27,7 +29,7 @@ Ready	dimscord/objects.html#Ready	objects: Ready
 DMChannel	dimscord/objects.html#DMChannel	objects: DMChannel	
 GuildChannel	dimscord/objects.html#GuildChannel	objects: GuildChannel	
 GameAssets	dimscord/objects.html#GameAssets	objects: GameAssets	
-GameActivity	dimscord/objects.html#GameActivity	objects: GameActivity	
+Activity	dimscord/objects.html#Activity	objects: Activity	
 Presence	dimscord/objects.html#Presence	objects: Presence	
 Guild	dimscord/objects.html#Guild	objects: Guild	
 VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
@@ -55,10 +57,11 @@ AuditLogOptions	dimscord/objects.html#AuditLogOptions	objects: AuditLogOptions
 AuditLogChangeValue	dimscord/objects.html#AuditLogChangeValue	objects: AuditLogChangeValue	
 AuditLogEntry	dimscord/objects.html#AuditLogEntry	objects: AuditLogEntry	
 AuditLog	dimscord/objects.html#AuditLog	objects: AuditLog	
+GuildWidgetJson	dimscord/objects.html#GuildWidgetJson	objects: GuildWidgetJson	
 GatewaySession	dimscord/objects.html#GatewaySession	objects: GatewaySession	
 GatewayBot	dimscord/objects.html#GatewayBot	objects: GatewayBot	
 Events	dimscord/objects.html#Events	objects: Events	
-kind	dimscord/objects.html#kind,CacheTable,string	objects: kind(c: CacheTable; channel_id: string): int	
+kind	dimscord/objects.html#kind,CacheTable,string	objects: kind(c: CacheTable; channel_id: string): ChannelType	
 clear	dimscord/objects.html#clear,CacheTable	objects: clear(c: CacheTable)	
 `$`	dimscord/objects.html#$,Emoji	objects: `$`(e: Emoji): string	
 newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
@@ -76,7 +79,7 @@ newInviteCreate	dimscord/objects.html#newInviteCreate,JsonNode	objects: newInvit
 newReady	dimscord/objects.html#newReady,JsonNode	objects: newReady(data: JsonNode): Ready	
 newVoiceState	dimscord/objects.html#newVoiceState,JsonNode	objects: newVoiceState(data: JsonNode): VoiceState	
 newEmoji	dimscord/objects.html#newEmoji,JsonNode	objects: newEmoji(data: JsonNode): Emoji	
-newGameActivity	dimscord/objects.html#newGameActivity,JsonNode	objects: newGameActivity(data: JsonNode): GameActivity	
+newActivity	dimscord/objects.html#newActivity,JsonNode	objects: newActivity(data: JsonNode): Activity	
 newPresence	dimscord/objects.html#newPresence,JsonNode	objects: newPresence(data: JsonNode): Presence	
 newMember	dimscord/objects.html#newMember,JsonNode	objects: newMember(data: JsonNode): Member	
 newTypingStart	dimscord/objects.html#newTypingStart,JsonNode	objects: newTypingStart(data: JsonNode): TypingStart	

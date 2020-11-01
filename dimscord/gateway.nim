@@ -1,7 +1,10 @@
+## Interact with the discord api gateway.
+## Especially `startSession`, `updateStatus`.
+
 import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, strutils, restapi, dispatch
 import tables, random, times, constants, objects, json, math
-import nativesockets
+import nativesockets, helpers
 
 when defined(discordCompress):
     import zip/zlib
@@ -61,10 +64,18 @@ proc sendSock(s: Shard, opcode: int, data: JsonNode;
         raise newException(Exception,
             "There was an attempt on sending a payload over 4096 characters.")
 
-    await s.connection.send($(%*{
+    let fut = s.connection.send($(%*{
         "op": opcode,
         "d": data
     }))
+
+    if (await withTimeout(fut, 20000)) == false:
+        s.logShard("Payload was taking longer to send. Retrying in 5000ms...")
+        await sleepAsync 5000
+        await s.sendSock(opcode, data, ignore)
+        return
+    else:
+        await fut
 
 proc waitWhenReady(s: Shard) {.async.} =
     while not s.ready:
@@ -86,7 +97,10 @@ proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
         code: closeData.code,
         reason: closeData.reason
     ))
-    s.stop = true
+    if not s.stop:
+        s.stop = true
+        asyncCheck s.client.events.on_disconnect(s)
+
     s.reset()
 
     result = true
@@ -247,7 +261,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         await s.handleEventDispatch(event, data)
 
 proc reconnect(s: Shard) {.async.} =
-    if s.reconnecting or not s.stop: return
+    if (s.reconnecting or not s.stop) and not reconnectable: return
     s.reconnecting = true
     s.retry_info.attempts += 1
 
@@ -330,20 +344,19 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
 
     if s.connection != nil:
         s.connection.close()
+        await s.client.events.on_disconnect(s)
 
     if should_reconnect:
         s.logShard("Shard reconnecting after disconnect...")
         await s.reconnect()
     else:
-        reconnectable = false
+        raise newException(
+            Exception,
+            "Shard was disconnected from the gateway."
+        )
 
 proc heartbeat(s: Shard, requested = false) {.async.} =
     if s.sockClosed: return
-    if not s.hbAck and not requested:
-        s.logShard("A zombied connection has been detected.")
-        await s.disconnect(should_reconnect = true)
-        await s.client.events.on_disconnect(s)
-        return
 
     s.logShard("Sending heartbeat.")
     s.hbAck = false
@@ -380,8 +393,9 @@ proc handleSocketMessage(s: Shard) {.async.} =
             s.logShard(
                 "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
             )
-
-            s.stop = true
+            if not s.stop:
+                s.stop = true
+                await s.client.events.on_disconnect(s)
             s.heartbeating = false
 
             if exceptn.startsWith("The semaphore timeout period has expired."):
@@ -401,11 +415,13 @@ proc handleSocketMessage(s: Shard) {.async.} =
         try:
             data = parseJson(packet[1])
         except:
-            s.logShard("An error occurred while parsing data: " & packet[1])
+            if not s.hbAck:
+                s.logShard("A zombied connection was detected.")
+            else:
+                s.logShard("An error occurred while parsing data: " & packet[1])
             shouldReconnect = s.handleDisconnect(packet[1])
 
             await s.disconnect(should_reconnect = shouldReconnect)
-            await s.client.events.on_disconnect(s)
             break
 
         if data["s"].kind != JNull and not s.resuming:
@@ -460,11 +476,12 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 await s.identify()
         else:
             discard
-    if not reconnectable: return
+    if not reconnectable:
+        raise newException(Exception, "Fatal error occurred.")
 
     if packet[0] == Close:
-        shouldReconnect = s.handleDisconnect(packet[1])
-        await s.client.events.on_disconnect(s)
+        if not shouldReconnect:
+            shouldReconnect = s.handleDisconnect(packet[1])
 
     s.stop = true
     s.reset()
@@ -475,18 +492,18 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
         if not s.networkError: await s.handleSocketMessage()
     else:
-        return
+        raise newException(Exception, "Fatal error occurred.")
 
-proc endSession*(cl: DiscordClient) {.async.} =
+proc endSession*(discord: DiscordClient) {.async.} =
     ## Ends the session.
-    for shard in cl.shards.values:
+    for shard in discord.shards.values:
         await shard.disconnect(should_reconnect = false)
         shard.cache.clear()
 
-proc setupShard(cl: DiscordClient, i: int;
+proc setupShard(discord: DiscordClient, i: int;
         cache_prefs: CacheTablePrefs): Shard {.used.} =
-    result = newShard(i, cl)
-    cl.shards.add(i, result)
+    result = newShard(i, discord)
+    discord.shards.add(i, result)
 
     result.cache.preferences = cache_prefs
 
@@ -502,7 +519,7 @@ proc startSession(s: Shard, url, query: string) {.async.} =
             return
         s.connection = await future
         s.hbAck = true
-        s.logShard("Socket opened.")
+        s.logShard("Socket state:\n  ->  " & $s.connection[])
     except:
         s.stop = true
         raise newException(Exception, getCurrentExceptionMsg())
@@ -510,9 +527,10 @@ proc startSession(s: Shard, url, query: string) {.async.} =
     try:
         await s.handleSocketMessage()
     except:
-        if getCurrentExceptionMsg()[0].isAlphaNumeric: return
+        if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
+        raise newException(Exception, getCurrentExceptionMsg())
 
-proc startSession*(cl: DiscordClient,
+proc startSession*(discord: DiscordClient,
             autoreconnect = true;
             gateway_intents: set[GatewayIntent] = {};
             large_message_threshold, large_threshold = 50;
@@ -521,40 +539,57 @@ proc startSession*(cl: DiscordClient,
             max_shards = none int;
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
-    ##[
-        Connects the client to Discord via gateway.
+    ## Connects the client to Discord via gateway.
+    ##
+    ## If you want to compress add `-d:discordCompress`, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
+    ## 
+    ## - `gateway_intents` Allows you to subscribe to pre-defined events.
+    ##   If you are using v8, this defaults to `{giGuilds, giGuildMessages, giDirectMessages}`.
+    ## 
+    ## - `large_threshold` The number that would be considered a large guild (50-250).
+    ## - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
+    ## - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
+    ## - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
+    ## - `large_message_threshold` Max message limit (MESSAGE_CREATE)
+    ##
 
-        If you want to compress add `-d:discordCompress`, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
-
-        - `gateway_intents` Allows you to subscribe to pre-defined events.
-
-        - `large_threshold` The number that would be considered a large guild (50-250).
-        - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
-        - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
-        - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
-        - `large_message_threshold` Max message limit (MESSAGE_CREATE)
-    ]##
-    if cl.restMode:
+    if discord.restMode:
         raise newException(Exception, "(╯°□°)╯ REST mode is enabled! (╯°□°)╯")
-    elif cl.token == "Bot  ":
+    elif discord.token == "Bot  ":
         raise newException(Exception, "The token you specified was empty.")
 
-    cl.autoreconnect = autoreconnect
-    cl.intents = gateway_intents
-    cl.largeThreshold = large_threshold
-    cl.guildSubscriptions = guild_subscriptions
-    cl.max_shards = max_shards.get(-1)
-    cl.gatewayVersion = gateway_version
+    discord.autoreconnect = autoreconnect
+
+    discord.intents = when defined(discordv8):
+        if gateway_intents.len == 0:
+            {giGuilds, giGuildMessages, giDirectMessages}
+        else:
+            gateway_intents
+    else:
+        if gateway_intents.len == 0:
+            {}
+        else:
+            gateway_intents
+
+    discord.largeThreshold = large_threshold
+    discord.guildSubscriptions = guild_subscriptions
+    discord.max_shards = max_shards.get(-1)
+    discord.gatewayVersion = when defined(discordv8):
+            8
+        else:
+            gateway_version
+
+    log "Dimscord (v" & $libVer & ") - v" & $discord.gatewayVersion
 
     var
-        query = "/?v=" & $gateway_version
+        query = "/?v=" & $discord.gatewayVersion
         info: GatewayBot
 
-    if cl.shards.len == 0:
+    if discord.shards.len == 0:
         log("Starting gateway session.")
 
         try:
-            info = await cl.api.getGatewayBot()
+            info = await discord.api.getGatewayBot()
         except OSError:
             if getCurrentExceptionMsg().startsWith("No such host is known."):
                 log("A network error has been detected.")
@@ -578,10 +613,10 @@ proc startSession*(cl: DiscordClient,
             await sleepAsync time.int
 
         if max_shards.isNone:
-            cl.max_shards = info.shards
+            discord.max_shards = info.shards
 
-    for id in 0..cl.max_shards - 1:
-        let s = cl.setupShard(id, CacheTablePrefs(
+    for id in 0..discord.max_shards - 1:
+        let s = discord.setupShard(id, CacheTablePrefs(
             cache_users: cache_users,
             cache_guilds: cache_guilds,
             cache_guild_channels: cache_guild_channels,
@@ -591,7 +626,7 @@ proc startSession*(cl: DiscordClient,
         ))
         s.gatewayUrl = info.url
 
-        if id == cl.max_shards - 1: # Last shard.
+        if id == discord.max_shards - 1: # Last shard.
             await s.startSession(s.gatewayUrl, query)
         else:
             asyncCheck s.startSession(s.gatewayUrl, query)

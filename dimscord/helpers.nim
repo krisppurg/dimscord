@@ -1,3 +1,8 @@
+## Utilities for every discord object.
+## It mostly contains `helper` procedures.
+## You can use this for getting an avatar url and permission checking without
+## the hassle for doing complicated bitwise work.
+
 import constants, objects, options
 import strformat, strutils, times
 import tables, regex
@@ -100,12 +105,12 @@ proc computePerms*(guild: Guild, role: Role): PermObj =
     ## Computes the guild permissions for a role.
     let
         everyone = guild.roles[guild.id]
-        perms = everyone.permissions or role.permissions
+        perms = everyone.permissions + role.permissions
 
-    if perms.permCheck(cast[int]({permAdministrator})):
+    if permAdministrator in perms:
         return PermObj(allowed: permAll)
 
-    result = PermObj(allowed: cast[set[PermEnum]](perms))
+    result = PermObj(allowed: perms)
 
 proc computePerms*(guild: Guild, member: Member): PermObj =
     ## Computes the guild permissions for a member.
@@ -113,7 +118,7 @@ proc computePerms*(guild: Guild, member: Member): PermObj =
         return PermObj(allowed: permAll)
 
     let everyone = guild.roles[guild.id]
-    var perms = cast[set[PermEnum]](everyone.permissions)
+    var perms = everyone.permissions
 
     for r in member.roles:
         perms = perms + guild.computePerms(guild.roles[r]).allowed
@@ -131,34 +136,32 @@ proc computePerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj
     ##        allowed: {permExample}
     ##    ))
     var
-        perms = cast[int](guild.computePerms(member))
+        perms = cast[int](guild.computePerms(member).perms)
         allow = 0
         deny = 0
-
-    if perms.permCheck(cast[int]({permAdministrator})):
+    if permAdministrator in guild.computePerms(member).allowed:
         return PermObj(allowed: permAll)
-
     let overwrites = channel.permission_overwrites
 
     if channel.guild_id in overwrites:
         let eow = overwrites[channel.guild_id]
-        perms = perms or cast[int](eow.permObj.allowed)
-        perms = perms and cast[int](eow.permObj.denied)
+        perms = perms or cast[int](eow.allow)
+        perms = perms and cast[int](eow.deny)
 
     for role in member.roles:
         if role in overwrites:
-            allow = allow or overwrites[role].allow
-            deny = deny or overwrites[role].deny
+            allow = allow or cast[int](overwrites[role].allow)
+            deny = deny or cast[int](overwrites[role].deny)
 
     if member.user.id in overwrites:
         let m = member.user.id
-        allow = allow or overwrites[m].allow
-        deny = deny or overwrites[m].deny
+        allow = allow or cast[int](overwrites[m].allow)
+        deny = deny or cast[int](overwrites[m].deny)
 
     perms = (perms and deny - deny - deny - 1) or allow
-    result = PermObj(allowed: cast[set[PermEnum]](perms))
+    result = PermObj(allowed: cast[set[PermissionFlags]](allow), denied: cast[set[PermissionFlags]](deny))
 
-proc genInviteLink*(client_id: string, permissions: set[PermEnum] = {};
+proc createBotInvite*(client_id: string, permissions: set[PermissionFlags] = {};
         guild_id = ""; disable_guild_select = false): string =
     ## Creates an invite link for the bot of the form.
     ## 

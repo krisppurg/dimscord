@@ -1,12 +1,11 @@
-##[
-    All Optional fields in these object are:
-    
-    * Fields that cannot be assumed. such as bools
-    * Optional fields for example embeds, which they may not be
-      present.
-    
-    Some may not be optional, but they can be assumable or always present.
-]##
+## This contains every single discord objects
+## All Optional fields in these object are:
+##
+## * Fields that cannot be assumed. such as bools
+## * Optional fields for example embeds, which they may not be
+##   present.
+##   
+## Some may not be optional, but they can be assumable or always present.
 
 import options, json, tables, constants, macros
 import sequtils, strutils, asyncdispatch, ws
@@ -23,11 +22,14 @@ type
     Shard* = ref object
         ## This is where you interact with the gateway api with.
         ## It's basically a gateway connection.
+        ## 
+        ## For `voiceConnections`, the string is a guild_id.
         id*, sequence*: int
         client*: DiscordClient
         user*: User
         gatewayUrl*, session_id*: string
         cache*: CacheTable
+        voiceConnections*: Table[string, VoiceClient]
         connection*: Websocket
         hbAck*, hbSent*, stop*: bool
         lastHBTransmit*, lastHBReceived*: float
@@ -35,6 +37,24 @@ type
         heartbeating*, resuming*, reconnecting*: bool
         authenticating*, networkError*, ready*: bool
         interval*: int
+    VoiceClient* = ref object
+        shard*: Shard
+        voice_events*: VoiceEvents
+        endpoint*, token*: string
+        session_id*, guild_id*, channel_id*: string
+        connection*: WebSocket
+        hbAck*, hbSent*, stop*: bool
+        lastHBTransmit*, lastHBReceived*: float
+        retry_info*: tuple[ms, attempts: int]
+        heartbeating*, resuming*, reconnecting*: bool
+        networkError*, ready*: bool
+        interval*: int
+    VoiceEvents* = ref object
+        on_dispatch*: proc (v: VoiceClient,
+                            d: JsonNode, event: string) {.async.}
+        on_speaking*: proc (v: VoiceClient,
+                            speaking: bool) {.async.}
+        on_ready*, on_disconnect*: proc (v: VoiceClient) {.async.}
     CacheTable* = ref object
         preferences*: CacheTablePrefs
         users*: Table[string, User]
@@ -79,7 +99,7 @@ type
         inline*: Option[bool]
     MentionChannel* = object
         id*, guild_id*, name*: string
-        kind*: int
+        kind*: ChannelType
     MessageReference* = object
         channel_id*: string
         message_id*, guild_id*: Option[string]
@@ -89,7 +109,8 @@ type
         edited_timestamp*, guild_id*: Option[string]
         webhook_id*, nonce*: Option[string]
         tts*, mention_everyone*, pinned*: bool
-        kind*, flags*: int
+        kind*: MessageType
+        flags*: set[MessageFlags]
         author*: User
         member*: Option[Member]
         mention_users*: seq[User]
@@ -150,13 +171,14 @@ type
         shard*: Option[seq[int]]
     DMChannel* = ref object
         id*, last_message_id*: string
-        kind*: int
+        kind*: ChannelType
         recipients*: seq[User]
         messages*: Table[string, Message]
     GuildChannel* = ref object
         id*, name*, guild_id*: string
         last_message_id*: string
-        kind*, position*, rate_limit_per_user*: int
+        kind*: ChannelType
+        position*, rate_limit_per_user*: int
         bitrate*, user_limit*: int
         parent_id*, topic*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
@@ -165,9 +187,10 @@ type
     GameAssets* = object
         small_text*, small_image*: string
         large_text*, large_image*: string
-    GameActivity* = object
+    Activity* = object
         name*: string
-        kind*, flags*: int
+        kind*: ActivityType
+        flags*: set[ActivityFlags]
         url*, application_id*, details*, state*: Option[string]
         created_at*: BiggestInt
         timestamps*: Option[tuple[start, final: BiggestInt]]
@@ -176,11 +199,12 @@ type
         assets*: Option[GameAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
         instance*: bool
-    Presence* = object
+    Presence* = ref object
         user*: User
-        game*: Option[GameActivity]
+        when not defined(discordv8):
+            activity*: Option[Activity]
         guild_id*, status*: string
-        activities*: seq[GameActivity]
+        activities*: seq[Activity]
         client_status*: tuple[web, desktop, mobile: string]
     Guild* = ref object
         id*, name*, owner_id*: string
@@ -197,8 +221,11 @@ type
         permissions*, afk_timeout*, member_count*: Option[int]
         approximate_member_count*, approximate_presence_count*: Option[int]
         max_presences*, max_members*, premium_subscription_count*: Option[int]
-        explicit_content_filter*, mfa_level*, premium_tier*: int
-        verification_level*, default_message_notifications*: int
+        explicit_content_filter*: ExplicitContentFilter
+        mfa_level*: MFALevel
+        premium_tier*: PremiumTier
+        verification_level*: VerificationLevel
+        default_message_notifications*: MessageNotificationLevel
         features*: seq[string]
         roles*: Table[string, Role]
         emojis*: Table[string, Emoji]
@@ -213,32 +240,37 @@ type
         self_deaf*, self_mute*, self_stream*: bool
     Role* = object
         id*, name*, permissions_new*: string
-        color*, position*, permissions*: int
+        color*, position*: int
+        permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
     GameStatus* = object
         ## This is used for status updates.
         name*: string
-        kind*: int
+        kind*: ActivityType
         url*: Option[string]
     Overwrite* = object
-        id*, kind*: string
-        allow*, deny*: int
-        allow_new*, deny_new*: string
-        permObj*: PermObj
+        ## - `kind` will be either ("role" or "member") or ("0" or "1")
+        id*: string
+        when defined(discordv8):
+            kind*: int
+        else:
+            kind*: string
+            allow_new*, deny_new*: string
+        allow*, deny*: set[PermissionFlags]
     PermObj* = object
-        allowed*, denied*: set[PermEnum]
+        allowed*, denied*: set[PermissionFlags]
     PartialGuild* = object
         id*, name*: string
         icon*, splash*: Option[string]
     PartialChannel* = object
         id*, name*: string
-        kind*: int
+        kind*: ChannelType
     Channel* = object
         ## Used for creating guilds.
         name*, parent_id*: string
         id*, kind*: int
     TeamMember* = object
-        membership_state*: int
+        membership_state*: TeamMembershipState
         permissions*: seq[string] ## always would be @["*"]
         team_id*: string
         user*: User
@@ -293,7 +325,7 @@ type
         reason*: Option[string]
     Webhook* = object
         id*, channel_id*: string
-        kind*: int
+        kind*: WebhookType
         guild_id*, avatar*: Option[string]
         name*, token*: Option[string]
         user*: Option[User]
@@ -315,12 +347,16 @@ type
         vip*, optimal*: bool
         deprecated*, custom*: bool
     AuditLogOptions* = object
+        ## - `kind` ("role" or "member") or (0 or 1)
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*: Option[string]
         id*, role_name*: Option[string]
-        kind*: Option[string] ## ("member" or "role")
+        when defined(discordv8):
+            kind*: Option[int]
+        else:
+            kind*: Option[string] 
     AuditLogChangeValue* = object
-        case kind*: AuditLogChangeKind
+        case kind*: AuditLogChangeType
         of alcString:
             str*: string
         of alcInt:
@@ -338,12 +374,25 @@ type
         before*, after*: Table[string, AuditLogChangeValue]
         opts*: Option[AuditLogOptions]
         user_id*, id*: string
-        action_type*: int
+        action_type*: AuditLogEntryType
     AuditLog* = object
         webhooks*: seq[Webhook]
         users*: seq[User]
         audit_log_entries*: seq[AuditLogEntry]
         integrations*: seq[Integration]
+    GuildWidgetJson* = object
+        id*, name*: string
+        instant_invite*: string
+        channels*: seq[tuple[ # dear god how many versions of partial channels are there?
+            id, name: string,
+            position: int
+        ]]
+        members*: seq[tuple[
+            id, username, discriminator: string,
+            avatar: Option[string],
+            status, avatar_url: string
+        ]]
+        presence_count: int
     GatewaySession* = object
         total*, remaining*: int
         reset_after*, max_concurrency*: int
@@ -365,7 +414,9 @@ type
         message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
         message_update*: proc (s: Shard, m: Message,
                 o: Option[Message], exists: bool) {.async.}
-        message_reaction_add*, message_reaction_remove*: proc (s: Shard,
+        message_reaction_add*: proc (s: Shard, m: Message, u: User,
+                exists: bool) {.async.}
+        message_reaction_remove*: proc (s: Shard,
                 m: Message, u: User,
                 r: Reaction, exists: bool) {.async.}
         message_reaction_remove_all*: proc (s: Shard, m: Message,
@@ -408,10 +459,10 @@ type
         voice_state_update*: proc (s: Shard, v: VoiceState,
                 o: Option[VoiceState]) {.async.}
         voice_server_update*: proc (s: Shard, g: Guild,
-                token: string, e: Option[string]) {.async.}
+                token: string, endpoint: Option[string]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
 
-proc kind*(c: CacheTable, channel_id: string): int =
+proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)
     if channel_id in c.dmChannels:
         result = c.dmChannels[channel_id].kind
@@ -441,15 +492,6 @@ macro keyCheckOptInt(obj: typed, obj2: typed,
     result.add quote do:
       if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
         `obj2`.`lit` = some `obj`[`fieldName`].getInt
-
-macro keyCheckInt(obj: typed, obj2: typed,
-                        lits: varargs[untyped]): untyped =
-  result = newStmtList()
-  for lit in lits:
-    let fieldName = lit.strVal
-    result.add quote do:
-      if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
-        `obj2`.`lit` = `obj`[`fieldName`].getInt
 
 macro keyCheckOptBool(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -510,7 +552,12 @@ proc newDiscordClient*(token: string;
 
     result = DiscordClient(
         token: auth_token,
-        api: RestApi(token: auth_token, restVersion: restVersion),
+        api: RestApi(
+            token: auth_token,
+            restVersion: when defined(discordv8):
+                8
+            else:
+                restVersion),
         max_shards: 1,
         restMode: rest_mode,
         events: Events(
@@ -523,7 +570,7 @@ proc newDiscordClient*(token: string;
             message_update: proc (s: Shard, m: Message,
                     o: Option[Message], exists: bool) {.async.} = discard,
             message_reaction_add: proc (s: Shard, m: Message,
-                    u: User, r: Reaction, exists: bool) {.async.} = discard,
+                    u: User, exists: bool) {.async.} = discard,
             message_reaction_remove: proc (s: Shard, m: Message,
                     u: User, r: Reaction, exists: bool) {.async.} = discard,
             message_reaction_remove_all: proc (s: Shard, m: Message,
@@ -583,7 +630,8 @@ proc newDiscordClient*(token: string;
                     token: string,
                     e: Option[string]) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild,
-                    c: GuildChannel) {.async.} = discard
+                    c: GuildChannel) {.async.} = discard,
+            on_disconnect: proc (s: Shard) {.async.} = discard
         ))
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
@@ -597,20 +645,17 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     )
 
 proc newOverwrite*(data: JsonNode): Overwrite =
-    result = Overwrite(
-        id: data["id"].str,
-        kind: data["type"].str,
-        allow: data["allow"].getInt,
-        deny: data["deny"].getInt,
-        allow_new: data["allow_new"].str,
-        deny_new: data["deny_new"].str
-    )
-
-    if result.allow != 0:
-        result.permObj.allowed = cast[set[PermEnum]](result.allow)
-
-    if result.deny != 0:
-        result.permObj.denied = cast[set[PermEnum]](result.deny)
+    result.id = data["id"].str
+    when defined(discordv8):
+        result.kind = data["type"].getInt
+        result.allow = cast[set[PermissionFlags]](data["allow"].str)
+        result.deny = cast[set[PermissionFlags]](data["deny"].str)
+    else:
+        result.kind = data["type"].str
+        result.allow = cast[set[PermissionFlags]](data["allow"].getInt)
+        result.deny = cast[set[PermissionFlags]](data["deny"].getInt)
+        result.allow_new = data["allow_new"].str
+        result.deny_new = data["deny_new"].str
 
 proc newRole*(data: JsonNode): Role =
     result = Role(
@@ -619,17 +664,22 @@ proc newRole*(data: JsonNode): Role =
         color: data["color"].getInt,
         hoist: data["hoist"].bval,
         position: data["position"].getInt,
-        permissions: data["permissions"].getInt,
-        permissions_new: data["permissions_new"].str,
         managed: data["managed"].bval,
         mentionable: data["mentionable"].bval
     )
+    when defined(discordv8):
+        result.permissions = cast[set[PermissionFlags]](data["permissions"].str)
+    else:
+        result.permissions = cast[set[PermissionFlags]](
+            data["permissions"].getInt
+        )
+        result.permissions_new = data["permissions_new"].str
 
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = GuildChannel(
         id: data["id"].str,
         name: data["name"].str,
-        kind: data["type"].getInt,
+        kind: ChannelType data["type"].getInt,
         guild_id: data["guild_id"].str,
         position: data["position"].getInt,
         last_message_id: data{"last_message_id"}.getStr
@@ -673,7 +723,7 @@ proc newUser*(data: JsonNode): User =
 proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
         id: data["id"].str,
-        kind: data["type"].getInt,
+        kind: WebhookType data["type"].getInt,
         channel_id: data["channel_id"].str)
 
     if "user" in data:
@@ -686,10 +736,10 @@ proc newGuildBan*(data: JsonNode): GuildBan =
 
     data.keyCheckOptStr(result, reason)
 
-proc newDMChannel*(data: JsonNode): DMChannel =
+proc newDMChannel*(data: JsonNode): DMChannel = # rip dmchannels
     result = DMChannel(
         id: data["id"].str,
-        kind: data["type"].getInt,
+        kind: ChannelType data["type"].getInt,
         messages: initTable[string, Message]()
     )
 
@@ -701,7 +751,7 @@ proc newInvite*(data: JsonNode): Invite =
         code: data["code"].str,
         channel: PartialChannel(
             id: data["channel"]["id"].str,
-            kind: data["channel"]["type"].getInt,
+            kind: ChannelType data["channel"]["type"].getInt,
             name: data["channel"]["name"].str
         )
     )
@@ -789,12 +839,12 @@ proc newEmoji*(data: JsonNode): Emoji =
     data.keyCheckOptStr(result, id, name)
     data.keyCheckOptBool(result, require_colons, managed, animated)
 
-proc newGameActivity*(data: JsonNode): GameActivity =
-    result = GameActivity(
+proc newActivity*(data: JsonNode): Activity =
+    result = Activity(
         name: data["name"].str,
-        kind: data["type"].getInt,
+        kind: ActivityType data["type"].getInt,
         created_at: data["created_at"].num,
-        flags: data{"flags"}.getInt
+        flags: cast[set[ActivityFlags]](data{"flags"}.getInt)
     )
 
     data.keyCheckOptStr(result, url, application_id, details, state)
@@ -843,10 +893,10 @@ proc newPresence*(data: JsonNode): Presence =
     )
 
     for activity in data["activities"].elems:
-        result.activities.add(newGameActivity(activity))
-
-    if data["game"].kind != JNull:
-        result.game = some newGameActivity(data["game"])
+        result.activities.add(newActivity(activity))
+    when not defined(discordv8):
+        if data["game"].kind != JNull:
+            result.activity = some newActivity(data["game"])
 
     data["client_status"].keyCheckStr(result.client_status,
         desktop, web, mobile)
@@ -907,8 +957,11 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         proc (x: JsonNode): Embed =
             x.to(Embed)
     )
+    if "type" in data and data["type"].kind != JNull:
+        result.kind = MessageType data["type"].getInt
+    if "flags" in data and data["flags"].kind != JNull:
+        result.flags = cast[set[MessageFlags]](data["flags"].getInt)
 
-    data.keyCheckInt(result, kind, flags)
     data.keyCheckStr(result, content, timestamp)
     data.keyCheckOptStr(result, edited_timestamp, guild_id)
     data.keyCheckBool(result, mention_everyone, pinned, tts)
@@ -943,8 +996,8 @@ proc newMessage*(data: JsonNode): Message =
         tts: data["tts"].bval,
         mention_everyone: data["mention_everyone"].bval,
         pinned: data["pinned"].bval,
-        kind: data["type"].getInt,
-        flags: data["flags"].getInt,
+        kind: MessageType data["type"].getInt,
+        flags: cast[set[MessageFlags]](data["flags"].getInt),
         reactions: initTable[string, Reaction]()
     )
     data.keyCheckOptStr(result, edited_timestamp,
@@ -965,7 +1018,7 @@ proc newMessage*(data: JsonNode): Message =
         result.mention_channels.add(MentionChannel(
             id: chan["id"].str,
             guild_id: chan["guild_id"].str,
-            kind: chan["type"].getInt,
+            kind: ChannelType chan["type"].getInt,
             name: chan["name"].str
         ))
 
@@ -1036,7 +1089,7 @@ proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
         after: initTable[string, AuditLogChangeValue](),
         user_id: data["user_id"].str,
         id: data["id"].str,
-        action_type: data["action_type"].getInt
+        action_type: AuditLogEntryType data["action_type"].getInt
     )
     data.keyCheckOptStr(result, target_id, reason)
 
@@ -1059,9 +1112,11 @@ proc newAuditLog*(data: JsonNode): AuditLog =
     result = AuditLog(
         webhooks: data["webhooks"].elems.map(newWebhook),
         users: data["users"].elems.map(newUser),
-        audit_log_entries: data["audit_log_entries"].elems.map(newAuditLogEntry),
-        integrations: data["integrations"].elems.map(proc (x: JsonNode): Integration =
-            result = x.to(Integration)
+        audit_log_entries: data["audit_log_entries"].elems.map(
+            newAuditLogEntry),
+        integrations: data["integrations"].elems.map(
+            proc (x: JsonNode): Integration =
+                result = x.to(Integration)
         )
     )
 
@@ -1072,7 +1127,9 @@ proc newTeam(data: JsonNode): Team =
         members: data["members"].elems.map(
             proc (x: JsonNode): TeamMember =
                 result = TeamMember(
-                    membership_state: x["membership_state"].getInt,
+                    membership_state: TeamMembershipState(
+                        x["membership_state"].getInt
+                    ),
                     permissions: x["permissions"].elems.mapIt(it.str),
                     team_id: x["team_id"].str,
                     user: newUser(x["user"])
@@ -1107,17 +1164,23 @@ proc newGuild*(data: JsonNode): Guild =
         owner_id: data["owner_id"].str,
         region: data["region"].str,
         widget_enabled: data{"widget_enabled"}.getBool,
-        verification_level: data["verification_level"].getInt,
-        explicit_content_filter: data["explicit_content_filter"].getInt,
-        default_message_notifications: data["default_message_notifications"].getInt,
+        verification_level: VerificationLevel(
+            data["verification_level"].getInt
+        ),
+        explicit_content_filter: ExplicitContentFilter(
+            data["explicit_content_filter"].getInt
+        ),
+        default_message_notifications: MessageNotificationLevel(
+            data["default_message_notifications"].getInt
+        ),
         roles: initTable[string, Role](),
         emojis: initTable[string, Emoji](),
         voice_states: initTable[string, VoiceState](),
         members: initTable[string, Member](),
         channels: initTable[string, GuildChannel](),
         presences: initTable[string, Presence](),
-        mfa_level: data["mfa_level"].getInt,
-        premium_tier: data["premium_tier"].getInt,
+        mfa_level: MFALevel data["mfa_level"].getInt,
+        premium_tier: PremiumTier data["premium_tier"].getInt,
         preferred_locale: data["preferred_locale"].str)
 
     for r in data["roles"].elems:
@@ -1150,6 +1213,8 @@ proc newGuild*(data: JsonNode): Guild =
     for p in data{"presences"}.getElems:
         let presence = newPresence(p)
         let uid = presence.user.id
+
+        presence.guild_id = result.id
 
         result.members[uid].presence = presence
         result.presences.add(uid, presence)

@@ -1,6 +1,28 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
 let discord = newDiscordClient("<your bot token goes here>") 
 
+proc getGuildMember(s: Shard, guild, user: string): Future[Member] {.async.} =
+    var
+        member: Member
+        waiting = true
+    await s.requestGuildMembers(guild, presences = true, user_ids = @[user])
+
+    discord.events.guild_members_chunk = proc (s: Shard,
+        g: Guild, e: GuildMembersChunk) {.async.} =
+        if e.members.len == 0:
+            raise newException(Exception, "Member was not found.")
+
+        member = e.members[0]
+        if member == nil:
+            raise newException(Exception, "Member was not found.")
+
+        waiting = false
+
+    while member == nil:
+        poll()
+
+    return member
+
 proc messageCreate(s: Shard, m: Message) {.async.} =
     let args = m.content.split(" ") # Splits a message.
     if m.author.bot or not args[0].startsWith("$$"): return
@@ -10,12 +32,13 @@ proc messageCreate(s: Shard, m: Message) {.async.} =
     of "test": # Sends a basic message.
         discard await discord.api.sendMessage(m.channel_id, "Success!")
     of "prune": # Prune messages.
-        if s.cache.kind(m.channel_id) == ctDirect: return
+        if m.member.isNone: return
 
         let
             guild = s.cache.guilds[m.guild_id.get]
             chan = s.cache.guildChannels[m.channel_id]
-            perms = guild.computePerms(guild.members[m.author.id], chan)
+            memb = await s.getGuildMember(m.guild_id.get, m.author.id)
+            perms = guild.computePerms(memb, chan)
 
         if permManageMessages notin perms.allowed:
             discard await discord.api.sendMessage(
@@ -58,7 +81,7 @@ proc onReady(s: Shard, r: Ready) {.async.} =
 
     await s.updateStatus(game = some GameStatus(
         name: "around.",
-        kind: gatPlaying
+        kind: atPlaying
     ), status = "idle")
 
 proc messageDelete(s: Shard, m: Message, exists: bool) {.async.} =
@@ -68,4 +91,7 @@ discord.events.onReady = onReady
 discord.events.messageCreate = messageCreate
 discord.events.messageDelete = messageDelete
 
-waitFor discord.startSession()
+# Connect to Discord and run the bot.
+waitFor discord.startSession(
+    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers}
+)

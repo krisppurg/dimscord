@@ -121,9 +121,9 @@ function main() {
   <li><a class="reference" href="#disconnect%2CShard"
     title="disconnect(s: Shard; should_reconnect = true): owned(Future[void])"><wbr />disconnect<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#endSession%2CDiscordClient"
-    title="endSession(cl: DiscordClient): owned(Future[void])"><wbr />end<wbr />Session<span class="attachedType"></span></a></li>
+    title="endSession(discord: DiscordClient): owned(Future[void])"><wbr />end<wbr />Session<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"
-    title="startSession(cl: DiscordClient; autoreconnect = true;
+    title="startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 6; max_shards = none int;
@@ -141,11 +141,11 @@ function main() {
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
-  <p class="module-desc"></p>
+  <p class="module-desc">Interact with the discord api gateway. Especially <tt class="docutils literal"><span class="pre">startSession</span></tt>, <tt class="docutils literal"><span class="pre">updateStatus</span></tt>.</p>
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
 <dl class="item">
-<a class="reference external" href="restapi.html">restapi</a>, <a class="reference external" href="dispatch.html">dispatch</a>, <a class="reference external" href="constants.html">constants</a>, <a class="reference external" href="objects.html">objects</a>
+<a class="reference external" href="restapi.html">restapi</a>, <a class="reference external" href="dispatch.html">dispatch</a>, <a class="reference external" href="constants.html">constants</a>, <a class="reference external" href="objects.html">objects</a>, <a class="reference external" href="helpers.html">helpers</a>
 </dl></div>
 <div class="section" id="12">
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
@@ -158,9 +158,9 @@ function main() {
 
 Updates the shard's status.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L103"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L117"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L103" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="resume,Shard"></a>
@@ -170,9 +170,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L158"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L172"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L158" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L172" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="requestGuildMembers,Shard,,string,seq[string]"></a>
@@ -183,9 +183,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Requests the offline members to a guild. (See: <a class="reference external" href="https://discord.com/developers/docs/topics/gateway#request-guild-members">https://discord.com/developers/docs/topics/gateway#request-guild-members</a>)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L177"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L191"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L177" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L191" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="voiceStateUpdate,Shard,string"></a>
@@ -197,9 +197,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Allows the shard to either join, move to, or disconnect. If channel_id param is not provided. It will disconnect.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L202"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L216"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L202" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="disconnect,Shard"></a>
@@ -210,26 +210,26 @@ class="link-seesrc" target="_blank">Source</a>
 
 Disconnects a shard.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L312"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L336"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L312" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L336" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="endSession,DiscordClient"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endSession%2CDiscordClient"><span class="Identifier">endSession</span></a><span class="Other">(</span><span class="Identifier">cl</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#endSession%2CDiscordClient"><span class="Identifier">endSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Ends the session.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L463"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L497"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L463" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L497" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="startSession,DiscordClient,set[GatewayIntent],int,int,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">cl</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                  <span class="Identifier">gateway_intents</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
                  <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
                  <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">;</span>
@@ -237,12 +237,12 @@ class="link-seesrc" target="_blank">Source</a>
                  <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span><span class="Other">,</span> <span class="Identifier">guild_subscriptions</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                  <span class="Identifier">cache_guild_channels</span><span class="Other">,</span> <span class="Identifier">cache_dm_channels</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 <p>Connects the client to Discord via gateway.</p>
 <p>If you want to compress add <tt class="docutils literal"><span class="pre">-d:discordCompress</span></tt>, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.</p>
-<ul class="simple"><li><tt class="docutils literal"><span class="pre">gateway_intents</span></tt> Allows you to subscribe to pre-defined events.</li>
+<ul class="simple"><li><tt class="docutils literal"><span class="pre">gateway_intents</span></tt> Allows you to subscribe to pre-defined events. If you are using v8, this defaults to <tt class="docutils literal"><span class="pre">{giGuilds, giGuildMessages, giDirectMessages}</span></tt>.</li>
 <li><tt class="docutils literal"><span class="pre">large_threshold</span></tt> The number that would be considered a large guild (50-250).</li>
 <li><tt class="docutils literal"><span class="pre">guild_subscriptions</span></tt> Whether or not to receive presence_update, typing_start events.</li>
 <li><tt class="docutils literal"><span class="pre">autoreconnect</span></tt> Whether the client should reconnect whenever a network error occurs.</li>
@@ -251,9 +251,9 @@ class="link-seesrc" target="_blank">Source</a>
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L500"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L541"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L500" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L541" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="latency,Shard"></a>
@@ -262,9 +262,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the shard's latency ms.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L578"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L636"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L578" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L636" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -277,7 +277,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-09-10 17:47:38 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:53:05 UTC</small>
       </div>
     </div>
   </div>

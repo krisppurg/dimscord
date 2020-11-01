@@ -122,6 +122,7 @@ function main() {
   user*: User
   gatewayUrl*, session_id*: string
   cache*: CacheTable
+  voiceConnections*: Table[string, VoiceClient]
   connection*: WebSocket
   hbAck*, hbSent*, stop*: bool
   lastHBTransmit*, lastHBReceived*: float
@@ -129,6 +130,24 @@ function main() {
   heartbeating*, resuming*, reconnecting*: bool
   authenticating*, networkError*, ready*: bool
   interval*: int"><wbr />Shard<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#VoiceClient"
+    title="VoiceClient = ref object
+  shard*: Shard
+  voice_events*: VoiceEvents
+  endpoint*, token*: string
+  session_id*, guild_id*, channel_id*: string
+  connection*: WebSocket
+  hbAck*, hbSent*, stop*: bool
+  lastHBTransmit*, lastHBReceived*: float
+  retry_info*: tuple[ms, attempts: int]
+  heartbeating*, resuming*, reconnecting*: bool
+  networkError*, ready*: bool
+  interval*: int"><wbr />Voice<wbr />Client<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#VoiceEvents"
+    title="VoiceEvents = ref object
+  on_dispatch*: proc (v: VoiceClient; d: JsonNode; event: string) {.async.}
+  on_speaking*: proc (v: VoiceClient; speaking: bool) {.async.}
+  on_ready*, on_disconnect*: proc (v: VoiceClient) {.async.}"><wbr />Voice<wbr />Events<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#CacheTable"
     title="CacheTable = ref object
   preferences*: CacheTablePrefs
@@ -185,7 +204,7 @@ function main() {
   <li><a class="reference" href="#MentionChannel"
     title="MentionChannel = object
   id*, guild_id*, name*: string
-  kind*: int"><wbr />Mention<wbr />Channel<span class="attachedType"></span></a></li>
+  kind*: ChannelType"><wbr />Mention<wbr />Channel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MessageReference"
     title="MessageReference = object
   channel_id*: string
@@ -197,7 +216,8 @@ function main() {
   edited_timestamp*, guild_id*: Option[string]
   webhook_id*, nonce*: Option[string]
   tts*, mention_everyone*, pinned*: bool
-  kind*, flags*: int
+  kind*: MessageType
+  flags*: set[MessageFlags]
   author*: User
   member*: Option[Member]
   mention_users*: seq[User]
@@ -240,7 +260,7 @@ function main() {
     title="Emoji = object
   id*, name*: Option[string]
   require_colons*, managed*, animated*: Option[bool]
-  user*: User
+  user*: Option[User]
   roles*: seq[string]"><wbr />Emoji<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Application"
     title="Application = object
@@ -269,14 +289,15 @@ function main() {
   <li><a class="reference" href="#DMChannel"
     title="DMChannel = ref object
   id*, last_message_id*: string
-  kind*: int
+  kind*: ChannelType
   recipients*: seq[User]
   messages*: Table[string, Message]"><wbr />DMChannel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GuildChannel"
     title="GuildChannel = ref object
   id*, name*, guild_id*: string
   last_message_id*: string
-  kind*, position*, rate_limit_per_user*: int
+  kind*: ChannelType
+  position*, rate_limit_per_user*: int
   bitrate*, user_limit*: int
   parent_id*, topic*: Option[string]
   permission_overwrites*: Table[string, Overwrite]
@@ -286,10 +307,11 @@ function main() {
     title="GameAssets = object
   small_text*, small_image*: string
   large_text*, large_image*: string"><wbr />Game<wbr />Assets<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#GameActivity"
-    title="GameActivity = object
+  <li><a class="reference" href="#Activity"
+    title="Activity = object
   name*: string
-  kind*, flags*: int
+  kind*: ActivityType
+  flags*: set[ActivityFlags]
   url*, application_id*, details*, state*: Option[string]
   created_at*: BiggestInt
   timestamps*: Option[tuple[start, final: BiggestInt]]
@@ -297,13 +319,15 @@ function main() {
   party*: Option[tuple[id: string, size: seq[int]]]
   assets*: Option[GameAssets]
   secrets*: Option[tuple[join, spectate, match: string]]
-  instance*: bool"><wbr />Game<wbr />Activity<span class="attachedType"></span></a></li>
+  instance*: bool"><wbr />Activity<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Presence"
-    title="Presence = object
+    title="Presence = ref object
   user*: User
-  game*: Option[GameActivity]
+  when not false:
+      activity*: Option[Activity]
+
   guild_id*, status*: string
-  activities*: seq[GameActivity]
+  activities*: seq[Activity]
   client_status*: tuple[web, desktop, mobile: string]"><wbr />Presence<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Guild"
     title="Guild = ref object
@@ -321,8 +345,11 @@ function main() {
   permissions*, afk_timeout*, member_count*: Option[int]
   approximate_member_count*, approximate_presence_count*: Option[int]
   max_presences*, max_members*, premium_subscription_count*: Option[int]
-  explicit_content_filter*, mfa_level*, premium_tier*: int
-  verification_level*, default_message_notifications*: int
+  explicit_content_filter*: ExplicitContentFilter
+  mfa_level*: MFALevel
+  premium_tier*: PremiumTier
+  verification_level*: VerificationLevel
+  default_message_notifications*: MessageNotificationLevel
   features*: seq[string]
   roles*: Table[string, Role]
   emojis*: Table[string, Emoji]
@@ -339,22 +366,28 @@ function main() {
   <li><a class="reference" href="#Role"
     title="Role = object
   id*, name*, permissions_new*: string
-  color*, position*, permissions*: int
+  color*, position*: int
+  permissions*: set[PermissionFlags]
   hoist*, managed*, mentionable*: bool"><wbr />Role<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GameStatus"
     title="GameStatus = object
   name*: string
-  kind*: int
+  kind*: ActivityType
   url*: Option[string]"><wbr />Game<wbr />Status<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Overwrite"
     title="Overwrite = object
-  id*, kind*: string
-  allow*, deny*: int
-  allow_new*, deny_new*: string
-  permObj*: PermObj"><wbr />Overwrite<span class="attachedType"></span></a></li>
+  id*: string
+  when defined(discordv8):
+      kind*: int
+
+  else:
+      kind*: string
+      allow_new*, deny_new*: string
+
+  allow*, deny*: set[PermissionFlags]"><wbr />Overwrite<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#PermObj"
     title="PermObj = object
-  allowed*, denied*: set[PermEnum]"><wbr />Perm<wbr />Obj<span class="attachedType"></span></a></li>
+  allowed*, denied*: set[PermissionFlags]"><wbr />Perm<wbr />Obj<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#PartialGuild"
     title="PartialGuild = object
   id*, name*: string
@@ -362,14 +395,14 @@ function main() {
   <li><a class="reference" href="#PartialChannel"
     title="PartialChannel = object
   id*, name*: string
-  kind*: int"><wbr />Partial<wbr />Channel<span class="attachedType"></span></a></li>
+  kind*: ChannelType"><wbr />Partial<wbr />Channel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Channel"
     title="Channel = object
   name*, parent_id*: string
   id*, kind*: int"><wbr />Channel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#TeamMember"
     title="TeamMember = object
-  membership_state*: int
+  membership_state*: TeamMembershipState
   permissions*: seq[string]    ## always would be @[&quot;*&quot;]
   team_id*: string
   user*: User"><wbr />Team<wbr />Member<span class="attachedType"></span></a></li>
@@ -433,7 +466,7 @@ function main() {
   <li><a class="reference" href="#Webhook"
     title="Webhook = object
   id*, channel_id*: string
-  kind*: int
+  kind*: WebhookType
   guild_id*, avatar*: Option[string]
   name*, token*: Option[string]
   user*: Option[User]"><wbr />Webhook<span class="attachedType"></span></a></li>
@@ -462,10 +495,14 @@ function main() {
   delete_member_days*, members_removed*: Option[string]
   channel_id*, count*: Option[string]
   id*, role_name*: Option[string]
-  kind*: Option[string]        ## (&quot;member&quot; or &quot;role&quot;)"><wbr />Audit<wbr />Log<wbr />Options<span class="attachedType"></span></a></li>
+  when defined(discordv8):
+      kind*: Option[int]
+
+  else:
+      kind*: Option[string]"><wbr />Audit<wbr />Log<wbr />Options<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#AuditLogChangeValue"
     title="AuditLogChangeValue = object
-  case kind*: AuditLogChangeKind
+  case kind*: AuditLogChangeType
   of alcString:
       str*: string
 
@@ -489,13 +526,21 @@ function main() {
   before*, after*: Table[string, AuditLogChangeValue]
   opts*: Option[AuditLogOptions]
   user_id*, id*: string
-  action_type*: int"><wbr />Audit<wbr />Log<wbr />Entry<span class="attachedType"></span></a></li>
+  action_type*: AuditLogEntryType"><wbr />Audit<wbr />Log<wbr />Entry<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#AuditLog"
     title="AuditLog = object
   webhooks*: seq[Webhook]
   users*: seq[User]
   audit_log_entries*: seq[AuditLogEntry]
   integrations*: seq[Integration]"><wbr />Audit<wbr />Log<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#GuildWidgetJson"
+    title="GuildWidgetJson = object
+  id*, name*: string
+  instant_invite*: string
+  channels*: seq[tuple[id, name: string, position: int]]
+  members*: seq[tuple[id, username, discriminator: string, avatar: Option[string],
+                     status, avatar_url: string]]
+  presence_count: int"><wbr />Guild<wbr />Widget<wbr />Json<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GatewaySession"
     title="GatewaySession = object
   total*, remaining*: int
@@ -509,11 +554,13 @@ function main() {
     title="Events = ref object
   on_dispatch*: proc (s: Shard; evt: string; data: JsonNode) {.async.}
   on_ready*: proc (s: Shard; r: Ready) {.async.}
+  on_disconnect*: proc (s: Shard) {.async.}
   message_create*: proc (s: Shard; m: Message) {.async.}
   message_delete*: proc (s: Shard; m: Message; exists: bool) {.async.}
   message_update*: proc (s: Shard; m: Message; o: Option[Message]; exists: bool) {.async.}
-  message_reaction_add*, message_reaction_remove*: proc (s: Shard; m: Message; u: User;
-      r: Reaction; exists: bool) {.async.}
+  message_reaction_add*: proc (s: Shard; m: Message; u: User; exists: bool) {.async.}
+  message_reaction_remove*: proc (s: Shard; m: Message; u: User; r: Reaction; exists: bool) {.
+      async.}
   message_reaction_remove_all*: proc (s: Shard; m: Message; exists: bool) {.async.}
   message_reaction_remove_emoji*: proc (s: Shard; m: Message; e: Emoji; exists: bool) {.
       async.}
@@ -543,8 +590,8 @@ function main() {
   invite_delete*: proc (s: Shard; g: Option[Guild]; cid, code: string) {.async.}
   user_update*: proc (s: Shard; u: User) {.async.}
   voice_state_update*: proc (s: Shard; v: VoiceState; o: Option[VoiceState]) {.async.}
-  voice_server_update*: proc (s: Shard; g: Guild; token: string; e: Option[string]) {.
-      async.}
+  voice_server_update*: proc (s: Shard; g: Guild; token: string;
+                            endpoint: Option[string]) {.async.}
   webhooks_update*: proc (s: Shard; g: Guild; c: GuildChannel) {.async.}"><wbr />Events<span class="attachedType"></span></a></li>
 
   </ul>
@@ -553,7 +600,7 @@ function main() {
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#kind%2CCacheTable%2Cstring"
-    title="kind(c: CacheTable; channel_id: string): int"><wbr />kind<span class="attachedType">CacheTable</span></a></li>
+    title="kind(c: CacheTable; channel_id: string): ChannelType"><wbr />kind<span class="attachedType">CacheTable</span></a></li>
   <li><a class="reference" href="#clear%2CCacheTable"
     title="clear(c: CacheTable)"><wbr />clear<span class="attachedType">CacheTable</span></a></li>
   <li><a class="reference" href="#%24%2CEmoji"
@@ -588,8 +635,8 @@ function main() {
     title="newVoiceState(data: JsonNode): VoiceState"><wbr />new<wbr />Voice<wbr />State<span class="attachedType">VoiceState</span></a></li>
   <li><a class="reference" href="#newEmoji%2CJsonNode"
     title="newEmoji(data: JsonNode): Emoji"><wbr />new<wbr />Emoji<span class="attachedType">Emoji</span></a></li>
-  <li><a class="reference" href="#newGameActivity%2CJsonNode"
-    title="newGameActivity(data: JsonNode): GameActivity"><wbr />new<wbr />Game<wbr />Activity<span class="attachedType">GameActivity</span></a></li>
+  <li><a class="reference" href="#newActivity%2CJsonNode"
+    title="newActivity(data: JsonNode): Activity"><wbr />new<wbr />Activity<span class="attachedType">Activity</span></a></li>
   <li><a class="reference" href="#newPresence%2CJsonNode"
     title="newPresence(data: JsonNode): Presence"><wbr />new<wbr />Presence<span class="attachedType">Presence</span></a></li>
   <li><a class="reference" href="#newMember%2CJsonNode"
@@ -620,10 +667,10 @@ function main() {
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
-  <p class="module-desc">All Optional fields in these object are:<ul class="simple"><li>Fields that cannot be assumed. such as bools</li>
+  <p class="module-desc">This contains every single discord objects All Optional fields in these object are:<ul class="simple"><li>Fields that cannot be assumed. such as bools</li>
 <li>Optional fields for example embeds, which they may not be present.</li>
 </ul>
-<p>Some may not be optional, but they can be assumable or always present. </p>
+<p>Some may not be optional, but they can be assumable or always present.</p>
 </p>
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -647,9 +694,9 @@ function main() {
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L15"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L14"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L14" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Shard"></a>
@@ -659,6 +706,7 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
   <span class="Identifier">gatewayUrl</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">session_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">cache</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#CacheTable"><span class="Identifier">CacheTable</span></a>
+  <span class="Identifier">voiceConnections</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">]</span>
   <span class="Identifier">connection</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">WebSocket</span>
   <span class="Identifier">hbAck</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">hbSent</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">stop</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">lastHBTransmit</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">lastHBReceived</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
@@ -669,11 +717,51 @@ class="link-seesrc" target="_blank">Source</a>
 </pre></dt>
 <dd>
 
-This is where you interact with the gateway api with. It's basically a gateway connection.
+<p>This is where you interact with the gateway api with. It's basically a gateway connection.</p>
+<p>For <tt class="docutils literal"><span class="pre">voiceConnections</span></tt>, the string is a guild_id.</p>
+
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L23"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L22"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L22" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="VoiceClient"></a>
+<dt><pre><a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <span class="Identifier">shard</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a>
+  <span class="Identifier">voice_events</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#VoiceEvents"><span class="Identifier">VoiceEvents</span></a>
+  <span class="Identifier">endpoint</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">token</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">session_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">channel_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">connection</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">WebSocket</span>
+  <span class="Identifier">hbAck</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">hbSent</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">stop</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">lastHBTransmit</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">lastHBReceived</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
+  <span class="Identifier">retry_info</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">ms</span><span class="Other">,</span> <span class="Identifier">attempts</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">]</span>
+  <span class="Identifier">heartbeating</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">resuming</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">reconnecting</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">networkError</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">ready</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">interval</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L40"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="VoiceEvents"></a>
+<dt><pre><a href="objects.html#VoiceEvents"><span class="Identifier">VoiceEvents</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <span class="Identifier">on_dispatch</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceClient</span><span class="Other">;</span> <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">;</span> <span class="Identifier">event</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">on_speaking</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceClient</span><span class="Other">;</span> <span class="Identifier">speaking</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">on_ready</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">on_disconnect</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceClient</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L52"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L52" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="CacheTable"></a>
@@ -688,9 +776,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L38"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L58"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L38" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L58" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="CacheTablePrefs"></a>
@@ -703,9 +791,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L44"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L64"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L44" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L64" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="CacheError"></a>
@@ -714,9 +802,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L48"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L68"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L48" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L68" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Embed"></a>
@@ -736,9 +824,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L49"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L69"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L49" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L69" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedThumbnail"></a>
@@ -750,9 +838,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L60"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L80"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L60" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedVideo"></a>
@@ -764,9 +852,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L63"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L83"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L83" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedImage"></a>
@@ -778,9 +866,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L66"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L86"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L66" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L86" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedProvider"></a>
@@ -791,9 +879,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L69"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L89"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L69" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L89" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedAuthor"></a>
@@ -805,9 +893,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L71"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L91"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L91" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedFooter"></a>
@@ -819,9 +907,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L74"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L94"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L74" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L94" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="EmbedField"></a>
@@ -833,23 +921,23 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L77"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L97"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L77" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L97" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="MentionChannel"></a>
 <dt><pre><a href="objects.html#MentionChannel"><span class="Identifier">MentionChannel</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L80"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L100"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L100" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="MessageReference"></a>
@@ -861,9 +949,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L83"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L103"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L83" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L103" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Message"></a>
@@ -873,7 +961,8 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">edited_timestamp</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">webhook_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">nonce</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">tts</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">mention_everyone</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">pinned</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">flags</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#MessageType"><span class="Identifier">MessageType</span></a>
+  <span class="Identifier">flags</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span>
   <span class="Identifier">author</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
   <span class="Identifier">member</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">]</span>
   <span class="Identifier">mention_users</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">]</span>
@@ -890,9 +979,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L86"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L106"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L86" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L106" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="User"></a>
@@ -907,9 +996,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L104"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L104" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Member"></a>
@@ -926,9 +1015,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L110"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L131"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L110" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Attachment"></a>
@@ -942,9 +1031,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L118"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L139"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L118" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L139" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Reaction"></a>
@@ -957,25 +1046,25 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L123"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L144"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L123" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L144" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Emoji"></a>
 <dt><pre><a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">require_colons</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">managed</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">animated</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">bool</span><span class="Other">]</span>
-  <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
+  <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">]</span>
   <span class="Identifier">roles</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L127"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L148"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L127" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Application"></a>
@@ -987,9 +1076,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L132"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L153"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L132" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="RestApi"></a>
@@ -1002,9 +1091,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L135"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L156"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L135" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Ratelimit"></a>
@@ -1016,9 +1105,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L139"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L160"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L139" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="UnavailableGuild"></a>
@@ -1030,9 +1119,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L142"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L163"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L142" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Ready"></a>
@@ -1047,15 +1136,15 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L145"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L166"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L145" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L166" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="DMChannel"></a>
 <dt><pre><a href="objects.html#DMChannel"><span class="Identifier">DMChannel</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">last_message_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a>
   <span class="Identifier">recipients</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">]</span>
   <span class="Identifier">messages</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span>
 </pre></dt>
@@ -1063,16 +1152,17 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L151"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L172"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L151" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L172" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GuildChannel"></a>
 <dt><pre><a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">last_message_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">position</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">rate_limit_per_user</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a>
+  <span class="Identifier">position</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">rate_limit_per_user</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">bitrate</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">user_limit</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">parent_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">topic</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">permission_overwrites</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#Overwrite"><span class="Identifier">Overwrite</span></a><span class="Other">]</span>
@@ -1083,9 +1173,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L156"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L177"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L177" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GameAssets"></a>
@@ -1097,15 +1187,16 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L165"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L187"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L187" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="GameActivity"></a>
-<dt><pre><a href="objects.html#GameActivity"><span class="Identifier">GameActivity</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<a id="Activity"></a>
+<dt><pre><a href="objects.html#Activity"><span class="Identifier">Activity</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">flags</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ActivityType"><span class="Identifier">ActivityType</span></a>
+  <span class="Identifier">flags</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#ActivityFlags"><span class="Identifier">ActivityFlags</span></a><span class="Other">]</span>
   <span class="Identifier">url</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">application_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">details</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">state</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">created_at</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">BiggestInt</span>
   <span class="Identifier">timestamps</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">start</span><span class="Other">,</span> <span class="Identifier">final</span><span class="Other">:</span> <span class="Identifier">BiggestInt</span><span class="Other">]</span><span class="Other">]</span>
@@ -1119,26 +1210,28 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L168"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L190"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L168" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L190" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Presence"></a>
-<dt><pre><a href="objects.html#Presence"><span class="Identifier">Presence</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<dt><pre><a href="objects.html#Presence"><span class="Identifier">Presence</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
-  <span class="Identifier">game</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#GameActivity"><span class="Identifier">GameActivity</span></a><span class="Other">]</span>
+  <span class="Keyword">when</span> <span class="Keyword">not</span> <span class="DecNumber">false</span><span class="Other">:</span>
+      <span class="Identifier">activity</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Activity"><span class="Identifier">Activity</span></a><span class="Other">]</span>
+
   <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">status</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">activities</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#GameActivity"><span class="Identifier">GameActivity</span></a><span class="Other">]</span>
+  <span class="Identifier">activities</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Activity"><span class="Identifier">Activity</span></a><span class="Other">]</span>
   <span class="Identifier">client_status</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">web</span><span class="Other">,</span> <span class="Identifier">desktop</span><span class="Other">,</span> <span class="Identifier">mobile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L179"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L202"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L179" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L202" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Guild"></a>
@@ -1157,8 +1250,11 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">afk_timeout</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">member_count</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span>
   <span class="Identifier">approximate_member_count</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">approximate_presence_count</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span>
   <span class="Identifier">max_presences</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">max_members</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">premium_subscription_count</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span>
-  <span class="Identifier">explicit_content_filter</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">mfa_level</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">premium_tier</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
-  <span class="Identifier">verification_level</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">default_message_notifications</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">explicit_content_filter</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ExplicitContentFilter"><span class="Identifier">ExplicitContentFilter</span></a>
+  <span class="Identifier">mfa_level</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#MFALevel"><span class="Identifier">MFALevel</span></a>
+  <span class="Identifier">premium_tier</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#PremiumTier"><span class="Identifier">PremiumTier</span></a>
+  <span class="Identifier">verification_level</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#VerificationLevel"><span class="Identifier">VerificationLevel</span></a>
+  <span class="Identifier">default_message_notifications</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#MessageNotificationLevel"><span class="Identifier">MessageNotificationLevel</span></a>
   <span class="Identifier">features</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">roles</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#Role"><span class="Identifier">Role</span></a><span class="Other">]</span>
   <span class="Identifier">emojis</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">]</span>
@@ -1171,9 +1267,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L185"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L209"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L185" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L209" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="VoiceState"></a>
@@ -1187,68 +1283,76 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L209"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L236"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L209" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Role"></a>
 <dt><pre><a href="objects.html#Role"><span class="Identifier">Role</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">permissions_new</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">color</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">position</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">color</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">position</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span>
   <span class="Identifier">hoist</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">managed</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">mentionable</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L214"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L241"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L214" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L241" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GameStatus"></a>
 <dt><pre><a href="objects.html#GameStatus"><span class="Identifier">GameStatus</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ActivityType"><span class="Identifier">ActivityType</span></a>
   <span class="Identifier">url</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
 </pre></dt>
 <dd>
 
 This is used for status updates.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L218"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L218" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Overwrite"></a>
 <dt><pre><a href="objects.html#Overwrite"><span class="Identifier">Overwrite</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">allow</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">deny</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
-  <span class="Identifier">allow_new</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">deny_new</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">permObj</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a>
+  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Keyword">when</span> <span class="Identifier">defined</span><span class="Other">(</span><span class="Identifier">discordv8</span><span class="Other">)</span><span class="Other">:</span>
+      <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+
+  <span class="Keyword">else</span><span class="Other">:</span>
+      <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+      <span class="Identifier">allow_new</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">deny_new</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+
+  <span class="Identifier">allow</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">deny</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span>
 </pre></dt>
 <dd>
 
+<ul class="simple"><li><tt class="docutils literal"><span class="pre">kind</span></tt> will be either (&quot;role&quot; or &quot;member&quot;) or (&quot;0&quot; or &quot;1&quot;)</li>
+</ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L223"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L251"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L223" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L251" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="PermObj"></a>
 <dt><pre><a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">allowed</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">denied</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermEnum"><span class="Identifier">PermEnum</span></a><span class="Other">]</span>
+  <span class="Identifier">allowed</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">denied</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L228"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L260"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L228" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L260" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="PartialGuild"></a>
@@ -1260,23 +1364,23 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L230"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L262"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L230" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L262" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="PartialChannel"></a>
 <dt><pre><a href="objects.html#PartialChannel"><span class="Identifier">PartialChannel</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L233"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L265"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L233" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L265" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Channel"></a>
@@ -1288,14 +1392,14 @@ class="link-seesrc" target="_blank">Source</a>
 
 Used for creating guilds.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L236"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L268"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L268" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="TeamMember"></a>
 <dt><pre><a href="objects.html#TeamMember"><span class="Identifier">TeamMember</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">membership_state</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">membership_state</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#TeamMembershipState"><span class="Identifier">TeamMembershipState</span></a>
   <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>    <span class="Comment">## always would be @[&quot;*&quot;]</span>
   <span class="Identifier">team_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
@@ -1304,9 +1408,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L240"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L272"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L240" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L272" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Team"></a>
@@ -1319,9 +1423,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L245"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L277"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L245" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L277" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="OAuth2Application"></a>
@@ -1340,9 +1444,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L249"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L281"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L249" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L281" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Invite"></a>
@@ -1358,9 +1462,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L259"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L291"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L259" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L291" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="InviteMetadata"></a>
@@ -1374,9 +1478,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L266"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L298"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L266" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L298" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="InviteCreate"></a>
@@ -1393,9 +1497,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L271"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L303"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L271" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L303" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="TypingStart"></a>
@@ -1409,9 +1513,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L279"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L311"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L279" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L311" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GuildMembersChunk"></a>
@@ -1427,9 +1531,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L284"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L316"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L284" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L316" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GuildBan"></a>
@@ -1441,15 +1545,15 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L291"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L323"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L291" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L323" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Webhook"></a>
 <dt><pre><a href="objects.html#Webhook"><span class="Identifier">Webhook</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">channel_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#WebhookType"><span class="Identifier">WebhookType</span></a>
   <span class="Identifier">guild_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">avatar</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">token</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">]</span>
@@ -1458,9 +1562,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L294"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L326"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L294" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L326" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Integration"></a>
@@ -1477,9 +1581,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L300"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L332"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L300" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L332" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GuildPreview"></a>
@@ -1493,9 +1597,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L308"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L340"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L308" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L340" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="VoiceRegion"></a>
@@ -1508,9 +1612,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L313"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L345"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L313" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L345" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="AuditLogOptions"></a>
@@ -1518,20 +1622,27 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">delete_member_days</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">members_removed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">channel_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">count</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">role_name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
-  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>        <span class="Comment">## (&quot;member&quot; or &quot;role&quot;)</span>
+  <span class="Keyword">when</span> <span class="Identifier">defined</span><span class="Other">(</span><span class="Identifier">discordv8</span><span class="Other">)</span><span class="Other">:</span>
+      <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span>
+
+  <span class="Keyword">else</span><span class="Other">:</span>
+      <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
+
   </pre></dt>
 <dd>
 
+<ul class="simple"><li><tt class="docutils literal"><span class="pre">kind</span></tt> (&quot;role&quot; or &quot;member&quot;) or (0 or 1)</li>
+</ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L317"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L349"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L317" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L349" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="AuditLogChangeValue"></a>
 <dt><pre><a href="objects.html#AuditLogChangeValue"><span class="Identifier">AuditLogChangeValue</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Keyword">case</span> <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#AuditLogChangeKind"><span class="Identifier">AuditLogChangeKind</span></a>
+  <span class="Keyword">case</span> <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#AuditLogChangeType"><span class="Identifier">AuditLogChangeType</span></a>
   <span class="Keyword">of</span> <span class="Identifier">alcString</span><span class="Other">:</span>
       <span class="Identifier">str</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
 
@@ -1555,9 +1666,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L322"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L358"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L322" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L358" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="AuditLogEntry"></a>
@@ -1566,15 +1677,15 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">before</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">after</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="objects.html#AuditLogChangeValue"><span class="Identifier">AuditLogChangeValue</span></a><span class="Other">]</span>
   <span class="Identifier">opts</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#AuditLogOptions"><span class="Identifier">AuditLogOptions</span></a><span class="Other">]</span>
   <span class="Identifier">user_id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">action_type</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">action_type</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#AuditLogEntryType"><span class="Identifier">AuditLogEntryType</span></a>
 </pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L336"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L372"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L336" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L372" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="AuditLog"></a>
@@ -1588,9 +1699,27 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L342"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L378"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L342" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L378" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="GuildWidgetJson"></a>
+<dt><pre><a href="objects.html#GuildWidgetJson"><span class="Identifier">GuildWidgetJson</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">instant_invite</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">channels</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">position</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">]</span><span class="Other">]</span>
+  <span class="Identifier">members</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">discriminator</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">avatar</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">,</span>
+                     <span class="Identifier">status</span><span class="Other">,</span> <span class="Identifier">avatar_url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span>
+  <span class="Identifier">presence_count</span><span class="Other">:</span> <span class="Identifier">int</span>
+</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L383"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L383" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GatewaySession"></a>
@@ -1602,9 +1731,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L347"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L396"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L347" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L396" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="GatewayBot"></a>
@@ -1617,20 +1746,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L350"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L399"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L350" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L399" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="Events"></a>
 <dt><pre><a href="objects.html#Events"><span class="Identifier">Events</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">on_dispatch</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">evt</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">on_ready</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Ready</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">on_disconnect</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_create</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Message</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_reaction_add</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">message_reaction_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span>
-      <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Reaction</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_reaction_add</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_reaction_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Reaction</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_reaction_remove_all</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_reaction_remove_emoji</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">Emoji</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
       <span class="Identifier">async</span></span><span class="Other">.}</span></span>
@@ -1660,8 +1791,8 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">invite_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">user_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">voice_state_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceState</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">VoiceState</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">voice_server_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">voice_server_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                            <span class="Identifier">endpoint</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">webhooks_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">GuildChannel</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
 </pre></dt>
 <dd>
@@ -1672,9 +1803,9 @@ An object containing events that can be changed.<ul class="simple"><li><tt class
 <p><a class="reference external" href="https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events">For reference</a></p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L354"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L403"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L354" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L403" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1683,15 +1814,15 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
 <a id="kind,CacheTable,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#kind%2CCacheTable%2Cstring"><span class="Identifier">kind</span></a><span class="Other">(</span><span class="Identifier">c</span><span class="Other">:</span> <a href="objects.html#CacheTable"><span class="Identifier">CacheTable</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">CacheError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#kind%2CCacheTable%2Cstring"><span class="Identifier">kind</span></a><span class="Other">(</span><span class="Identifier">c</span><span class="Other">:</span> <a href="objects.html#CacheTable"><span class="Identifier">CacheTable</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">CacheError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Checks for a channel kind. (Shortcut)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L413"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L465"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L413" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L465" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="clear,CacheTable"></a>
@@ -1700,9 +1831,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Empties cache.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L422"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L474"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L422" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L474" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="$,Emoji"></a>
@@ -1711,9 +1842,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L429"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L481"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L429" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L481" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newShard,int,DiscordClient"></a>
@@ -1722,9 +1853,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L489"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L532"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L489" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L532" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newDiscordClient,string,int"></a>
@@ -1734,9 +1865,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a Discord Client.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L502"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L545"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L502" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L545" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newInviteMetadata,JsonNode"></a>
@@ -1745,9 +1876,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L588"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L637"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L637" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newOverwrite,JsonNode"></a>
@@ -1756,35 +1887,13 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L598"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L647"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L598" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L647" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newRole,JsonNode"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#newRole%2CJsonNode"><span class="Identifier">newRole</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Role"><span class="Identifier">Role</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L614"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L614" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="newGuildChannel,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newGuildChannel%2CJsonNode"><span class="Identifier">newGuildChannel</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L627"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L627" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="newUser,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newUser%2CJsonNode"><span class="Identifier">newUser</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1794,15 +1903,37 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L660" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="newGuildChannel,JsonNode"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newGuildChannel%2CJsonNode"><span class="Identifier">newGuildChannel</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L678"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L678" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="newUser,JsonNode"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newUser%2CJsonNode"><span class="Identifier">newUser</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L711"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L711" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="newWebhook,JsonNode"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#newWebhook%2CJsonNode"><span class="Identifier">newWebhook</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Webhook"><span class="Identifier">Webhook</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L672"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L723"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L672" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L723" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuildBan,JsonNode"></a>
@@ -1811,9 +1942,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L683"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L734"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L683" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L734" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newDMChannel,JsonNode"></a>
@@ -1822,9 +1953,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L688"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L739"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L688" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L739" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newInvite,JsonNode"></a>
@@ -1834,9 +1965,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L698"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L749"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L698" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L749" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newInviteCreate,JsonNode"></a>
@@ -1845,9 +1976,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L718"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L769"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L718" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L769" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newReady,JsonNode"></a>
@@ -1856,9 +1987,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L737"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L788"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L737" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L788" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newVoiceState,JsonNode"></a>
@@ -1867,9 +1998,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L766"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L817"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L766" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L817" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newEmoji,JsonNode"></a>
@@ -1878,20 +2009,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L780"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L831"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L780" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L831" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="newGameActivity,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newGameActivity%2CJsonNode"><span class="Identifier">newGameActivity</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GameActivity"><span class="Identifier">GameActivity</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="newActivity,JsonNode"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newActivity%2CJsonNode"><span class="Identifier">newActivity</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Activity"><span class="Identifier">Activity</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L789"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L842"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L789" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L842" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newPresence,JsonNode"></a>
@@ -1900,9 +2031,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L830"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L883"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L830" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L883" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMember,JsonNode"></a>
@@ -1911,9 +2042,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L851"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L904"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L851" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L904" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newTypingStart,JsonNode"></a>
@@ -1922,9 +2053,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L868"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L921"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L868" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L921" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuildMembersChunk,JsonNode"></a>
@@ -1934,9 +2065,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L880"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L933"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L880" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L933" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newReaction,JsonNode"></a>
@@ -1945,9 +2076,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L891"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L944"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L891" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L944" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="updateMessage,Message,JsonNode"></a>
@@ -1957,9 +2088,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L898"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L951"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L898" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L951" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMessage,JsonNode"></a>
@@ -1969,9 +2100,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L934"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L990"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L934" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L990" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newAuditLog,JsonNode"></a>
@@ -1981,9 +2112,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1055"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1111"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1055" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1111" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newOAuth2Application,JsonNode"></a>
@@ -1993,9 +2124,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1081"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1141"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1081" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1141" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuild,JsonNode"></a>
@@ -2004,9 +2135,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1099"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1159"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1099" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1159" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -2019,7 +2150,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-09-10 17:47:33 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:52:57 UTC</small>
       </div>
     </div>
   </div>

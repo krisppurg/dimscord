@@ -21,7 +21,6 @@ proc getUser(s: Shard, user_id: string): Future[User] {.async.} =
     result = await discord.api.getUser(user_id)
 
 proc messageCreate(s: Shard, m: Message) {.async.} =
-    if m.author.bot or not m.member.isSome: return # If the message author is a bot or the message was in a DM, then stop.
     if m.content == "#!getguild": # Gets a guild from rest or cache
         discard await discord.api.sendMessage(
             m.channel_id, "Getting guild!"
@@ -45,10 +44,13 @@ discord.events.message_create = messageCreate
 
 when defined(noCaching): # Turn off caching when you define noCaching `-d:noCaching`
     waitFor discord.startSession(
+        gateway_intents = {giGuildMessages, giGuilds},
         cache_users = false,
         cache_guilds = false,
         cache_guild_channels = false,
         cache_dm_channels = false
     )
 else:
-    waitFor discord.startSession()
+    waitFor discord.startSession(
+        gateway_intents = {giGuildMessages, giGuilds}
+    )

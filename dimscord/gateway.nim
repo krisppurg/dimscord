@@ -7,7 +7,7 @@ import tables, random, times, constants, objects, json, math
 import nativesockets, helpers
 
 when defined(discordCompress):
-    import zip/zlib
+    import zippy
 
 randomize()
 
@@ -410,7 +410,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
         when defined(discordCompress):
             if packet[0] == Binary:
-                packet[1] = zlib.uncompress(packet[1])
+                packet[1] = uncompress(packet[1])
 
         try:
             data = parseJson(packet[1])

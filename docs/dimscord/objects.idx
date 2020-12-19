@@ -34,7 +34,7 @@ Presence	dimscord/objects.html#Presence	objects: Presence
 Guild	dimscord/objects.html#Guild	objects: Guild	
 VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
 Role	dimscord/objects.html#Role	objects: Role	
-GameStatus	dimscord/objects.html#GameStatus	objects: GameStatus	
+ActivityStatus	dimscord/objects.html#ActivityStatus	objects: ActivityStatus	
 Overwrite	dimscord/objects.html#Overwrite	objects: Overwrite	
 PermObj	dimscord/objects.html#PermObj	objects: PermObj	
 PartialGuild	dimscord/objects.html#PartialGuild	objects: PartialGuild	

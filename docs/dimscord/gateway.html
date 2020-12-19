@@ -20,7 +20,7 @@
 <title>dimscord/gateway</title>
 <link rel="stylesheet" type="text/css" href="../nimdoc.out.css">
 
-<script type="text/javascript" src="dochack.js"></script>
+<script type="text/javascript" src="../dochack.js"></script>
 
 <script type="text/javascript">
 function main() {
@@ -47,21 +47,12 @@ function main() {
 
   toggleSwitch.addEventListener('change', switchTheme, false);
 
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', "dark");
-    toggleSwitch.checked = true;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.setAttribute('data-theme', "light");
-    toggleSwitch.checked = false;
-  } else {
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-    if (currentTheme) {
-      document.documentElement.setAttribute('data-theme', currentTheme);
-
-      if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-      }
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true;
     }
   }
 }
@@ -83,6 +74,9 @@ function main() {
   </div>
   <div id="global-links">
     <ul class="simple">
+    <li>
+      <a href="../theindex.html">Index</a>
+    </li>
     </ul>
   </div>
   <div id="searchInputDiv">
@@ -106,31 +100,59 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#updateStatus%2CShard%2Cstring"
-    title="updateStatus(s: Shard; game = none GameStatus; status = &quot;online&quot;; afk = false): owned(
-    Future[void])"><wbr />update<wbr />Status<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#resume%2CShard"
-    title="resume(s: Shard): owned(Future[void])"><wbr />resume<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D"
+      <ul class="simple nested-toc-section">voiceStateUpdate
+      <li><a class="reference" href="#voiceStateUpdate%2CShard%2Cstring"
+    title="voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;
+                 self_mute, self_deaf = false): owned(Future[void])">voiceStateUpdate,Shard,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">requestGuildMembers
+      <li><a class="reference" href="#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D"
     title="requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;
                     query = none string; nonce = &quot;&quot;; presences = false;
-                    user_ids: seq[string] = @[]): owned(Future[void])"><wbr />request<wbr />Guild<wbr />Members<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#voiceStateUpdate%2CShard%2Cstring"
-    title="voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;
-                 self_mute, self_deaf = false): owned(Future[void])"><wbr />voice<wbr />State<wbr />Update<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#disconnect%2CShard"
-    title="disconnect(s: Shard; should_reconnect = true): owned(Future[void])"><wbr />disconnect<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endSession%2CDiscordClient"
-    title="endSession(discord: DiscordClient): owned(Future[void])"><wbr />end<wbr />Session<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"
+                    user_ids: seq[string] = @[]): owned(Future[void])">requestGuildMembers,Shard,,string,seq[string]<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">disconnect
+      <li><a class="reference" href="#disconnect%2CShard"
+    title="disconnect(s: Shard; should_reconnect = true): owned(Future[void])">disconnect,Shard<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endSession
+      <li><a class="reference" href="#endSession%2CDiscordClient"
+    title="endSession(discord: DiscordClient): owned(Future[void])">endSession,DiscordClient<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">startSession
+      <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"
     title="startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
-             max_message_size = 5000000; gateway_version = 6; max_shards = none int;
+             max_message_size = 5000000; gateway_version = 6;
+             max_shards = none int;
              cache_users, cache_guilds, guild_subscriptions = true;
-             cache_guild_channels, cache_dm_channels = true): owned(Future[void])"><wbr />start<wbr />Session<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#latency%2CShard"
-    title="latency(s: Shard): int"><wbr />latency<span class="attachedType"></span></a></li>
+             cache_guild_channels, cache_dm_channels = true): owned(Future[void])">startSession,DiscordClient,set[GatewayIntent],int,int,int,int<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">updateStatus
+      <li><a class="reference" href="#updateStatus%2CShard%2Cstring"
+    title="updateStatus(s: Shard; activity = none ActivityStatus; status = &quot;online&quot;;
+             afk = false): owned(Future[void])">updateStatus,Shard,string<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#updateStatus%2CShard%2Cseq%5BActivityStatus%5D%2Cstring"
+    title="updateStatus(s: Shard; activities: seq[ActivityStatus] = @[]; status = &quot;online&quot;;
+             afk = false): owned(Future[void])">updateStatus,Shard,seq[ActivityStatus],string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">resume
+      <li><a class="reference" href="#resume%2CShard"
+    title="resume(s: Shard): owned(Future[void])">resume,Shard<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">latency
+      <li><a class="reference" href="#latency%2CShard"
+    title="latency(s: Shard): int">latency,Shard<span class="attachedType"></span></a></li>
+
+  </ul>
 
   </ul>
 </li>
@@ -151,9 +173,9 @@ function main() {
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
 <a id="updateStatus,Shard,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#updateStatus%2CShard%2Cstring"><span class="Identifier">updateStatus</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">game</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#GameStatus"><span class="Identifier">GameStatus</span></a><span class="Other">;</span> <span class="Identifier">status</span> <span class="Other">=</span> <span class="StringLit">&quot;online&quot;</span><span class="Other">;</span> <span class="Identifier">afk</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
-    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
-                   <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#updateStatus%2CShard%2Cstring"><span class="Identifier">updateStatus</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">activity</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#ActivityStatus"><span class="Identifier">ActivityStatus</span></a><span class="Other">;</span> <span class="Identifier">status</span> <span class="Other">=</span> <span class="StringLit">&quot;online&quot;</span><span class="Other">;</span>
+                  <span class="Identifier">afk</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Updates the shard's status.
@@ -163,81 +185,96 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="updateStatus,Shard,seq[ActivityStatus],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#updateStatus%2CShard%2Cseq%5BActivityStatus%5D%2Cstring"><span class="Identifier">updateStatus</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">activities</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#ActivityStatus"><span class="Identifier">ActivityStatus</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                  <span class="Identifier">status</span> <span class="Other">=</span> <span class="StringLit">&quot;online&quot;</span><span class="Other">;</span> <span class="Identifier">afk</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Updates the shard's status.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L140"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L140" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="resume,Shard"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#resume%2CShard"><span class="Identifier">resume</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#resume%2CShard"><span class="Identifier">resume</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L172"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L198"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L172" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="requestGuildMembers,Shard,,string,seq[string]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D"><span class="Identifier">requestGuildMembers</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Keyword">or</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">limit</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span>
-                        <span class="Identifier">query</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">nonce</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">presences</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
-                        <span class="Identifier">user_ids</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D"><span class="Identifier">requestGuildMembers</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Keyword">or</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">;</span>
+                         <span class="Identifier">limit</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">query</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">nonce</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                         <span class="Identifier">presences</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">user_ids</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span></pre></dt>
 <dd>
 
 Requests the offline members to a guild. (See: <a class="reference external" href="https://discord.com/developers/docs/topics/gateway#request-guild-members">https://discord.com/developers/docs/topics/gateway#request-guild-members</a>)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L191"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L217"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L191" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L217" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="voiceStateUpdate,Shard,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#voiceStateUpdate%2CShard%2Cstring"><span class="Identifier">voiceStateUpdate</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">channel_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
-                     <span class="Identifier">self_mute</span><span class="Other">,</span> <span class="Identifier">self_deaf</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+                      <span class="Identifier">self_mute</span><span class="Other">,</span> <span class="Identifier">self_deaf</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Allows the shard to either join, move to, or disconnect. If channel_id param is not provided. It will disconnect.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L216"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L242"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L242" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="disconnect,Shard"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#disconnect%2CShard"><span class="Identifier">disconnect</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="objects.html#Shard"><span class="Identifier">Shard</span></a><span class="Other">;</span> <span class="Identifier">should_reconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Disconnects a shard.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L336"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L362"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L336" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L362" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="endSession,DiscordClient"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#endSession%2CDiscordClient"><span class="Identifier">endSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Ends the session.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L497"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L523"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L497" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L523" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="startSession,DiscordClient,set[GatewayIntent],int,int,int,int"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
-                 <span class="Identifier">gateway_intents</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
-                 <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
-                 <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">;</span>
-                 <span class="Identifier">max_shards</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span>
-                 <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span><span class="Other">,</span> <span class="Identifier">guild_subscriptions</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
-                 <span class="Identifier">cache_guild_channels</span><span class="Other">,</span> <span class="Identifier">cache_dm_channels</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+                  <span class="Identifier">gateway_intents</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
+                  <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
+                  <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">;</span>
+                  <span class="Identifier">max_shards</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span>
+                  <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span><span class="Other">,</span> <span class="Identifier">guild_subscriptions</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+                  <span class="Identifier">cache_guild_channels</span><span class="Other">,</span> <span class="Identifier">cache_dm_channels</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 <p>Connects the client to Discord via gateway.</p>
@@ -251,9 +288,9 @@ class="link-seesrc" target="_blank">Source</a>
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L541"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L567"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L541" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L567" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="latency,Shard"></a>
@@ -262,9 +299,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the shard's latency ms.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L636"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L662"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L636" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L662" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -277,7 +314,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:53:05 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 15:59:36 UTC</small>
       </div>
     </div>
   </div>

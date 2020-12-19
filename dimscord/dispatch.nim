@@ -5,7 +5,7 @@ proc addMsg(c: GuildChannel, m: Message, data: string;
     if data.len < prefs.max_message_size:
         if c.messages.len == prefs.large_message_threshold:
             c.messages.clear()
-        c.messages.add(m.id, m)
+        c.messages[m.id] = m
     await sleepAsync 120_000
     c.messages.del(m.id)
 
@@ -14,7 +14,7 @@ proc addMsg(c: DMChannel, m: Message, data: string;
     if data.len < prefs.max_message_size:
         if c.messages.len == prefs.large_message_threshold:
             c.messages.clear()
-        c.messages.add(m.id, m)
+        c.messages[m.id] = m
     await sleepAsync 120_000
     c.messages.del(m.id)
 
@@ -107,7 +107,7 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
         if presence.status == "offline":
             guild.presences.del(presence.user.id)
         elif offline and presence.status != "offline":
-            guild.presences.add(presence.user.id, presence)
+            guild.presences[presence.user.id] = presence
 
         if presence.user.id in guild.presences:
             guild.presences[presence.user.id] = presence
@@ -174,9 +174,9 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
     else:
         reaction.count += 1
         reaction.reacted = data["user_id"].str == s.user.id
-        msg.reactions.add($emoji, reaction)
+        msg.reactions[$emoji] = reaction
 
-    await s.client.events.message_reaction_add(s, msg, user, exists)
+    await s.client.events.message_reaction_add(s, msg, user, emoji, exists)
 
 proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
     let emoji = newEmoji(data["emoji"])
@@ -387,12 +387,12 @@ proc channelCreate(s: Shard, data: JsonNode) {.async.} =
         chan = some newGuildChannel(data)
 
         if s.cache.preferences.cache_guild_channels:
-            s.cache.guildChannels.add(chan.get.id, chan.get)
-            guild.get.channels.add(chan.get.id, chan.get)
+            s.cache.guildChannels[chan.get.id] = chan.get
+            guild.get.channels[chan.get.id] = chan.get
     elif data["id"].str notin s.cache.dmChannels:
         dmChan = some newDMChannel(data)
         if s.cache.preferences.cache_dm_channels:
-            s.cache.dmChannels.add(data["id"].str, dmChan.get)
+            s.cache.dmChannels[data["id"].str] = dmChan.get
 
     await s.client.events.channel_create(s, guild, chan, dmChan)
 
@@ -445,11 +445,9 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
     for member in data["members"].elems:
 
         if member["user"]["id"].str notin guild.members:
-            guild.members.add(member["user"]["id"].str,
-                newMember(member))
+            guild.members[member["user"]["id"].str] = newMember(member)
 
-            s.cache.users.add(member["user"]["id"].str,
-                newUser(member["user"]))
+            s.cache.users[member["user"]["id"].str] = newUser(member["user"])
 
     await s.client.events.guild_members_chunk(s, guild,
         newGuildMembersChunk(data))
@@ -461,13 +459,13 @@ proc guildMemberAdd(s: Shard, data: JsonNode) {.async.} =
         )
         member = newMember(data)
 
-    guild.members.add(member.user.id, member)
+    guild.members[member.user.id] = member
 
     if guild.member_count.isSome:
         guild.member_count = some guild.member_count.get + 1
 
     if s.cache.preferences.cache_users:
-        s.cache.users.add(member.user.id, member.user)
+        s.cache.users[member.user.id] = member.user
 
     await s.client.events.guild_member_add(s, guild, member)
 
@@ -494,7 +492,7 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
     member.user = newUser(data["user"])
 
     if s.cache.preferences.cache_users and member.user.id notin s.cache.users:
-        s.cache.users.add(member.user.id, member.user)
+        s.cache.users[member.user.id] = member.user
 
     if "nick" in data and data["nick"].kind != JNull:
         member.nick = some data["nick"].str
@@ -582,17 +580,17 @@ proc guildCreate(s: Shard, data: JsonNode) {.async.} =
     let guild = newGuild(data)
 
     if s.cache.preferences.cache_guilds:
-        s.cache.guilds.add(guild.id, guild)
+        s.cache.guilds[guild.id] = guild
 
     if s.cache.preferences.cache_guild_channels:
         for chan in data{"channels"}.getElems:
             chan["guild_id"] = %guild.id
 
-            s.cache.guildChannels.add(chan["id"].str, newGuildChannel(chan))
+            s.cache.guildChannels[chan["id"].str] = newGuildChannel(chan)
 
     if s.cache.preferences.cache_users:
         for m in data["members"].elems:
-            s.cache.users.add(m["user"]["id"].str, newUser(m["user"]))
+            s.cache.users[m["user"]["id"].str] = newUser(m["user"])
 
     await s.client.events.guild_create(s, guild)
 
@@ -605,7 +603,7 @@ proc guildRoleCreate(s: Shard, data: JsonNode) {.async.} =
         role = newRole(data["role"])
 
     if guild.id in s.cache.guilds:
-        guild.roles.add(role.id, role)
+        guild.roles[role.id] = role
 
     await s.client.events.guild_role_create(s, guild, role)
 

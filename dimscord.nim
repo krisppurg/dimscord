@@ -35,8 +35,6 @@
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
-##   If any of these types are enums and you want to compare them like
-##   for example ActivityFlags use `cast[int]({myEnum})` e.g. `cast[int]({afSync})`
 ## 
 ## - `voice` Allows you to connect to the voice gateway (Sending audio is postponed),
 ##    handle voice gateway, etc.
@@ -68,6 +66,10 @@
 ## - `-d:discordCompress` For zlib compression a zlib1 file needs to be in your folder.
 ## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
 
-import dimscord/[gateway, restapi, constants, objects, helpers, voice]
+import dimscord/[gateway, restapi, constants, objects, helpers, voice], options
 
 export gateway, restapi, constants, objects, helpers, voice
+
+converter toOption*[T](value: T): Option[T] =
+    ## Automatically converts a value to an `Option[T]` when needed.
+    return some value

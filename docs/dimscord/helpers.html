@@ -20,7 +20,7 @@
 <title>dimscord/helpers</title>
 <link rel="stylesheet" type="text/css" href="../nimdoc.out.css">
 
-<script type="text/javascript" src="dochack.js"></script>
+<script type="text/javascript" src="../dochack.js"></script>
 
 <script type="text/javascript">
 function main() {
@@ -47,21 +47,12 @@ function main() {
 
   toggleSwitch.addEventListener('change', switchTheme, false);
 
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', "dark");
-    toggleSwitch.checked = true;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.setAttribute('data-theme', "light");
-    toggleSwitch.checked = false;
-  } else {
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-    if (currentTheme) {
-      document.documentElement.setAttribute('data-theme', currentTheme);
-
-      if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-      }
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true;
     }
   }
 }
@@ -83,6 +74,9 @@ function main() {
   </div>
   <div id="global-links">
     <ul class="simple">
+    <li>
+      <a href="../theindex.html">Index</a>
+    </li>
     </ul>
   </div>
   <div id="searchInputDiv">
@@ -106,51 +100,96 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#defaultAvatarUrl%2CUser"
-    title="defaultAvatarUrl(u: User): string"><wbr />default<wbr />Avatar<wbr />Url<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#avatarUrl%2CUser%2Cstring%2Cint"
-    title="avatarUrl(u: User; fmt = &quot;png&quot;; size = 128): string"><wbr />avatar<wbr />Url<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#iconUrl%2CEmoji%2Cstring%2Cint"
-    title="iconUrl(e: Emoji; fmt = &quot;png&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#iconUrl%2CGuild%2Cstring%2Cint"
-    title="iconUrl(g: Guild; fmt = &quot;png&quot;; size = 128): string"><wbr />icon<wbr />Url<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#%24%2CUser"
-    title="`$`(u: User): string"><wbr />`$`<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#%40%2CUser"
-    title="`@`(u: User; nick = false): string"><wbr />`@`<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#%40%2CRole"
-    title="`@`(r: Role): string"><wbr />`@`<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#%40%2CGuildChannel"
-    title="`@`(g: GuildChannel): string"><wbr />`@`<span class="attachedType"></span></a></li>
+      <ul class="simple nested-toc-section">perms
+      <li><a class="reference" href="#perms%2CPermObj"
+    title="perms(p: PermObj): int">perms,PermObj<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">$
+      <li><a class="reference" href="#%24%2CUser"
+    title="`$`(u: User): string">$,User<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#%24%2CGuildChannel"
-    title="`$`(g: GuildChannel): string"><wbr />`$`<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#getGuildWidget%2Cstring%2Cstring"
-    title="getGuildWidget(guild_id, style: string): string"><wbr />get<wbr />Guild<wbr />Widget<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#timestamp%2Cstring"
-    title="timestamp(id: string): Time"><wbr />timestamp<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#perms%2CPermObj"
-    title="perms(p: PermObj): int"><wbr />perms<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#permCheck%2Cint%2Cint"
-    title="permCheck(perms, perm: int): bool"><wbr />perm<wbr />Check<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#permCheck%2Cint%2CPermObj"
-    title="permCheck(perms: int; p: PermObj): bool"><wbr />perm<wbr />Check<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#computePerms%2CGuild%2CRole"
-    title="computePerms(guild: Guild; role: Role): PermObj"><wbr />compute<wbr />Perms<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#computePerms%2CGuild%2CMember"
-    title="computePerms(guild: Guild; member: Member): PermObj"><wbr />compute<wbr />Perms<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#computePerms%2CGuild%2CMember%2CGuildChannel"
-    title="computePerms(guild: Guild; member: Member; channel: GuildChannel): PermObj"><wbr />compute<wbr />Perms<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#createBotInvite%2Cstring%2Cset%5BPermissionFlags%5D%2Cstring"
+    title="`$`(g: GuildChannel): string">$,GuildChannel<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">timestamp
+      <li><a class="reference" href="#timestamp%2Cstring"
+    title="timestamp(id: string): Time">timestamp,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">stripChannelMentions
+      <li><a class="reference" href="#stripChannelMentions%2CMessage"
+    title="stripChannelMentions(m: Message): string">stripChannelMentions,Message<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">createBotInvite
+      <li><a class="reference" href="#createBotInvite%2Cstring%2Cset%5BPermissionFlags%5D%2Cstring"
     title="createBotInvite(client_id: string; permissions: set[PermissionFlags] = {};
-                guild_id = &quot;&quot;; disable_guild_select = false): string"><wbr />create<wbr />Bot<wbr />Invite<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#stripUserMentions%2CMessage"
-    title="stripUserMentions(m: Message): string"><wbr />strip<wbr />User<wbr />Mentions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#stripRoleMentions%2CMessage"
-    title="stripRoleMentions(m: Message): string"><wbr />strip<wbr />Role<wbr />Mentions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#stripChannelMentions%2CMessage"
-    title="stripChannelMentions(m: Message): string"><wbr />strip<wbr />Channel<wbr />Mentions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#stripMentions%2CMessage"
-    title="stripMentions(m: Message): string"><wbr />strip<wbr />Mentions<span class="attachedType"></span></a></li>
+                guild_id = &quot;&quot;; disable_guild_select = false): string">createBotInvite,string,set[PermissionFlags],string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">permCheck
+      <li><a class="reference" href="#permCheck%2Cint%2Cint"
+    title="permCheck(perms, perm: int): bool">permCheck,int,int<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#permCheck%2Cint%2CPermObj"
+    title="permCheck(perms: int; p: PermObj): bool">permCheck,int,PermObj<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">stripUserMentions
+      <li><a class="reference" href="#stripUserMentions%2CMessage"
+    title="stripUserMentions(m: Message): string">stripUserMentions,Message<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">@
+      <li><a class="reference" href="#%40%2CUser"
+    title="`@`(u: User; nick = false): string">@,User<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#%40%2CRole"
+    title="`@`(r: Role): string">@,Role<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#%40%2CGuildChannel"
+    title="`@`(g: GuildChannel): string">@,GuildChannel<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">avatarUrl
+      <li><a class="reference" href="#avatarUrl%2CUser%2Cstring%2Cint"
+    title="avatarUrl(u: User; fmt = &quot;png&quot;; size = 128): string">avatarUrl,User,string,int<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">stripRoleMentions
+      <li><a class="reference" href="#stripRoleMentions%2CMessage"
+    title="stripRoleMentions(m: Message): string">stripRoleMentions,Message<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">iconUrl
+      <li><a class="reference" href="#iconUrl%2CEmoji%2Cstring%2Cint"
+    title="iconUrl(e: Emoji; fmt = &quot;png&quot;; size = 128): string">iconUrl,Emoji,string,int<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#iconUrl%2CGuild%2Cstring%2Cint"
+    title="iconUrl(g: Guild; fmt = &quot;png&quot;; size = 128): string">iconUrl,Guild,string,int<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getGuildWidget
+      <li><a class="reference" href="#getGuildWidget%2Cstring%2Cstring"
+    title="getGuildWidget(guild_id, style: string): string">getGuildWidget,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">computePerms
+      <li><a class="reference" href="#computePerms%2CGuild%2CRole"
+    title="computePerms(guild: Guild; role: Role): PermObj">computePerms,Guild,Role<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#computePerms%2CGuild%2CMember"
+    title="computePerms(guild: Guild; member: Member): PermObj">computePerms,Guild,Member<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#computePerms%2CGuild%2CMember%2CGuildChannel"
+    title="computePerms(guild: Guild; member: Member; channel: GuildChannel): PermObj">computePerms,Guild,Member,GuildChannel<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">stripMentions
+      <li><a class="reference" href="#stripMentions%2CMessage"
+    title="stripMentions(m: Message): string">stripMentions,Message<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">defaultAvatarUrl
+      <li><a class="reference" href="#defaultAvatarUrl%2CUser"
+    title="defaultAvatarUrl(u: User): string">defaultAvatarUrl,User<span class="attachedType"></span></a></li>
+
+  </ul>
 
   </ul>
 </li>
@@ -182,8 +221,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="avatarUrl,User,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#avatarUrl%2CUser%2Cstring%2Cint"><span class="Identifier">avatarUrl</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets a user's avatar url. If user does not have an avatar it will return default avatar of the user.
@@ -194,7 +233,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="iconUrl,Emoji,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CEmoji%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CEmoji%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets an emoji's url.
@@ -205,8 +245,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="iconUrl,Guild,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconUrl%2CGuild%2Cstring%2Cint"><span class="Identifier">iconUrl</span></a><span class="Other">(</span><span class="Identifier">g</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">;</span> <span class="Identifier">size</span> <span class="Other">=</span> <span class="DecNumber">128</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Get icon url for guild.
@@ -272,7 +312,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="getGuildWidget,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getGuildWidget%2Cstring%2Cstring"><span class="Identifier">getGuildWidget</span></a><span class="Other">(</span><span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">style</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#getGuildWidget%2Cstring%2Cstring"><span class="Identifier">getGuildWidget</span></a><span class="Other">(</span><span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">style</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Gets a guild widget. <a class="reference external" href="https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options">https://discord.com/developers/docs/resources/guild#get-guild-widget-image-widget-style-options</a>
@@ -316,7 +357,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="permCheck,int,PermObj"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#permCheck%2Cint%2CPermObj"><span class="Identifier">permCheck</span></a><span class="Other">(</span><span class="Identifier">perms</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">p</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#permCheck%2Cint%2CPermObj"><span class="Identifier">permCheck</span></a><span class="Other">(</span><span class="Identifier">perms</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">p</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Just like permCheck, but with a PermObj.
@@ -327,7 +368,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="computePerms,Guild,Role"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#computePerms%2CGuild%2CRole"><span class="Identifier">computePerms</span></a><span class="Other">(</span><span class="Identifier">guild</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">role</span><span class="Other">:</span> <a href="objects.html#Role"><span class="Identifier">Role</span></a><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#computePerms%2CGuild%2CRole"><span class="Identifier">computePerms</span></a><span class="Other">(</span><span class="Identifier">guild</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">role</span><span class="Other">:</span> <a href="objects.html#Role"><span class="Identifier">Role</span></a><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Computes the guild permissions for a role.
@@ -338,7 +380,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="computePerms,Guild,Member"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#computePerms%2CGuild%2CMember"><span class="Identifier">computePerms</span></a><span class="Other">(</span><span class="Identifier">guild</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">member</span><span class="Other">:</span> <a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#computePerms%2CGuild%2CMember"><span class="Identifier">computePerms</span></a><span class="Other">(</span><span class="Identifier">guild</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">member</span><span class="Other">:</span> <a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Computes the guild permissions for a member.
@@ -350,7 +393,7 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="computePerms,Guild,Member,GuildChannel"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#computePerms%2CGuild%2CMember%2CGuildChannel"><span class="Identifier">computePerms</span></a><span class="Other">(</span><span class="Identifier">guild</span><span class="Other">:</span> <a href="objects.html#Guild"><span class="Identifier">Guild</span></a><span class="Other">;</span> <span class="Identifier">member</span><span class="Other">:</span> <a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">;</span> <span class="Identifier">channel</span><span class="Other">:</span> <a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#PermObj"><span class="Identifier">PermObj</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the permissions for the guild member of the channel. For permission checking you can do something like this:<pre class="listing"><span class="Keyword">cast</span><span class="Punctuation">[</span><span class="Identifier">int</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="Identifier">setofpermshere</span><span class="Punctuation">)</span><span class="Operator">.</span><span class="Identifier">permCheck</span><span class="Punctuation">(</span><span class="Identifier">PermObj</span><span class="Punctuation">(</span>
@@ -364,8 +407,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="createBotInvite,string,set[PermissionFlags],string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#createBotInvite%2Cstring%2Cset%5BPermissionFlags%5D%2Cstring"><span class="Identifier">createBotInvite</span></a><span class="Other">(</span><span class="Identifier">client_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">permissions</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
-                    <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">disable_guild_select</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+                     <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">disable_guild_select</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 <p>Creates an invite link for the bot of the form.</p>
@@ -373,54 +416,57 @@ class="link-seesrc" target="_blank">Source</a>
 <p>See <a class="reference external" href="https://discord.com/developers/docs/topics/oauth2#bots">https://discord.com/developers/docs/topics/oauth2#bots</a> for more information.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L170"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L164"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripUserMentions,Message"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stripUserMentions%2CMessage"><span class="Identifier">stripUserMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripUserMentions%2CMessage"><span class="Identifier">stripUserMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Strips out user mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@1234567890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@TheMostMysteriousUser#0000</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L185"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L179"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L185" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L179" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripRoleMentions,Message"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stripRoleMentions%2CMessage"><span class="Identifier">stripRoleMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripRoleMentions%2CMessage"><span class="Identifier">stripRoleMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Strips out role mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@&amp;123456890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@1243456890</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L192"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L186"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L192" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L186" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripChannelMentions,Message"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stripChannelMentions%2CMessage"><span class="Identifier">stripChannelMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripChannelMentions%2CMessage"><span class="Identifier">stripChannelMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Strips out channel mentions. Example: <tt class="docutils literal"><span class="pre">&lt;#123456790&gt;</span></tt> to <tt class="docutils literal"><span class="pre">#such-a_long-time-ago</span></tt> or <tt class="docutils literal"><span class="pre">#123456790</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L199"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L193"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L199" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L193" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripMentions,Message"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stripMentions%2CMessage"><span class="Identifier">stripMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#stripMentions%2CMessage"><span class="Identifier">stripMentions</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Strips all mentions.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L209"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L203"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L209" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L203" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -433,7 +479,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:53:03 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 15:59:34 UTC</small>
       </div>
     </div>
   </div>

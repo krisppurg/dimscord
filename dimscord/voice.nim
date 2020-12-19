@@ -2,7 +2,11 @@
 ## Playing audio will be added later.
 import asyncdispatch, ws, asyncnet
 import objects, json, times, constants
-import strutils, nativesockets
+import strutils, nativesockets, streams, sequtils
+import libsodium/sodium, libsodium/sodium_sizes
+import osproc, endians, net
+import flatty/binny, random
+randomize()
 
 const
     opIdentify = 0
@@ -17,31 +21,130 @@ const
     opResumed = 9
     opClientDisconnect = 13
 
+when defined(windows):
+    const libsodium_fn* = "libsodium.dll"
+elif defined(macosx):
+    const libsodium_fn* = "libsodium.dylib"
+else:
+    const libsodium_fn* = "libsodium.so(.18|.23)"
+
+{.pragma: sodium_import, importc, dynlib: libsodium_fn.}
+
+template cpt(target: string): untyped =
+    cast[ptr cuchar](cstring(target))
+
+template cpsize(target: string): untyped =
+    csize(target.len)
+
+template culen(target: string): untyped =
+    culonglong(target.len)
+
+proc crypto_secretbox_easy(
+    c: ptr cuchar,
+    m: ptr cuchar,
+    mlen: culonglong,
+    n: ptr cuchar,
+    k: ptr cuchar,
+):cint {.sodium_import.}
+
+# var OPUS_APPLICATION_AUDIO {.importc, header: "<opus/opus.h>".}: cint
+
+# type OpusEncoderVal = object
+# type OpusDecoderVal = object
+
+# type OpusEncoder* = ptr OpusEncoderVal
+# type OpusDecoder* = ptr OpusDecoderVal
+
+# {.passl: "-lopus".}
+
+# proc opus_encode (st: ptr OpusEncoderVal, pcm: ptr uint16, frame_size: cint, data: pointer, max_data_bytes: int32): int32 {.importc, header: "<opus/opus.h>".}
+# proc opus_encoder_create (fs: int32, channels: cint, application: cint, error: ptr cint): ptr OpusEncoderVal {.importc, header: "<opus/opus.h>".}
+# proc opus_encoder_ctl (st: ptr OpusEncoderVal, request: int): cint {.importc, varargs, header: "<opus/opus.h>".}
+
+# proc opus_decoder_create (fs: int32, channels: cint, error: ptr cint): ptr OpusDecoderVal {.importc, header: "<opus/opus.h>".}
+# proc opus_decode (st: ptr OpusDecoderVal, data: pointer, len: int32, pcm: ptr int16, frame_size: cint, decode_fec: cint): cint {.importc, header: "<opus/opus.h>".}
+
+# # FIXME: destroy the decoder/encoder object with destructor!
+
+# const channels = 2
+
+# proc newOpusDecoder*(): OpusDecoder =
+#     var err: cint
+#     result = opus_decoder_create(48000, channels, addr err)
+#     if err != 0: raise newException(Exception, "cannot create opus decoder")
+
+# proc decode*(self: OpusDecoder, encoded: Buffer): Buffer =
+#     const maxSamples = 24000
+#     let buf = newBuffer(maxSamples * 2 * channels)
+#     let samples = opus_decode(self, addr encoded[0], encoded.len.int32,
+#                                 cast[ptr int16](addr buf[0]), maxSamples, 0)
+#     if samples < 0:
+#         raise newException(Exception, "opus_decode failed")
+
+#     return buf.slice(0, samples * 2 * channels)
+
+# proc newOpusEncoder*(): OpusEncoder =
+#     var err: cint
+#     result = opus_encoder_create(48000, channels, OPUS_APPLICATION_AUDIO, addr err)
+#     if err != 0: raise newException(Exception, "cannot create opus decoder")
+
+# proc encode*(self: OpusEncoder, samples: Buffer): Buffer =
+#     doAssert samples.len mod (2 * channels) == 0
+#     var outBuffer = newBuffer(samples.len + 100)
+
+#     var encodedSize: int32 = opus_encode(
+#         self,
+#         cast[ptr uint16](addr samples[0]), cint(samples.len div (2 * channels)),
+#         addr outBuffer[0], outBuffer.len.int32)
+
+#     if encodedSize < 0:
+#         raise newException(Exception, "opus_encode failed")
+
+#     return outBuffer.slice(0, encodedSize)
+
+proc crypto_secretbox_easy_nonce(key: string, msg: string): string =
+    assert key.len == crypto_secretbox_KEYBYTES()
+    let nonce = randombytes(crypto_secretbox_NONCEBYTES().int)
+    var
+        cnonce = cpt nonce
+
+    let
+        ciphertext = newString msg.len + crypto_secretbox_MACBYTES()
+        c_ciphertext = cpt ciphertext
+        cmsg = cpt msg
+        mlen = culen msg
+        ckey = cpt key
+    discard crypto_secretbox_easy(c_ciphertext, cmsg, mlen, cnonce, ckey)
+    return ciphertext & nonce
+
 var
     ip: string
     port: int
+    ssrc: int
+    secret_key: seq[int]
+    playing = false
+    stopped = false
     reconnectable = true
     discovering = false
+proc writeBigUint16(strm: StringStream, num: uint16) = 
+    var
+        tmp: uint16
+        num = num
+    bigEndian16(addr tmp, addr num)
+    strm.write(tmp)
 
-# proc writeBigUint16(strm: StringStream, num: uint16) = 
-#     var
-#         tmp: uint16
-#         num = num
-#     bigEndian16(addr tmp, addr num)
-#     strm.write(tmp)
+proc writeBigUint32(strm: StringStream, num: uint32) = 
+    var
+        tmp: uint32
+        num = num
+    bigEndian32(addr tmp, addr num)
+    strm.write(tmp)
 
-# proc writeBigUint32(strm: StringStream, num: uint32) = 
-#     var
-#         tmp: uint32
-#         num = num
-#     bigEndian32(addr tmp, addr num)
-#     strm.write(tmp)
-
-# proc writeString(strm: StringStream, num: string) =
-#     var
-#         tmp: string
-#         num = num
-#     strm.write(num)
+proc writeString(strm: StringStream, num: string) =
+    var
+        tmp: string
+        num = num
+    strm.write(num)
 
 proc reset(v: VoiceClient) {.used.} =
     v.resuming = false
@@ -279,10 +382,15 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         elif data["op"].num == opReady:
             ip = data["d"]["ip"].str
             port = data["d"]["port"].getInt
+            ssrc = data["d"]["ssrc"].getInt
+
             v.ready = true
-            await v.voice_events.on_ready(v)
+            await v.selectProtocol()
         elif data["op"].num == opResumed:
             v.resuming = false
+        elif data["op"].num == opSessionDescription:
+            secret_key = data["d"]["secret_key"].elems.mapIt(it.getInt)
+            await v.voice_events.on_ready(v)
         else:
             discard
 
@@ -332,9 +440,97 @@ proc startSession*(v: VoiceClient) {.async.} =
 
 # proc openYTDLStream*(v: VoiceClient)
 
-# proc play*(v: VoiceClient) {.async.} =
-#     ## Play with 
-#     discard
+iterator chunkedStdout(cmd: string,
+        args: openArray[string], size: int): string = # credit to haxscramper
+    var buf: string = " ".repeat(size + 20)
+    let pid = startProcess(cmd, args = args, options = {
+        poUsePath, poStdErrToStdOut
+    })
+
+    let outStream = pid.outputStream
+    let errStream = pid.errorStream
+
+    while pid.running:
+        let d = readDataStr(outStream, buf, 0 ..< size)
+        yield buf[0 .. d - 1]
+
+proc pause(v: VoiceClient) {.async.} =
+    if playing:
+        playing = false
+
+proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinished code
+    let
+        udp = newSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        args = @[
+            "-i",
+            $input,
+            "-ac",
+            "2",
+            "-ar",
+            "48k",
+            "-f",
+            "s16le",
+            "-acodec",
+            "libopus",
+            "-loglevel",
+            "quiet",
+            "pipe:1"
+        ]
+    var
+        sequence = 0
+        timestamp = uint32 0
+        chunked = ""
+
+    playing = true
+    for chunk in chunkedStdout("ffmpeg", args, 300):
+        var data = ""
+        chunked.add chunk
+        if chunked.len >= 1500:
+            for c in chunked:
+                data.add c
+            data = data[0..(if data.high >= 1500: 1500 else: data.high)]
+
+        var packet: string
+        if 1 + sequence == 65535:
+            sequence = 0
+        if 9600 + timestamp == uint32 4294967295:
+            timestamp = 0
+
+        sequence += 1
+
+        if not playing:
+            for i in 1..5:
+                packet.addInt(0xF8)
+                packet.addInt(0xFF)
+                packet.addInt(0xFE)
+                udp.sendTo(ip, Port(port), packet)
+
+                await v.sendSock(opSpeaking, %*{"speaking": false})
+            while not playing:
+                poll()
+        if stopped: break
+
+        var key: string
+        for c in secret_key:
+            key.add chr(c)
+        timestamp += 960
+
+        packet.addUint8(0x80)
+        packet.addUint8(0x78)
+        packet.addUint16(uint16 sequence)
+        packet.addUint32(uint32 timestamp)
+        packet.addUint32(uint32 ssrc)
+
+        packet.add crypto_secretbox_easy_nonce(key, data)
+        udp.sendTo(ip, Port(port), packet)
+
+        await sleepAsync 20
+
+proc playFFmpeg*(v: VoiceClient, input: string) {.async.} =
+    ## Play audio through ffmpeg, input can be a url or a path.
+    await v.sendSock(opSpeaking, %*{"speaking": true})
+    await v.sendAudio(input)
+    await v.sendSock(opSpeaking, %*{"speaking": false})
 
 # proc latency*(v: VoiceClient) {.async.} =
 #     ## Get latency of the voice client.

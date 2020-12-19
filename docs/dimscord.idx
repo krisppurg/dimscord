@@ -1,3 +1,4 @@
 Reference	dimscord.html#reference	 Reference	
 Modules required	dimscord.html#modules-required	 Modules required	
 Definable options	dimscord.html#definable-options	 Definable options	
+toOption	dimscord.html#toOption.c,T	dimscord: toOption[T](value: T): Option[T]	

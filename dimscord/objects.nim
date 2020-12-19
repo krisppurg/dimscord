@@ -243,7 +243,7 @@ type
         color*, position*: int
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
-    GameStatus* = object
+    ActivityStatus* = object
         ## This is used for status updates.
         name*: string
         kind*: ActivityType
@@ -414,15 +414,15 @@ type
         message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
         message_update*: proc (s: Shard, m: Message,
                 o: Option[Message], exists: bool) {.async.}
-        message_reaction_add*: proc (s: Shard, m: Message, u: User,
-                exists: bool) {.async.}
+        message_reaction_add*: proc (s: Shard,
+                m: Message, u: User, e: Emoji, exists: bool) {.async.}
         message_reaction_remove*: proc (s: Shard,
                 m: Message, u: User,
                 r: Reaction, exists: bool) {.async.}
         message_reaction_remove_all*: proc (s: Shard, m: Message,
                 exists: bool) {.async.}
-        message_reaction_remove_emoji*: proc (s: Shard, m: Message,
-                e: Emoji, exists: bool) {.async.}
+        message_reaction_remove_emoji*: proc (s: Shard,
+                m: Message, e: Emoji, exists: bool) {.async.}
         message_delete_bulk*: proc (s: Shard, m: seq[tuple[
                 msg: Message, exists: bool]]) {.async.}
         channel_create*: proc (s: Shard, g: Option[Guild],
@@ -569,8 +569,9 @@ proc newDiscordClient*(token: string;
                     exists: bool) {.async.} = discard,
             message_update: proc (s: Shard, m: Message,
                     o: Option[Message], exists: bool) {.async.} = discard,
-            message_reaction_add: proc (s: Shard, m: Message,
-                    u: User, exists: bool) {.async.} = discard,
+            message_reaction_add: proc (s: Shard,
+                    m: Message, u: User,
+                    e: Emoji, exists: bool) {.async.} = discard,
             message_reaction_remove: proc (s: Shard, m: Message,
                     u: User, r: Reaction, exists: bool) {.async.} = discard,
             message_reaction_remove_all: proc (s: Shard, m: Message,
@@ -686,7 +687,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     )
 
     for ow in data["permission_overwrites"].getElems:
-        result.permission_overwrites.add(ow["id"].str, newOverwrite(ow))
+        result.permission_overwrites[ow["id"].str] = newOverwrite(ow)
 
     case result.kind:
     of ctGuildText:
@@ -1029,7 +1030,7 @@ proc newMessage*(data: JsonNode): Message =
         result.embeds.add(embed.to(Embed))
     for reaction in data{"reactions"}.getElems:
         let rtn = newReaction(reaction)
-        result.reactions.add($rtn.emoji, rtn)
+        result.reactions[$rtn.emoji] = rtn
 
     if "activity" in data:
         let activity = data["activity"]
@@ -1098,15 +1099,15 @@ proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
 
     for change in data{"changes"}.getElems:
         if "new_value" in change:
-            result.after.add(change["key"].str, newAuditLogChangeValue(
+            result.after[change["key"].str] = newAuditLogChangeValue(
                 change["new_value"],
                 change["key"].str
-            ))
+            )
         if "old_value" in change:
-            result.before.add(change["key"].str, newAuditLogChangeValue(
+            result.before[change["key"].str] = newAuditLogChangeValue(
                 change["old_value"],
                 change["key"].str
-            ))
+            )
 
 proc newAuditLog*(data: JsonNode): AuditLog =
     result = AuditLog(
@@ -1184,9 +1185,9 @@ proc newGuild*(data: JsonNode): Guild =
         preferred_locale: data["preferred_locale"].str)
 
     for r in data["roles"].elems:
-        result.roles.add(r["id"].str, newRole(r))
+        result.roles[r["id"].str] = newRole(r)
     for e in data["emojis"].elems:
-        result.emojis.add(e["id"].str, newEmoji(e))
+        result.emojis[e["id"].str] = newEmoji(e)
 
     data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
         premium_subscription_count, max_presences, approximate_member_count,
@@ -1198,17 +1199,17 @@ proc newGuild*(data: JsonNode): Guild =
     data.keyCheckOptBool(result, large, unavailable)
 
     for m in data{"members"}.getElems:
-        result.members.add(m["user"]["id"].str, newMember(m))
+        result.members[m["user"]["id"].str] = newMember(m)
 
     for v in data{"voice_states"}.getElems:
         let state = newVoiceState(v)
 
         result.members[v["user_id"].str].voice_state = some state
-        result.voice_states.add(v["user_id"].str, state)
+        result.voice_states[v["user_id"].str] = state
 
     for chan in data{"channels"}.getElems:
         chan["guild_id"] = %result.id
-        result.channels.add(chan["id"].str, newGuildChannel(chan))
+        result.channels[chan["id"].str] = newGuildChannel(chan)
 
     for p in data{"presences"}.getElems:
         let presence = newPresence(p)
@@ -1217,4 +1218,4 @@ proc newGuild*(data: JsonNode): Guild =
         presence.guild_id = result.id
 
         result.members[uid].presence = presence
-        result.presences.add(uid, presence)
+        result.presences[uid] = presence

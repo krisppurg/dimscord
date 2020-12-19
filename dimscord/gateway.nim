@@ -3,7 +3,7 @@
 
 import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, strutils, restapi, dispatch
-import tables, random, times, constants, objects, json, math
+import tables, random, times, constants, objects, json
 import nativesockets, helpers
 
 when defined(discordCompress):
@@ -112,7 +112,7 @@ proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
 proc sockClosed(s: Shard): bool {.used.} =
     return s.connection == nil or s.connection.tcpSocket.isClosed or s.stop
 
-proc updateStatus*(s: Shard, game = none GameStatus;
+proc updateStatus*(s: Shard, activity = none ActivityStatus;
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
@@ -123,15 +123,41 @@ proc updateStatus*(s: Shard, game = none GameStatus;
         "status": status
     }
 
-    if game.isSome:
-        payload["game"] = newJObject()
-        payload["game"]["type"] = %game.get.kind
-        payload["game"]["name"] = %game.get.name
+    if activity.isSome:
+        var act = %*{
+            "type": %int activity.get.kind,
+            "name": %activity.get.name
+        }
+        if activity.get.url.isSome:
+            act["url"] = %get activity.get.url
 
-        if game.get.url.isSome:
-            payload["game"]["url"] = %get game.get.url
+        payload["activities"] = %[act]
 
-    asyncCheck s.sendSock(opStatusUpdate, payload)
+    await s.sendSock(opStatusUpdate, payload)
+
+proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
+        status = "online";
+        afk = false) {.async.} =
+    ## Updates the shard's status.
+    if s.sockClosed and not s.ready: return
+    let payload = %*{
+        "since": 0,
+        "afk": afk,
+        "status": status
+    }
+
+    if activities.len > 0:
+        var acts: seq[JsonNode] = @[]
+        for activity in activities:
+            var act = %*{
+                "type": %int activity.kind,
+                "name": %activity.name,
+                "url": %activity.url
+            }
+            acts.add act
+
+        payload["activities"] = %acts
+    await s.sendSock(opStatusUpdate, payload)
 
 proc identify(s: Shard) {.async, used.} =
     if s.authenticating or s.sockClosed: return
@@ -503,7 +529,7 @@ proc endSession*(discord: DiscordClient) {.async.} =
 proc setupShard(discord: DiscordClient, i: int;
         cache_prefs: CacheTablePrefs): Shard {.used.} =
     result = newShard(i, discord)
-    discord.shards.add(i, result)
+    discord.shards[i] = result
 
     result.cache.preferences = cache_prefs
 

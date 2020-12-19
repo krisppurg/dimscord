@@ -100,7 +100,7 @@ proc request(api: RestApi, meth, endpoint: string;
     let route = endpoint.parseRoute(meth)
 
     if route notin api.endpoints:
-        api.endpoints.add(route, Ratelimit())
+        api.endpoints[route] = Ratelimit()
 
     var
         data: JsonNode

@@ -59,7 +59,7 @@ proc messageCreate(s: Shard, m: Message) {.async.} =
             echo getCurrentExceptionMsg()
     of "facepalm": # Sends a facepalm image.
         discard await discord.api.sendMessage(m.channel_id, "smh",
-            files = some @[DiscordFile(
+            files = @[DiscordFile(
                 name: "facepalm.png"
             )]
         )
@@ -79,7 +79,7 @@ proc messageCreate(s: Shard, m: Message) {.async.} =
 proc onReady(s: Shard, r: Ready) {.async.} =
     echo "Ready as: " & $r.user
 
-    await s.updateStatus(game = some GameStatus(
+    await s.updateStatus(activity = ActivityStatus(
         name: "around.",
         kind: atPlaying
     ), status = "idle")

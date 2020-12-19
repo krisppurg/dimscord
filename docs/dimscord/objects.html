@@ -20,7 +20,7 @@
 <title>dimscord/objects</title>
 <link rel="stylesheet" type="text/css" href="../nimdoc.out.css">
 
-<script type="text/javascript" src="dochack.js"></script>
+<script type="text/javascript" src="../dochack.js"></script>
 
 <script type="text/javascript">
 function main() {
@@ -47,21 +47,12 @@ function main() {
 
   toggleSwitch.addEventListener('change', switchTheme, false);
 
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', "dark");
-    toggleSwitch.checked = true;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.setAttribute('data-theme', "light");
-    toggleSwitch.checked = false;
-  } else {
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-    if (currentTheme) {
-      document.documentElement.setAttribute('data-theme', currentTheme);
-
-      if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-      }
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true;
     }
   }
 }
@@ -83,6 +74,9 @@ function main() {
   </div>
   <div id="global-links">
     <ul class="simple">
+    <li>
+      <a href="../theindex.html">Index</a>
+    </li>
     </ul>
   </div>
   <div id="searchInputDiv">
@@ -369,11 +363,11 @@ function main() {
   color*, position*: int
   permissions*: set[PermissionFlags]
   hoist*, managed*, mentionable*: bool"><wbr />Role<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#GameStatus"
-    title="GameStatus = object
+  <li><a class="reference" href="#ActivityStatus"
+    title="ActivityStatus = object
   name*: string
   kind*: ActivityType
-  url*: Option[string]"><wbr />Game<wbr />Status<span class="attachedType"></span></a></li>
+  url*: Option[string]"><wbr />Activity<wbr />Status<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Overwrite"
     title="Overwrite = object
   id*: string
@@ -403,7 +397,7 @@ function main() {
   <li><a class="reference" href="#TeamMember"
     title="TeamMember = object
   membership_state*: TeamMembershipState
-  permissions*: seq[string]    ## always would be @[&quot;*&quot;]
+  permissions*: seq[string]  ## always would be @[&quot;*&quot;]
   team_id*: string
   user*: User"><wbr />Team<wbr />Member<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Team"
@@ -538,8 +532,8 @@ function main() {
   id*, name*: string
   instant_invite*: string
   channels*: seq[tuple[id, name: string, position: int]]
-  members*: seq[tuple[id, username, discriminator: string, avatar: Option[string],
-                     status, avatar_url: string]]
+  members*: seq[tuple[id, username, discriminator: string,
+                      avatar: Option[string], status, avatar_url: string]]
   presence_count: int"><wbr />Guild<wbr />Widget<wbr />Json<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GatewaySession"
     title="GatewaySession = object
@@ -557,41 +551,49 @@ function main() {
   on_disconnect*: proc (s: Shard) {.async.}
   message_create*: proc (s: Shard; m: Message) {.async.}
   message_delete*: proc (s: Shard; m: Message; exists: bool) {.async.}
-  message_update*: proc (s: Shard; m: Message; o: Option[Message]; exists: bool) {.async.}
-  message_reaction_add*: proc (s: Shard; m: Message; u: User; exists: bool) {.async.}
-  message_reaction_remove*: proc (s: Shard; m: Message; u: User; r: Reaction; exists: bool) {.
+  message_update*: proc (s: Shard; m: Message; o: Option[Message]; exists: bool) {.
       async.}
-  message_reaction_remove_all*: proc (s: Shard; m: Message; exists: bool) {.async.}
-  message_reaction_remove_emoji*: proc (s: Shard; m: Message; e: Emoji; exists: bool) {.
+  message_reaction_add*: proc (s: Shard; m: Message; u: User; e: Emoji;
+                               exists: bool) {.async.}
+  message_reaction_remove*: proc (s: Shard; m: Message; u: User; r: Reaction;
+                                  exists: bool) {.async.}
+  message_reaction_remove_all*: proc (s: Shard; m: Message; exists: bool) {.
       async.}
-  message_delete_bulk*: proc (s: Shard; m: seq[tuple[msg: Message, exists: bool]]) {.
-      async.}
+  message_reaction_remove_emoji*: proc (s: Shard; m: Message; e: Emoji;
+                                        exists: bool) {.async.}
+  message_delete_bulk*: proc (s: Shard;
+                              m: seq[tuple[msg: Message, exists: bool]]) {.async.}
   channel_create*: proc (s: Shard; g: Option[Guild]; c: Option[GuildChannel];
-                       d: Option[DMChannel]) {.async.}
-  channel_update*: proc (s: Shard; g: Guild; c: GuildChannel; o: Option[GuildChannel]) {.
-      async.}
+                         d: Option[DMChannel]) {.async.}
+  channel_update*: proc (s: Shard; g: Guild; c: GuildChannel;
+                         o: Option[GuildChannel]) {.async.}
   channel_delete*: proc (s: Shard; g: Option[Guild]; c: Option[GuildChannel];
-                       d: Option[DMChannel]) {.async.}
+                         d: Option[DMChannel]) {.async.}
   channel_pins_update*: proc (s: Shard; cid: string; g: Option[Guild];
-                            last_pin: Option[string]) {.async.}
+                              last_pin: Option[string]) {.async.}
   presence_update*: proc (s: Shard; p: Presence; o: Option[Presence]) {.async.}
   typing_start*: proc (s: Shard; t: TypingStart) {.async.}
   guild_emojis_update*: proc (s: Shard; g: Guild; e: seq[Emoji]) {.async.}
   guild_ban_add*, guild_ban_remove*: proc (s: Shard; g: Guild; u: User) {.async.}
   guild_integrations_update*: proc (s: Shard; g: Guild) {.async.}
-  guild_member_add*, guild_member_remove*: proc (s: Shard; g: Guild; m: Member) {.async.}
-  guild_member_update*: proc (s: Shard; g: Guild; m: Member; o: Option[Member]) {.async.}
+  guild_member_add*, guild_member_remove*: proc (s: Shard; g: Guild; m: Member) {.
+      async.}
+  guild_member_update*: proc (s: Shard; g: Guild; m: Member; o: Option[Member]) {.
+      async.}
   guild_update*: proc (s: Shard; g: Guild; o: Option[Guild]) {.async.}
   guild_create*, guild_delete*: proc (s: Shard; g: Guild) {.async.}
   guild_members_chunk*: proc (s: Shard; g: Guild; m: GuildMembersChunk) {.async.}
-  guild_role_create*, guild_role_delete*: proc (s: Shard; g: Guild; r: Role) {.async.}
-  guild_role_update*: proc (s: Shard; g: Guild; r: Role; o: Option[Role]) {.async.}
+  guild_role_create*, guild_role_delete*: proc (s: Shard; g: Guild; r: Role) {.
+      async.}
+  guild_role_update*: proc (s: Shard; g: Guild; r: Role; o: Option[Role]) {.
+      async.}
   invite_create*: proc (s: Shard; i: InviteCreate) {.async.}
   invite_delete*: proc (s: Shard; g: Option[Guild]; cid, code: string) {.async.}
   user_update*: proc (s: Shard; u: User) {.async.}
-  voice_state_update*: proc (s: Shard; v: VoiceState; o: Option[VoiceState]) {.async.}
+  voice_state_update*: proc (s: Shard; v: VoiceState; o: Option[VoiceState]) {.
+      async.}
   voice_server_update*: proc (s: Shard; g: Guild; token: string;
-                            endpoint: Option[string]) {.async.}
+                              endpoint: Option[string]) {.async.}
   webhooks_update*: proc (s: Shard; g: Guild; c: GuildChannel) {.async.}"><wbr />Events<span class="attachedType"></span></a></li>
 
   </ul>
@@ -599,64 +601,151 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
+      <ul class="simple nested-toc-section">newReady
+      <li><a class="reference" href="#newReady%2CJsonNode"
+    title="newReady(data: JsonNode): Ready">newReady,JsonNode<span class="attachedType">Ready</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">$
+      <li><a class="reference" href="#%24%2CEmoji"
+    title="`$`(e: Emoji): string">$,Emoji<span class="attachedType">Emoji</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newGuildChannel
+      <li><a class="reference" href="#newGuildChannel%2CJsonNode"
+    title="newGuildChannel(data: JsonNode): GuildChannel">newGuildChannel,JsonNode<span class="attachedType">GuildChannel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newPresence
+      <li><a class="reference" href="#newPresence%2CJsonNode"
+    title="newPresence(data: JsonNode): Presence">newPresence,JsonNode<span class="attachedType">Presence</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newReaction
+      <li><a class="reference" href="#newReaction%2CJsonNode"
+    title="newReaction(data: JsonNode): Reaction">newReaction,JsonNode<span class="attachedType">Reaction</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newMessage
+      <li><a class="reference" href="#newMessage%2CJsonNode"
+    title="newMessage(data: JsonNode): Message">newMessage,JsonNode<span class="attachedType">Message</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newGuildMembersChunk
+      <li><a class="reference" href="#newGuildMembersChunk%2CJsonNode"
+    title="newGuildMembersChunk(data: JsonNode): GuildMembersChunk">newGuildMembersChunk,JsonNode<span class="attachedType">GuildMembersChunk</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newAuditLog
+      <li><a class="reference" href="#newAuditLog%2CJsonNode"
+    title="newAuditLog(data: JsonNode): AuditLog">newAuditLog,JsonNode<span class="attachedType">AuditLog</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newOverwrite
+      <li><a class="reference" href="#newOverwrite%2CJsonNode"
+    title="newOverwrite(data: JsonNode): Overwrite">newOverwrite,JsonNode<span class="attachedType">Overwrite</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newMember
+      <li><a class="reference" href="#newMember%2CJsonNode"
+    title="newMember(data: JsonNode): Member">newMember,JsonNode<span class="attachedType">Member</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newDMChannel
+      <li><a class="reference" href="#newDMChannel%2CJsonNode"
+    title="newDMChannel(data: JsonNode): DMChannel">newDMChannel,JsonNode<span class="attachedType">DMChannel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newRole
+      <li><a class="reference" href="#newRole%2CJsonNode"
+    title="newRole(data: JsonNode): Role">newRole,JsonNode<span class="attachedType">Role</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newShard
+      <li><a class="reference" href="#newShard%2Cint%2CDiscordClient"
+    title="newShard(id: int; client: DiscordClient): Shard">newShard,int,DiscordClient<span class="attachedType">Shard</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newGuildBan
+      <li><a class="reference" href="#newGuildBan%2CJsonNode"
+    title="newGuildBan(data: JsonNode): GuildBan">newGuildBan,JsonNode<span class="attachedType">GuildBan</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newGuild
+      <li><a class="reference" href="#newGuild%2CJsonNode"
+    title="newGuild(data: JsonNode): Guild">newGuild,JsonNode<span class="attachedType">Guild</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newWebhook
+      <li><a class="reference" href="#newWebhook%2CJsonNode"
+    title="newWebhook(data: JsonNode): Webhook">newWebhook,JsonNode<span class="attachedType">Webhook</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newActivity
+      <li><a class="reference" href="#newActivity%2CJsonNode"
+    title="newActivity(data: JsonNode): Activity">newActivity,JsonNode<span class="attachedType">Activity</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newDiscordClient
+      <li><a class="reference" href="#newDiscordClient%2Cstring%2Cint"
+    title="newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient">newDiscordClient,string,int<span class="attachedType">DiscordClient</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newInviteCreate
+      <li><a class="reference" href="#newInviteCreate%2CJsonNode"
+    title="newInviteCreate(data: JsonNode): InviteCreate">newInviteCreate,JsonNode<span class="attachedType">InviteCreate</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newInvite
+      <li><a class="reference" href="#newInvite%2CJsonNode"
+    title="newInvite(data: JsonNode): Invite">newInvite,JsonNode<span class="attachedType">Invite</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newEmoji
+      <li><a class="reference" href="#newEmoji%2CJsonNode"
+    title="newEmoji(data: JsonNode): Emoji">newEmoji,JsonNode<span class="attachedType">Emoji</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newInviteMetadata
+      <li><a class="reference" href="#newInviteMetadata%2CJsonNode"
+    title="newInviteMetadata(data: JsonNode): InviteMetadata">newInviteMetadata,JsonNode<span class="attachedType">InviteMetadata</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newUser
+      <li><a class="reference" href="#newUser%2CJsonNode"
+    title="newUser(data: JsonNode): User">newUser,JsonNode<span class="attachedType">User</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">clear
+      <li><a class="reference" href="#clear%2CCacheTable"
+    title="clear(c: CacheTable)">clear,CacheTable<span class="attachedType">CacheTable</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newTypingStart
+      <li><a class="reference" href="#newTypingStart%2CJsonNode"
+    title="newTypingStart(data: JsonNode): TypingStart">newTypingStart,JsonNode<span class="attachedType">TypingStart</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">updateMessage
+      <li><a class="reference" href="#updateMessage%2CMessage%2CJsonNode"
+    title="updateMessage(m: Message; data: JsonNode): Message">updateMessage,Message,JsonNode<span class="attachedType">Message</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newOAuth2Application
+      <li><a class="reference" href="#newOAuth2Application%2CJsonNode"
+    title="newOAuth2Application(data: JsonNode): OAuth2Application">newOAuth2Application,JsonNode<span class="attachedType">OAuth2Application</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">kind
       <li><a class="reference" href="#kind%2CCacheTable%2Cstring"
-    title="kind(c: CacheTable; channel_id: string): ChannelType"><wbr />kind<span class="attachedType">CacheTable</span></a></li>
-  <li><a class="reference" href="#clear%2CCacheTable"
-    title="clear(c: CacheTable)"><wbr />clear<span class="attachedType">CacheTable</span></a></li>
-  <li><a class="reference" href="#%24%2CEmoji"
-    title="`$`(e: Emoji): string"><wbr />`$`<span class="attachedType">Emoji</span></a></li>
-  <li><a class="reference" href="#newShard%2Cint%2CDiscordClient"
-    title="newShard(id: int; client: DiscordClient): Shard"><wbr />new<wbr />Shard<span class="attachedType">Shard</span></a></li>
-  <li><a class="reference" href="#newDiscordClient%2Cstring%2Cint"
-    title="newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient"><wbr />new<wbr />Discord<wbr />Client<span class="attachedType">DiscordClient</span></a></li>
-  <li><a class="reference" href="#newInviteMetadata%2CJsonNode"
-    title="newInviteMetadata(data: JsonNode): InviteMetadata"><wbr />new<wbr />Invite<wbr />Metadata<span class="attachedType">InviteMetadata</span></a></li>
-  <li><a class="reference" href="#newOverwrite%2CJsonNode"
-    title="newOverwrite(data: JsonNode): Overwrite"><wbr />new<wbr />Overwrite<span class="attachedType">Overwrite</span></a></li>
-  <li><a class="reference" href="#newRole%2CJsonNode"
-    title="newRole(data: JsonNode): Role"><wbr />new<wbr />Role<span class="attachedType">Role</span></a></li>
-  <li><a class="reference" href="#newGuildChannel%2CJsonNode"
-    title="newGuildChannel(data: JsonNode): GuildChannel"><wbr />new<wbr />Guild<wbr />Channel<span class="attachedType">GuildChannel</span></a></li>
-  <li><a class="reference" href="#newUser%2CJsonNode"
-    title="newUser(data: JsonNode): User"><wbr />new<wbr />User<span class="attachedType">User</span></a></li>
-  <li><a class="reference" href="#newWebhook%2CJsonNode"
-    title="newWebhook(data: JsonNode): Webhook"><wbr />new<wbr />Webhook<span class="attachedType">Webhook</span></a></li>
-  <li><a class="reference" href="#newGuildBan%2CJsonNode"
-    title="newGuildBan(data: JsonNode): GuildBan"><wbr />new<wbr />Guild<wbr />Ban<span class="attachedType">GuildBan</span></a></li>
-  <li><a class="reference" href="#newDMChannel%2CJsonNode"
-    title="newDMChannel(data: JsonNode): DMChannel"><wbr />new<wbr />DMChannel<span class="attachedType">DMChannel</span></a></li>
-  <li><a class="reference" href="#newInvite%2CJsonNode"
-    title="newInvite(data: JsonNode): Invite"><wbr />new<wbr />Invite<span class="attachedType">Invite</span></a></li>
-  <li><a class="reference" href="#newInviteCreate%2CJsonNode"
-    title="newInviteCreate(data: JsonNode): InviteCreate"><wbr />new<wbr />Invite<wbr />Create<span class="attachedType">InviteCreate</span></a></li>
-  <li><a class="reference" href="#newReady%2CJsonNode"
-    title="newReady(data: JsonNode): Ready"><wbr />new<wbr />Ready<span class="attachedType">Ready</span></a></li>
-  <li><a class="reference" href="#newVoiceState%2CJsonNode"
-    title="newVoiceState(data: JsonNode): VoiceState"><wbr />new<wbr />Voice<wbr />State<span class="attachedType">VoiceState</span></a></li>
-  <li><a class="reference" href="#newEmoji%2CJsonNode"
-    title="newEmoji(data: JsonNode): Emoji"><wbr />new<wbr />Emoji<span class="attachedType">Emoji</span></a></li>
-  <li><a class="reference" href="#newActivity%2CJsonNode"
-    title="newActivity(data: JsonNode): Activity"><wbr />new<wbr />Activity<span class="attachedType">Activity</span></a></li>
-  <li><a class="reference" href="#newPresence%2CJsonNode"
-    title="newPresence(data: JsonNode): Presence"><wbr />new<wbr />Presence<span class="attachedType">Presence</span></a></li>
-  <li><a class="reference" href="#newMember%2CJsonNode"
-    title="newMember(data: JsonNode): Member"><wbr />new<wbr />Member<span class="attachedType">Member</span></a></li>
-  <li><a class="reference" href="#newTypingStart%2CJsonNode"
-    title="newTypingStart(data: JsonNode): TypingStart"><wbr />new<wbr />Typing<wbr />Start<span class="attachedType">TypingStart</span></a></li>
-  <li><a class="reference" href="#newGuildMembersChunk%2CJsonNode"
-    title="newGuildMembersChunk(data: JsonNode): GuildMembersChunk"><wbr />new<wbr />Guild<wbr />Members<wbr />Chunk<span class="attachedType">GuildMembersChunk</span></a></li>
-  <li><a class="reference" href="#newReaction%2CJsonNode"
-    title="newReaction(data: JsonNode): Reaction"><wbr />new<wbr />Reaction<span class="attachedType">Reaction</span></a></li>
-  <li><a class="reference" href="#updateMessage%2CMessage%2CJsonNode"
-    title="updateMessage(m: Message; data: JsonNode): Message"><wbr />update<wbr />Message<span class="attachedType">Message</span></a></li>
-  <li><a class="reference" href="#newMessage%2CJsonNode"
-    title="newMessage(data: JsonNode): Message"><wbr />new<wbr />Message<span class="attachedType">Message</span></a></li>
-  <li><a class="reference" href="#newAuditLog%2CJsonNode"
-    title="newAuditLog(data: JsonNode): AuditLog"><wbr />new<wbr />Audit<wbr />Log<span class="attachedType">AuditLog</span></a></li>
-  <li><a class="reference" href="#newOAuth2Application%2CJsonNode"
-    title="newOAuth2Application(data: JsonNode): OAuth2Application"><wbr />new<wbr />OAuth2Application<span class="attachedType">OAuth2Application</span></a></li>
-  <li><a class="reference" href="#newGuild%2CJsonNode"
-    title="newGuild(data: JsonNode): Guild"><wbr />new<wbr />Guild<span class="attachedType">Guild</span></a></li>
+    title="kind(c: CacheTable; channel_id: string): ChannelType">kind,CacheTable,string<span class="attachedType">CacheTable</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newVoiceState
+      <li><a class="reference" href="#newVoiceState%2CJsonNode"
+    title="newVoiceState(data: JsonNode): VoiceState">newVoiceState,JsonNode<span class="attachedType">VoiceState</span></a></li>
+
+  </ul>
 
   </ul>
 </li>
@@ -1304,8 +1393,8 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L241" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="GameStatus"></a>
-<dt><pre><a href="objects.html#GameStatus"><span class="Identifier">GameStatus</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<a id="ActivityStatus"></a>
+<dt><pre><a href="objects.html#ActivityStatus"><span class="Identifier">ActivityStatus</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#ActivityType"><span class="Identifier">ActivityType</span></a>
   <span class="Identifier">url</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
@@ -1400,7 +1489,7 @@ class="link-seesrc" target="_blank">Source</a>
 <a id="TeamMember"></a>
 <dt><pre><a href="objects.html#TeamMember"><span class="Identifier">TeamMember</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">membership_state</span><span class="Operator">*</span><span class="Other">:</span> <a href="constants.html#TeamMembershipState"><span class="Identifier">TeamMembershipState</span></a>
-  <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>    <span class="Comment">## always would be @[&quot;*&quot;]</span>
+  <span class="Identifier">permissions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>  <span class="Comment">## always would be @[&quot;*&quot;]</span>
   <span class="Identifier">team_id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">user</span><span class="Operator">*</span><span class="Other">:</span> <a href="objects.html#User"><span class="Identifier">User</span></a>
 </pre></dt>
@@ -1709,8 +1798,8 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">instant_invite</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">channels</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">position</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">]</span><span class="Other">]</span>
-  <span class="Identifier">members</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">discriminator</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">avatar</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">,</span>
-                     <span class="Identifier">status</span><span class="Other">,</span> <span class="Identifier">avatar_url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span>
+  <span class="Identifier">members</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">discriminator</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span>
+                      <span class="Identifier">avatar</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">status</span><span class="Other">,</span> <span class="Identifier">avatar_url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span>
   <span class="Identifier">presence_count</span><span class="Other">:</span> <span class="Identifier">int</span>
 </pre></dt>
 <dd>
@@ -1758,41 +1847,49 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">on_disconnect</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_create</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">message_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Message</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_reaction_add</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_reaction_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Reaction</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+  <span class="Identifier">message_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Message</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
       <span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_reaction_remove_all</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_reaction_remove_emoji</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">Emoji</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+  <span class="Identifier">message_reaction_add</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">Emoji</span><span class="Other">;</span>
+                               <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_reaction_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Reaction</span><span class="Other">;</span>
+                                  <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_reaction_remove_all</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
       <span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">message_delete_bulk</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">,</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">]</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_reaction_remove_emoji</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">Emoji</span><span class="Other">;</span>
+                                        <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">message_delete_bulk</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span>
+                              <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">Message</span><span class="Other">,</span> <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">]</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">channel_create</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">GuildChannel</span><span class="Other">]</span><span class="Other">;</span>
-                       <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DMChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">channel_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">GuildChannel</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">GuildChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
+                         <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DMChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">channel_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">GuildChannel</span><span class="Other">;</span>
+                         <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">GuildChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">channel_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">GuildChannel</span><span class="Other">]</span><span class="Other">;</span>
-                       <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DMChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+                         <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DMChannel</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">channel_pins_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">cid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">;</span>
-                            <span class="Identifier">last_pin</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+                              <span class="Identifier">last_pin</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">presence_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">p</span><span class="Other">:</span> <span class="Identifier">Presence</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Presence</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">typing_start</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">TypingStart</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_emojis_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Emoji</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_ban_add</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_ban_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_integrations_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">guild_member_add</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_member_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Member</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">guild_member_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Member</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Member</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">guild_member_add</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_member_remove</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Member</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">guild_member_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">Member</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Member</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_create</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">guild_members_chunk</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">m</span><span class="Other">:</span> <span class="Identifier">GuildMembersChunk</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">guild_role_create</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_role_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Role</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">guild_role_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Role</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Role</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">guild_role_create</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">guild_role_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Role</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">guild_role_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">r</span><span class="Other">:</span> <span class="Identifier">Role</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Role</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">invite_create</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">i</span><span class="Other">:</span> <span class="Identifier">InviteCreate</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">invite_delete</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Guild</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">user_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <span class="Identifier">User</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
-  <span class="Identifier">voice_state_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceState</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">VoiceState</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">voice_state_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">VoiceState</span><span class="Other">;</span> <span class="Identifier">o</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">VoiceState</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">voice_server_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                            <span class="Identifier">endpoint</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
+                              <span class="Identifier">endpoint</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
   <span class="Identifier">webhooks_update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">Shard</span><span class="Other">;</span> <span class="Identifier">g</span><span class="Other">:</span> <span class="Identifier">Guild</span><span class="Other">;</span> <span class="Identifier">c</span><span class="Other">:</span> <span class="Identifier">GuildChannel</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">async</span></span><span class="Other">.}</span></span>
 </pre></dt>
 <dd>
@@ -1837,7 +1934,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="$,Emoji"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#%24%2CEmoji"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#%24%2CEmoji"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1871,14 +1968,15 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="newInviteMetadata,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newInviteMetadata%2CJsonNode"><span class="Identifier">newInviteMetadata</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#InviteMetadata"><span class="Identifier">InviteMetadata</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newInviteMetadata%2CJsonNode"><span class="Identifier">newInviteMetadata</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#InviteMetadata"><span class="Identifier">InviteMetadata</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L637"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L638"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L637" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L638" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newOverwrite,JsonNode"></a>
@@ -1887,9 +1985,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L647"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L648"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L647" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L648" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newRole,JsonNode"></a>
@@ -1898,20 +1996,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L660"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L661"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L660" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L661" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuildChannel,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newGuildChannel%2CJsonNode"><span class="Identifier">newGuildChannel</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newGuildChannel%2CJsonNode"><span class="Identifier">newGuildChannel</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildChannel"><span class="Identifier">GuildChannel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L678"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L679"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L678" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L679" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newUser,JsonNode"></a>
@@ -1920,9 +2019,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L711"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L712"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L711" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L712" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newWebhook,JsonNode"></a>
@@ -1931,9 +2030,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L723"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L724"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L723" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L724" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuildBan,JsonNode"></a>
@@ -1942,9 +2041,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L734"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L735"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L734" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L735" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newDMChannel,JsonNode"></a>
@@ -1953,43 +2052,44 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L739"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L740"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L739" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L740" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newInvite,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newInvite%2CJsonNode"><span class="Identifier">newInvite</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Invite"><span class="Identifier">Invite</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">,</span>
-    <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newInvite%2CJsonNode"><span class="Identifier">newInvite</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Invite"><span class="Identifier">Invite</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L749"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L750"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L749" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L750" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newInviteCreate,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newInviteCreate%2CJsonNode"><span class="Identifier">newInviteCreate</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#InviteCreate"><span class="Identifier">InviteCreate</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newInviteCreate%2CJsonNode"><span class="Identifier">newInviteCreate</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#InviteCreate"><span class="Identifier">InviteCreate</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L769"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L770"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L769" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L770" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newReady,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newReady%2CJsonNode"><span class="Identifier">newReady</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Ready"><span class="Identifier">Ready</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newReady%2CJsonNode"><span class="Identifier">newReady</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Ready"><span class="Identifier">Ready</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L788"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L789"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L788" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L789" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newVoiceState,JsonNode"></a>
@@ -1998,9 +2098,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L817"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L818"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L817" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L818" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newEmoji,JsonNode"></a>
@@ -2009,9 +2109,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L831"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L832"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L831" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L832" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newActivity,JsonNode"></a>
@@ -2020,9 +2120,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L842"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L843"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L842" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L843" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newPresence,JsonNode"></a>
@@ -2031,9 +2131,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L883"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L884"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L883" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L884" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMember,JsonNode"></a>
@@ -2042,9 +2142,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L904"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L905"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L904" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L905" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newTypingStart,JsonNode"></a>
@@ -2053,21 +2153,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L921"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L922"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L921" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L922" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuildMembersChunk,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newGuildMembersChunk%2CJsonNode"><span class="Identifier">newGuildMembersChunk</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildMembersChunk"><span class="Identifier">GuildMembersChunk</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newGuildMembersChunk%2CJsonNode"><span class="Identifier">newGuildMembersChunk</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#GuildMembersChunk"><span class="Identifier">GuildMembersChunk</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L933"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L934"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L933" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L934" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newReaction,JsonNode"></a>
@@ -2076,57 +2176,57 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L944"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L945"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L944" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L945" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="updateMessage,Message,JsonNode"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#updateMessage%2CMessage%2CJsonNode"><span class="Identifier">updateMessage</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L951"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L952"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L951" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L952" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMessage,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newMessage%2CJsonNode"><span class="Identifier">newMessage</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
-    <span class="Identifier">JsonKindError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newMessage%2CJsonNode"><span class="Identifier">newMessage</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L990"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L991"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L990" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L991" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newAuditLog,JsonNode"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#newAuditLog%2CJsonNode"><span class="Identifier">newAuditLog</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#AuditLog"><span class="Identifier">AuditLog</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">JsonKindError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1111"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1112"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1111" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1112" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newOAuth2Application,JsonNode"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newOAuth2Application%2CJsonNode"><span class="Identifier">newOAuth2Application</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#OAuth2Application"><span class="Identifier">OAuth2Application</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newOAuth2Application%2CJsonNode"><span class="Identifier">newOAuth2Application</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#OAuth2Application"><span class="Identifier">OAuth2Application</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1141"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1142"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1141" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1142" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGuild,JsonNode"></a>
@@ -2135,9 +2235,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1159"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/objects.nim#L1160"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1159" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/objects.nim#L1160" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -2150,7 +2250,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:52:57 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 15:59:29 UTC</small>
       </div>
     </div>
   </div>

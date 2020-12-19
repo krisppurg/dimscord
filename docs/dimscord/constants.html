@@ -20,7 +20,7 @@
 <title>dimscord/constants</title>
 <link rel="stylesheet" type="text/css" href="../nimdoc.out.css">
 
-<script type="text/javascript" src="dochack.js"></script>
+<script type="text/javascript" src="../dochack.js"></script>
 
 <script type="text/javascript">
 function main() {
@@ -47,21 +47,12 @@ function main() {
 
   toggleSwitch.addEventListener('change', switchTheme, false);
 
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', "dark");
-    toggleSwitch.checked = true;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.setAttribute('data-theme', "light");
-    toggleSwitch.checked = false;
-  } else {
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-    if (currentTheme) {
-      document.documentElement.setAttribute('data-theme', currentTheme);
-
-      if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-      }
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true;
     }
   }
 }
@@ -83,6 +74,9 @@ function main() {
   </div>
   <div id="global-links">
     <ul class="simple">
+    <li>
+      <a href="../theindex.html">Index</a>
+    </li>
     </ul>
   </div>
   <div id="searchInputDiv">
@@ -106,9 +100,10 @@ function main() {
   permKickMembers = &quot;Kick Members&quot;, permBanMembers = &quot;Ban Members&quot;,
   permAdministrator = &quot;Administrator&quot;, permManageChannels = &quot;Manage Channels&quot;,
   permManageGuild = &quot;Manage Server&quot;, permAddReactions = &quot;Add Reactions&quot;,
-  permViewAuditLogs = &quot;View Audit Log&quot;, permPrioritySpeaker = &quot;Priority Speaker&quot;,
-  permVoiceStream = &quot;Voice Stream&quot;, permViewChannel = &quot;View Channel&quot;,
-  permSendMessages = &quot;Send Messages&quot;, permSendTTSMessage = &quot;Send TTS Messages&quot;,
+  permViewAuditLogs = &quot;View Audit Log&quot;,
+  permPrioritySpeaker = &quot;Priority Speaker&quot;, permVoiceStream = &quot;Voice Stream&quot;,
+  permViewChannel = &quot;View Channel&quot;, permSendMessages = &quot;Send Messages&quot;,
+  permSendTTSMessage = &quot;Send TTS Messages&quot;,
   permManageMessages = &quot;Manage Messages&quot;, permEmbedLinks = &quot;Embed Links&quot;,
   permAttachFiles = &quot;Attach Files&quot;,
   permReadMessageHistory = &quot;Read Message History&quot;,
@@ -119,15 +114,15 @@ function main() {
   permVoiceMuteMembers = &quot;Voice Mute Members&quot;,
   permVoiceDeafenMembers = &quot;Voice Deafen Members&quot;,
   permVoiceMoveMembers = &quot;Voice Move Members&quot;, permUseVAD = &quot;Use VAD&quot;,
-  permChangeNickname = &quot;Change Nickname&quot;, permManageNicknames = &quot;Manage Nicknames&quot;,
-  permManageRoles = &quot;Manage Roles&quot;, permManageWebhooks = &quot;Manage Webhooks&quot;,
-  permManageEmojis = &quot;Manage Emojis&quot;"><wbr />Permission<wbr />Flags<span class="attachedType"></span></a></li>
+  permChangeNickname = &quot;Change Nickname&quot;,
+  permManageNicknames = &quot;Manage Nicknames&quot;, permManageRoles = &quot;Manage Roles&quot;,
+  permManageWebhooks = &quot;Manage Webhooks&quot;, permManageEmojis = &quot;Manage Emojis&quot;"><wbr />Permission<wbr />Flags<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GatewayIntent"
     title="GatewayIntent = enum
   giGuilds, giGuildMembers, giGuildBans, giGuildEmojis, giGuildIntegrations,
   giGuildWebhooks, giGuildInvites, giGuildVoiceStates, giGuildPresences,
-  giGuildMessages, giGuildMessageReactions, giGuildMessageTyping, giDirectMessages,
-  giDirectMessageReactions, giDirectMessageTyping"><wbr />Gateway<wbr />Intent<span class="attachedType"></span></a></li>
+  giGuildMessages, giGuildMessageReactions, giGuildMessageTyping,
+  giDirectMessages, giDirectMessageReactions, giDirectMessageTyping"><wbr />Gateway<wbr />Intent<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#AuditLogChangeType"
     title="AuditLogChangeType = enum
   alcString, alcInt, alcBool, alcRoles, alcOverwrites, alcNil"><wbr />Audit<wbr />Log<wbr />Change<wbr />Type<span class="attachedType"></span></a></li>
@@ -139,20 +134,22 @@ function main() {
   vsfMicrophone, vsfSoundshare, vsfPriority"><wbr />Voice<wbr />Speaking<wbr />Flags<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MessageFlags"
     title="MessageFlags = enum
-  mfCrossposted, mfIsCrosspost, mfSupressEmbeds, mfSourceMessageDeleted, mfUrgent"><wbr />Message<wbr />Flags<span class="attachedType"></span></a></li>
+  mfCrossposted, mfIsCrosspost, mfSupressEmbeds, mfSourceMessageDeleted,
+  mfUrgent"><wbr />Message<wbr />Flags<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MessageType"
     title="MessageType = enum
   mtDefault = 0, mtRecipientAdd = 1, mtRecipientRemove = 2, mtCall = 3,
   mtChannelNameChange = 4, mtChannelIconChange = 5, mtChannelPinnedMessage = 6,
   mtGuildMemberJoin = 7, mtUserGuildBoost = 8, mtUserGuildBoostTier1 = 9,
-  mtUserGuildBoostTier2 = 10, mtUserGuildBoostTier3 = 11, mtChannelFollowAdd = 12"><wbr />Message<wbr />Type<span class="attachedType"></span></a></li>
+  mtUserGuildBoostTier2 = 10, mtUserGuildBoostTier3 = 11,
+  mtChannelFollowAdd = 12"><wbr />Message<wbr />Type<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MessageActivityType"
     title="MessageActivityType = enum
   matJoin = 1, matSpectate = 2, matListen = 3, matJoinRequest = 4"><wbr />Message<wbr />Activity<wbr />Type<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#ChannelType"
     title="ChannelType = enum
-  ctGuildText = 0, ctDirect = 1, ctGuildVoice = 2, ctGroupDM = 3, ctGuildParent = 4,
-  ctGuildNews = 5, ctGuildStore = 6"><wbr />Channel<wbr />Type<span class="attachedType"></span></a></li>
+  ctGuildText = 0, ctDirect = 1, ctGuildVoice = 2, ctGroupDM = 3,
+  ctGuildParent = 4, ctGuildNews = 5, ctGuildStore = 6"><wbr />Channel<wbr />Type<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MessageNotificationLevel"
     title="MessageNotificationLevel = enum
   mnlAllMessages = 0, mnlOnlyMentions = 1"><wbr />Message<wbr />Notification<wbr />Level<span class="attachedType"></span></a></li>
@@ -181,15 +178,17 @@ function main() {
     title="AuditLogEntryType = enum
   aleGuildUpdate = 1, aleChannelCreate = 10, aleChannelUpdate = 11,
   aleChannelDelete = 12, aleChannelOverwriteCreate = 13,
-  aleChannelOverwriteUpdate = 14, aleChannelOverwriteDelete = 15, aleMemberKick = 20,
-  aleMemberPrune = 21, aleMemberBanAdd = 22, aleMemberBanRemove = 23,
-  aleMemberUpdate = 24, aleMemberRoleUpdate = 25, aleMemberMove = 26,
-  aleMemberDisconnect = 27, aleBotAdd = 28, aleRoleCreate = 30, aleRoleUpdate = 31,
-  aleRoleDelete = 32, aleInviteCreate = 40, aleInviteUpdate = 41, aleInviteDelete = 42,
+  aleChannelOverwriteUpdate = 14, aleChannelOverwriteDelete = 15,
+  aleMemberKick = 20, aleMemberPrune = 21, aleMemberBanAdd = 22,
+  aleMemberBanRemove = 23, aleMemberUpdate = 24, aleMemberRoleUpdate = 25,
+  aleMemberMove = 26, aleMemberDisconnect = 27, aleBotAdd = 28,
+  aleRoleCreate = 30, aleRoleUpdate = 31, aleRoleDelete = 32,
+  aleInviteCreate = 40, aleInviteUpdate = 41, aleInviteDelete = 42,
   aleWebhookCreate = 50, aleWebhookUpdate = 51, aleWebhookDelete = 52,
-  aleEmojiCreate = 60, aleEmojiUpdate = 61, aleEmojiDelete = 62, aleMessageDelete = 72,
-  aleMessageBulkDelete = 73, aleMessagePin = 74, aleMessageUnpin = 75,
-  aleIntegrationCreate = 80, aleIntegrationUpdate = 81, aleIntegrationDelete = 82"><wbr />Audit<wbr />Log<wbr />Entry<wbr />Type<span class="attachedType"></span></a></li>
+  aleEmojiCreate = 60, aleEmojiUpdate = 61, aleEmojiDelete = 62,
+  aleMessageDelete = 72, aleMessageBulkDelete = 73, aleMessagePin = 74,
+  aleMessageUnpin = 75, aleIntegrationCreate = 80, aleIntegrationUpdate = 81,
+  aleIntegrationDelete = 82"><wbr />Audit<wbr />Log<wbr />Entry<wbr />Type<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#TeamMembershipState"
     title="TeamMembershipState = enum
   tmsInvited = 1, tmsAccepted = 2"><wbr />Team<wbr />Membership<wbr />State<span class="attachedType"></span></a></li>
@@ -233,16 +232,16 @@ function main() {
     title="cdnAppIcons = &quot;https://cdn.discordapp.com/app-icons/&quot;"><wbr />cdn<wbr />App<wbr />Icons<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#permAllText"
     title="permAllText = {permSendTTSMessage, permEmbedLinks, permReadMessageHistory,
-             permUseExternalEmojis, permSendMessages, permManageMessages,
-             permAttachFiles, permMentionEveryone, permAddReactions}"><wbr />perm<wbr />All<wbr />Text<span class="attachedType"></span></a></li>
+               permUseExternalEmojis, permSendMessages, permManageMessages,
+               permAttachFiles, permMentionEveryone, permAddReactions}"><wbr />perm<wbr />All<wbr />Text<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#permAllVoice"
     title="permAllVoice = {permVoiceConnect, permVoiceMuteMembers, permVoiceMoveMembers,
-              permVoiceSpeak, permVoiceDeafenMembers, permPrioritySpeaker,
-              permUseVAD, permVoiceStream}"><wbr />perm<wbr />All<wbr />Voice<span class="attachedType"></span></a></li>
+                permVoiceSpeak, permVoiceDeafenMembers, permPrioritySpeaker,
+                permUseVAD, permVoiceStream}"><wbr />perm<wbr />All<wbr />Voice<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#permAllChannel"
     title="permAllChannel = {permAddReactions, permPrioritySpeaker..permVoiceStream,
-                permSendMessages..permUseExternalEmojis,
-                permVoiceConnect..permUseVAD}"><wbr />perm<wbr />All<wbr />Channel<span class="attachedType"></span></a></li>
+                  permSendMessages..permUseExternalEmojis,
+                  permVoiceConnect..permUseVAD}"><wbr />perm<wbr />All<wbr />Channel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#permAll"
     title="permAll = {permCreateInstantInvite..permManageEmojis}"><wbr />perm<wbr />All<span class="attachedType"></span></a></li>
 
@@ -251,88 +250,208 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
+      <ul class="simple nested-toc-section">endpointChannelWebhooks
+      <li><a class="reference" href="#endpointChannelWebhooks%2Cstring"
+    title="endpointChannelWebhooks(cid: string): string">endpointChannelWebhooks,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointVoiceRegions
+      <li><a class="reference" href="#endpointVoiceRegions"
+    title="endpointVoiceRegions(): string">endpointVoiceRegions<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildPrune
+      <li><a class="reference" href="#endpointGuildPrune%2Cstring"
+    title="endpointGuildPrune(gid: string): string">endpointGuildPrune,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointUserGuilds
+      <li><a class="reference" href="#endpointUserGuilds%2Cstring"
+    title="endpointUserGuilds(gid: string): string">endpointUserGuilds,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointWebhooks
+      <li><a class="reference" href="#endpointWebhooks%2Cstring"
+    title="endpointWebhooks(wid: string): string">endpointWebhooks,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannelInvites
+      <li><a class="reference" href="#endpointChannelInvites%2Cstring"
+    title="endpointChannelInvites(cid: string): string">endpointChannelInvites,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildWebhooks
+      <li><a class="reference" href="#endpointGuildWebhooks%2Cstring"
+    title="endpointGuildWebhooks(gid: string): string">endpointGuildWebhooks,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointWebhookToken
+      <li><a class="reference" href="#endpointWebhookToken%2Cstring%2Cstring"
+    title="endpointWebhookToken(wid, tok: string): string">endpointWebhookToken,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointInvites
+      <li><a class="reference" href="#endpointInvites%2Cstring"
+    title="endpointInvites(code = &quot;&quot;): string">endpointInvites,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannelPermissions
+      <li><a class="reference" href="#endpointChannelPermissions%2Cstring%2Cstring"
+    title="endpointChannelPermissions(cid, oid: string): string">endpointChannelPermissions,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointBulkDeleteMessages
+      <li><a class="reference" href="#endpointBulkDeleteMessages%2Cstring"
+    title="endpointBulkDeleteMessages(cid: string): string">endpointBulkDeleteMessages,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildMembersNick
+      <li><a class="reference" href="#endpointGuildMembersNick%2Cstring%2Cstring"
+    title="endpointGuildMembersNick(gid: string; mid = &quot;@me&quot;): string">endpointGuildMembersNick,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildEmojis
+      <li><a class="reference" href="#endpointGuildEmojis%2Cstring%2Cstring"
+    title="endpointGuildEmojis(gid: string; eid = &quot;&quot;): string">endpointGuildEmojis,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildMembersRole
+      <li><a class="reference" href="#endpointGuildMembersRole%2Cstring%2Cstring%2Cstring"
+    title="endpointGuildMembersRole(gid, mid, rid: string): string">endpointGuildMembersRole,string,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuilds
+      <li><a class="reference" href="#endpointGuilds%2Cstring"
+    title="endpointGuilds(gid = &quot;&quot;): string">endpointGuilds,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointTriggerTyping
+      <li><a class="reference" href="#endpointTriggerTyping%2Cstring"
+    title="endpointTriggerTyping(cid: string): string">endpointTriggerTyping,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildVanity
+      <li><a class="reference" href="#endpointGuildVanity%2Cstring"
+    title="endpointGuildVanity(gid: string): string">endpointGuildVanity,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointUserChannels
+      <li><a class="reference" href="#endpointUserChannels"
+    title="endpointUserChannels(): string">endpointUserChannels<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildIntegrations
+      <li><a class="reference" href="#endpointGuildIntegrations%2Cstring%2Cstring"
+    title="endpointGuildIntegrations(gid: string; iid = &quot;&quot;): string">endpointGuildIntegrations,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildAuditLogs
+      <li><a class="reference" href="#endpointGuildAuditLogs%2Cstring"
+    title="endpointGuildAuditLogs(gid: string): string">endpointGuildAuditLogs,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildRegions
+      <li><a class="reference" href="#endpointGuildRegions%2Cstring"
+    title="endpointGuildRegions(gid: string): string">endpointGuildRegions,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildBans
+      <li><a class="reference" href="#endpointGuildBans%2Cstring%2Cstring"
+    title="endpointGuildBans(gid: string; uid = &quot;&quot;): string">endpointGuildBans,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildWidget
+      <li><a class="reference" href="#endpointGuildWidget%2Cstring"
+    title="endpointGuildWidget(gid: string): string">endpointGuildWidget,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildRoles
+      <li><a class="reference" href="#endpointGuildRoles%2Cstring%2Cstring"
+    title="endpointGuildRoles(gid: string; rid = &quot;&quot;): string">endpointGuildRoles,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannels
+      <li><a class="reference" href="#endpointChannels%2Cstring"
+    title="endpointChannels(cid = &quot;&quot;): string">endpointChannels,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointUsers
+      <li><a class="reference" href="#endpointUsers%2Cstring"
+    title="endpointUsers(uid = &quot;@me&quot;): string">endpointUsers,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildIntegrationsSync
+      <li><a class="reference" href="#endpointGuildIntegrationsSync%2Cstring%2Cstring"
+    title="endpointGuildIntegrationsSync(gid, iid: string): string">endpointGuildIntegrationsSync,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildChannels
+      <li><a class="reference" href="#endpointGuildChannels%2Cstring%2Cstring"
+    title="endpointGuildChannels(gid: string; cid = &quot;&quot;): string">endpointGuildChannels,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannelOverwrites
+      <li><a class="reference" href="#endpointChannelOverwrites%2Cstring%2Cstring"
+    title="endpointChannelOverwrites(cid, oid: string): string">endpointChannelOverwrites,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannelPins
+      <li><a class="reference" href="#endpointChannelPins%2Cstring%2Cstring"
+    title="endpointChannelPins(cid: string; mid = &quot;&quot;): string">endpointChannelPins,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointReactions
+      <li><a class="reference" href="#endpointReactions%2Cstring%2Cstring%2Cstring%2Cstring"
+    title="endpointReactions(cid, mid: string; e, uid = &quot;&quot;): string">endpointReactions,string,string,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointOAuth2Application
+      <li><a class="reference" href="#endpointOAuth2Application"
+    title="endpointOAuth2Application(): string">endpointOAuth2Application<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointWebhookTokenSlack
+      <li><a class="reference" href="#endpointWebhookTokenSlack%2Cstring%2Cstring"
+    title="endpointWebhookTokenSlack(wid, tok: string): string">endpointWebhookTokenSlack,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildPreview
+      <li><a class="reference" href="#endpointGuildPreview%2Cstring"
+    title="endpointGuildPreview(gid: string): string">endpointGuildPreview,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGroupRecipient
+      <li><a class="reference" href="#endpointGroupRecipient%2Cstring%2Cstring"
+    title="endpointGroupRecipient(cid, rid: string): string">endpointGroupRecipient,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildMembers
+      <li><a class="reference" href="#endpointGuildMembers%2Cstring%2Cstring"
+    title="endpointGuildMembers(gid: string; mid = &quot;&quot;): string">endpointGuildMembers,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointWebhookTokenGithub
+      <li><a class="reference" href="#endpointWebhookTokenGithub%2Cstring%2Cstring"
+    title="endpointWebhookTokenGithub(wid, tok: string): string">endpointWebhookTokenGithub,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointChannelMessages
+      <li><a class="reference" href="#endpointChannelMessages%2Cstring%2Cstring"
+    title="endpointChannelMessages(cid: string; mid = &quot;&quot;): string">endpointChannelMessages,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">log
       <li><a class="reference" href="#log%2Cstring%2C"
-    title="log(msg: string; info: tuple)"><wbr />log<span class="attachedType"></span></a></li>
+    title="log(msg: string; info: tuple)">log,string,<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#log%2Cstring"
-    title="log(msg: string)"><wbr />log<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointUsers%2Cstring"
-    title="endpointUsers(uid = &quot;@me&quot;): string"><wbr />endpoint<wbr />Users<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointUserChannels"
-    title="endpointUserChannels(): string"><wbr />endpoint<wbr />User<wbr />Channels<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointVoiceRegions"
-    title="endpointVoiceRegions(): string"><wbr />endpoint<wbr />Voice<wbr />Regions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointUserGuilds%2Cstring"
-    title="endpointUserGuilds(gid: string): string"><wbr />endpoint<wbr />User<wbr />Guilds<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannels%2Cstring"
-    title="endpointChannels(cid = &quot;&quot;): string"><wbr />endpoint<wbr />Channels<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuilds%2Cstring"
-    title="endpointGuilds(gid = &quot;&quot;): string"><wbr />endpoint<wbr />Guilds<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildPreview%2Cstring"
-    title="endpointGuildPreview(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Preview<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildRegions%2Cstring"
-    title="endpointGuildRegions(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Regions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildAuditLogs%2Cstring"
-    title="endpointGuildAuditLogs(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Audit<wbr />Logs<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildMembers%2Cstring%2Cstring"
-    title="endpointGuildMembers(gid: string; mid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Members<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildMembersNick%2Cstring%2Cstring"
-    title="endpointGuildMembersNick(gid: string; mid = &quot;@me&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Members<wbr />Nick<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildMembersRole%2Cstring%2Cstring%2Cstring"
-    title="endpointGuildMembersRole(gid, mid, rid: string): string"><wbr />endpoint<wbr />Guild<wbr />Members<wbr />Role<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildIntegrations%2Cstring%2Cstring"
-    title="endpointGuildIntegrations(gid: string; iid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Integrations<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildIntegrationsSync%2Cstring%2Cstring"
-    title="endpointGuildIntegrationsSync(gid, iid: string): string"><wbr />endpoint<wbr />Guild<wbr />Integrations<wbr />Sync<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildWidget%2Cstring"
-    title="endpointGuildWidget(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Widget<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildEmojis%2Cstring%2Cstring"
-    title="endpointGuildEmojis(gid: string; eid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Emojis<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildRoles%2Cstring%2Cstring"
-    title="endpointGuildRoles(gid: string; rid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Roles<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildPrune%2Cstring"
-    title="endpointGuildPrune(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Prune<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointInvites%2Cstring"
-    title="endpointInvites(code = &quot;&quot;): string"><wbr />endpoint<wbr />Invites<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildInvites%2Cstring"
-    title="endpointGuildInvites(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Invites<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildVanity%2Cstring"
-    title="endpointGuildVanity(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Vanity<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildChannels%2Cstring%2Cstring"
-    title="endpointGuildChannels(gid: string; cid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Channels<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelOverwrites%2Cstring%2Cstring"
-    title="endpointChannelOverwrites(cid, oid: string): string"><wbr />endpoint<wbr />Channel<wbr />Overwrites<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointWebhooks%2Cstring"
-    title="endpointWebhooks(wid: string): string"><wbr />endpoint<wbr />Webhooks<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelWebhooks%2Cstring"
-    title="endpointChannelWebhooks(cid: string): string"><wbr />endpoint<wbr />Channel<wbr />Webhooks<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildWebhooks%2Cstring"
-    title="endpointGuildWebhooks(gid: string): string"><wbr />endpoint<wbr />Guild<wbr />Webhooks<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointWebhookToken%2Cstring%2Cstring"
-    title="endpointWebhookToken(wid, tok: string): string"><wbr />endpoint<wbr />Webhook<wbr />Token<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointWebhookTokenSlack%2Cstring%2Cstring"
-    title="endpointWebhookTokenSlack(wid, tok: string): string"><wbr />endpoint<wbr />Webhook<wbr />Token<wbr />Slack<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointWebhookTokenGithub%2Cstring%2Cstring"
-    title="endpointWebhookTokenGithub(wid, tok: string): string"><wbr />endpoint<wbr />Webhook<wbr />Token<wbr />Github<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelMessages%2Cstring%2Cstring"
-    title="endpointChannelMessages(cid: string; mid = &quot;&quot;): string"><wbr />endpoint<wbr />Channel<wbr />Messages<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelInvites%2Cstring"
-    title="endpointChannelInvites(cid: string): string"><wbr />endpoint<wbr />Channel<wbr />Invites<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelPermissions%2Cstring%2Cstring"
-    title="endpointChannelPermissions(cid, oid: string): string"><wbr />endpoint<wbr />Channel<wbr />Permissions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGuildBans%2Cstring%2Cstring"
-    title="endpointGuildBans(gid: string; uid = &quot;&quot;): string"><wbr />endpoint<wbr />Guild<wbr />Bans<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointBulkDeleteMessages%2Cstring"
-    title="endpointBulkDeleteMessages(cid: string): string"><wbr />endpoint<wbr />Bulk<wbr />Delete<wbr />Messages<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointTriggerTyping%2Cstring"
-    title="endpointTriggerTyping(cid: string): string"><wbr />endpoint<wbr />Trigger<wbr />Typing<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointChannelPins%2Cstring%2Cstring"
-    title="endpointChannelPins(cid: string; mid = &quot;&quot;): string"><wbr />endpoint<wbr />Channel<wbr />Pins<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointGroupRecipient%2Cstring%2Cstring"
-    title="endpointGroupRecipient(cid, rid: string): string"><wbr />endpoint<wbr />Group<wbr />Recipient<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointReactions%2Cstring%2Cstring%2Cstring%2Cstring"
-    title="endpointReactions(cid, mid: string; e, uid = &quot;&quot;): string"><wbr />endpoint<wbr />Reactions<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#endpointOAuth2Application"
-    title="endpointOAuth2Application(): string"><wbr />endpoint<wbr />OAuth2Application<span class="attachedType"></span></a></li>
+    title="log(msg: string)">log,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">endpointGuildInvites
+      <li><a class="reference" href="#endpointGuildInvites%2Cstring"
+    title="endpointGuildInvites(gid: string): string">endpointGuildInvites,string<span class="attachedType"></span></a></li>
+
+  </ul>
 
   </ul>
 </li>
@@ -353,9 +472,10 @@ function main() {
   <span class="Identifier">permKickMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Kick Members&quot;</span><span class="Other">,</span> <span class="Identifier">permBanMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Ban Members&quot;</span><span class="Other">,</span>
   <span class="Identifier">permAdministrator</span> <span class="Other">=</span> <span class="StringLit">&quot;Administrator&quot;</span><span class="Other">,</span> <span class="Identifier">permManageChannels</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Channels&quot;</span><span class="Other">,</span>
   <span class="Identifier">permManageGuild</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Server&quot;</span><span class="Other">,</span> <span class="Identifier">permAddReactions</span> <span class="Other">=</span> <span class="StringLit">&quot;Add Reactions&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permViewAuditLogs</span> <span class="Other">=</span> <span class="StringLit">&quot;View Audit Log&quot;</span><span class="Other">,</span> <span class="Identifier">permPrioritySpeaker</span> <span class="Other">=</span> <span class="StringLit">&quot;Priority Speaker&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permVoiceStream</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Stream&quot;</span><span class="Other">,</span> <span class="Identifier">permViewChannel</span> <span class="Other">=</span> <span class="StringLit">&quot;View Channel&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permSendMessages</span> <span class="Other">=</span> <span class="StringLit">&quot;Send Messages&quot;</span><span class="Other">,</span> <span class="Identifier">permSendTTSMessage</span> <span class="Other">=</span> <span class="StringLit">&quot;Send TTS Messages&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permViewAuditLogs</span> <span class="Other">=</span> <span class="StringLit">&quot;View Audit Log&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permPrioritySpeaker</span> <span class="Other">=</span> <span class="StringLit">&quot;Priority Speaker&quot;</span><span class="Other">,</span> <span class="Identifier">permVoiceStream</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Stream&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permViewChannel</span> <span class="Other">=</span> <span class="StringLit">&quot;View Channel&quot;</span><span class="Other">,</span> <span class="Identifier">permSendMessages</span> <span class="Other">=</span> <span class="StringLit">&quot;Send Messages&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permSendTTSMessage</span> <span class="Other">=</span> <span class="StringLit">&quot;Send TTS Messages&quot;</span><span class="Other">,</span>
   <span class="Identifier">permManageMessages</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Messages&quot;</span><span class="Other">,</span> <span class="Identifier">permEmbedLinks</span> <span class="Other">=</span> <span class="StringLit">&quot;Embed Links&quot;</span><span class="Other">,</span>
   <span class="Identifier">permAttachFiles</span> <span class="Other">=</span> <span class="StringLit">&quot;Attach Files&quot;</span><span class="Other">,</span>
   <span class="Identifier">permReadMessageHistory</span> <span class="Other">=</span> <span class="StringLit">&quot;Read Message History&quot;</span><span class="Other">,</span>
@@ -366,9 +486,9 @@ function main() {
   <span class="Identifier">permVoiceMuteMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Mute Members&quot;</span><span class="Other">,</span>
   <span class="Identifier">permVoiceDeafenMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Deafen Members&quot;</span><span class="Other">,</span>
   <span class="Identifier">permVoiceMoveMembers</span> <span class="Other">=</span> <span class="StringLit">&quot;Voice Move Members&quot;</span><span class="Other">,</span> <span class="Identifier">permUseVAD</span> <span class="Other">=</span> <span class="StringLit">&quot;Use VAD&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permChangeNickname</span> <span class="Other">=</span> <span class="StringLit">&quot;Change Nickname&quot;</span><span class="Other">,</span> <span class="Identifier">permManageNicknames</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Nicknames&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permManageRoles</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Roles&quot;</span><span class="Other">,</span> <span class="Identifier">permManageWebhooks</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Webhooks&quot;</span><span class="Other">,</span>
-  <span class="Identifier">permManageEmojis</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Emojis&quot;</span></pre></dt>
+  <span class="Identifier">permChangeNickname</span> <span class="Other">=</span> <span class="StringLit">&quot;Change Nickname&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageNicknames</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Nicknames&quot;</span><span class="Other">,</span> <span class="Identifier">permManageRoles</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Roles&quot;</span><span class="Other">,</span>
+  <span class="Identifier">permManageWebhooks</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Webhooks&quot;</span><span class="Other">,</span> <span class="Identifier">permManageEmojis</span> <span class="Other">=</span> <span class="StringLit">&quot;Manage Emojis&quot;</span></pre></dt>
 <dd>
 
 
@@ -382,8 +502,8 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
   <span class="Identifier">giGuilds</span><span class="Other">,</span> <span class="Identifier">giGuildMembers</span><span class="Other">,</span> <span class="Identifier">giGuildBans</span><span class="Other">,</span> <span class="Identifier">giGuildEmojis</span><span class="Other">,</span> <span class="Identifier">giGuildIntegrations</span><span class="Other">,</span>
   <span class="Identifier">giGuildWebhooks</span><span class="Other">,</span> <span class="Identifier">giGuildInvites</span><span class="Other">,</span> <span class="Identifier">giGuildVoiceStates</span><span class="Other">,</span> <span class="Identifier">giGuildPresences</span><span class="Other">,</span>
-  <span class="Identifier">giGuildMessages</span><span class="Other">,</span> <span class="Identifier">giGuildMessageReactions</span><span class="Other">,</span> <span class="Identifier">giGuildMessageTyping</span><span class="Other">,</span> <span class="Identifier">giDirectMessages</span><span class="Other">,</span>
-  <span class="Identifier">giDirectMessageReactions</span><span class="Other">,</span> <span class="Identifier">giDirectMessageTyping</span></pre></dt>
+  <span class="Identifier">giGuildMessages</span><span class="Other">,</span> <span class="Identifier">giGuildMessageReactions</span><span class="Other">,</span> <span class="Identifier">giGuildMessageTyping</span><span class="Other">,</span>
+  <span class="Identifier">giDirectMessages</span><span class="Other">,</span> <span class="Identifier">giDirectMessageReactions</span><span class="Other">,</span> <span class="Identifier">giDirectMessageTyping</span></pre></dt>
 <dd>
 
 
@@ -431,7 +551,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="MessageFlags"></a>
 <dt><pre><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">mfCrossposted</span><span class="Other">,</span> <span class="Identifier">mfIsCrosspost</span><span class="Other">,</span> <span class="Identifier">mfSupressEmbeds</span><span class="Other">,</span> <span class="Identifier">mfSourceMessageDeleted</span><span class="Other">,</span> <span class="Identifier">mfUrgent</span></pre></dt>
+  <span class="Identifier">mfCrossposted</span><span class="Other">,</span> <span class="Identifier">mfIsCrosspost</span><span class="Other">,</span> <span class="Identifier">mfSupressEmbeds</span><span class="Other">,</span> <span class="Identifier">mfSourceMessageDeleted</span><span class="Other">,</span>
+  <span class="Identifier">mfUrgent</span></pre></dt>
 <dd>
 
 
@@ -446,7 +567,8 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">mtDefault</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">,</span> <span class="Identifier">mtRecipientAdd</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">mtRecipientRemove</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">mtCall</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span>
   <span class="Identifier">mtChannelNameChange</span> <span class="Other">=</span> <span class="DecNumber">4</span><span class="Other">,</span> <span class="Identifier">mtChannelIconChange</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">,</span> <span class="Identifier">mtChannelPinnedMessage</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">,</span>
   <span class="Identifier">mtGuildMemberJoin</span> <span class="Other">=</span> <span class="DecNumber">7</span><span class="Other">,</span> <span class="Identifier">mtUserGuildBoost</span> <span class="Other">=</span> <span class="DecNumber">8</span><span class="Other">,</span> <span class="Identifier">mtUserGuildBoostTier1</span> <span class="Other">=</span> <span class="DecNumber">9</span><span class="Other">,</span>
-  <span class="Identifier">mtUserGuildBoostTier2</span> <span class="Other">=</span> <span class="DecNumber">10</span><span class="Other">,</span> <span class="Identifier">mtUserGuildBoostTier3</span> <span class="Other">=</span> <span class="DecNumber">11</span><span class="Other">,</span> <span class="Identifier">mtChannelFollowAdd</span> <span class="Other">=</span> <span class="DecNumber">12</span></pre></dt>
+  <span class="Identifier">mtUserGuildBoostTier2</span> <span class="Other">=</span> <span class="DecNumber">10</span><span class="Other">,</span> <span class="Identifier">mtUserGuildBoostTier3</span> <span class="Other">=</span> <span class="DecNumber">11</span><span class="Other">,</span>
+  <span class="Identifier">mtChannelFollowAdd</span> <span class="Other">=</span> <span class="DecNumber">12</span></pre></dt>
 <dd>
 
 
@@ -470,8 +592,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="ChannelType"></a>
 <dt><pre><a href="constants.html#ChannelType"><span class="Identifier">ChannelType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">ctGuildText</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">,</span> <span class="Identifier">ctDirect</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">ctGuildVoice</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">ctGroupDM</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span> <span class="Identifier">ctGuildParent</span> <span class="Other">=</span> <span class="DecNumber">4</span><span class="Other">,</span>
-  <span class="Identifier">ctGuildNews</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">,</span> <span class="Identifier">ctGuildStore</span> <span class="Other">=</span> <span class="DecNumber">6</span></pre></dt>
+  <span class="Identifier">ctGuildText</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">,</span> <span class="Identifier">ctDirect</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">ctGuildVoice</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">ctGroupDM</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span>
+  <span class="Identifier">ctGuildParent</span> <span class="Other">=</span> <span class="DecNumber">4</span><span class="Other">,</span> <span class="Identifier">ctGuildNews</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">,</span> <span class="Identifier">ctGuildStore</span> <span class="Other">=</span> <span class="DecNumber">6</span></pre></dt>
 <dd>
 
 
@@ -581,15 +703,17 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><a href="constants.html#AuditLogEntryType"><span class="Identifier">AuditLogEntryType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
   <span class="Identifier">aleGuildUpdate</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">aleChannelCreate</span> <span class="Other">=</span> <span class="DecNumber">10</span><span class="Other">,</span> <span class="Identifier">aleChannelUpdate</span> <span class="Other">=</span> <span class="DecNumber">11</span><span class="Other">,</span>
   <span class="Identifier">aleChannelDelete</span> <span class="Other">=</span> <span class="DecNumber">12</span><span class="Other">,</span> <span class="Identifier">aleChannelOverwriteCreate</span> <span class="Other">=</span> <span class="DecNumber">13</span><span class="Other">,</span>
-  <span class="Identifier">aleChannelOverwriteUpdate</span> <span class="Other">=</span> <span class="DecNumber">14</span><span class="Other">,</span> <span class="Identifier">aleChannelOverwriteDelete</span> <span class="Other">=</span> <span class="DecNumber">15</span><span class="Other">,</span> <span class="Identifier">aleMemberKick</span> <span class="Other">=</span> <span class="DecNumber">20</span><span class="Other">,</span>
-  <span class="Identifier">aleMemberPrune</span> <span class="Other">=</span> <span class="DecNumber">21</span><span class="Other">,</span> <span class="Identifier">aleMemberBanAdd</span> <span class="Other">=</span> <span class="DecNumber">22</span><span class="Other">,</span> <span class="Identifier">aleMemberBanRemove</span> <span class="Other">=</span> <span class="DecNumber">23</span><span class="Other">,</span>
-  <span class="Identifier">aleMemberUpdate</span> <span class="Other">=</span> <span class="DecNumber">24</span><span class="Other">,</span> <span class="Identifier">aleMemberRoleUpdate</span> <span class="Other">=</span> <span class="DecNumber">25</span><span class="Other">,</span> <span class="Identifier">aleMemberMove</span> <span class="Other">=</span> <span class="DecNumber">26</span><span class="Other">,</span>
-  <span class="Identifier">aleMemberDisconnect</span> <span class="Other">=</span> <span class="DecNumber">27</span><span class="Other">,</span> <span class="Identifier">aleBotAdd</span> <span class="Other">=</span> <span class="DecNumber">28</span><span class="Other">,</span> <span class="Identifier">aleRoleCreate</span> <span class="Other">=</span> <span class="DecNumber">30</span><span class="Other">,</span> <span class="Identifier">aleRoleUpdate</span> <span class="Other">=</span> <span class="DecNumber">31</span><span class="Other">,</span>
-  <span class="Identifier">aleRoleDelete</span> <span class="Other">=</span> <span class="DecNumber">32</span><span class="Other">,</span> <span class="Identifier">aleInviteCreate</span> <span class="Other">=</span> <span class="DecNumber">40</span><span class="Other">,</span> <span class="Identifier">aleInviteUpdate</span> <span class="Other">=</span> <span class="DecNumber">41</span><span class="Other">,</span> <span class="Identifier">aleInviteDelete</span> <span class="Other">=</span> <span class="DecNumber">42</span><span class="Other">,</span>
+  <span class="Identifier">aleChannelOverwriteUpdate</span> <span class="Other">=</span> <span class="DecNumber">14</span><span class="Other">,</span> <span class="Identifier">aleChannelOverwriteDelete</span> <span class="Other">=</span> <span class="DecNumber">15</span><span class="Other">,</span>
+  <span class="Identifier">aleMemberKick</span> <span class="Other">=</span> <span class="DecNumber">20</span><span class="Other">,</span> <span class="Identifier">aleMemberPrune</span> <span class="Other">=</span> <span class="DecNumber">21</span><span class="Other">,</span> <span class="Identifier">aleMemberBanAdd</span> <span class="Other">=</span> <span class="DecNumber">22</span><span class="Other">,</span>
+  <span class="Identifier">aleMemberBanRemove</span> <span class="Other">=</span> <span class="DecNumber">23</span><span class="Other">,</span> <span class="Identifier">aleMemberUpdate</span> <span class="Other">=</span> <span class="DecNumber">24</span><span class="Other">,</span> <span class="Identifier">aleMemberRoleUpdate</span> <span class="Other">=</span> <span class="DecNumber">25</span><span class="Other">,</span>
+  <span class="Identifier">aleMemberMove</span> <span class="Other">=</span> <span class="DecNumber">26</span><span class="Other">,</span> <span class="Identifier">aleMemberDisconnect</span> <span class="Other">=</span> <span class="DecNumber">27</span><span class="Other">,</span> <span class="Identifier">aleBotAdd</span> <span class="Other">=</span> <span class="DecNumber">28</span><span class="Other">,</span>
+  <span class="Identifier">aleRoleCreate</span> <span class="Other">=</span> <span class="DecNumber">30</span><span class="Other">,</span> <span class="Identifier">aleRoleUpdate</span> <span class="Other">=</span> <span class="DecNumber">31</span><span class="Other">,</span> <span class="Identifier">aleRoleDelete</span> <span class="Other">=</span> <span class="DecNumber">32</span><span class="Other">,</span>
+  <span class="Identifier">aleInviteCreate</span> <span class="Other">=</span> <span class="DecNumber">40</span><span class="Other">,</span> <span class="Identifier">aleInviteUpdate</span> <span class="Other">=</span> <span class="DecNumber">41</span><span class="Other">,</span> <span class="Identifier">aleInviteDelete</span> <span class="Other">=</span> <span class="DecNumber">42</span><span class="Other">,</span>
   <span class="Identifier">aleWebhookCreate</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">,</span> <span class="Identifier">aleWebhookUpdate</span> <span class="Other">=</span> <span class="DecNumber">51</span><span class="Other">,</span> <span class="Identifier">aleWebhookDelete</span> <span class="Other">=</span> <span class="DecNumber">52</span><span class="Other">,</span>
-  <span class="Identifier">aleEmojiCreate</span> <span class="Other">=</span> <span class="DecNumber">60</span><span class="Other">,</span> <span class="Identifier">aleEmojiUpdate</span> <span class="Other">=</span> <span class="DecNumber">61</span><span class="Other">,</span> <span class="Identifier">aleEmojiDelete</span> <span class="Other">=</span> <span class="DecNumber">62</span><span class="Other">,</span> <span class="Identifier">aleMessageDelete</span> <span class="Other">=</span> <span class="DecNumber">72</span><span class="Other">,</span>
-  <span class="Identifier">aleMessageBulkDelete</span> <span class="Other">=</span> <span class="DecNumber">73</span><span class="Other">,</span> <span class="Identifier">aleMessagePin</span> <span class="Other">=</span> <span class="DecNumber">74</span><span class="Other">,</span> <span class="Identifier">aleMessageUnpin</span> <span class="Other">=</span> <span class="DecNumber">75</span><span class="Other">,</span>
-  <span class="Identifier">aleIntegrationCreate</span> <span class="Other">=</span> <span class="DecNumber">80</span><span class="Other">,</span> <span class="Identifier">aleIntegrationUpdate</span> <span class="Other">=</span> <span class="DecNumber">81</span><span class="Other">,</span> <span class="Identifier">aleIntegrationDelete</span> <span class="Other">=</span> <span class="DecNumber">82</span></pre></dt>
+  <span class="Identifier">aleEmojiCreate</span> <span class="Other">=</span> <span class="DecNumber">60</span><span class="Other">,</span> <span class="Identifier">aleEmojiUpdate</span> <span class="Other">=</span> <span class="DecNumber">61</span><span class="Other">,</span> <span class="Identifier">aleEmojiDelete</span> <span class="Other">=</span> <span class="DecNumber">62</span><span class="Other">,</span>
+  <span class="Identifier">aleMessageDelete</span> <span class="Other">=</span> <span class="DecNumber">72</span><span class="Other">,</span> <span class="Identifier">aleMessageBulkDelete</span> <span class="Other">=</span> <span class="DecNumber">73</span><span class="Other">,</span> <span class="Identifier">aleMessagePin</span> <span class="Other">=</span> <span class="DecNumber">74</span><span class="Other">,</span>
+  <span class="Identifier">aleMessageUnpin</span> <span class="Other">=</span> <span class="DecNumber">75</span><span class="Other">,</span> <span class="Identifier">aleIntegrationCreate</span> <span class="Other">=</span> <span class="DecNumber">80</span><span class="Other">,</span> <span class="Identifier">aleIntegrationUpdate</span> <span class="Other">=</span> <span class="DecNumber">81</span><span class="Other">,</span>
+  <span class="Identifier">aleIntegrationDelete</span> <span class="Other">=</span> <span class="DecNumber">82</span></pre></dt>
 <dd>
 
 
@@ -794,8 +918,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="permAllText"></a>
 <dt><pre><a href="constants.html#permAllText"><span class="Identifier">permAllText</span></a> <span class="Other">=</span> <span class="Other">{</span><span class="DecNumber">permSendTTSMessage</span><span class="Other">,</span> <span class="DecNumber">permEmbedLinks</span><span class="Other">,</span> <span class="DecNumber">permReadMessageHistory</span><span class="Other">,</span>
-             <span class="DecNumber">permUseExternalEmojis</span><span class="Other">,</span> <span class="DecNumber">permSendMessages</span><span class="Other">,</span> <span class="DecNumber">permManageMessages</span><span class="Other">,</span>
-             <span class="DecNumber">permAttachFiles</span><span class="Other">,</span> <span class="DecNumber">permMentionEveryone</span><span class="Other">,</span> <span class="DecNumber">permAddReactions</span><span class="Other">}</span></pre></dt>
+               <span class="DecNumber">permUseExternalEmojis</span><span class="Other">,</span> <span class="DecNumber">permSendMessages</span><span class="Other">,</span> <span class="DecNumber">permManageMessages</span><span class="Other">,</span>
+               <span class="DecNumber">permAttachFiles</span><span class="Other">,</span> <span class="DecNumber">permMentionEveryone</span><span class="Other">,</span> <span class="DecNumber">permAddReactions</span><span class="Other">}</span></pre></dt>
 <dd>
 
 
@@ -807,8 +931,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="permAllVoice"></a>
 <dt><pre><a href="constants.html#permAllVoice"><span class="Identifier">permAllVoice</span></a> <span class="Other">=</span> <span class="Other">{</span><span class="DecNumber">permVoiceConnect</span><span class="Other">,</span> <span class="DecNumber">permVoiceMuteMembers</span><span class="Other">,</span> <span class="DecNumber">permVoiceMoveMembers</span><span class="Other">,</span>
-              <span class="DecNumber">permVoiceSpeak</span><span class="Other">,</span> <span class="DecNumber">permVoiceDeafenMembers</span><span class="Other">,</span> <span class="DecNumber">permPrioritySpeaker</span><span class="Other">,</span>
-              <span class="DecNumber">permUseVAD</span><span class="Other">,</span> <span class="DecNumber">permVoiceStream</span><span class="Other">}</span></pre></dt>
+                <span class="DecNumber">permVoiceSpeak</span><span class="Other">,</span> <span class="DecNumber">permVoiceDeafenMembers</span><span class="Other">,</span> <span class="DecNumber">permPrioritySpeaker</span><span class="Other">,</span>
+                <span class="DecNumber">permUseVAD</span><span class="Other">,</span> <span class="DecNumber">permVoiceStream</span><span class="Other">}</span></pre></dt>
 <dd>
 
 
@@ -820,8 +944,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="permAllChannel"></a>
 <dt><pre><a href="constants.html#permAllChannel"><span class="Identifier">permAllChannel</span></a> <span class="Other">=</span> <span class="Other">{</span><span class="DecNumber">permAddReactions</span><span class="Other">,</span> <span class="DecNumber">permPrioritySpeaker</span><span class="Other">..</span><span class="DecNumber">permVoiceStream</span><span class="Other">,</span>
-                <span class="DecNumber">permSendMessages</span><span class="Other">..</span><span class="DecNumber">permUseExternalEmojis</span><span class="Other">,</span>
-                <span class="DecNumber">permVoiceConnect</span><span class="Other">..</span><span class="DecNumber">permUseVAD</span><span class="Other">}</span></pre></dt>
+                  <span class="DecNumber">permSendMessages</span><span class="Other">..</span><span class="DecNumber">permUseExternalEmojis</span><span class="Other">,</span>
+                  <span class="DecNumber">permVoiceConnect</span><span class="Other">..</span><span class="DecNumber">permUseVAD</span><span class="Other">}</span></pre></dt>
 <dd>
 
 
@@ -980,7 +1104,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointGuildMembersNick,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildMembersNick%2Cstring%2Cstring"><span class="Identifier">endpointGuildMembersNick</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mid</span> <span class="Other">=</span> <span class="StringLit">&quot;@me&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildMembersNick%2Cstring%2Cstring"><span class="Identifier">endpointGuildMembersNick</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mid</span> <span class="Other">=</span> <span class="StringLit">&quot;@me&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -991,7 +1116,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointGuildMembersRole,string,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildMembersRole%2Cstring%2Cstring%2Cstring"><span class="Identifier">endpointGuildMembersRole</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">,</span> <span class="Identifier">rid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildMembersRole%2Cstring%2Cstring%2Cstring"><span class="Identifier">endpointGuildMembersRole</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">,</span> <span class="Identifier">rid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1002,7 +1128,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointGuildIntegrations,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildIntegrations%2Cstring%2Cstring"><span class="Identifier">endpointGuildIntegrations</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">iid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildIntegrations%2Cstring%2Cstring"><span class="Identifier">endpointGuildIntegrations</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">iid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1013,7 +1140,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointGuildIntegrationsSync,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildIntegrationsSync%2Cstring%2Cstring"><span class="Identifier">endpointGuildIntegrationsSync</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">,</span> <span class="Identifier">iid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointGuildIntegrationsSync%2Cstring%2Cstring"><span class="Identifier">endpointGuildIntegrationsSync</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">,</span> <span class="Identifier">iid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1189,7 +1317,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointChannelMessages,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessages%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessages</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessages%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessages</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1277,7 +1406,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="endpointReactions,string,string,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointReactions%2Cstring%2Cstring%2Cstring%2Cstring"><span class="Identifier">endpointReactions</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">,</span> <span class="Identifier">uid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointReactions%2Cstring%2Cstring%2Cstring%2Cstring"><span class="Identifier">endpointReactions</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">e</span><span class="Other">,</span> <span class="Identifier">uid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1308,7 +1438,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-11-01 14:52:55 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 15:59:27 UTC</small>
       </div>
     </div>
   </div>

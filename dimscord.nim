@@ -63,7 +63,7 @@
 ## Definable options
 ## ==============
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
-## - `-d:discordCompress` For zlib compression a zlib1 file needs to be in your folder.
+## - `-d:discordCompress` Compress gateway payloads, by using zippy.
 ## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
 
 import dimscord/[gateway, restapi, constants, objects, helpers, voice], options

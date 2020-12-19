@@ -4,7 +4,7 @@ import asyncdispatch, ws, asyncnet
 import objects, json, times, constants
 import strutils, nativesockets, streams, sequtils
 import libsodium/sodium, libsodium/sodium_sizes
-import osproc, endians, net
+import osproc, net
 import flatty/binny, random
 randomize()
 
@@ -32,9 +32,6 @@ else:
 
 template cpt(target: string): untyped =
     cast[ptr cuchar](cstring(target))
-
-template cpsize(target: string): untyped =
-    csize(target.len)
 
 template culen(target: string): untyped =
     culonglong(target.len)
@@ -125,26 +122,6 @@ var
     playing = false
     stopped = false
     reconnectable = true
-    discovering = false
-proc writeBigUint16(strm: StringStream, num: uint16) = 
-    var
-        tmp: uint16
-        num = num
-    bigEndian16(addr tmp, addr num)
-    strm.write(tmp)
-
-proc writeBigUint32(strm: StringStream, num: uint32) = 
-    var
-        tmp: uint32
-        num = num
-    bigEndian32(addr tmp, addr num)
-    strm.write(tmp)
-
-proc writeString(strm: StringStream, num: string) =
-    var
-        tmp: string
-        num = num
-    strm.write(num)
 
 proc reset(v: VoiceClient) {.used.} =
     v.resuming = false
@@ -197,7 +174,7 @@ proc sendSock(v: VoiceClient, opcode: int, data: JsonNode) {.async.} =
 proc sockClosed(v: VoiceClient): bool {.used.} =
     return v.connection == nil or v.connection.tcpSocket.isClosed or v.stop
 
-proc resume(v: VoiceClient) {.async.} =
+proc resume*(v: VoiceClient) {.async.} =
     if v.resuming or v.sockClosed: return
 
     # v.resuming = true
@@ -448,13 +425,13 @@ iterator chunkedStdout(cmd: string,
     })
 
     let outStream = pid.outputStream
-    let errStream = pid.errorStream
+    # let errStream = pid.errorStream
 
     while pid.running:
         let d = readDataStr(outStream, buf, 0 ..< size)
         yield buf[0 .. d - 1]
 
-proc pause(v: VoiceClient) {.async.} =
+proc pause*(v: VoiceClient) {.async.} =
     if playing:
         playing = false
 

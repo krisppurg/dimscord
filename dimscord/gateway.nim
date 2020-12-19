@@ -566,8 +566,6 @@ proc startSession*(discord: DiscordClient,
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
-    ##
-    ## If you want to compress add `-d:discordCompress`, zlib1(.dll|.so.1|.dylib) file needs to be in your directory.
     ## 
     ## - `gateway_intents` Allows you to subscribe to pre-defined events.
     ##   If you are using v8, this defaults to `{giGuilds, giGuildMessages, giDirectMessages}`.
@@ -577,7 +575,6 @@ proc startSession*(discord: DiscordClient,
     ## - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
     ## - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
     ## - `large_message_threshold` Max message limit (MESSAGE_CREATE)
-    ##
 
     if discord.restMode:
         raise newException(Exception, "(╯°□°)╯ REST mode is enabled! (╯°□°)╯")

@@ -649,8 +649,8 @@ proc newOverwrite*(data: JsonNode): Overwrite =
     result.id = data["id"].str
     when defined(discordv8):
         result.kind = data["type"].getInt
-        result.allow = cast[set[PermissionFlags]](data["allow"].str)
-        result.deny = cast[set[PermissionFlags]](data["deny"].str)
+        result.allow = cast[set[PermissionFlags]](data["allow"].str.parseInt)
+        result.deny = cast[set[PermissionFlags]](data["deny"].str.parseInt)
     else:
         result.kind = data["type"].str
         result.allow = cast[set[PermissionFlags]](data["allow"].getInt)
@@ -669,7 +669,7 @@ proc newRole*(data: JsonNode): Role =
         mentionable: data["mentionable"].bval
     )
     when defined(discordv8):
-        result.permissions = cast[set[PermissionFlags]](data["permissions"].str)
+        result.permissions = cast[set[PermissionFlags]](data["permissions"].str.parseInt)
     else:
         result.permissions = cast[set[PermissionFlags]](
             data["permissions"].getInt

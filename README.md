@@ -17,7 +17,6 @@ Why Dimscord?
     [You can read the Nim FAQ here](https://nim-lang.org/faq.html)
 
 ## Notes:
- * For compressing data and stuff you need a zlib1 file to be installed, you can put it in your `.nimble/bin` directory, or just simply put it in your folder. It has to be either a dylib, dll or so.1 file.
  * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member use the requestGuildMembers proc, that way you can get a specific guild member from a large guild; if you have presence intent enabled and you are debugging with a large guild,
  dont debug because it will slow down your bot.
 

@@ -37,11 +37,11 @@ import dimscord, asyncdispatch, times, options
 let discord = newDiscordClient("<your bot token goes here>")
 
 # Handle event for on_ready.
-discord.events.on_ready = proc (s: Shard, r: Ready) {.async.} =
+proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as " & $r.user
 
 # Handle event for message_create.
-discord.events.message_create = proc (s: Shard, m: Message) {.async.} =
+ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     if m.author.bot: return
     if m.content == "!ping": # If message content is "!ping".
         let

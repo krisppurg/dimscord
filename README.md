@@ -41,7 +41,7 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as " & $r.user
 
 # Handle event for message_create.
- proc messageCreate(s: Shard, m: Message) {.event(discord).} =
+proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     if m.author.bot: return
     if m.content == "!ping": # If message content is "!ping".
         let

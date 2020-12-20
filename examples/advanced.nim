@@ -23,7 +23,7 @@ proc getGuildMember(s: Shard, guild, user: string): Future[Member] {.async.} =
 
     return member
 
-proc messageCreate(s: Shard, m: Message) {.async.} =
+proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let args = m.content.split(" ") # Splits a message.
     if m.author.bot or not args[0].startsWith("$$"): return
     let command = args[0][2..args[0].high]
@@ -76,7 +76,7 @@ proc messageCreate(s: Shard, m: Message) {.async.} =
     else:
         discard
 
-proc onReady(s: Shard, r: Ready) {.async.} =
+proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as: " & $r.user
 
     await s.updateStatus(activity = ActivityStatus(
@@ -84,12 +84,8 @@ proc onReady(s: Shard, r: Ready) {.async.} =
         kind: atPlaying
     ), status = "idle")
 
-proc messageDelete(s: Shard, m: Message, exists: bool) {.async.} =
+proc messageDelete(s: Shard, m: Message, exists: bool) {.event(discord).} =
     echo "A wild message has been deleted!"
-
-discord.events.onReady = onReady
-discord.events.messageCreate = messageCreate
-discord.events.messageDelete = messageDelete
 
 # Connect to Discord and run the bot.
 waitFor discord.startSession(

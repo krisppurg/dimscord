@@ -20,7 +20,7 @@ proc getUser(s: Shard, user_id: string): Future[User] {.async.} =
 
     result = await discord.api.getUser(user_id)
 
-proc messageCreate(s: Shard, m: Message) {.async.} =
+proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     if m.content == "#!getguild": # Gets a guild from rest or cache
         discard await discord.api.sendMessage(
             m.channel_id, "Getting guild!"
@@ -39,8 +39,6 @@ proc messageCreate(s: Shard, m: Message) {.async.} =
         )
         let user = await s.getUser(m.author.id)
         echo user[]
-
-discord.events.message_create = messageCreate
 
 when defined(noCaching): # Turn off caching when you define noCaching `-d:noCaching`
     waitFor discord.startSession(

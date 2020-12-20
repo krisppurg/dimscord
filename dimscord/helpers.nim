@@ -6,6 +6,32 @@
 import constants, objects, options
 import strformat, strutils, times
 import tables, regex
+import macros
+
+macro event*(discord: DiscordClient, fn: untyped): untyped =
+    ## Sugar for registering an event handler.
+    let 
+        eventName = fn[0]
+        params = fn[3]
+        pragmas = fn[4]
+        body = fn[6]
+
+    var anonFn = newTree(
+        nnkLambda,
+        newEmptyNode(),
+        newEmptyNode(),
+        newEmptyNode(),
+        params,
+        pragmas,
+        newEmptyNode(),
+        body
+    )
+
+    if pragmas.findChild(it.strVal == "async").kind == nnkNilLit:
+        anonFn.addPragma ident("async")
+
+    quote:
+        `discord`.events.`eventName` = `anonFn`
 
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.

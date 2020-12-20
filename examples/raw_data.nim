@@ -3,7 +3,7 @@ import dimscord, asyncdispatch, json
 let discord = newDiscordClient("<your bot token goes here>")
 var expected: string
 
-proc onDispatch(s: Shard, evt: string, data: JsonNode) {.async.} =
+proc onDispatch(s: Shard, evt: string, data: JsonNode) {.event(discord).} =
     if evt == "MESSAGE_CREATE": # if event is message create
         if data["content"].str == "!raw":
             let msg = await discord.api.sendMessage(
@@ -19,8 +19,6 @@ proc onDispatch(s: Shard, evt: string, data: JsonNode) {.async.} =
                     data["message_id"].str,
                     data["emoji"]["name"].str
                 )
-
-discord.events.onDispatch = onDispatch
 
 waitFor discord.startSession(
     gateway_intents = {giGuilds, giGuildMessages, giGuildMessageReactions}

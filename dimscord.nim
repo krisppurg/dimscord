@@ -18,7 +18,7 @@
 ## 
 ##   Please note that if you are compiling with ARC or ORC, use `--deepCopy`.
 ## 
-## - `endpoints` Interfaces with Discord's REST API,
+## - `restapi` Interfaces with Discord's REST API,
 ##   I'd recommend either stopping your bot or at least check your code
 ##   like if the bot has the permissions to do this and that,
 ##   for 429s the lib would at least try to re-send the request, the common

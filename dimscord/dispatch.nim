@@ -30,7 +30,9 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
 
         if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
             when declared(deepCopy):
-                oldVoiceState = some deepCopy guild.voice_states[voiceState.user_id]
+                oldVoiceState = some(
+                    deepCopy guild.voice_states[voiceState.user_id]
+                )
             guild.voice_states[voiceState.user_id] = voiceState
     
     if voiceState.user_id == s.user.id:
@@ -42,11 +44,11 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
                     shard: s,
                     voice_events: VoiceEvents(
                         on_dispatch: proc (v: VoiceClient,
-                                d: JsonNode, event: string) {.async.} = discard,
+                                d: JsonNode, event: string){.async.} = discard,
                         on_speaking: proc (v: VoiceClient,
-                                speaking: bool) {.async.} = discard,
-                        on_ready: proc (v: VoiceClient) {.async.} = discard,
-                        on_disconnect: proc (v: VoiceClient) {.async.} = discard
+                                speaking: bool){.async.} = discard,
+                        on_ready: proc (v: VoiceClient){.async.} = discard,
+                        on_disconnect: proc (v: VoiceClient){.async.} = discard
                     )
                 )
             let v = s.voiceConnections[guild.id]
@@ -685,62 +687,34 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
 
 proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     case event:
-    of "VOICE_STATE_UPDATE":
-        await s.voiceStateUpdate(data)
-    of "CHANNEL_PINS_UPDATE":
-        await s.channelPinsUpdate(data)
-    of "GUILD_EMOJIS_UPDATE":
-        await s.guildEmojisUpdate(data)
-    of "PRESENCE_UPDATE":
-        await s.presenceUpdate(data)
-    of "MESSAGE_CREATE":
-        await s.messageCreate(data)
-    of "MESSAGE_REACTION_ADD":
-        await s.messageReactionAdd(data)
-    of "MESSAGE_REACTION_REMOVE":
-        await s.messageReactionRemove(data)
-    of "MESSAGE_REACTION_REMOVE_EMOJI":
-        await s.messageReactionRemoveEmoji(data)
-    of "MESSAGE_REACTION_REMOVE_ALL":
-        await s.messageReactionRemoveAll(data)
-    of "MESSAGE_DELETE":
-        await s.messageDelete(data)
-    of "MESSAGE_UPDATE":
-        await s.messageUpdate(data)
-    of "MESSAGE_DELETE_BULK":
-        await s.messageDeleteBulk(data)
-    of "CHANNEL_CREATE":
-        await s.channelCreate(data)
-    of "CHANNEL_UPDATE":
-        await s.channelUpdate(data)
-    of "CHANNEL_DELETE":
-        await s.channelDelete(data)
-    of "GUILD_MEMBERS_CHUNK":
-        await s.guildMembersChunk(data)
-    of "GUILD_MEMBER_ADD":
-        await s.guildMemberAdd(data)
-    of "GUILD_MEMBER_UPDATE":
-        await s.guildMemberUpdate(data)
-    of "GUILD_MEMBER_REMOVE":
-        await s.guildMemberRemove(data)
-    of "GUILD_BAN_ADD":
-        await s.guildBanAdd(data)
-    of "GUILD_BAN_REMOVE":
-        await s.guildBanRemove(data)
-    of "GUILD_UPDATE":
-        await s.guildUpdate(data)
-    of "GUILD_DELETE":
-        await s.guildDelete(data)
-    of "GUILD_CREATE":
-        await s.guildCreate(data)
-    of "GUILD_ROLE_CREATE":
-        await s.guildRoleCreate(data)
-    of "GUILD_ROLE_UPDATE":
-        await s.guildRoleUpdate(data)
-    of "GUILD_ROLE_DELETE":
-        await s.guildRoleDelete(data)
-    of "WEBHOOKS_UPDATE":
-        await s.webhooksUpdate(data)
+    of "VOICE_STATE_UPDATE": await s.voiceStateUpdate(data)
+    of "CHANNEL_PINS_UPDATE": await s.channelPinsUpdate(data)
+    of "GUILD_EMOJIS_UPDATE": await s.guildEmojisUpdate(data)
+    of "PRESENCE_UPDATE": await s.presenceUpdate(data)
+    of "MESSAGE_CREATE": await s.messageCreate(data)
+    of "MESSAGE_REACTION_ADD": await s.messageReactionAdd(data)
+    of "MESSAGE_REACTION_REMOVE": await s.messageReactionRemove(data)
+    of "MESSAGE_REACTION_REMOVE_EMOJI": await s.messageReactionRemoveEmoji(data)
+    of "MESSAGE_REACTION_REMOVE_ALL": await s.messageReactionRemoveAll(data)
+    of "MESSAGE_DELETE": await s.messageDelete(data)
+    of "MESSAGE_UPDATE": await s.messageUpdate(data)
+    of "MESSAGE_DELETE_BULK": await s.messageDeleteBulk(data)
+    of "CHANNEL_CREATE": await s.channelCreate(data)
+    of "CHANNEL_UPDATE": await s.channelUpdate(data)
+    of "CHANNEL_DELETE": await s.channelDelete(data)
+    of "GUILD_MEMBERS_CHUNK": await s.guildMembersChunk(data)
+    of "GUILD_MEMBER_ADD": await s.guildMemberAdd(data)
+    of "GUILD_MEMBER_UPDATE": await s.guildMemberUpdate(data)
+    of "GUILD_MEMBER_REMOVE": await s.guildMemberRemove(data)
+    of "GUILD_BAN_ADD": await s.guildBanAdd(data)
+    of "GUILD_BAN_REMOVE": await s.guildBanRemove(data)
+    of "GUILD_UPDATE": await s.guildUpdate(data)
+    of "GUILD_DELETE": await s.guildDelete(data)
+    of "GUILD_CREATE": await s.guildCreate(data)
+    of "GUILD_ROLE_CREATE": await s.guildRoleCreate(data)
+    of "GUILD_ROLE_UPDATE": await s.guildRoleUpdate(data)
+    of "GUILD_ROLE_DELETE": await s.guildRoleDelete(data)
+    of "WEBHOOKS_UPDATE": await s.webhooksUpdate(data)
     of "TYPING_START":
         await s.client.events.typing_start(s, newTypingStart(data))
     of "INVITE_CREATE":
@@ -757,7 +731,8 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "USER_UPDATE":
         let user = newUser(data)
         s.user = user
-
         await s.client.events.user_update(s, user)
+    of "INTERACTION_CREATE":
+        await s.client.events.interaction_create(s, newInteraction(data))
     else:
         discard

@@ -1,3 +1,6 @@
+RestError	dimscord/objects.html#RestError	objects: RestError	
+DiscordFile	dimscord/objects.html#DiscordFile	objects: DiscordFile	
+AllowedMentions	dimscord/objects.html#AllowedMentions	objects: AllowedMentions	
 DiscordClient	dimscord/objects.html#DiscordClient	objects: DiscordClient	
 Shard	dimscord/objects.html#Shard	objects: Shard	
 VoiceClient	dimscord/objects.html#VoiceClient	objects: VoiceClient	
@@ -43,6 +46,14 @@ Channel	dimscord/objects.html#Channel	objects: Channel
 TeamMember	dimscord/objects.html#TeamMember	objects: TeamMember	
 Team	dimscord/objects.html#Team	objects: Team	
 OAuth2Application	dimscord/objects.html#OAuth2Application	objects: OAuth2Application	
+ApplicationCommand	dimscord/objects.html#ApplicationCommand	objects: ApplicationCommand	
+ApplicationCommandOption	dimscord/objects.html#ApplicationCommandOption	objects: ApplicationCommandOption	
+ApplicationCommandOptionChoice	dimscord/objects.html#ApplicationCommandOptionChoice	objects: ApplicationCommandOptionChoice	
+Interaction	dimscord/objects.html#Interaction	objects: Interaction	
+ApplicationCommandInteractionData	dimscord/objects.html#ApplicationCommandInteractionData	objects: ApplicationCommandInteractionData	
+ApplicationCommandInteractionDataOption	dimscord/objects.html#ApplicationCommandInteractionDataOption	objects: ApplicationCommandInteractionDataOption	
+InteractionResponse	dimscord/objects.html#InteractionResponse	objects: InteractionResponse	
+InteractionApplicationCommandCallbackData	dimscord/objects.html#InteractionApplicationCommandCallbackData	objects: InteractionApplicationCommandCallbackData	
 Invite	dimscord/objects.html#Invite	objects: Invite	
 InviteMetadata	dimscord/objects.html#InviteMetadata	objects: InviteMetadata	
 InviteCreate	dimscord/objects.html#InviteCreate	objects: InviteCreate	
@@ -90,3 +101,8 @@ newMessage	dimscord/objects.html#newMessage,JsonNode	objects: newMessage(data: J
 newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	objects: newAuditLog(data: JsonNode): AuditLog	
 newOAuth2Application	dimscord/objects.html#newOAuth2Application,JsonNode	objects: newOAuth2Application(data: JsonNode): OAuth2Application	
 newGuild	dimscord/objects.html#newGuild,JsonNode	objects: newGuild(data: JsonNode): Guild	
+newApplicationCommandInteractionData	dimscord/objects.html#newApplicationCommandInteractionData,JsonNode	objects: newApplicationCommandInteractionData(data: JsonNode): ApplicationCommandInteractionData	
+newInteraction	dimscord/objects.html#newInteraction,JsonNode	objects: newInteraction(data: JsonNode): Interaction	
+newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	objects: newApplicationCommandOption(data: JsonNode): ApplicationCommandOption	
+`%%*`	dimscord/objects.html#%%*,ApplicationCommandOption	objects: `%%*`(a: ApplicationCommandOption): JsonNode	
+newApplicationCommand	dimscord/objects.html#newApplicationCommand,JsonNode	objects: newApplicationCommand(data: JsonNode): ApplicationCommand	

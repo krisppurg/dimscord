@@ -7,7 +7,7 @@ license       = "MIT"
 
 # Dependencies
 
-requires "nim >= 1.2.0", "zippy >= 0.2.1", "ws <= 0.4.0", "regex >= 0.15.0"
+requires "nim >= 1.2.0", "zippy >= 0.2.1", "ws <= 0.4.0", "regex >= 0.15.0", "libsodium <= 0.6.0"
 
 task genDoc, "Generates the documentation for dimscord":
     rmDir("docs") # Clean old doc folder

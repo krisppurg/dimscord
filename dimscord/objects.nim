@@ -7,10 +7,18 @@
 ##   
 ## Some may not be optional, but they can be assumable or always present.
 
-import options, json, tables, constants, macros
+import options as optins, json, tables, constants, macros
 import sequtils, strutils, asyncdispatch, ws
 
 type
+    RestError* = object of CatchableError
+    DiscordFile* = ref object
+        ## A Discord file.
+        name*, body*: string
+    AllowedMentions* = object
+        ## An object of allowed mentions.
+        ## For parse: The values should be "roles", "users", "everyone"
+        parse*, roles*, users*: seq[string]
     DiscordClient* = ref object
         api*: RestApi
         events*: Events
@@ -288,6 +296,44 @@ type
         bot_public*, bot_require_code_grant*: bool
         owner*: User
         team*: Option[Team]
+    ApplicationCommand* = object
+        id*, application_id*: string
+        name*, description*: string
+        options*: seq[ApplicationCommandOption]
+    ApplicationCommandOption* = object
+        ## `choices` reference: Table[choice_name, (Some("..."), None[int])]
+        kind*: ApplicationCommandOptionType
+        name*, description*: string
+        default*, required*: Option[bool]
+        choices*: seq[ApplicationCommandOptionChoice]
+        options*: seq[ApplicationCommandOption]
+    ApplicationCommandOptionChoice* = object
+        name*: string
+        value*: (Option[string], Option[int])
+    Interaction* = object
+        id*, guild_id*, channel_id*: string
+        kind*: InteractionType
+        member*: Member
+        token*: string
+        data*: Option[ApplicationCommandInteractionData]
+        version*: int
+    ApplicationCommandInteractionData* = ref object
+        ## `options` Table[option_name, obj]
+        id*, name*: string
+        options*: Table[string, ApplicationCommandInteractionDataOption]
+    ApplicationCommandInteractionDataOption* = object
+        bval*: Option[bool]
+        ival*: Option[int]
+        str*: Option[string]
+        options*: Table[string, ApplicationCommandInteractionDataOption]
+    InteractionResponse* = object
+        kind*: InteractionResponseType
+        data*: Option[InteractionApplicationCommandCallbackData]
+    InteractionApplicationCommandCallbackData* = object
+        tts*: Option[bool]
+        content*: string
+        embeds*: seq[Embed]
+        allowed_mentions*: AllowedMentions
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
@@ -461,6 +507,7 @@ type
         voice_server_update*: proc (s: Shard, g: Guild,
                 token: string, endpoint: Option[string]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
+        interaction_create*: proc (s: Shard, i: Interaction) {.async.}
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)
@@ -632,7 +679,8 @@ proc newDiscordClient*(token: string;
                     e: Option[string]) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
-            on_disconnect: proc (s: Shard) {.async.} = discard
+            on_disconnect: proc (s: Shard) {.async.} = discard,
+            interaction_create: proc (s:Shard, i:Interaction){.async.} = discard
         ))
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
@@ -1219,3 +1267,99 @@ proc newGuild*(data: JsonNode): Guild =
 
         result.members[uid].presence = presence
         result.presences[uid] = presence
+
+proc newApplicationCommandInteractionDataOption(
+    data: JsonNode
+): ApplicationCommandInteractionDataOption =
+    result = ApplicationCommandInteractionDataOption(
+        options: data{"options"}.getElems.map(
+            proc(x: JsonNode):(string,ApplicationCommandInteractionDataOption)=
+                (x["name"].str, newApplicationCommandInteractionDataOption(x))
+        ).toTable
+    )
+    if "value" in data and data["value"].kind != JNull:
+        case data["value"].kind:
+        of JBool:
+            result.bval = some data["value"].bval
+        of JString:
+            result.str = some data["value"].str
+        of JInt:
+            result.ival = some data["value"].getInt
+        else:
+            discard
+
+proc newApplicationCommandInteractionData*(
+    data: JsonNode
+): ApplicationCommandInteractionData =
+    result = ApplicationCommandInteractionData(
+        id: data["id"].str,
+        name: data["name"].str,
+        options: initTable[string, ApplicationCommandInteractionDataOption]()
+    )
+    for option in data{"options"}.getElems:
+        result.options[option["name"].str] = 
+            newApplicationCommandInteractionDataOption(option)
+
+proc newInteraction*(data: JsonNode): Interaction =
+    result = Interaction(
+        id: data["id"].str,
+        kind: InteractionType data["type"].getInt,
+        guild_id: data["guild_id"].str,
+        channel_id: data["channel_id"].str,
+        member: newMember(data["member"]),
+        token: data["token"].str,
+        version: data["version"].getInt
+    )
+    if "data" in data and data["data"].kind != JNull: # nice
+        result.data = some newApplicationCommandInteractionData(data["data"])
+
+proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
+    result = ApplicationCommandOption(
+        kind: ApplicationCommandOptionType data["type"].getInt,
+        name: data["name"].str,
+        description: data["description"].str,
+        choices: data{"choices"}.getElems.map(
+            proc (x: JsonNode): ApplicationCommandOptionChoice =
+                result = ApplicationCommandOptionChoice(
+                    name: x["name"].str)
+                if x["value"].kind == JInt:
+                    result.value[1] = some x["value"].getInt # this is a tuple btw
+                if x["value"].kind == JString:
+                    result.value[0] = some x["value"].str
+        ),
+        options: data{"options"}.getElems.map newApplicationCommandOption
+    )
+    data.keyCheckOptBool(result, default, required)
+
+proc `%%*`*(a: ApplicationCommandOption): JsonNode =
+    result = newJObject()
+    result["type"] = % int a.kind
+    result["name"] = %a.name
+    result["description"] = %a.description
+    result["required"] = %(a.required.get false)
+
+    if a.choices.len > 0:
+        result["choices"] = %a.choices.map(
+            proc (x: ApplicationCommandOptionChoice): JsonNode =
+                let json = newJObject()
+                json["name"] = %x.name
+                if x.value[0].isSome:
+                    json["value"] = %x.value[0]
+                if x.value[1].isSome:
+                    json["value"] = %x.value[0]
+                return json
+        )
+    if a.options.len > 0:
+        result["options"] = %a.options.map(
+            proc (x: ApplicationCommandOption): JsonNode =
+                return %%*x # avoid conflicts with json
+        )
+
+proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
+    result = ApplicationCommand(
+        id: data["id"].str,
+        application_id: data["application_id"].str,
+        name: data["name"].str,
+        description: data["description"].str,
+        options: data{"options"}.getElems.map newApplicationCommandOption
+    )

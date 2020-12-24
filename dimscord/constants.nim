@@ -112,6 +112,10 @@ type
         mtUserGuildBoostTier2 = 10
         mtUserGuildBoostTier3 = 11
         mtChannelFollowAdd = 12
+        mtGuildDiscoveryDisqualified = 14
+        mtGuildDiscoveryRequalified = 15
+        mtReply = 19
+        mtApplicationCommand = 20
     MessageActivityType* = enum
         matJoin = 1
         matSpectate = 2
@@ -197,6 +201,24 @@ type
     TeamMembershipState* = enum
         tmsInvited = 1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
+    ApplicationCommandOptionType* = enum
+        acotSubCommand = 1
+        acotSubCommandGroup = 2
+        acotStr = 3
+        acotInt = 4
+        acotBool = 5
+        acotUser = 6
+        acotChannel = 7
+        acotRole = 8
+    InteractionType* = enum
+        itPing = 1
+        itApplicationCommand = 2
+    InteractionResponseType* = enum
+        irtPong = 1
+        irtAcknowledge = 2
+        irtChannelMessage = 3
+        irtChannelMessageWithSource = 4
+        irtAckWithSource = 5
 
 const
     permAllText* = {permSendTTSMessage,
@@ -330,6 +352,9 @@ proc endpointGuildWebhooks*(gid: string): string =
 proc endpointWebhookToken*(wid, tok: string): string =
     result = endpointWebhooks(wid) & "/" & tok
 
+proc endpointWebhookMessage*(wid, tok, mid: string): string =
+    result = endpointWebhookToken(wid, tok) & "/messages/" & mid
+
 proc endpointWebhookTokenSlack*(wid, tok: string): string =
     result = endpointWebhookToken(wid, tok) & "/slack"
 
@@ -358,7 +383,7 @@ proc endpointTriggerTyping*(cid: string): string =
 proc endpointChannelPins*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/pins"
     if mid != "":
-        result = result & "/" & $mid
+        result = result & "/" & mid
 
 proc endpointGroupRecipient*(cid, rid: string): string =
     result = endpointChannels(cid) & "/recipients/" & rid
@@ -372,3 +397,15 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
 
 proc endpointOAuth2Application*(): string =
     result = "oauth2/applications/@me"
+
+proc endpointGlobalCommands*(aid: string; cid = ""): string =
+    result = "applications/" & aid & "/commands/" & (if cid != "": cid else: "")
+
+proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
+    result = "applications/" & aid & "/guilds/" & gid & "/commands"
+    if cid != "":
+        result &= cid
+
+proc endpointInteractionsCallback*(iid, it: string): string =
+    result = "interactions/" & iid & "/" & it & "/callback"
+

@@ -18,8 +18,7 @@
 ## 
 ##   Please note that if you are compiling with ARC or ORC, use `--deepCopy`.
 ## 
-## - `restapi` Interfaces with Discord's REST API,
-##   as this file would handle ratelimits if you receive lots of 403s or 429s,
+## - `endpoints` Interfaces with Discord's REST API,
 ##   I'd recommend either stopping your bot or at least check your code
 ##   like if the bot has the permissions to do this and that,
 ##   for 429s the lib would at least try to re-send the request, the common
@@ -66,10 +65,9 @@
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
 ## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
 
-import dimscord/[gateway, restapi, constants, objects, helpers, voice], options
+import dimscord/[
+    gateway, restapi, constants,
+    objects, helpers, voice
+]
 
 export gateway, restapi, constants, objects, helpers, voice
-
-converter toOption*[T](value: T): Option[T] =
-    ## Automatically converts a value to an `Option[T]` when needed.
-    return some value

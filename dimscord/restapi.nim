@@ -5,15 +5,6 @@ import httpclient, mimetypes, asyncdispatch, json, options, objects, constants
 import tables, regex, times, os, sequtils, strutils, strformat
 import uri, macros, helpers
 
-type
-    RestError* = object of CatchableError
-    DiscordFile* = ref object
-        ## A Discord file.
-        name*, body*: string
-    AllowedMentions* = object
-        ## An object of allowed mentions.
-        ## For parse: The values should be "roles", "users", "everyone"
-        parse*, roles*, users*: seq[string]
 var
     fatalErr = true
     ratelimited, global = false
@@ -1020,14 +1011,17 @@ proc createWebhook*(api: RestApi, channel_id, username: string;
         audit_reason = reason
     )).newWebhook
 
-proc executeWebhook*(api: RestApi, webhook_id, token: string; wait = true;
-            content = ""; tts = false;
+proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
+            wait = true; content = ""; tts = false;
             file = none DiscordFile;
-            embeds = none seq[Embed];
+            embeds = none array[10, Embed];
             allowed_mentions = none AllowedMentions;
             username, avatar_url = none string): Future[Message] {.async.} =
-    ## Executes a webhook. If wait is false make sure to asyncCheck it.
-    var url = endpointWebhookToken(webhook_id, token) & "?wait=" & $wait
+    ## Executes a webhook or create a followup message.
+    ## If `wait` is `false` make sure to `discard await` it.
+    ## `webhook_id` can be used as application id
+    ## `webhook_token` can be used as interaction token
+    var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
     let payload = %*{
         "content": content,
         "tts": tts
@@ -1062,10 +1056,44 @@ proc executeWebhook*(api: RestApi, webhook_id, token: string; wait = true;
         return (await api.request("POST", url, $payload, mp = mpd)).newMessage
     result = (await api.request("POST", url, $payload)).newMessage
 
+proc editWebhookMessage*(api: RestApi;
+        webhook_id, webhook_token, message_id: string;
+        content = none string;
+        embeds = none array[10, Embed];
+        allowed_mentions = none AllowedMentions) {.async.} =
+    ## Modifies the webhook message.
+    ## You can actually use this to modify
+    ## original interaction or followup message.
+    ##
+    ## `webhook_id` can also be application_id
+    ## `webhook_token` can also be interaction token.
+    ## `message_id` can be `@original`
+    discard await api.request(
+        "PATCH", endpointWebhookMessage(webhook_id, webhook_token, message_id),
+        $(%*{
+            "content": %content,
+            "embeds": %embeds,
+            "allowed_mentions": %(%allowed_mentions)
+        })
+    )
+
+proc deleteWebhookMessage*(api: RestApi;
+        webhook_id, webhook_token, message_id: string) {.async.} =
+    ## Modifies the webhook message.
+    ## You can actually use this to delete
+    ## original interaction or followup message.
+    ##
+    ## `webhook_id` can also be application_id
+    ## `webhook_token` can also be interaction token.
+    discard await api.request(
+        "DELETE",
+        endpointWebhookMessage(webhook_id, webhook_token, message_id)
+    )
+
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
         wait = true): Future[Message] {.async.} =
     ## Executes a slack webhook.
-    ## If wait is false make sure to asyncCheck it.
+    ## If `wait` is `false` make sure to `discard await` it.
     result = (await api.request(
         "POST",
         endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
@@ -1074,7 +1102,7 @@ proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
         wait = true): Future[Message] {.async.} =
     ## Executes a github webhook.
-    ## If wait is false make sure to asyncCheck it.
+    ## If `wait` is `false` make sure to `discard await` it.
     result = (await api.request(
         "POST",
         endpointWebhookTokenGithub(webhook_id, token) & "?wait=" & $wait
@@ -1314,3 +1342,92 @@ proc getCurrentApplication*(api: RestApi): Future[OAuth2Application] {.async.} =
         "GET",
         endpointOAuth2Application()
     )).newOAuth2Application
+
+proc registerApplicationCommand*(api: RestApi; application_id: string;
+        guild_id = ""; name, description: string;
+        options: seq[ApplicationCommandOption] = @[]
+): Future[ApplicationCommand] {.async.} =
+    ## Create a global or guild only slash command.
+    ## 
+    ## `guild_id` - Optional
+    ## `name` - Character length (3 - 32)
+    ## `descripton` - Character length (1 - 100)
+    ## 
+    ## **NOTE:** Creating a command with the same name
+    ## as an existing command for your application will
+    ## overwrite the old command.
+    let payload = %*{"name": name, "description": description}
+    if options.len > 0: payload["options"] = %(options.map(
+        proc (x: ApplicationCommandOption): JsonNode =
+            %%*x
+    ))
+    result = (await api.request(
+        "POST",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id)
+        else:
+            endpointGlobalCommands(application_id)),
+        $payload
+    )).newApplicationCommand
+
+
+proc getApplicationCommands*(
+        api: RestApi, application_id: string; guild_id = ""
+): Future[seq[ApplicationCommand]] {.async.} =
+    ## Get slash commands for a specific application, `guild_id` is optional.
+    result = (await api.request(
+        "GET",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id)
+        else:
+            endpointGlobalCommands(application_id)),
+    )).elems.map(newApplicationCommand)
+
+proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
+        guild_id = ""; name, description: string;
+        options: seq[ApplicationCommandOption] = @[]
+): Future[ApplicationCommand] {.async.} =
+    ## Modify slash command for a specific application.
+    ##
+    ## `guild_id` - Optional
+    ## `name` - Character length (3 - 32)
+    ## `descripton` - Character length (1 - 100)
+    let payload = %*{"name": name, "description": description}
+    if options.len > 0: payload["options"] = %(options.map(
+        proc (x: ApplicationCommandOption): JsonNode =
+            %%*x
+    ))
+    result = (await api.request(
+        "PATCH",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id, command_id)
+        else:
+            endpointGlobalCommands(application_id, command_id)),
+        $payload
+    )).newApplicationCommand
+
+proc deleteApplicationCommand*(
+        api: RestApi, application_id, command_id: string;
+        guild_id = "") {.async.} =
+    ## Delete slash command for a specific application, `guild_id` is optional.
+    discard await api.request(
+        "GET",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id, command_id)
+        else:
+            endpointGlobalCommands(application_id, command_id))
+    )
+
+proc createInteractionResponse*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionResponse) {.async.} =
+    ## Create an interaction response.
+    ## `response.kind` is required as well as `response.data`.
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int response.kind,
+            "data": %response.data
+        })
+    )

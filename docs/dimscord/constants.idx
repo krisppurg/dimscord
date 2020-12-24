@@ -99,6 +99,10 @@ mtUserGuildBoostTier1	dimscord/constants.html#mtUserGuildBoostTier1	MessageType.
 mtUserGuildBoostTier2	dimscord/constants.html#mtUserGuildBoostTier2	MessageType.mtUserGuildBoostTier2	
 mtUserGuildBoostTier3	dimscord/constants.html#mtUserGuildBoostTier3	MessageType.mtUserGuildBoostTier3	
 mtChannelFollowAdd	dimscord/constants.html#mtChannelFollowAdd	MessageType.mtChannelFollowAdd	
+mtGuildDiscoveryDisqualified	dimscord/constants.html#mtGuildDiscoveryDisqualified	MessageType.mtGuildDiscoveryDisqualified	
+mtGuildDiscoveryRequalified	dimscord/constants.html#mtGuildDiscoveryRequalified	MessageType.mtGuildDiscoveryRequalified	
+mtReply	dimscord/constants.html#mtReply	MessageType.mtReply	
+mtApplicationCommand	dimscord/constants.html#mtApplicationCommand	MessageType.mtApplicationCommand	
 MessageType	dimscord/constants.html#MessageType	constants: MessageType	
 matJoin	dimscord/constants.html#matJoin	MessageActivityType.matJoin	
 matSpectate	dimscord/constants.html#matSpectate	MessageActivityType.matSpectate	
@@ -185,6 +189,24 @@ AuditLogEntryType	dimscord/constants.html#AuditLogEntryType	constants: AuditLogE
 tmsInvited	dimscord/constants.html#tmsInvited	TeamMembershipState.tmsInvited	
 tmsAccepted	dimscord/constants.html#tmsAccepted	TeamMembershipState.tmsAccepted	
 TeamMembershipState	dimscord/constants.html#TeamMembershipState	constants: TeamMembershipState	
+acotSubCommand	dimscord/constants.html#acotSubCommand	ApplicationCommandOptionType.acotSubCommand	
+acotSubCommandGroup	dimscord/constants.html#acotSubCommandGroup	ApplicationCommandOptionType.acotSubCommandGroup	
+acotStr	dimscord/constants.html#acotStr	ApplicationCommandOptionType.acotStr	
+acotInt	dimscord/constants.html#acotInt	ApplicationCommandOptionType.acotInt	
+acotBool	dimscord/constants.html#acotBool	ApplicationCommandOptionType.acotBool	
+acotUser	dimscord/constants.html#acotUser	ApplicationCommandOptionType.acotUser	
+acotChannel	dimscord/constants.html#acotChannel	ApplicationCommandOptionType.acotChannel	
+acotRole	dimscord/constants.html#acotRole	ApplicationCommandOptionType.acotRole	
+ApplicationCommandOptionType	dimscord/constants.html#ApplicationCommandOptionType	constants: ApplicationCommandOptionType	
+itPing	dimscord/constants.html#itPing	InteractionType.itPing	
+itApplicationCommand	dimscord/constants.html#itApplicationCommand	InteractionType.itApplicationCommand	
+InteractionType	dimscord/constants.html#InteractionType	constants: InteractionType	
+irtPong	dimscord/constants.html#irtPong	InteractionResponseType.irtPong	
+irtAcknowledge	dimscord/constants.html#irtAcknowledge	InteractionResponseType.irtAcknowledge	
+irtChannelMessage	dimscord/constants.html#irtChannelMessage	InteractionResponseType.irtChannelMessage	
+irtChannelMessageWithSource	dimscord/constants.html#irtChannelMessageWithSource	InteractionResponseType.irtChannelMessageWithSource	
+irtAckWithSource	dimscord/constants.html#irtAckWithSource	InteractionResponseType.irtAckWithSource	
+InteractionResponseType	dimscord/constants.html#InteractionResponseType	constants: InteractionResponseType	
 permAllText	dimscord/constants.html#permAllText	constants: permAllText	
 permAllVoice	dimscord/constants.html#permAllVoice	constants: permAllVoice	
 permAllChannel	dimscord/constants.html#permAllChannel	constants: permAllChannel	
@@ -218,6 +240,7 @@ endpointWebhooks	dimscord/constants.html#endpointWebhooks,string	constants: endp
 endpointChannelWebhooks	dimscord/constants.html#endpointChannelWebhooks,string	constants: endpointChannelWebhooks(cid: string): string	
 endpointGuildWebhooks	dimscord/constants.html#endpointGuildWebhooks,string	constants: endpointGuildWebhooks(gid: string): string	
 endpointWebhookToken	dimscord/constants.html#endpointWebhookToken,string,string	constants: endpointWebhookToken(wid, tok: string): string	
+endpointWebhookMessage	dimscord/constants.html#endpointWebhookMessage,string,string,string	constants: endpointWebhookMessage(wid, tok, mid: string): string	
 endpointWebhookTokenSlack	dimscord/constants.html#endpointWebhookTokenSlack,string,string	constants: endpointWebhookTokenSlack(wid, tok: string): string	
 endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,string,string	constants: endpointWebhookTokenGithub(wid, tok: string): string	
 endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string	
@@ -230,3 +253,6 @@ endpointChannelPins	dimscord/constants.html#endpointChannelPins,string,string	co
 endpointGroupRecipient	dimscord/constants.html#endpointGroupRecipient,string,string	constants: endpointGroupRecipient(cid, rid: string): string	
 endpointReactions	dimscord/constants.html#endpointReactions,string,string,string,string	constants: endpointReactions(cid, mid: string; e, uid = &quot;&quot;): string	
 endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	constants: endpointOAuth2Application(): string	
+endpointGlobalCommands	dimscord/constants.html#endpointGlobalCommands,string,string	constants: endpointGlobalCommands(aid: string; cid = &quot;&quot;): string	
+endpointGuildCommands	dimscord/constants.html#endpointGuildCommands,string,string,string	constants: endpointGuildCommands(aid, gid: string; cid = &quot;&quot;): string	
+endpointInteractionsCallback	dimscord/constants.html#endpointInteractionsCallback,string,string	constants: endpointInteractionsCallback(iid, it: string): string	

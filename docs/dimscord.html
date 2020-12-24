@@ -121,7 +121,7 @@ function main() {
 <li><p><tt class="docutils literal"><span class="pre">gateway</span></tt> Allows you to connect, disconnect, send gateway messages to the gateway. Like updating your status with updateStatus, requesting guild members with requestGuildMembers, joining/moving/leaving a voice channel with voiceStateUpdate.</p>
 <p>Please note that if you are compiling with ARC or ORC, use <tt class="docutils literal"><span class="pre">--deepCopy</span></tt>.</p>
 </li>
-<li><tt class="docutils literal"><span class="pre">endpoints</span></tt> Interfaces with Discord's REST API, I'd recommend either stopping your bot or at least check your code like if the bot has the permissions to do this and that, for 429s the lib would at least try to re-send the request, the common ways to get 429s is reactions and you may get 429s, though this is more common in other libraries, if you were to add more reactions, I'd recommend adding some sort of cooldowns to it. (<tt class="docutils literal"><span class="pre">OAuth2</span></tt> support will be added)</li>
+<li><tt class="docutils literal"><span class="pre">restapi</span></tt> Interfaces with Discord's REST API, I'd recommend either stopping your bot or at least check your code like if the bot has the permissions to do this and that, for 429s the lib would at least try to re-send the request, the common ways to get 429s is reactions and you may get 429s, though this is more common in other libraries, if you were to add more reactions, I'd recommend adding some sort of cooldowns to it. (<tt class="docutils literal"><span class="pre">OAuth2</span></tt> support will be added)</li>
 <li><tt class="docutils literal"><span class="pre">helpers</span></tt> Includes helper methods such as mentioning a user @ify channels, users, roles, etc, this includes iconUrls too.</li>
 <li><tt class="docutils literal"><span class="pre">constants</span></tt> Say if you were to check what verification level is the guild you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium, this file includes permission enums like permAddReactions, permViewAuditLogs, permCreateInstantInvite, etc. Intents are also included there.</li>
 <li><dl class="docutils"><dt><tt class="docutils literal"><span class="pre">voice</span></tt> Allows you to connect to the voice gateway (Sending audio is postponed),</dt>
@@ -165,7 +165,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-24 21:43:24 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-24 21:50:02 UTC</small>
       </div>
     </div>
   </div>

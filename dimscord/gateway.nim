@@ -409,7 +409,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
     var
         packet: (Opcode, string)
-        shouldReconnect = s.client.autoreconnect
+        autoreconnect = s.client.autoreconnect
 
     while not s.sockClosed:
         try:
@@ -444,14 +444,14 @@ proc handleSocketMessage(s: Shard) {.async.} =
             if not s.hbAck:
                 s.logShard("A zombied connection was detected.")
             else:
-                s.logShard("An error occurred while parsing data: " & packet[1])
-            shouldReconnect = s.handleDisconnect(packet[1])
+                s.logShard("An error occurred while parsing data: "&packet[1])
+            autoreconnect = s.handleDisconnect(packet[1])
 
-            await s.disconnect(should_reconnect = shouldReconnect)
+            await s.disconnect(should_reconnect = autoreconnect)
             break
 
         if data["s"].kind != JNull and not s.resuming:
-            s.sequence = data["s"].getInt()
+            s.sequence = data["s"].getInt
 
         case data["op"].num:
         of opHello:
@@ -469,13 +469,13 @@ proc handleSocketMessage(s: Shard) {.async.} =
             s.hbAck = true
         of opHeartbeat:
             s.logShard("Discord is requesting for a heartbeat.")
-            await s.heartbeat(true)
+            await s.heartbeat true
         of opDispatch:
             asyncCheck s.handleDispatch(data["t"].str, data["d"])
         of opReconnect:
             s.logShard("Discord is requesting for a client reconnect.")
 
-            await s.disconnect(should_reconnect = shouldReconnect)
+            await s.disconnect(should_reconnect = autoreconnect)
             await s.client.events.on_disconnect(s)
         of opInvalidSession:
             var interval = 5000
@@ -506,13 +506,13 @@ proc handleSocketMessage(s: Shard) {.async.} =
         raise newException(Exception, "Fatal error occurred.")
 
     if packet[0] == Close:
-        if not shouldReconnect:
-            shouldReconnect = s.handleDisconnect(packet[1])
+        if not autoreconnect:
+            autoreconnect = s.handleDisconnect(packet[1])
 
     s.stop = true
     s.reset()
 
-    if shouldReconnect:
+    if autoreconnect:
         await s.reconnect()
         await sleepAsync 2000
 
@@ -628,7 +628,7 @@ proc startSession*(discord: DiscordClient,
             log("WARNING: Your session start limit has reached to 10.")
 
         if info.session_start_limit.remaining == 0:
-            let time = getTime().toUnix() - info.session_start_limit.reset_after
+            let time = getTime().toUnix()-info.session_start_limit.reset_after
 
             log("Your session start limit has reached its limit", (
                 sleep_time: time

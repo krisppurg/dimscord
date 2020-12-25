@@ -323,13 +323,12 @@ proc deleteGuildIntegration*(api: RestApi, integ_id: string;
     )
 
 proc getGuildWidget*(api: RestApi,
-        guild_id: string): Future[tuple[enabled: bool,
-                                        channel_id: Option[string]]] {.async.} =
+        guild_id: string): Future[GuildWidgetJson] {.async.} =
     ## Gets a guild widget.
     result = (await api.request(
         "GET",
         endpointGuildWidget(guild_id)
-    )).to(tuple[enabled: bool, channel_id: Option[string]])
+    )).to(GuildWidgetJson)
 
 proc editGuildWidget*(api: RestApi, guild_id: string,
         enabled = none bool;
@@ -442,3 +441,51 @@ proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
         proc (x: JsonNode): VoiceRegion =
             x.to(VoiceRegion)
     )
+
+proc createGuildFromTemplate*(api: RestApi;
+        code: string): Future[Guild] {.async.} =
+    ## Create a guild from a template, this endpoint is used for bots
+    ## that are in >10 guilds
+    result = (await api.request(
+        "POST", endpointGuildTemplates(tid=code)
+    )).newGuild
+
+proc getGuildTemplate*(api: RestApi;
+        code: string): Future[GuildTemplate] {.async.} =
+    ## Get guild template from its code.
+    result = (await api.request(
+        "GET", endpointGuildTemplates(tid=code)
+    )).newGuildTemplate
+
+proc createGuildTemplate*(api: RestApi;
+        guild_id, name: string;
+        description = none string): Future[GuildTemplate] {.async.} =
+    ## Create a guild template
+    result = (await api.request(
+        "POST", endpointGuildTemplates(gid=guild_id)
+    )).newGuildTemplate
+
+proc syncGuildTemplate*(api: RestApi;
+        guild_id, code: string): Future[GuildTemplate] {.async.} =
+    ## Sync guild template.
+    result = (await api.request(
+        "PUT", endpointGuildTemplates(gid=guild_id,tid=code)
+    )).newGuildTemplate
+
+proc editGuildTemplate*(api: RestApi;
+        guild_id, code: string;
+        name, description = none string): Future[GuildTemplate] {.async.} =
+    ## Modify a guild template.
+    let payload = newJObject()
+    payload.loadNullableOptStr(description)
+    if name.isSome: payload["name"] = %name
+    result = (await api.request(
+        "PATCH", endpointGuildTemplates(gid=guild_id,tid=code)
+    )).newGuildTemplate
+
+proc deleteGuildTemplate*(api: RestApi;
+        guild_id, code: string): Future[GuildTemplate] {.async.} =
+    ## Delete guild template.
+    result = (await api.request(
+        "DELETE", endpointGuildTemplates(gid=guild_id,tid=code)
+    )).newGuildTemplate

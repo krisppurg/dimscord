@@ -25,6 +25,7 @@ Attachment	dimscord/objects.html#Attachment	objects: Attachment
 Reaction	dimscord/objects.html#Reaction	objects: Reaction	
 Emoji	dimscord/objects.html#Emoji	objects: Emoji	
 Application	dimscord/objects.html#Application	objects: Application	
+Sticker	dimscord/objects.html#Sticker	objects: Sticker	
 RestApi	dimscord/objects.html#RestApi	objects: RestApi	
 Ratelimit	dimscord/objects.html#Ratelimit	objects: Ratelimit	
 UnavailableGuild	dimscord/objects.html#UnavailableGuild	objects: UnavailableGuild	
@@ -37,6 +38,7 @@ Presence	dimscord/objects.html#Presence	objects: Presence
 Guild	dimscord/objects.html#Guild	objects: Guild	
 VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
 Role	dimscord/objects.html#Role	objects: Role	
+GuildTemplate	dimscord/objects.html#GuildTemplate	objects: GuildTemplate	
 ActivityStatus	dimscord/objects.html#ActivityStatus	objects: ActivityStatus	
 Overwrite	dimscord/objects.html#Overwrite	objects: Overwrite	
 PermObj	dimscord/objects.html#PermObj	objects: PermObj	
@@ -106,6 +108,7 @@ newMessage	dimscord/objects.html#newMessage,JsonNode	objects: newMessage(data: J
 newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	objects: newAuditLog(data: JsonNode): AuditLog	
 newOAuth2Application	dimscord/objects.html#newOAuth2Application,JsonNode	objects: newOAuth2Application(data: JsonNode): OAuth2Application	
 newGuild	dimscord/objects.html#newGuild,JsonNode	objects: newGuild(data: JsonNode): Guild	
+newGuildTemplate	dimscord/objects.html#newGuildTemplate,JsonNode	objects: newGuildTemplate(data: JsonNode): GuildTemplate	
 newApplicationCommandInteractionData	dimscord/objects.html#newApplicationCommandInteractionData,JsonNode	objects: newApplicationCommandInteractionData(data: JsonNode): ApplicationCommandInteractionData	
 newInteraction	dimscord/objects.html#newInteraction,JsonNode	objects: newInteraction(data: JsonNode): Interaction	
 newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	objects: newApplicationCommandOption(data: JsonNode): ApplicationCommandOption	

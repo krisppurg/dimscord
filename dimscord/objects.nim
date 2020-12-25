@@ -103,7 +103,7 @@ proc newDiscordClient*(token: string;
                     r: Role) {.async.} = discard,
             guild_role_update: proc (s: Shard, g: Guild,
                     r: Role, o: Option[Role]) {.async.} = discard,
-            invite_create: proc (s: Shard, i: InviteCreate) {.async.} = discard,
+            invite_create: proc(s: Shard, i: InviteCreate) {.async.} = discard,
             invite_delete: proc (s: Shard, g: Option[Guild],
                     c, code: string) {.async.} = discard,
             user_update: proc (s: Shard, u: User) {.async.} = discard,
@@ -115,7 +115,7 @@ proc newDiscordClient*(token: string;
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
             on_disconnect: proc (s: Shard) {.async.} = discard,
-            interaction_create: proc (s:Shard, i:Interaction){.async.} = discard
+            interaction_create: proc(s:Shard, i:Interaction){.async.} = discard
         ))
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
@@ -152,7 +152,9 @@ proc newRole*(data: JsonNode): Role =
         mentionable: data["mentionable"].bval
     )
     when defined(discordv8):
-        result.permissions = cast[set[PermissionFlags]](data["permissions"].str.parseInt)
+        result.permissions = cast[set[PermissionFlags]](
+            data["permissions"].str.parseInt
+        )
     else:
         result.permissions = cast[set[PermissionFlags]](
             data["permissions"].getInt
@@ -482,6 +484,10 @@ proc newMessage*(data: JsonNode): Message =
         pinned: data["pinned"].bval,
         kind: MessageType data["type"].getInt,
         flags: cast[set[MessageFlags]](data["flags"].getInt),
+        stickers: data{"stickers"}.getElems.map(
+            proc (x: JsonNode): Sticker =
+                x.to(Sticker)
+        ),
         reactions: initTable[string, Reaction]()
     )
     data.keyCheckOptStr(result, edited_timestamp,
@@ -491,6 +497,8 @@ proc newMessage*(data: JsonNode): Message =
         result.author = newUser(data["author"])
     if "member" in data and data["member"].kind != JNull:
         result.member = some newMember(data["member"])
+    if "referenced_message" in data and data["referenced_message"].kind!=JNull:
+        result.referenced_message = some data["referenced_message"].newMessage
 
     for r in data{"mention_roles"}.getElems:
         result.mention_roles.add(r.str)
@@ -703,6 +711,21 @@ proc newGuild*(data: JsonNode): Guild =
         result.members[uid].presence = presence
         result.presences[uid] = presence
 
+proc newGuildTemplate*(data: JsonNode): GuildTemplate =
+    result = GuildTemplate(
+        code: data["code"].str,
+        name: data["name"].str,
+        usage_count: data["usage_count"].getInt,
+        creator_id: data["creator_id"].str,
+        creator: newUser(data["creator"]),
+        created_at: data["created_at"].str,
+        updated_at: data["updated_at"].str,
+        source_guild_id: data["source_guild_id"].str,
+        serialized_source_guild:data["serialized_source_guild"].to PartialGuild
+    )
+    data.keyCheckOptBool(result, is_dirty)
+    data.keyCheckOptStr(result, description)
+
 proc newApplicationCommandInteractionDataOption(
     data: JsonNode
 ): ApplicationCommandInteractionDataOption =
@@ -758,8 +781,8 @@ proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
                 result = ApplicationCommandOptionChoice(
                     name: x["name"].str)
                 if x["value"].kind == JInt:
-                    result.value[1] = some x["value"].getInt # this is a tuple btw
-                if x["value"].kind == JString:
+                    result.value[1] = some x["value"].getInt # this is 
+                if x["value"].kind == JString: # a tuple btw
                     result.value[0] = some x["value"].str
         ),
         options: data{"options"}.getElems.map newApplicationCommandOption

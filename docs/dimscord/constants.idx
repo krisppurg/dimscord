@@ -70,6 +70,21 @@ mfSupressEmbeds	dimscord/constants.html#mfSupressEmbeds	MessageFlags.mfSupressEm
 mfSourceMessageDeleted	dimscord/constants.html#mfSourceMessageDeleted	MessageFlags.mfSourceMessageDeleted	
 mfUrgent	dimscord/constants.html#mfUrgent	MessageFlags.mfUrgent	
 MessageFlags	dimscord/constants.html#MessageFlags	constants: MessageFlags	
+ufNone	dimscord/constants.html#ufNone	UserFlags.ufNone	
+ufDiscordEmployee	dimscord/constants.html#ufDiscordEmployee	UserFlags.ufDiscordEmployee	
+ufPartneredServerOwner	dimscord/constants.html#ufPartneredServerOwner	UserFlags.ufPartneredServerOwner	
+ufHypesquadEvents	dimscord/constants.html#ufHypesquadEvents	UserFlags.ufHypesquadEvents	
+ufBugHunterLevel1	dimscord/constants.html#ufBugHunterLevel1	UserFlags.ufBugHunterLevel1	
+ufHouseBravery	dimscord/constants.html#ufHouseBravery	UserFlags.ufHouseBravery	
+ufHouseBrilliance	dimscord/constants.html#ufHouseBrilliance	UserFlags.ufHouseBrilliance	
+ufHouseBalance	dimscord/constants.html#ufHouseBalance	UserFlags.ufHouseBalance	
+ufEarlySupporter	dimscord/constants.html#ufEarlySupporter	UserFlags.ufEarlySupporter	
+ufTeamUser	dimscord/constants.html#ufTeamUser	UserFlags.ufTeamUser	
+ufSystem	dimscord/constants.html#ufSystem	UserFlags.ufSystem	
+ufBugHunterLevel2	dimscord/constants.html#ufBugHunterLevel2	UserFlags.ufBugHunterLevel2	
+ufVerifiedBot	dimscord/constants.html#ufVerifiedBot	UserFlags.ufVerifiedBot	
+ufEarlyVerifiedBotDeveloper	dimscord/constants.html#ufEarlyVerifiedBotDeveloper	UserFlags.ufEarlyVerifiedBotDeveloper	
+UserFlags	dimscord/constants.html#UserFlags	constants: UserFlags	
 libName	dimscord/constants.html#libName	constants: libName	
 libVer	dimscord/constants.html#libVer	constants: libVer	
 libAgent	dimscord/constants.html#libAgent	constants: libAgent	
@@ -189,6 +204,10 @@ AuditLogEntryType	dimscord/constants.html#AuditLogEntryType	constants: AuditLogE
 tmsInvited	dimscord/constants.html#tmsInvited	TeamMembershipState.tmsInvited	
 tmsAccepted	dimscord/constants.html#tmsAccepted	TeamMembershipState.tmsAccepted	
 TeamMembershipState	dimscord/constants.html#TeamMembershipState	constants: TeamMembershipState	
+msfPng	dimscord/constants.html#msfPng	MessageStickerFormat.msfPng	
+msfAPng	dimscord/constants.html#msfAPng	MessageStickerFormat.msfAPng	
+msfLottie	dimscord/constants.html#msfLottie	MessageStickerFormat.msfLottie	
+MessageStickerFormat	dimscord/constants.html#MessageStickerFormat	constants: MessageStickerFormat	
 acotSubCommand	dimscord/constants.html#acotSubCommand	ApplicationCommandOptionType.acotSubCommand	
 acotSubCommandGroup	dimscord/constants.html#acotSubCommandGroup	ApplicationCommandOptionType.acotSubCommandGroup	
 acotStr	dimscord/constants.html#acotStr	ApplicationCommandOptionType.acotStr	
@@ -238,12 +257,14 @@ endpointGuildChannels	dimscord/constants.html#endpointGuildChannels,string,strin
 endpointChannelOverwrites	dimscord/constants.html#endpointChannelOverwrites,string,string	constants: endpointChannelOverwrites(cid, oid: string): string	
 endpointWebhooks	dimscord/constants.html#endpointWebhooks,string	constants: endpointWebhooks(wid: string): string	
 endpointChannelWebhooks	dimscord/constants.html#endpointChannelWebhooks,string	constants: endpointChannelWebhooks(cid: string): string	
+endpointGuildTemplates	dimscord/constants.html#endpointGuildTemplates,string,string	constants: endpointGuildTemplates(gid, tid = &quot;&quot;): string	
 endpointGuildWebhooks	dimscord/constants.html#endpointGuildWebhooks,string	constants: endpointGuildWebhooks(gid: string): string	
 endpointWebhookToken	dimscord/constants.html#endpointWebhookToken,string,string	constants: endpointWebhookToken(wid, tok: string): string	
 endpointWebhookMessage	dimscord/constants.html#endpointWebhookMessage,string,string,string	constants: endpointWebhookMessage(wid, tok, mid: string): string	
 endpointWebhookTokenSlack	dimscord/constants.html#endpointWebhookTokenSlack,string,string	constants: endpointWebhookTokenSlack(wid, tok: string): string	
 endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,string,string	constants: endpointWebhookTokenGithub(wid, tok: string): string	
 endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string	
+endpointChannelMessagesCrosspost	dimscord/constants.html#endpointChannelMessagesCrosspost,string,string	constants: endpointChannelMessagesCrosspost(cid, mid: string): string	
 endpointChannelInvites	dimscord/constants.html#endpointChannelInvites,string	constants: endpointChannelInvites(cid: string): string	
 endpointChannelPermissions	dimscord/constants.html#endpointChannelPermissions,string,string	constants: endpointChannelPermissions(cid, oid: string): string	
 endpointGuildBans	dimscord/constants.html#endpointGuildBans,string,string	constants: endpointGuildBans(gid: string; uid = &quot;&quot;): string	

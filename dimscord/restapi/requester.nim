@@ -159,7 +159,8 @@ proc request*(api: RestApi, meth, endpoint: string;
                     let body = resp.body
 
                     if (await withTimeout(body, 60_000)) == false:
-                        raise newException(RestError, "Body took too long to parse.")
+                        raise newException(RestError,
+                            "Body took too long to parse.")
                     else:
                         data = (await body).parseJson
 
@@ -209,7 +210,8 @@ proc request*(api: RestApi, meth, endpoint: string;
                 let body = resp.body
 
                 if (await withTimeout(body, 60_000)) == false:
-                    raise newException(RestError, "Body took too long to parse.")
+                    raise newException(RestError,
+                        "Body took too long to parse.")
                 else:
                     data = (await body).parseJson
             else:

@@ -596,6 +596,10 @@ function main() {
                  roles: seq[string] = @[]; reason = &quot;&quot;): Future[Emoji]" href="dimscord/restapi.html#createGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5Bstring%5D%2Cstring">restapi: createGuildEmoji(api: RestApi; guild_id, name, image: string;
                  roles: seq[string] = @[]; reason = &quot;&quot;): Future[Emoji]</a></li>
           </ul></dd>
+<dt><a name="createGuildFromTemplate" href="#createGuildFromTemplate"><span>createGuildFromTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: createGuildFromTemplate(api: RestApi; code: string): Future[Guild]" href="dimscord/restapi.html#createGuildFromTemplate%2CRestApi%2Cstring">restapi: createGuildFromTemplate(api: RestApi; code: string): Future[Guild]</a></li>
+          </ul></dd>
 <dt><a name="createGuildRole" href="#createGuildRole"><span>createGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
@@ -603,6 +607,12 @@ function main() {
                 reason = &quot;&quot;): Future[Role]" href="dimscord/restapi.html#createGuildRole%2CRestApi%2Cstring%2Cstring%2CPermObj%2Cint%2Cstring">restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
                 hoist, mentionable = false; permissions: PermObj; color = 0;
                 reason = &quot;&quot;): Future[Role]</a></li>
+          </ul></dd>
+<dt><a name="createGuildTemplate" href="#createGuildTemplate"><span>createGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: createGuildTemplate(api: RestApi; guild_id, name: string;
+                    description = none string): Future[GuildTemplate]" href="dimscord/restapi.html#createGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: createGuildTemplate(api: RestApi; guild_id, name: string;
+                    description = none string): Future[GuildTemplate]</a></li>
           </ul></dd>
 <dt><a name="createInteractionResponse" href="#createInteractionResponse"><span>createInteractionResponse:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -629,6 +639,10 @@ function main() {
           data-doc-search-tag="restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
               reason = &quot;&quot;): Future[Webhook]" href="dimscord/restapi.html#createWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
               reason = &quot;&quot;): Future[Webhook]</a></li>
+          </ul></dd>
+<dt><a name="crosspostMessage" href="#crosspostMessage"><span>crosspostMessage:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: crosspostMessage(api: RestApi; channel_id, message_id: string): Future[Message]" href="dimscord/restapi.html#crosspostMessage%2CRestApi%2Cstring%2Cstring">restapi: crosspostMessage(api: RestApi; channel_id, message_id: string): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="ctDirect" href="#ctDirect"><span>ctDirect:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -713,6 +727,10 @@ function main() {
 <dt><a name="deleteGuildRole" href="#deleteGuildRole"><span>deleteGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])" href="dimscord/restapi.html#deleteGuildRole%2CRestApi%2Cstring%2Cstring">restapi: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])</a></li>
+          </ul></dd>
+<dt><a name="deleteGuildTemplate" href="#deleteGuildTemplate"><span>deleteGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]" href="dimscord/restapi.html#deleteGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]</a></li>
           </ul></dd>
 <dt><a name="deleteInvite" href="#deleteInvite"><span>deleteInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -884,6 +902,12 @@ function main() {
                       position = none int; reason = &quot;&quot;): Future[seq[Role]]" href="dimscord/restapi.html#editGuildRolePosition%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildRolePosition(api: RestApi; guild_id, role_id: string;
                       position = none int; reason = &quot;&quot;): Future[seq[Role]]</a></li>
           </ul></dd>
+<dt><a name="editGuildTemplate" href="#editGuildTemplate"><span>editGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: editGuildTemplate(api: RestApi; guild_id, code: string;
+                  name, description = none string): Future[GuildTemplate]" href="dimscord/restapi.html#editGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: editGuildTemplate(api: RestApi; guild_id, code: string;
+                  name, description = none string): Future[GuildTemplate]</a></li>
+          </ul></dd>
 <dt><a name="editGuildWidget" href="#editGuildWidget"><span>editGuildWidget:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
@@ -961,6 +985,10 @@ function main() {
 <dt><a name="endpointChannelMessages" href="#endpointChannelMessages"><span>endpointChannelMessages:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string" href="dimscord/constants.html#endpointChannelMessages%2Cstring%2Cstring">constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="endpointChannelMessagesCrosspost" href="#endpointChannelMessagesCrosspost"><span>endpointChannelMessagesCrosspost:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: endpointChannelMessagesCrosspost(cid, mid: string): string" href="dimscord/constants.html#endpointChannelMessagesCrosspost%2Cstring%2Cstring">constants: endpointChannelMessagesCrosspost(cid, mid: string): string</a></li>
           </ul></dd>
 <dt><a name="endpointChannelOverwrites" href="#endpointChannelOverwrites"><span>endpointChannelOverwrites:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1053,6 +1081,10 @@ function main() {
 <dt><a name="endpointGuilds" href="#endpointGuilds"><span>endpointGuilds:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: endpointGuilds(gid = &quot;&quot;): string" href="dimscord/constants.html#endpointGuilds%2Cstring">constants: endpointGuilds(gid = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="endpointGuildTemplates" href="#endpointGuildTemplates"><span>endpointGuildTemplates:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: endpointGuildTemplates(gid, tid = &quot;&quot;): string" href="dimscord/constants.html#endpointGuildTemplates%2Cstring%2Cstring">constants: endpointGuildTemplates(gid, tid = &quot;&quot;): string</a></li>
           </ul></dd>
 <dt><a name="endpointGuildVanity" href="#endpointGuildVanity"><span>endpointGuildVanity:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1296,6 +1328,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]" href="dimscord/restapi.html#getGuildRoles%2CRestApi%2Cstring">restapi: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]</a></li>
           </ul></dd>
+<dt><a name="getGuildTemplate" href="#getGuildTemplate"><span>getGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getGuildTemplate(api: RestApi; code: string): Future[GuildTemplate]" href="dimscord/restapi.html#getGuildTemplate%2CRestApi%2Cstring">restapi: getGuildTemplate(api: RestApi; code: string): Future[GuildTemplate]</a></li>
+          </ul></dd>
 <dt><a name="getGuildVanityUrl" href="#getGuildVanityUrl"><span>getGuildVanityUrl:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildVanityUrl(api: RestApi; guild_id: string): Future[
@@ -1314,9 +1350,7 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="helpers: getGuildWidget(guild_id, style: string): string" href="dimscord/helpers.html#getGuildWidget%2Cstring%2Cstring">helpers: getGuildWidget(guild_id, style: string): string</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="restapi: getGuildWidget(api: RestApi; guild_id: string): Future[
-    tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi.html#getGuildWidget%2CRestApi%2Cstring">restapi: getGuildWidget(api: RestApi; guild_id: string): Future[
-    tuple[enabled: bool, channel_id: Option[string]]]</a></li>
+          data-doc-search-tag="restapi: getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]" href="dimscord/restapi.html#getGuildWidget%2CRestApi%2Cstring">restapi: getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]</a></li>
           </ul></dd>
 <dt><a name="getInvite" href="#getInvite"><span>getInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1421,6 +1455,10 @@ function main() {
 <dt><a name="GuildPreview" href="#GuildPreview"><span>GuildPreview:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: GuildPreview" href="dimscord/objects.html#GuildPreview">objects: GuildPreview</a></li>
+          </ul></dd>
+<dt><a name="GuildTemplate" href="#GuildTemplate"><span>GuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="objects: GuildTemplate" href="dimscord/objects.html#GuildTemplate">objects: GuildTemplate</a></li>
           </ul></dd>
 <dt><a name="GuildWidgetJson" href="#GuildWidgetJson"><span>GuildWidgetJson:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1624,6 +1662,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: MessageReference" href="dimscord/objects.html#MessageReference">objects: MessageReference</a></li>
           </ul></dd>
+<dt><a name="MessageStickerFormat" href="#MessageStickerFormat"><span>MessageStickerFormat:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: MessageStickerFormat" href="dimscord/constants.html#MessageStickerFormat">constants: MessageStickerFormat</a></li>
+          </ul></dd>
 <dt><a name="MessageType" href="#MessageType"><span>MessageType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: MessageType" href="dimscord/constants.html#MessageType">constants: MessageType</a></li>
@@ -1667,6 +1709,18 @@ function main() {
 <dt><a name="mnlOnlyMentions" href="#mnlOnlyMentions"><span>mnlOnlyMentions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="MessageNotificationLevel.mnlOnlyMentions" href="dimscord/constants.html#mnlOnlyMentions">MessageNotificationLevel.mnlOnlyMentions</a></li>
+          </ul></dd>
+<dt><a name="msfAPng" href="#msfAPng"><span>msfAPng:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageStickerFormat.msfAPng" href="dimscord/constants.html#msfAPng">MessageStickerFormat.msfAPng</a></li>
+          </ul></dd>
+<dt><a name="msfLottie" href="#msfLottie"><span>msfLottie:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageStickerFormat.msfLottie" href="dimscord/constants.html#msfLottie">MessageStickerFormat.msfLottie</a></li>
+          </ul></dd>
+<dt><a name="msfPng" href="#msfPng"><span>msfPng:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageStickerFormat.msfPng" href="dimscord/constants.html#msfPng">MessageStickerFormat.msfPng</a></li>
           </ul></dd>
 <dt><a name="mtApplicationCommand" href="#mtApplicationCommand"><span>mtApplicationCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1783,6 +1837,10 @@ function main() {
 <dt><a name="newGuildMembersChunk" href="#newGuildMembersChunk"><span>newGuildMembersChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: newGuildMembersChunk(data: JsonNode): GuildMembersChunk" href="dimscord/objects.html#newGuildMembersChunk%2CJsonNode">objects: newGuildMembersChunk(data: JsonNode): GuildMembersChunk</a></li>
+          </ul></dd>
+<dt><a name="newGuildTemplate" href="#newGuildTemplate"><span>newGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="objects: newGuildTemplate(data: JsonNode): GuildTemplate" href="dimscord/objects.html#newGuildTemplate%2CJsonNode">objects: newGuildTemplate(data: JsonNode): GuildTemplate</a></li>
           </ul></dd>
 <dt><a name="newInteraction" href="#newInteraction"><span>newInteraction:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2151,10 +2209,12 @@ function main() {
           data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile]): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
+            files = none seq[DiscordFile];
+            message_reference = none MessageReference): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile]): Future[Message]</a></li>
+            files = none seq[DiscordFile];
+            message_reference = none MessageReference): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="setGuildNick" href="#setGuildNick"><span>setGuildNick:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2188,6 +2248,10 @@ function main() {
           <li><a class="reference external"
           data-doc-search-tag="voice: startSession(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#startSession%2CVoiceClient">voice: startSession(v: VoiceClient): owned(Future[void])</a></li>
           </ul></dd>
+<dt><a name="Sticker" href="#Sticker"><span>Sticker:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="objects: Sticker" href="dimscord/objects.html#Sticker">objects: Sticker</a></li>
+          </ul></dd>
 <dt><a name="stripChannelMentions" href="#stripChannelMentions"><span>stripChannelMentions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: stripChannelMentions(m: Message): string" href="dimscord/helpers.html#stripChannelMentions%2CMessage">helpers: stripChannelMentions(m: Message): string</a></li>
@@ -2209,6 +2273,10 @@ function main() {
           data-doc-search-tag="restapi: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
     Future[void])" href="dimscord/restapi.html#syncGuildIntegration%2CRestApi%2Cstring%2Cstring">restapi: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
     Future[void])</a></li>
+          </ul></dd>
+<dt><a name="syncGuildTemplate" href="#syncGuildTemplate"><span>syncGuildTemplate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: syncGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]" href="dimscord/restapi.html#syncGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: syncGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]</a></li>
           </ul></dd>
 <dt><a name="Team" href="#Team"><span>Team:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2242,6 +2310,62 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: TypingStart" href="dimscord/objects.html#TypingStart">objects: TypingStart</a></li>
           </ul></dd>
+<dt><a name="ufBugHunterLevel1" href="#ufBugHunterLevel1"><span>ufBugHunterLevel1:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufBugHunterLevel1" href="dimscord/constants.html#ufBugHunterLevel1">UserFlags.ufBugHunterLevel1</a></li>
+          </ul></dd>
+<dt><a name="ufBugHunterLevel2" href="#ufBugHunterLevel2"><span>ufBugHunterLevel2:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufBugHunterLevel2" href="dimscord/constants.html#ufBugHunterLevel2">UserFlags.ufBugHunterLevel2</a></li>
+          </ul></dd>
+<dt><a name="ufDiscordEmployee" href="#ufDiscordEmployee"><span>ufDiscordEmployee:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufDiscordEmployee" href="dimscord/constants.html#ufDiscordEmployee">UserFlags.ufDiscordEmployee</a></li>
+          </ul></dd>
+<dt><a name="ufEarlySupporter" href="#ufEarlySupporter"><span>ufEarlySupporter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufEarlySupporter" href="dimscord/constants.html#ufEarlySupporter">UserFlags.ufEarlySupporter</a></li>
+          </ul></dd>
+<dt><a name="ufEarlyVerifiedBotDeveloper" href="#ufEarlyVerifiedBotDeveloper"><span>ufEarlyVerifiedBotDeveloper:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufEarlyVerifiedBotDeveloper" href="dimscord/constants.html#ufEarlyVerifiedBotDeveloper">UserFlags.ufEarlyVerifiedBotDeveloper</a></li>
+          </ul></dd>
+<dt><a name="ufHouseBalance" href="#ufHouseBalance"><span>ufHouseBalance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufHouseBalance" href="dimscord/constants.html#ufHouseBalance">UserFlags.ufHouseBalance</a></li>
+          </ul></dd>
+<dt><a name="ufHouseBravery" href="#ufHouseBravery"><span>ufHouseBravery:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufHouseBravery" href="dimscord/constants.html#ufHouseBravery">UserFlags.ufHouseBravery</a></li>
+          </ul></dd>
+<dt><a name="ufHouseBrilliance" href="#ufHouseBrilliance"><span>ufHouseBrilliance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufHouseBrilliance" href="dimscord/constants.html#ufHouseBrilliance">UserFlags.ufHouseBrilliance</a></li>
+          </ul></dd>
+<dt><a name="ufHypesquadEvents" href="#ufHypesquadEvents"><span>ufHypesquadEvents:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufHypesquadEvents" href="dimscord/constants.html#ufHypesquadEvents">UserFlags.ufHypesquadEvents</a></li>
+          </ul></dd>
+<dt><a name="ufNone" href="#ufNone"><span>ufNone:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufNone" href="dimscord/constants.html#ufNone">UserFlags.ufNone</a></li>
+          </ul></dd>
+<dt><a name="ufPartneredServerOwner" href="#ufPartneredServerOwner"><span>ufPartneredServerOwner:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufPartneredServerOwner" href="dimscord/constants.html#ufPartneredServerOwner">UserFlags.ufPartneredServerOwner</a></li>
+          </ul></dd>
+<dt><a name="ufSystem" href="#ufSystem"><span>ufSystem:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufSystem" href="dimscord/constants.html#ufSystem">UserFlags.ufSystem</a></li>
+          </ul></dd>
+<dt><a name="ufTeamUser" href="#ufTeamUser"><span>ufTeamUser:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufTeamUser" href="dimscord/constants.html#ufTeamUser">UserFlags.ufTeamUser</a></li>
+          </ul></dd>
+<dt><a name="ufVerifiedBot" href="#ufVerifiedBot"><span>ufVerifiedBot:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="UserFlags.ufVerifiedBot" href="dimscord/constants.html#ufVerifiedBot">UserFlags.ufVerifiedBot</a></li>
+          </ul></dd>
 <dt><a name="UnavailableGuild" href="#UnavailableGuild"><span>UnavailableGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: UnavailableGuild" href="dimscord/objects.html#UnavailableGuild">objects: UnavailableGuild</a></li>
@@ -2263,6 +2387,10 @@ function main() {
 <dt><a name="User" href="#User"><span>User:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: User" href="dimscord/objects.html#User">objects: User</a></li>
+          </ul></dd>
+<dt><a name="UserFlags" href="#UserFlags"><span>UserFlags:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: UserFlags" href="dimscord/constants.html#UserFlags">constants: UserFlags</a></li>
           </ul></dd>
 <dt><a name="VerificationLevel" href="#VerificationLevel"><span>VerificationLevel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2347,7 +2475,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-25 16:02:24 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-25 22:06:29 UTC</small>
       </div>
     </div>
   </div>

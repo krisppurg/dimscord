@@ -78,6 +78,21 @@ type
         mfSupressEmbeds,
         mfSourceMessageDeleted
         mfUrgent
+    UserFlags* = enum
+        ufNone,
+        ufDiscordEmployee,
+        ufPartneredServerOwner,
+        ufHypesquadEvents,
+        ufBugHunterLevel1,
+        ufHouseBravery = 64,
+        ufHouseBrilliance,
+        ufHouseBalance,
+        ufEarlySupporter,
+        ufTeamUser,
+        ufSystem = 4096
+        ufBugHunterLevel2 = 16384
+        ufVerifiedBot = 65536,
+        ufEarlyVerifiedBotDeveloper
 const
     libName* = "Dimscord"
     libVer* = "1.2.0"
@@ -201,6 +216,10 @@ type
     TeamMembershipState* = enum
         tmsInvited = 1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
+    MessageStickerFormat* = enum
+        msfPng = 1
+        msfAPng = 2
+        msfLottie = 3
     ApplicationCommandOptionType* = enum
         acotSubCommand = 1
         acotSubCommandGroup = 2
@@ -299,7 +318,7 @@ proc endpointGuildAuditLogs*(gid: string): string =
     result = endpointGuilds(gid) & "/audit-logs"
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
-    result = endpointGuilds(gid) & "/members" & (if mid != "": "/" & mid else: "")
+    result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
 
 proc endpointGuildMembersNick*(gid: string; mid = "@me"): string =
     result = endpointGuildMembers(gid, mid) & "/nick"
@@ -308,7 +327,7 @@ proc endpointGuildMembersRole*(gid, mid, rid: string): string =
     result = endpointGuildMembers(gid, mid) & "/roles/" & rid
 
 proc endpointGuildIntegrations*(gid: string; iid = ""): string =
-    result = endpointGuilds(gid) & "/integrations" & (if iid != "": "/" & iid else: "")
+    result = endpointGuilds(gid)&"/integrations"&(if iid!="":"/"&iid else:"")
 
 proc endpointGuildIntegrationsSync*(gid, iid: string): string =
     result = endpointGuildIntegrations(gid, iid) & "/sync"
@@ -317,10 +336,10 @@ proc endpointGuildWidget*(gid: string): string =
     result = endpointGuilds(gid) & "/widget"
 
 proc endpointGuildEmojis*(gid: string; eid = ""): string =
-    result = endpointGuilds(gid) & "/emojis" & (if eid != "": "/" & eid else: "")
+    result = endpointGuilds(gid)&"/emojis"&(if eid != "": "/" & eid else: "")
 
 proc endpointGuildRoles*(gid: string; rid = ""): string =
-    result = endpointGuilds(gid) & "/roles" & (if rid != "": "/" & rid else: "")
+    result = endpointGuilds(gid) & "/roles" & (if rid!="": "/" & rid else: "")
 
 proc endpointGuildPrune*(gid: string): string =
     result = endpointGuilds(gid) & "/prune"
@@ -335,7 +354,7 @@ proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
 
 proc endpointGuildChannels*(gid: string; cid = ""): string =
-    result = endpointGuilds(gid) & "/channels" & (if cid != "": "/" & cid else: "")
+    result = endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")
 
 proc endpointChannelOverwrites*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
@@ -345,6 +364,9 @@ proc endpointWebhooks*(wid: string): string =
 
 proc endpointChannelWebhooks*(cid: string): string =
     result = endpointChannels(cid) & "/webhooks"
+
+proc endpointGuildTemplates*(gid, tid = ""): string =
+    result = endpointGuilds(gid) & "/templates" & (if tid!="": "/"&tid else:"")
 
 proc endpointGuildWebhooks*(gid: string): string =
     result = endpointGuilds(gid) & "/webhooks"
@@ -364,6 +386,9 @@ proc endpointWebhookTokenGithub*(wid, tok: string): string =
 proc endpointChannelMessages*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/messages"
     if mid != "": result = result & "/" & mid
+
+proc endpointChannelMessagesCrosspost*(cid, mid: string): string =
+    result = endpointChannelMessages(cid, mid) & "/crosspost"
 
 proc endpointChannelInvites*(cid: string): string =
     result = endpointChannels(cid) & "/invites"
@@ -399,7 +424,7 @@ proc endpointOAuth2Application*(): string =
     result = "oauth2/applications/@me"
 
 proc endpointGlobalCommands*(aid: string; cid = ""): string =
-    result = "applications/" & aid & "/commands" & (if cid != "": "/" & cid else: "")
+    result = "applications/" & aid & "/commands" & (if cid!="":"/"&cid else:"")
 
 proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
     result = "applications/" & aid & "/guilds/" & gid & "/commands"

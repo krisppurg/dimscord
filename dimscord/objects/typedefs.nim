@@ -121,6 +121,8 @@ type
         activity*: Option[tuple[kind: int, party_id: string]]
         application*: Option[Application]
         message_reference*: Option[MessageReference]
+        stickers*: seq[Sticker]
+        referenced_message*: Option[Message]
     User* = ref object
         id*, username*, discriminator*: string
         bot*, system*: bool
@@ -152,6 +154,11 @@ type
     Application* = object
         id*, cover_image*: string
         description*, icon*, name*: string
+    Sticker* = object
+        id*, pack_id*: string
+        name*, description*: string
+        tags*, asset*, format_asset*: Option[string]
+        format_type*: MessageStickerFormat
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
@@ -242,6 +249,14 @@ type
         color*, position*: int
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
+    GuildTemplate* = object
+        code*, name*, creator_id*: string
+        description*: Option[string]
+        usage_count*: int
+        creator*: User
+        source_guild_id*, updated_at*, created_at*: string
+        serialized_source_guild*: PartialGuild
+        is_dirty*: Option[bool]
     ActivityStatus* = object
         ## This is used for status updates.
         name*: string
@@ -292,7 +307,6 @@ type
         name*, description*: string
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOption* = object
-        ## `choices` reference: Table[choice_name, (Some("..."), None[int])]
         kind*: ApplicationCommandOptionType
         name*, description*: string
         default*, required*: Option[bool]

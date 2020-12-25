@@ -57,7 +57,7 @@ proc leaveGuild*(api: RestApi, guild_id: string) {.async.} =
     ## Leaves a guild.
     discard await api.request("DELETE", endpointUserGuilds(guild_id))
 
-proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel] {.async.} =
+proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     ## Create user dm.
     result = (await api.request("POST", endpointUserChannels(), $(%*{
         "recipient_id": user_id

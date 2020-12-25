@@ -692,10 +692,10 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "GUILD_EMOJIS_UPDATE": await s.guildEmojisUpdate(data)
     of "PRESENCE_UPDATE": await s.presenceUpdate(data)
     of "MESSAGE_CREATE": await s.messageCreate(data)
-    of "MESSAGE_REACTION_ADD": await s.messageReactionAdd(data)
-    of "MESSAGE_REACTION_REMOVE": await s.messageReactionRemove(data)
-    of "MESSAGE_REACTION_REMOVE_EMOJI": await s.messageReactionRemoveEmoji(data)
-    of "MESSAGE_REACTION_REMOVE_ALL": await s.messageReactionRemoveAll(data)
+    of "MESSAGE_REACTION_ADD": await s.messageReactionAdd data
+    of "MESSAGE_REACTION_REMOVE": await s.messageReactionRemove data
+    of "MESSAGE_REACTION_REMOVE_EMOJI": await s.messageReactionRemoveEmoji data
+    of "MESSAGE_REACTION_REMOVE_ALL": await s.messageReactionRemoveAll data
     of "MESSAGE_DELETE": await s.messageDelete(data)
     of "MESSAGE_UPDATE": await s.messageUpdate(data)
     of "MESSAGE_DELETE_BULK": await s.messageDeleteBulk(data)

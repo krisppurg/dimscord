@@ -4,10 +4,12 @@ import tables, os, sequtils
 import uri, ../helpers, requester
 
 proc sendMessage*(api: RestApi, channel_id: string;
-            content = ""; tts = false; embed = none Embed;
-            allowed_mentions = none AllowedMentions;
-            nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile]): Future[Message] {.async.} =
+        content = ""; tts = false; embed = none Embed;
+        allowed_mentions = none AllowedMentions;
+        nonce: Option[string] or Option[int] = none(int);
+        files = none seq[DiscordFile];
+        message_reference = none MessageReference
+): Future[Message] {.async.} =
     ## Sends a discord message.
     ## - `nonce` This can be used for optimistic message sending
     let payload = %*{
@@ -17,12 +19,12 @@ proc sendMessage*(api: RestApi, channel_id: string;
 
     if embed.isSome:
         payload["embed"] = %get embed
-
     if allowed_mentions.isSome:
         payload["allowed_mentions"] = %get allowed_mentions
-
     if nonce.isSome:
         payload["nonce"] = %get nonce
+    if message_reference.isSome:
+        payload["message_reference"] = %message_reference
 
     if files.isSome:
         var mpd = newMultipartData()
@@ -72,6 +74,14 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         "PATCH",
         endpointChannelMessages(channel_id, message_id),
         $payload
+    )).newMessage
+
+proc crosspostMessage*(api: RestApi;
+        channel_id, message_id: string): Future[Message] {.async.} =
+    ## Crosspost channel message aka publish messages into news channels.
+    result = (await api.request(
+        "POST",
+        endpointChannelMessagesCrosspost(channel_id, message_id)
     )).newMessage
 
 proc deleteMessage*(api: RestApi, channel_id, message_id: string;
@@ -241,9 +251,9 @@ proc editWebhookMessage*(api: RestApi;
     ## You can actually use this to modify
     ## original interaction or followup message.
     ##
-    ## `webhook_id` can also be application_id
-    ## `webhook_token` can also be interaction token.
-    ## `message_id` can be `@original`
+    ## - `webhook_id` can also be application_id
+    ## - `webhook_token` can also be interaction token.
+    ## - `message_id` can be `@original`
     discard await api.request(
         "PATCH", endpointWebhookMessage(webhook_id, webhook_token, message_id),
         $(%*{
@@ -259,8 +269,8 @@ proc deleteWebhookMessage*(api: RestApi;
     ## You can actually use this to delete
     ## original interaction or followup message.
     ##
-    ## `webhook_id` can also be application_id
-    ## `webhook_token` can also be interaction token.
+    ## - `webhook_id` can also be application_id
+    ## - `webhook_token` can also be interaction token.
     discard await api.request(
         "DELETE",
         endpointWebhookMessage(webhook_id, webhook_token, message_id)

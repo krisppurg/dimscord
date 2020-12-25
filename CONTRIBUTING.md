@@ -13,5 +13,5 @@
 
 #### Please Do NOT:
 * Make spam comments or less detailed issues.
-* Make command handler PRs or issues. There is no need for a command handler (read https://github.com/krisppurg/dimscord/pull/6#issuecomment-620716071)
+* Make command handler PRs or issues. [There is already a command handler](https://github.com/ire4ever1190/dimscmd)
 * Make lines over 80-81 characters, unless it's comments which limits to around 120 characters.

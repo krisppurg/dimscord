@@ -153,7 +153,8 @@ proc computePerms*(guild: Guild, member: Member): PermObj =
 
     result = PermObj(allowed: perms)
 
-proc computePerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj =
+proc computePerms*(guild: Guild;
+        member: Member, channel: GuildChannel): PermObj =
     ## Returns the permissions for the guild member of the channel.
     ## For permission checking you can do something like this:
     ## 
@@ -185,9 +186,12 @@ proc computePerms*(guild: Guild, member: Member, channel: GuildChannel): PermObj
         deny = deny or cast[int](overwrites[m].deny)
 
     perms = (perms and deny - deny - deny - 1) or allow
-    result = PermObj(allowed: cast[set[PermissionFlags]](allow), denied: cast[set[PermissionFlags]](deny))
+    result = PermObj(
+        allowed: cast[set[PermissionFlags]](allow),
+        denied: cast[set[PermissionFlags]](deny)
+    )
 
-proc createBotInvite*(client_id: string, permissions: set[PermissionFlags] = {};
+proc createBotInvite*(client_id: string, permissions: set[PermissionFlags]={};
         guild_id = ""; disable_guild_select = false): string =
     ## Creates an invite link for the bot of the form.
     ## 

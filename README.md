@@ -15,9 +15,10 @@ Why Dimscord?
    * Since it's easier to learn, it's faster than any other interpreted languages,
     which is beneficial for the performance of larger discord bots.
     [You can read the Nim FAQ here](https://nim-lang.org/faq.html)
-
+ * Is there a command handler for Dimscord?
+   * [Yes](https://github.com/ire4ever1190/dimscmd), but not in this library.
 ## Notes:
- * If your bot is in a large guild (>50-250 large_threshold), I'd recommend turning off guild_subscriptions or use intents, if you want to get a guild member use the requestGuildMembers proc, that way you can get a specific guild member from a large guild; if you have presence intent enabled and you are debugging with a large guild,
+ * If  bot is in a large_threshold guild (>50-250) and you have presence intent enabled and you are debugging with a large guild,
  dont debug because it will slow down your bot.
 
 ## Getting Started:

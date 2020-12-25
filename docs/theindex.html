@@ -63,7 +63,7 @@ function main() {
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
-    Modules: <a href="dimscord.html">dimscord</a>, <a href="dimscord/constants.html">dimscord/constants</a>, <a href="dimscord/dispatch.html">dimscord/dispatch</a>, <a href="dimscord/gateway.html">dimscord/gateway</a>, <a href="dimscord/helpers.html">dimscord/helpers</a>, <a href="dimscord/objects.html">dimscord/objects</a>, <a href="dimscord/restapi/channel.html">dimscord/restapi/channel</a>, <a href="dimscord/restapi/guild.html">dimscord/restapi/guild</a>, <a href="dimscord/restapi/message.html">dimscord/restapi/message</a>, <a href="dimscord/restapi/requester.html">dimscord/restapi/requester</a>, <a href="dimscord/restapi/user.html">dimscord/restapi/user</a>, <a href="dimscord/voice.html">dimscord/voice</a>.<br/><p /><h2>API symbols</h2>
+    Modules: <a href="dimscord.html">dimscord</a>, <a href="dimscord/constants.html">dimscord/constants</a>, <a href="dimscord/dispatch.html">dimscord/dispatch</a>, <a href="dimscord/gateway.html">dimscord/gateway</a>, <a href="dimscord/helpers.html">dimscord/helpers</a>, <a href="dimscord/objects.html">dimscord/objects</a>, <a href="dimscord/restapi.html">dimscord/restapi</a>, <a href="dimscord/restapi/requester.html">dimscord/restapi/requester</a>, <a href="dimscord/restapi/user.html">dimscord/restapi/user</a>, <a href="dimscord/voice.html">dimscord/voice</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: `$`(g: GuildChannel): string" href="dimscord/helpers.html#%24%2CGuildChannel">helpers: `$`(g: GuildChannel): string</a></li>
@@ -140,30 +140,34 @@ function main() {
           </ul></dd>
 <dt><a name="addChannelMessagePin" href="#addChannelMessagePin"><span>addChannelMessagePin:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: addChannelMessagePin(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/channel.html#addChannelMessagePin%2CRestApi%2Cstring%2Cstring%2Cstring">channel: addChannelMessagePin(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: addChannelMessagePin(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#addChannelMessagePin%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: addChannelMessagePin(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="addGuildMember" href="#addGuildMember"><span>addGuildMember:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: addGuildMember(api: RestApi; guild_id, user_id, access_token: string;
+          data-doc-search-tag="restapi: addGuildMember(api: RestApi; guild_id, user_id, access_token: string;
                nick = none string; roles = none seq[string];
                mute, deaf = none bool; reason = &quot;&quot;): Future[
-    tuple[member: Member, exists: bool]]" href="dimscord/restapi/guild.html#addGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">guild: addGuildMember(api: RestApi; guild_id, user_id, access_token: string;
+    tuple[member: Member, exists: bool]]" href="dimscord/restapi.html#addGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">restapi: addGuildMember(api: RestApi; guild_id, user_id, access_token: string;
                nick = none string; roles = none seq[string];
                mute, deaf = none bool; reason = &quot;&quot;): Future[
     tuple[member: Member, exists: bool]]</a></li>
           </ul></dd>
 <dt><a name="addGuildMemberRole" href="#addGuildMemberRole"><span>addGuildMemberRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#addGuildMemberRole%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">restapi: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(
+    Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(
     Future[void])" href="dimscord/restapi/user.html#addGuildMemberRole%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">user: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="addMessageReaction" href="#addMessageReaction"><span>addMessageReaction:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: addMessageReaction(api: RestApi; channel_id, message_id, emoji: string): owned(
-    Future[void])" href="dimscord/restapi/message.html#addMessageReaction%2CRestApi%2Cstring%2Cstring%2Cstring">message: addMessageReaction(api: RestApi; channel_id, message_id, emoji: string): owned(
+          data-doc-search-tag="restapi: addMessageReaction(api: RestApi; channel_id, message_id, emoji: string): owned(
+    Future[void])" href="dimscord/restapi.html#addMessageReaction%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: addMessageReaction(api: RestApi; channel_id, message_id, emoji: string): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="afInstance" href="#afInstance"><span>afInstance:</span></a></dt><dd><ul class="simple">
@@ -440,14 +444,14 @@ function main() {
           </ul></dd>
 <dt><a name="beginGuildPrune" href="#beginGuildPrune"><span>beginGuildPrune:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
-                compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/guild.html#beginGuildPrune%2CRestApi%2Cstring%2Cint%2Cstring">guild: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
+          data-doc-search-tag="restapi: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
+                compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#beginGuildPrune%2CRestApi%2Cstring%2Cint%2Cstring">restapi: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
                 compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="bulkDeleteMessages" href="#bulkDeleteMessages"><span>bulkDeleteMessages:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: bulkDeleteMessages(api: RestApi; channel_id: string; message_ids: seq[string];
-                   reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/message.html#bulkDeleteMessages%2CRestApi%2Cstring%2Cseq%5Bstring%5D%2Cstring">message: bulkDeleteMessages(api: RestApi; channel_id: string; message_ids: seq[string];
+          data-doc-search-tag="restapi: bulkDeleteMessages(api: RestApi; channel_id: string; message_ids: seq[string];
+                   reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#bulkDeleteMessages%2CRestApi%2Cstring%2Cseq%5Bstring%5D%2Cstring">restapi: bulkDeleteMessages(api: RestApi; channel_id: string; message_ids: seq[string];
                    reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="CacheError" href="#CacheError"><span>CacheError:</span></a></dt><dd><ul class="simple">
@@ -538,27 +542,31 @@ function main() {
           </ul></dd>
 <dt><a name="createChannelInvite" href="#createChannelInvite"><span>createChannelInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
+          data-doc-search-tag="restapi: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
                     max_uses = 0; temp, unique = false;
                     target_user = none string; target_user_type = none int;
-                    reason = &quot;&quot;): Future[Invite]" href="dimscord/restapi/channel.html#createChannelInvite%2CRestApi%2Cstring%2Cint%2Cint%2Cstring">channel: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
+                    reason = &quot;&quot;): Future[Invite]" href="dimscord/restapi.html#createChannelInvite%2CRestApi%2Cstring%2Cint%2Cint%2Cstring">restapi: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
                     max_uses = 0; temp, unique = false;
                     target_user = none string; target_user_type = none int;
                     reason = &quot;&quot;): Future[Invite]</a></li>
           </ul></dd>
 <dt><a name="createGroupDm" href="#createGroupDm"><span>createGroupDm:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: createGroupDm(api: RestApi; access_tokens: seq[string];
+              nicks: Table[string, string]): Future[DMChannel]" href="dimscord/restapi.html#createGroupDm%2CRestApi%2Cseq%5Bstring%5D%2CTable%5Bstring%2Cstring%5D">restapi: createGroupDm(api: RestApi; access_tokens: seq[string];
+              nicks: Table[string, string]): Future[DMChannel]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: createGroupDm(api: RestApi; access_tokens: seq[string];
               nicks: Table[string, string]): Future[DMChannel]" href="dimscord/restapi/user.html#createGroupDm%2CRestApi%2Cseq%5Bstring%5D%2CTable%5Bstring%2Cstring%5D">user: createGroupDm(api: RestApi; access_tokens: seq[string];
               nicks: Table[string, string]): Future[DMChannel]</a></li>
           </ul></dd>
 <dt><a name="createGuild" href="#createGuild"><span>createGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: createGuild(api: RestApi; name, region = none string;
+          data-doc-search-tag="restapi: createGuild(api: RestApi; name, region = none string;
             icon, afk_channel_id, system_channel_id = none string;
             verification_level, default_message_notifications = none int;
             afk_timeout, explicit_content_filter = none int;
-            roles = none seq[Role]; channels = none seq[Channel]): Future[Guild]" href="dimscord/restapi/guild.html#createGuild%2CRestApi">guild: createGuild(api: RestApi; name, region = none string;
+            roles = none seq[Role]; channels = none seq[Channel]): Future[Guild]" href="dimscord/restapi.html#createGuild%2CRestApi">restapi: createGuild(api: RestApi; name, region = none string;
             icon, afk_channel_id, system_channel_id = none string;
             verification_level, default_message_notifications = none int;
             afk_timeout, explicit_content_filter = none int;
@@ -566,17 +574,17 @@ function main() {
           </ul></dd>
 <dt><a name="createGuildBan" href="#createGuildBan"><span>createGuildBan:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
-               reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/guild.html#createGuildBan%2CRestApi%2Cstring%2Cstring%2Cint%2Cstring">guild: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
+          data-doc-search-tag="restapi: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
+               reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#createGuildBan%2CRestApi%2Cstring%2Cstring%2Cint%2Cstring">restapi: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
                reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="createGuildChannel" href="#createGuildChannel"><span>createGuildChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: createGuildChannel(api: RestApi; guild_id, name: string; kind = 0;
+          data-doc-search-tag="restapi: createGuildChannel(api: RestApi; guild_id, name: string; kind = 0;
                    parent_id, topic = none string; nsfw = none bool;
     rate_limit_per_user, bitrate, position, user_limit = none int;
                    permission_overwrites = none seq[Overwrite]; reason = &quot;&quot;): Future[
-    GuildChannel]" href="dimscord/restapi/channel.html#createGuildChannel%2CRestApi%2Cstring%2Cstring%2Cint%2Cstring">channel: createGuildChannel(api: RestApi; guild_id, name: string; kind = 0;
+    GuildChannel]" href="dimscord/restapi.html#createGuildChannel%2CRestApi%2Cstring%2Cstring%2Cint%2Cstring">restapi: createGuildChannel(api: RestApi; guild_id, name: string; kind = 0;
                    parent_id, topic = none string; nsfw = none bool;
     rate_limit_per_user, bitrate, position, user_limit = none int;
                    permission_overwrites = none seq[Overwrite]; reason = &quot;&quot;): Future[
@@ -584,20 +592,26 @@ function main() {
           </ul></dd>
 <dt><a name="createGuildEmoji" href="#createGuildEmoji"><span>createGuildEmoji:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: createGuildEmoji(api: RestApi; guild_id, name, image: string;
-                 roles: seq[string] = @[]; reason = &quot;&quot;): Future[Emoji]" href="dimscord/restapi/guild.html#createGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5Bstring%5D%2Cstring">guild: createGuildEmoji(api: RestApi; guild_id, name, image: string;
+          data-doc-search-tag="restapi: createGuildEmoji(api: RestApi; guild_id, name, image: string;
+                 roles: seq[string] = @[]; reason = &quot;&quot;): Future[Emoji]" href="dimscord/restapi.html#createGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5Bstring%5D%2Cstring">restapi: createGuildEmoji(api: RestApi; guild_id, name, image: string;
                  roles: seq[string] = @[]; reason = &quot;&quot;): Future[Emoji]</a></li>
           </ul></dd>
 <dt><a name="createGuildRole" href="#createGuildRole"><span>createGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
+          data-doc-search-tag="restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
                 hoist, mentionable = false; permissions: PermObj; color = 0;
-                reason = &quot;&quot;): Future[Role]" href="dimscord/restapi/guild.html#createGuildRole%2CRestApi%2Cstring%2Cstring%2CPermObj%2Cint%2Cstring">guild: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
+                reason = &quot;&quot;): Future[Role]" href="dimscord/restapi.html#createGuildRole%2CRestApi%2Cstring%2Cstring%2CPermObj%2Cint%2Cstring">restapi: createGuildRole(api: RestApi; guild_id: string; name = &quot;new role&quot;;
                 hoist, mentionable = false; permissions: PermObj; color = 0;
                 reason = &quot;&quot;): Future[Role]</a></li>
           </ul></dd>
 <dt><a name="createInteractionResponse" href="#createInteractionResponse"><span>createInteractionResponse:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: createInteractionResponse(api: RestApi;
+                          interaction_id, interaction_token: string;
+                          response: InteractionResponse): owned(Future[void])" href="dimscord/restapi.html#createInteractionResponse%2CRestApi%2Cstring%2Cstring%2CInteractionResponse">restapi: createInteractionResponse(api: RestApi;
+                          interaction_id, interaction_token: string;
+                          response: InteractionResponse): owned(Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: createInteractionResponse(api: RestApi;
                           interaction_id, interaction_token: string;
                           response: InteractionResponse): owned(Future[void])" href="dimscord/restapi/user.html#createInteractionResponse%2CRestApi%2Cstring%2Cstring%2CInteractionResponse">user: createInteractionResponse(api: RestApi;
@@ -606,12 +620,14 @@ function main() {
           </ul></dd>
 <dt><a name="createUserDm" href="#createUserDm"><span>createUserDm:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: createUserDm(api: RestApi; user_id: string): Future[DMChannel]" href="dimscord/restapi.html#createUserDm%2CRestApi%2Cstring">restapi: createUserDm(api: RestApi; user_id: string): Future[DMChannel]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: createUserDm(api: RestApi; user_id: string): Future[DMChannel]" href="dimscord/restapi/user.html#createUserDm%2CRestApi%2Cstring">user: createUserDm(api: RestApi; user_id: string): Future[DMChannel]</a></li>
           </ul></dd>
 <dt><a name="createWebhook" href="#createWebhook"><span>createWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
-              reason = &quot;&quot;): Future[Webhook]" href="dimscord/restapi/channel.html#createWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">channel: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
+          data-doc-search-tag="restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
+              reason = &quot;&quot;): Future[Webhook]" href="dimscord/restapi.html#createWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
               reason = &quot;&quot;): Future[Webhook]</a></li>
           </ul></dd>
 <dt><a name="ctDirect" href="#ctDirect"><span>ctDirect:</span></a></dt><dd><ul class="simple">
@@ -648,82 +664,86 @@ function main() {
           </ul></dd>
 <dt><a name="deleteAllMessageReactions" href="#deleteAllMessageReactions"><span>deleteAllMessageReactions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: deleteAllMessageReactions(api: RestApi; channel_id, message_id: string): owned(
-    Future[void])" href="dimscord/restapi/message.html#deleteAllMessageReactions%2CRestApi%2Cstring%2Cstring">message: deleteAllMessageReactions(api: RestApi; channel_id, message_id: string): owned(
+          data-doc-search-tag="restapi: deleteAllMessageReactions(api: RestApi; channel_id, message_id: string): owned(
+    Future[void])" href="dimscord/restapi.html#deleteAllMessageReactions%2CRestApi%2Cstring%2Cstring">restapi: deleteAllMessageReactions(api: RestApi; channel_id, message_id: string): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteApplicationCommand" href="#deleteApplicationCommand"><span>deleteApplicationCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: deleteApplicationCommand(api: RestApi; application_id, command_id: string;
+                         guild_id = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteApplicationCommand(api: RestApi; application_id, command_id: string;
+                         guild_id = &quot;&quot;): owned(Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: deleteApplicationCommand(api: RestApi; application_id, command_id: string;
                          guild_id = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/user.html#deleteApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring">user: deleteApplicationCommand(api: RestApi; application_id, command_id: string;
                          guild_id = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteChannel" href="#deleteChannel"><span>deleteChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: deleteChannel(api: RestApi; channel_id: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#deleteChannel%2CRestApi%2Cstring%2Cstring">channel: deleteChannel(api: RestApi; channel_id: string; reason = &quot;&quot;): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: deleteChannel(api: RestApi; channel_id: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteChannel%2CRestApi%2Cstring%2Cstring">restapi: deleteChannel(api: RestApi; channel_id: string; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteChannelMessagePin" href="#deleteChannelMessagePin"><span>deleteChannelMessagePin:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: deleteChannelMessagePin(api: RestApi; channel_id, message_id: string;
-                        reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#deleteChannelMessagePin%2CRestApi%2Cstring%2Cstring%2Cstring">channel: deleteChannelMessagePin(api: RestApi; channel_id, message_id: string;
+          data-doc-search-tag="restapi: deleteChannelMessagePin(api: RestApi; channel_id, message_id: string;
+                        reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteChannelMessagePin%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteChannelMessagePin(api: RestApi; channel_id, message_id: string;
                         reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteGuild" href="#deleteGuild"><span>deleteGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: deleteGuild(api: RestApi; guild_id: string): owned(Future[void])" href="dimscord/restapi/guild.html#deleteGuild%2CRestApi%2Cstring">guild: deleteGuild(api: RestApi; guild_id: string): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: deleteGuild(api: RestApi; guild_id: string): owned(Future[void])" href="dimscord/restapi.html#deleteGuild%2CRestApi%2Cstring">restapi: deleteGuild(api: RestApi; guild_id: string): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteGuildChannelPermission" href="#deleteGuildChannelPermission"><span>deleteGuildChannelPermission:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: deleteGuildChannelPermission(api: RestApi; channel_id, overwrite: string;
-                             reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#deleteGuildChannelPermission%2CRestApi%2Cstring%2Cstring%2Cstring">channel: deleteGuildChannelPermission(api: RestApi; channel_id, overwrite: string;
+          data-doc-search-tag="restapi: deleteGuildChannelPermission(api: RestApi; channel_id, overwrite: string;
+                             reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteGuildChannelPermission%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteGuildChannelPermission(api: RestApi; channel_id, overwrite: string;
                              reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteGuildEmoji" href="#deleteGuildEmoji"><span>deleteGuildEmoji:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: deleteGuildEmoji(api: RestApi; guild_id, emoji_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/guild.html#deleteGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">guild: deleteGuildEmoji(api: RestApi; guild_id, emoji_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: deleteGuildEmoji(api: RestApi; guild_id, emoji_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#deleteGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteGuildEmoji(api: RestApi; guild_id, emoji_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteGuildIntegration" href="#deleteGuildIntegration"><span>deleteGuildIntegration:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: deleteGuildIntegration(api: RestApi; integ_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/guild.html#deleteGuildIntegration%2CRestApi%2Cstring%2Cstring">guild: deleteGuildIntegration(api: RestApi; integ_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: deleteGuildIntegration(api: RestApi; integ_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#deleteGuildIntegration%2CRestApi%2Cstring%2Cstring">restapi: deleteGuildIntegration(api: RestApi; integ_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteGuildRole" href="#deleteGuildRole"><span>deleteGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])" href="dimscord/restapi/guild.html#deleteGuildRole%2CRestApi%2Cstring%2Cstring">guild: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])" href="dimscord/restapi.html#deleteGuildRole%2CRestApi%2Cstring%2Cstring">restapi: deleteGuildRole(api: RestApi; guild_id, role_id: string): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteInvite" href="#deleteInvite"><span>deleteInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#deleteInvite%2CRestApi%2Cstring%2Cstring">channel: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteInvite%2CRestApi%2Cstring%2Cstring">restapi: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteMessage" href="#deleteMessage"><span>deleteMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: deleteMessage(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/message.html#deleteMessage%2CRestApi%2Cstring%2Cstring%2Cstring">message: deleteMessage(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: deleteMessage(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#deleteMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteMessage(api: RestApi; channel_id, message_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteMessageReaction" href="#deleteMessageReaction"><span>deleteMessageReaction:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: deleteMessageReaction(api: RestApi; channel_id, message_id, emoji: string;
-                      user_id = &quot;@me&quot;): owned(Future[void])" href="dimscord/restapi/message.html#deleteMessageReaction%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">message: deleteMessageReaction(api: RestApi; channel_id, message_id, emoji: string;
+          data-doc-search-tag="restapi: deleteMessageReaction(api: RestApi; channel_id, message_id, emoji: string;
+                      user_id = &quot;@me&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteMessageReaction%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">restapi: deleteMessageReaction(api: RestApi; channel_id, message_id, emoji: string;
                       user_id = &quot;@me&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteMessageReactionEmoji" href="#deleteMessageReactionEmoji"><span>deleteMessageReactionEmoji:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: deleteMessageReactionEmoji(api: RestApi; channel_id, message_id, emoji: string): owned(
-    Future[void])" href="dimscord/restapi/message.html#deleteMessageReactionEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">message: deleteMessageReactionEmoji(api: RestApi; channel_id, message_id, emoji: string): owned(
+          data-doc-search-tag="restapi: deleteMessageReactionEmoji(api: RestApi; channel_id, message_id, emoji: string): owned(
+    Future[void])" href="dimscord/restapi.html#deleteMessageReactionEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteMessageReactionEmoji(api: RestApi; channel_id, message_id, emoji: string): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteWebhook" href="#deleteWebhook"><span>deleteWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: deleteWebhook(api: RestApi; webhook_id: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#deleteWebhook%2CRestApi%2Cstring%2Cstring">channel: deleteWebhook(api: RestApi; webhook_id: string; reason = &quot;&quot;): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: deleteWebhook(api: RestApi; webhook_id: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteWebhook%2CRestApi%2Cstring%2Cstring">restapi: deleteWebhook(api: RestApi; webhook_id: string; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteWebhookMessage" href="#deleteWebhookMessage"><span>deleteWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: deleteWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string): owned(
-    Future[void])" href="dimscord/restapi/message.html#deleteWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">message: deleteWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string): owned(
+          data-doc-search-tag="restapi: deleteWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string): owned(
+    Future[void])" href="dimscord/restapi.html#deleteWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="disconnect" href="#disconnect"><span>disconnect:</span></a></dt><dd><ul class="simple">
@@ -758,6 +778,14 @@ function main() {
           </ul></dd>
 <dt><a name="editApplicationCommand" href="#editApplicationCommand"><span>editApplicationCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: editApplicationCommand(api: RestApi; application_id, command_id: string;
+                       guild_id = &quot;&quot;; name, description: string;
+                       options: seq[ApplicationCommandOption] = @[]): Future[
+    ApplicationCommand]" href="dimscord/restapi.html#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">restapi: editApplicationCommand(api: RestApi; application_id, command_id: string;
+                       guild_id = &quot;&quot;; name, description: string;
+                       options: seq[ApplicationCommandOption] = @[]): Future[
+    ApplicationCommand]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: editApplicationCommand(api: RestApi; application_id, command_id: string;
                        guild_id = &quot;&quot;; name, description: string;
                        options: seq[ApplicationCommandOption] = @[]): Future[
@@ -768,18 +796,20 @@ function main() {
           </ul></dd>
 <dt><a name="editCurrentUser" href="#editCurrentUser"><span>editCurrentUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]" href="dimscord/restapi.html#editCurrentUser%2CRestApi">restapi: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]" href="dimscord/restapi/user.html#editCurrentUser%2CRestApi">user: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]</a></li>
           </ul></dd>
 <dt><a name="editGuild" href="#editGuild"><span>editGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuild(api: RestApi; guild_id: string;
+          data-doc-search-tag="restapi: editGuild(api: RestApi; guild_id: string;
           name, region, afk_channel_id, icon = none string;
           discovery_splash, owner_id, splash, banner = none string;
           system_channel_id, rules_channel_id = none string;
           preferred_locale, public_updates_channel_id = none string;
           verification_level, default_message_notifications = none int;
           explicit_content_filter, afk_timeout = none int; reason = &quot;&quot;): Future[
-    Guild]" href="dimscord/restapi/guild.html#editGuild%2CRestApi%2Cstring%2Cstring">guild: editGuild(api: RestApi; guild_id: string;
+    Guild]" href="dimscord/restapi.html#editGuild%2CRestApi%2Cstring%2Cstring">restapi: editGuild(api: RestApi; guild_id: string;
           name, region, afk_channel_id, icon = none string;
           discovery_splash, owner_id, splash, banner = none string;
           system_channel_id, rules_channel_id = none string;
@@ -790,12 +820,12 @@ function main() {
           </ul></dd>
 <dt><a name="editGuildChannel" href="#editGuildChannel"><span>editGuildChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: editGuildChannel(api: RestApi; channel_id: string;
+          data-doc-search-tag="restapi: editGuildChannel(api: RestApi; channel_id: string;
                  name, parent_id, topic = none string;
                  rate_limit_per_user, bitrate = none int;
                  position, user_limit = none int;
                  permission_overwrites = none seq[Overwrite]; nsfw = none bool;
-                 reason = &quot;&quot;): Future[GuildChannel]" href="dimscord/restapi/channel.html#editGuildChannel%2CRestApi%2Cstring%2Cstring">channel: editGuildChannel(api: RestApi; channel_id: string;
+                 reason = &quot;&quot;): Future[GuildChannel]" href="dimscord/restapi.html#editGuildChannel%2CRestApi%2Cstring%2Cstring">restapi: editGuildChannel(api: RestApi; channel_id: string;
                  name, parent_id, topic = none string;
                  rate_limit_per_user, bitrate = none int;
                  position, user_limit = none int;
@@ -804,83 +834,83 @@ function main() {
           </ul></dd>
 <dt><a name="editGuildChannelPermissions" href="#editGuildChannelPermissions"><span>editGuildChannelPermissions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: editGuildChannelPermissions(api: RestApi;
+          data-doc-search-tag="restapi: editGuildChannelPermissions(api: RestApi;
                             channel_id, perm_id, kind: string or int;
-                            perms: PermObj; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#editGuildChannelPermissions%2CRestApi%2C%2C%2C%2CPermObj%2Cstring">channel: editGuildChannelPermissions(api: RestApi;
+                            perms: PermObj; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#editGuildChannelPermissions%2CRestApi%2C%2C%2C%2CPermObj%2Cstring">restapi: editGuildChannelPermissions(api: RestApi;
                             channel_id, perm_id, kind: string or int;
                             perms: PermObj; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="editGuildChannelPositions" href="#editGuildChannelPositions"><span>editGuildChannelPositions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
-                          position = none int; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/channel.html#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring">channel: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
+          data-doc-search-tag="restapi: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
+                          position = none int; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
                           position = none int; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="editGuildEmoji" href="#editGuildEmoji"><span>editGuildEmoji:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildEmoji(api: RestApi; guild_id, emoji_id: string; name = none string;
-               roles = none seq[string]; reason = &quot;&quot;): Future[Emoji]" href="dimscord/restapi/guild.html#editGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">guild: editGuildEmoji(api: RestApi; guild_id, emoji_id: string; name = none string;
+          data-doc-search-tag="restapi: editGuildEmoji(api: RestApi; guild_id, emoji_id: string; name = none string;
+               roles = none seq[string]; reason = &quot;&quot;): Future[Emoji]" href="dimscord/restapi.html#editGuildEmoji%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildEmoji(api: RestApi; guild_id, emoji_id: string; name = none string;
                roles = none seq[string]; reason = &quot;&quot;): Future[Emoji]</a></li>
           </ul></dd>
 <dt><a name="editGuildIntegration" href="#editGuildIntegration"><span>editGuildIntegration:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildIntegration(api: RestApi; guild_id, integ_id: string;
+          data-doc-search-tag="restapi: editGuildIntegration(api: RestApi; guild_id, integ_id: string;
                      expire_behavior, expire_grace_period = none int;
                      enable_emoticons = none bool; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/guild.html#editGuildIntegration%2CRestApi%2Cstring%2Cstring%2Cstring">guild: editGuildIntegration(api: RestApi; guild_id, integ_id: string;
+    Future[void])" href="dimscord/restapi.html#editGuildIntegration%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildIntegration(api: RestApi; guild_id, integ_id: string;
                      expire_behavior, expire_grace_period = none int;
                      enable_emoticons = none bool; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="editGuildMember" href="#editGuildMember"><span>editGuildMember:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildMember(api: RestApi; guild_id, user_id: string;
+          data-doc-search-tag="restapi: editGuildMember(api: RestApi; guild_id, user_id: string;
                 nick, channel_id = none string; roles = none seq[string];
-                mute, deaf = none bool; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/guild.html#editGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring">guild: editGuildMember(api: RestApi; guild_id, user_id: string;
+                mute, deaf = none bool; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#editGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildMember(api: RestApi; guild_id, user_id: string;
                 nick, channel_id = none string; roles = none seq[string];
                 mute, deaf = none bool; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="editGuildRole" href="#editGuildRole"><span>editGuildRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
+          data-doc-search-tag="restapi: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
               permissions = none PermObj; color = none int;
-              hoist, mentionable = none bool; reason = &quot;&quot;): Future[Role]" href="dimscord/restapi/guild.html#editGuildRole%2CRestApi%2Cstring%2Cstring%2Cstring">guild: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
+              hoist, mentionable = none bool; reason = &quot;&quot;): Future[Role]" href="dimscord/restapi.html#editGuildRole%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildRole(api: RestApi; guild_id, role_id: string; name = none string;
               permissions = none PermObj; color = none int;
               hoist, mentionable = none bool; reason = &quot;&quot;): Future[Role]</a></li>
           </ul></dd>
 <dt><a name="editGuildRolePosition" href="#editGuildRolePosition"><span>editGuildRolePosition:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildRolePosition(api: RestApi; guild_id, role_id: string;
-                      position = none int; reason = &quot;&quot;): Future[seq[Role]]" href="dimscord/restapi/guild.html#editGuildRolePosition%2CRestApi%2Cstring%2Cstring%2Cstring">guild: editGuildRolePosition(api: RestApi; guild_id, role_id: string;
+          data-doc-search-tag="restapi: editGuildRolePosition(api: RestApi; guild_id, role_id: string;
+                      position = none int; reason = &quot;&quot;): Future[seq[Role]]" href="dimscord/restapi.html#editGuildRolePosition%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildRolePosition(api: RestApi; guild_id, role_id: string;
                       position = none int; reason = &quot;&quot;): Future[seq[Role]]</a></li>
           </ul></dd>
 <dt><a name="editGuildWidget" href="#editGuildWidget"><span>editGuildWidget:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
+          data-doc-search-tag="restapi: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
                 channel_id = none string): Future[
-    tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi/guild.html#editGuildWidget%2CRestApi%2Cstring">guild: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
+    tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi.html#editGuildWidget%2CRestApi%2Cstring">restapi: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
                 channel_id = none string): Future[
     tuple[enabled: bool, channel_id: Option[string]]]</a></li>
           </ul></dd>
 <dt><a name="editMessage" href="#editMessage"><span>editMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags = none(int); embed = none Embed): Future[Message]" href="dimscord/restapi/message.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring">message: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
+          data-doc-search-tag="restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
+            tts = false; flags = none(int); embed = none Embed): Future[Message]" href="dimscord/restapi.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
             tts = false; flags = none(int); embed = none Embed): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editWebhook" href="#editWebhook"><span>editWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: editWebhook(api: RestApi; webhook_id: string;
+          data-doc-search-tag="restapi: editWebhook(api: RestApi; webhook_id: string;
             name, avatar, channel_id = none string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/channel.html#editWebhook%2CRestApi%2Cstring%2Cstring">channel: editWebhook(api: RestApi; webhook_id: string;
+    Future[void])" href="dimscord/restapi.html#editWebhook%2CRestApi%2Cstring%2Cstring">restapi: editWebhook(api: RestApi; webhook_id: string;
             name, avatar, channel_id = none string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="editWebhookMessage" href="#editWebhookMessage"><span>editWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+          data-doc-search-tag="restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
                    content = none string; embeds = none array[10, Embed];
-                   allowed_mentions = none AllowedMentions): owned(Future[void])" href="dimscord/restapi/message.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">message: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                   allowed_mentions = none AllowedMentions): owned(Future[void])" href="dimscord/restapi.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
                    content = none string; embeds = none array[10, Embed];
                    allowed_mentions = none AllowedMentions): owned(Future[void])</a></li>
           </ul></dd>
@@ -1106,23 +1136,23 @@ function main() {
           </ul></dd>
 <dt><a name="executeGithubWebhook" href="#executeGithubWebhook"><span>executeGithubWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
-    Message]" href="dimscord/restapi/message.html#executeGithubWebhook%2CRestApi%2Cstring%2Cstring">message: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
+          data-doc-search-tag="restapi: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
+    Message]" href="dimscord/restapi.html#executeGithubWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
     Message]</a></li>
           </ul></dd>
 <dt><a name="executeSlackWebhook" href="#executeSlackWebhook"><span>executeSlackWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
-    Message]" href="dimscord/restapi/message.html#executeSlackWebhook%2CRestApi%2Cstring%2Cstring">message: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
+          data-doc-search-tag="restapi: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
+    Message]" href="dimscord/restapi.html#executeSlackWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true): Future[
     Message]</a></li>
           </ul></dd>
 <dt><a name="executeWebhook" href="#executeWebhook"><span>executeWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+          data-doc-search-tag="restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                content = &quot;&quot;; tts = false; file = none DiscordFile;
                embeds = none array[10, Embed];
                allowed_mentions = none AllowedMentions;
-               username, avatar_url = none string): Future[Message]" href="dimscord/restapi/message.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">message: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+               username, avatar_url = none string): Future[Message]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                content = &quot;&quot;; tts = false; file = none DiscordFile;
                embeds = none array[10, Embed];
                allowed_mentions = none AllowedMentions;
@@ -1150,147 +1180,167 @@ function main() {
           </ul></dd>
 <dt><a name="getApplicationCommands" href="#getApplicationCommands"><span>getApplicationCommands:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
+    seq[ApplicationCommand]]" href="dimscord/restapi.html#getApplicationCommands%2CRestApi%2Cstring%2Cstring">restapi: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
+    seq[ApplicationCommand]]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
     seq[ApplicationCommand]]" href="dimscord/restapi/user.html#getApplicationCommands%2CRestApi%2Cstring%2Cstring">user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
     seq[ApplicationCommand]]</a></li>
           </ul></dd>
 <dt><a name="getChannelInvites" href="#getChannelInvites"><span>getChannelInvites:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getChannelInvites(api: RestApi; channel_id: string): Future[seq[Invite]]" href="dimscord/restapi/channel.html#getChannelInvites%2CRestApi%2Cstring">channel: getChannelInvites(api: RestApi; channel_id: string): Future[seq[Invite]]</a></li>
+          data-doc-search-tag="restapi: getChannelInvites(api: RestApi; channel_id: string): Future[seq[Invite]]" href="dimscord/restapi.html#getChannelInvites%2CRestApi%2Cstring">restapi: getChannelInvites(api: RestApi; channel_id: string): Future[seq[Invite]]</a></li>
           </ul></dd>
 <dt><a name="getChannelMessage" href="#getChannelMessage"><span>getChannelMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: getChannelMessage(api: RestApi; channel_id, message_id: string): Future[Message]" href="dimscord/restapi/message.html#getChannelMessage%2CRestApi%2Cstring%2Cstring">message: getChannelMessage(api: RestApi; channel_id, message_id: string): Future[Message]</a></li>
+          data-doc-search-tag="restapi: getChannelMessage(api: RestApi; channel_id, message_id: string): Future[Message]" href="dimscord/restapi.html#getChannelMessage%2CRestApi%2Cstring%2Cstring">restapi: getChannelMessage(api: RestApi; channel_id, message_id: string): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="getChannelMessages" href="#getChannelMessages"><span>getChannelMessages:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
-                   limit = 50): Future[seq[Message]]" href="dimscord/restapi/message.html#getChannelMessages%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">message: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
+          data-doc-search-tag="restapi: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
+                   limit = 50): Future[seq[Message]]" href="dimscord/restapi.html#getChannelMessages%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">restapi: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
                    limit = 50): Future[seq[Message]]</a></li>
           </ul></dd>
 <dt><a name="getChannelPins" href="#getChannelPins"><span>getChannelPins:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getChannelPins(api: RestApi; channel_id: string): Future[seq[Message]]" href="dimscord/restapi/channel.html#getChannelPins%2CRestApi%2Cstring">channel: getChannelPins(api: RestApi; channel_id: string): Future[seq[Message]]</a></li>
+          data-doc-search-tag="restapi: getChannelPins(api: RestApi; channel_id: string): Future[seq[Message]]" href="dimscord/restapi.html#getChannelPins%2CRestApi%2Cstring">restapi: getChannelPins(api: RestApi; channel_id: string): Future[seq[Message]]</a></li>
           </ul></dd>
 <dt><a name="getChannelWebhooks" href="#getChannelWebhooks"><span>getChannelWebhooks:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getChannelWebhooks(api: RestApi; channel_id: string): Future[seq[Webhook]]" href="dimscord/restapi/channel.html#getChannelWebhooks%2CRestApi%2Cstring">channel: getChannelWebhooks(api: RestApi; channel_id: string): Future[seq[Webhook]]</a></li>
+          data-doc-search-tag="restapi: getChannelWebhooks(api: RestApi; channel_id: string): Future[seq[Webhook]]" href="dimscord/restapi.html#getChannelWebhooks%2CRestApi%2Cstring">restapi: getChannelWebhooks(api: RestApi; channel_id: string): Future[seq[Webhook]]</a></li>
           </ul></dd>
 <dt><a name="getCurrentApplication" href="#getCurrentApplication"><span>getCurrentApplication:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getCurrentApplication(api: RestApi): Future[OAuth2Application]" href="dimscord/restapi.html#getCurrentApplication%2CRestApi">restapi: getCurrentApplication(api: RestApi): Future[OAuth2Application]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getCurrentApplication(api: RestApi): Future[OAuth2Application]" href="dimscord/restapi/user.html#getCurrentApplication%2CRestApi">user: getCurrentApplication(api: RestApi): Future[OAuth2Application]</a></li>
           </ul></dd>
 <dt><a name="getCurrentUser" href="#getCurrentUser"><span>getCurrentUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getCurrentUser(api: RestApi): Future[User]" href="dimscord/restapi.html#getCurrentUser%2CRestApi">restapi: getCurrentUser(api: RestApi): Future[User]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getCurrentUser(api: RestApi): Future[User]" href="dimscord/restapi/user.html#getCurrentUser%2CRestApi">user: getCurrentUser(api: RestApi): Future[User]</a></li>
           </ul></dd>
 <dt><a name="getGateway" href="#getGateway"><span>getGateway:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getGateway(api: RestApi): Future[string]" href="dimscord/restapi.html#getGateway%2CRestApi">restapi: getGateway(api: RestApi): Future[string]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getGateway(api: RestApi): Future[string]" href="dimscord/restapi/user.html#getGateway%2CRestApi">user: getGateway(api: RestApi): Future[string]</a></li>
           </ul></dd>
 <dt><a name="getGatewayBot" href="#getGatewayBot"><span>getGatewayBot:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getGatewayBot(api: RestApi): Future[GatewayBot]" href="dimscord/restapi.html#getGatewayBot%2CRestApi">restapi: getGatewayBot(api: RestApi): Future[GatewayBot]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getGatewayBot(api: RestApi): Future[GatewayBot]" href="dimscord/restapi/user.html#getGatewayBot%2CRestApi">user: getGatewayBot(api: RestApi): Future[GatewayBot]</a></li>
           </ul></dd>
 <dt><a name="getGuild" href="#getGuild"><span>getGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuild(api: RestApi; guild_id: string; with_counts = false): Future[Guild]" href="dimscord/restapi/guild.html#getGuild%2CRestApi%2Cstring">guild: getGuild(api: RestApi; guild_id: string; with_counts = false): Future[Guild]</a></li>
+          data-doc-search-tag="restapi: getGuild(api: RestApi; guild_id: string; with_counts = false): Future[Guild]" href="dimscord/restapi.html#getGuild%2CRestApi%2Cstring">restapi: getGuild(api: RestApi; guild_id: string; with_counts = false): Future[Guild]</a></li>
           </ul></dd>
 <dt><a name="getGuildAuditLogs" href="#getGuildAuditLogs"><span>getGuildAuditLogs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
-                  action_type = -1; limit = 50): Future[AuditLog]" href="dimscord/restapi/guild.html#getGuildAuditLogs%2CRestApi%2Cstring%2Cstring%2Cstring%2Cint">guild: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
+          data-doc-search-tag="restapi: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
+                  action_type = -1; limit = 50): Future[AuditLog]" href="dimscord/restapi.html#getGuildAuditLogs%2CRestApi%2Cstring%2Cstring%2Cstring%2Cint">restapi: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
                   action_type = -1; limit = 50): Future[AuditLog]</a></li>
           </ul></dd>
 <dt><a name="getGuildBan" href="#getGuildBan"><span>getGuildBan:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildBan(api: RestApi; guild_id, user_id: string): Future[GuildBan]" href="dimscord/restapi/guild.html#getGuildBan%2CRestApi%2Cstring%2Cstring">guild: getGuildBan(api: RestApi; guild_id, user_id: string): Future[GuildBan]</a></li>
+          data-doc-search-tag="restapi: getGuildBan(api: RestApi; guild_id, user_id: string): Future[GuildBan]" href="dimscord/restapi.html#getGuildBan%2CRestApi%2Cstring%2Cstring">restapi: getGuildBan(api: RestApi; guild_id, user_id: string): Future[GuildBan]</a></li>
           </ul></dd>
 <dt><a name="getGuildBans" href="#getGuildBans"><span>getGuildBans:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]" href="dimscord/restapi/guild.html#getGuildBans%2CRestApi%2Cstring">guild: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]</a></li>
+          data-doc-search-tag="restapi: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]" href="dimscord/restapi.html#getGuildBans%2CRestApi%2Cstring">restapi: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]</a></li>
           </ul></dd>
 <dt><a name="getGuildChannel" href="#getGuildChannel"><span>getGuildChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]" href="dimscord/restapi/channel.html#getGuildChannel%2CRestApi%2Cstring%2Cstring">channel: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]</a></li>
+          data-doc-search-tag="restapi: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]" href="dimscord/restapi.html#getGuildChannel%2CRestApi%2Cstring%2Cstring">restapi: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]</a></li>
           </ul></dd>
 <dt><a name="getGuildChannels" href="#getGuildChannels"><span>getGuildChannels:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]" href="dimscord/restapi/channel.html#getGuildChannels%2CRestApi%2Cstring">channel: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]</a></li>
+          data-doc-search-tag="restapi: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]" href="dimscord/restapi.html#getGuildChannels%2CRestApi%2Cstring">restapi: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]</a></li>
           </ul></dd>
 <dt><a name="getGuildIntegrations" href="#getGuildIntegrations"><span>getGuildIntegrations:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildIntegrations(api: RestApi; guild_id: string): Future[seq[Integration]]" href="dimscord/restapi/guild.html#getGuildIntegrations%2CRestApi%2Cstring">guild: getGuildIntegrations(api: RestApi; guild_id: string): Future[seq[Integration]]</a></li>
+          data-doc-search-tag="restapi: getGuildIntegrations(api: RestApi; guild_id: string): Future[seq[Integration]]" href="dimscord/restapi.html#getGuildIntegrations%2CRestApi%2Cstring">restapi: getGuildIntegrations(api: RestApi; guild_id: string): Future[seq[Integration]]</a></li>
           </ul></dd>
 <dt><a name="getGuildInvites" href="#getGuildInvites"><span>getGuildInvites:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildInvites(api: RestApi; guild_id: string): Future[seq[InviteMetadata]]" href="dimscord/restapi/guild.html#getGuildInvites%2CRestApi%2Cstring">guild: getGuildInvites(api: RestApi; guild_id: string): Future[seq[InviteMetadata]]</a></li>
+          data-doc-search-tag="restapi: getGuildInvites(api: RestApi; guild_id: string): Future[seq[InviteMetadata]]" href="dimscord/restapi.html#getGuildInvites%2CRestApi%2Cstring">restapi: getGuildInvites(api: RestApi; guild_id: string): Future[seq[InviteMetadata]]</a></li>
           </ul></dd>
 <dt><a name="getGuildMember" href="#getGuildMember"><span>getGuildMember:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]" href="dimscord/restapi.html#getGuildMember%2CRestApi%2Cstring%2Cstring">restapi: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]" href="dimscord/restapi/user.html#getGuildMember%2CRestApi%2Cstring%2Cstring">user: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]</a></li>
           </ul></dd>
 <dt><a name="getGuildMembers" href="#getGuildMembers"><span>getGuildMembers:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
+    seq[Member]]" href="dimscord/restapi.html#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring">restapi: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
+    seq[Member]]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
     seq[Member]]" href="dimscord/restapi/user.html#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring">user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
     seq[Member]]</a></li>
           </ul></dd>
 <dt><a name="getGuildPreview" href="#getGuildPreview"><span>getGuildPreview:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildPreview(api: RestApi; guild_id: string): Future[GuildPreview]" href="dimscord/restapi/guild.html#getGuildPreview%2CRestApi%2Cstring">guild: getGuildPreview(api: RestApi; guild_id: string): Future[GuildPreview]</a></li>
+          data-doc-search-tag="restapi: getGuildPreview(api: RestApi; guild_id: string): Future[GuildPreview]" href="dimscord/restapi.html#getGuildPreview%2CRestApi%2Cstring">restapi: getGuildPreview(api: RestApi; guild_id: string): Future[GuildPreview]</a></li>
           </ul></dd>
 <dt><a name="getGuildPruneCount" href="#getGuildPruneCount"><span>getGuildPruneCount:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildPruneCount(api: RestApi; guild_id: string; days: int): Future[int]" href="dimscord/restapi/guild.html#getGuildPruneCount%2CRestApi%2Cstring%2Cint">guild: getGuildPruneCount(api: RestApi; guild_id: string; days: int): Future[int]</a></li>
+          data-doc-search-tag="restapi: getGuildPruneCount(api: RestApi; guild_id: string; days: int): Future[int]" href="dimscord/restapi.html#getGuildPruneCount%2CRestApi%2Cstring%2Cint">restapi: getGuildPruneCount(api: RestApi; guild_id: string; days: int): Future[int]</a></li>
           </ul></dd>
 <dt><a name="getGuildRoles" href="#getGuildRoles"><span>getGuildRoles:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]" href="dimscord/restapi/guild.html#getGuildRoles%2CRestApi%2Cstring">guild: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]</a></li>
+          data-doc-search-tag="restapi: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]" href="dimscord/restapi.html#getGuildRoles%2CRestApi%2Cstring">restapi: getGuildRoles(api: RestApi; guild_id: string): Future[seq[Role]]</a></li>
           </ul></dd>
 <dt><a name="getGuildVanityUrl" href="#getGuildVanityUrl"><span>getGuildVanityUrl:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildVanityUrl(api: RestApi; guild_id: string): Future[
-    tuple[code: Option[string], uses: int]]" href="dimscord/restapi/guild.html#getGuildVanityUrl%2CRestApi%2Cstring">guild: getGuildVanityUrl(api: RestApi; guild_id: string): Future[
+          data-doc-search-tag="restapi: getGuildVanityUrl(api: RestApi; guild_id: string): Future[
+    tuple[code: Option[string], uses: int]]" href="dimscord/restapi.html#getGuildVanityUrl%2CRestApi%2Cstring">restapi: getGuildVanityUrl(api: RestApi; guild_id: string): Future[
     tuple[code: Option[string], uses: int]]</a></li>
           </ul></dd>
 <dt><a name="getGuildVoiceRegions" href="#getGuildVoiceRegions"><span>getGuildVoiceRegions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildVoiceRegions(api: RestApi; guild_id: string): Future[seq[VoiceRegion]]" href="dimscord/restapi/guild.html#getGuildVoiceRegions%2CRestApi%2Cstring">guild: getGuildVoiceRegions(api: RestApi; guild_id: string): Future[seq[VoiceRegion]]</a></li>
+          data-doc-search-tag="restapi: getGuildVoiceRegions(api: RestApi; guild_id: string): Future[seq[VoiceRegion]]" href="dimscord/restapi.html#getGuildVoiceRegions%2CRestApi%2Cstring">restapi: getGuildVoiceRegions(api: RestApi; guild_id: string): Future[seq[VoiceRegion]]</a></li>
           </ul></dd>
 <dt><a name="getGuildWebhooks" href="#getGuildWebhooks"><span>getGuildWebhooks:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildWebhooks(api: RestApi; guild_id: string): Future[seq[Webhook]]" href="dimscord/restapi/guild.html#getGuildWebhooks%2CRestApi%2Cstring">guild: getGuildWebhooks(api: RestApi; guild_id: string): Future[seq[Webhook]]</a></li>
+          data-doc-search-tag="restapi: getGuildWebhooks(api: RestApi; guild_id: string): Future[seq[Webhook]]" href="dimscord/restapi.html#getGuildWebhooks%2CRestApi%2Cstring">restapi: getGuildWebhooks(api: RestApi; guild_id: string): Future[seq[Webhook]]</a></li>
           </ul></dd>
 <dt><a name="getGuildWidget" href="#getGuildWidget"><span>getGuildWidget:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: getGuildWidget(guild_id, style: string): string" href="dimscord/helpers.html#getGuildWidget%2Cstring%2Cstring">helpers: getGuildWidget(guild_id, style: string): string</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="guild: getGuildWidget(api: RestApi; guild_id: string): Future[
-    tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi/guild.html#getGuildWidget%2CRestApi%2Cstring">guild: getGuildWidget(api: RestApi; guild_id: string): Future[
+          data-doc-search-tag="restapi: getGuildWidget(api: RestApi; guild_id: string): Future[
+    tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi.html#getGuildWidget%2CRestApi%2Cstring">restapi: getGuildWidget(api: RestApi; guild_id: string): Future[
     tuple[enabled: bool, channel_id: Option[string]]]</a></li>
           </ul></dd>
 <dt><a name="getInvite" href="#getInvite"><span>getInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]" href="dimscord/restapi/channel.html#getInvite%2CRestApi%2Cstring">channel: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]</a></li>
+          data-doc-search-tag="restapi: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]" href="dimscord/restapi.html#getInvite%2CRestApi%2Cstring">restapi: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]</a></li>
           </ul></dd>
 <dt><a name="getMessageReactions" href="#getMessageReactions"><span>getMessageReactions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
-                    before, after = &quot;&quot;; limit = 25): Future[seq[User]]" href="dimscord/restapi/message.html#getMessageReactions%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">message: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
+          data-doc-search-tag="restapi: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
+                    before, after = &quot;&quot;; limit = 25): Future[seq[User]]" href="dimscord/restapi.html#getMessageReactions%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">restapi: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
                     before, after = &quot;&quot;; limit = 25): Future[seq[User]]</a></li>
           </ul></dd>
 <dt><a name="getUser" href="#getUser"><span>getUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: getUser(api: RestApi; user_id: string): Future[User]" href="dimscord/restapi.html#getUser%2CRestApi%2Cstring">restapi: getUser(api: RestApi; user_id: string): Future[User]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: getUser(api: RestApi; user_id: string): Future[User]" href="dimscord/restapi/user.html#getUser%2CRestApi%2Cstring">user: getUser(api: RestApi; user_id: string): Future[User]</a></li>
           </ul></dd>
 <dt><a name="getVoiceRegions" href="#getVoiceRegions"><span>getVoiceRegions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: getVoiceRegions(api: RestApi): Future[seq[VoiceRegion]]" href="dimscord/restapi/guild.html#getVoiceRegions%2CRestApi">guild: getVoiceRegions(api: RestApi): Future[seq[VoiceRegion]]</a></li>
+          data-doc-search-tag="restapi: getVoiceRegions(api: RestApi): Future[seq[VoiceRegion]]" href="dimscord/restapi.html#getVoiceRegions%2CRestApi">restapi: getVoiceRegions(api: RestApi): Future[seq[VoiceRegion]]</a></li>
           </ul></dd>
 <dt><a name="getWebhook" href="#getWebhook"><span>getWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: getWebhook(api: RestApi; webhook_id: string): Future[Webhook]" href="dimscord/restapi/channel.html#getWebhook%2CRestApi%2Cstring">channel: getWebhook(api: RestApi; webhook_id: string): Future[Webhook]</a></li>
+          data-doc-search-tag="restapi: getWebhook(api: RestApi; webhook_id: string): Future[Webhook]" href="dimscord/restapi.html#getWebhook%2CRestApi%2Cstring">restapi: getWebhook(api: RestApi; webhook_id: string): Future[Webhook]</a></li>
           </ul></dd>
 <dt><a name="giDirectMessageReactions" href="#giDirectMessageReactions"><span>giDirectMessageReactions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1492,6 +1542,8 @@ function main() {
           </ul></dd>
 <dt><a name="leaveGuild" href="#leaveGuild"><span>leaveGuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: leaveGuild(api: RestApi; guild_id: string): owned(Future[void])" href="dimscord/restapi.html#leaveGuild%2CRestApi%2Cstring">restapi: leaveGuild(api: RestApi; guild_id: string): owned(Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: leaveGuild(api: RestApi; guild_id: string): owned(Future[void])" href="dimscord/restapi/user.html#leaveGuild%2CRestApi%2Cstring">user: leaveGuild(api: RestApi; guild_id: string): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="libAgent" href="#libAgent"><span>libAgent:</span></a></dt><dd><ul class="simple">
@@ -2020,6 +2072,14 @@ function main() {
           </ul></dd>
 <dt><a name="registerApplicationCommand" href="#registerApplicationCommand"><span>registerApplicationCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                           name, description: string;
+                           options: seq[ApplicationCommandOption] = @[]): Future[
+    ApplicationCommand]" href="dimscord/restapi.html#registerApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">restapi: registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                           name, description: string;
+                           options: seq[ApplicationCommandOption] = @[]): Future[
+    ApplicationCommand]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
                            name, description: string;
                            options: seq[ApplicationCommandOption] = @[]): Future[
@@ -2030,18 +2090,22 @@ function main() {
           </ul></dd>
 <dt><a name="removeGuildBan" href="#removeGuildBan"><span>removeGuildBan:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: removeGuildBan(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/guild.html#removeGuildBan%2CRestApi%2Cstring%2Cstring%2Cstring">guild: removeGuildBan(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: removeGuildBan(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#removeGuildBan%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: removeGuildBan(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="removeGuildMember" href="#removeGuildMember"><span>removeGuildMember:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: removeGuildMember(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
-    Future[void])" href="dimscord/restapi/guild.html#removeGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring">guild: removeGuildMember(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
+          data-doc-search-tag="restapi: removeGuildMember(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#removeGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: removeGuildMember(api: RestApi; guild_id, user_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="removeGuildMemberRole" href="#removeGuildMemberRole"><span>removeGuildMemberRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;
+                      reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#removeGuildMemberRole%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">restapi: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;
+                      reason = &quot;&quot;): owned(Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;
                       reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi/user.html#removeGuildMemberRole%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring">user: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;
                       reason = &quot;&quot;): owned(Future[void])</a></li>
@@ -2084,16 +2148,20 @@ function main() {
           </ul></dd>
 <dt><a name="sendMessage" href="#sendMessage"><span>sendMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="message: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
+          data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile]): Future[Message]" href="dimscord/restapi/message.html#sendMessage%2CRestApi%2Cstring%2Cstring">message: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
+            files = none seq[DiscordFile]): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
             files = none seq[DiscordFile]): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="setGuildNick" href="#setGuildNick"><span>setGuildNick:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="restapi: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#setGuildNick%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(
+    Future[void])</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="user: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(
     Future[void])" href="dimscord/restapi/user.html#setGuildNick%2CRestApi%2Cstring%2Cstring%2Cstring">user: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(
     Future[void])</a></li>
@@ -2138,8 +2206,8 @@ function main() {
           </ul></dd>
 <dt><a name="syncGuildIntegration" href="#syncGuildIntegration"><span>syncGuildIntegration:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="guild: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
-    Future[void])" href="dimscord/restapi/guild.html#syncGuildIntegration%2CRestApi%2Cstring%2Cstring">guild: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
+          data-doc-search-tag="restapi: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
+    Future[void])" href="dimscord/restapi.html#syncGuildIntegration%2CRestApi%2Cstring%2Cstring">restapi: syncGuildIntegration(api: RestApi; guild_id, integ_id: string): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="Team" href="#Team"><span>Team:</span></a></dt><dd><ul class="simple">
@@ -2168,7 +2236,7 @@ function main() {
           </ul></dd>
 <dt><a name="triggerTypingIndicator" href="#triggerTypingIndicator"><span>triggerTypingIndicator:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="channel: triggerTypingIndicator(api: RestApi; channel_id: string): owned(Future[void])" href="dimscord/restapi/channel.html#triggerTypingIndicator%2CRestApi%2Cstring">channel: triggerTypingIndicator(api: RestApi; channel_id: string): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: triggerTypingIndicator(api: RestApi; channel_id: string): owned(Future[void])" href="dimscord/restapi.html#triggerTypingIndicator%2CRestApi%2Cstring">restapi: triggerTypingIndicator(api: RestApi; channel_id: string): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="TypingStart" href="#TypingStart"><span>TypingStart:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2279,7 +2347,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-25 15:31:38 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-25 16:02:24 UTC</small>
       </div>
     </div>
   </div>

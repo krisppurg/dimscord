@@ -195,8 +195,8 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
             username, avatar_url = none string): Future[Message] {.async.} =
     ## Executes a webhook or create a followup message.
     ## If `wait` is `false` make sure to `discard await` it.
-    ## `webhook_id` can be used as application id
-    ## `webhook_token` can be used as interaction token
+    ## - `webhook_id` can be used as application id
+    ## - `webhook_token` can be used as interaction token
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
     let payload = %*{
         "content": content,

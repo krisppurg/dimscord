@@ -325,7 +325,7 @@ proc deleteGuildIntegration*(api: RestApi, integ_id: string;
 proc getGuildWidget*(api: RestApi,
         guild_id: string): Future[tuple[enabled: bool,
                                         channel_id: Option[string]]] {.async.} =
-    ## Gets a guild embed.
+    ## Gets a guild widget.
     result = (await api.request(
         "GET",
         endpointGuildWidget(guild_id)
@@ -335,7 +335,7 @@ proc editGuildWidget*(api: RestApi, guild_id: string,
         enabled = none bool;
         channel_id = none string): Future[tuple[enabled: bool,
                                         channel_id: Option[string]]] {.async.} =
-    ## Modifies a guild embed.
+    ## Modifies a guild widget.
     let payload = newJObject()
 
     payload.loadOpt(enabled, channel_id)

@@ -113,9 +113,9 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
 ): Future[ApplicationCommand] {.async.} =
     ## Create a global or guild only slash command.
     ## 
-    ## `guild_id` - Optional
-    ## `name` - Character length (3 - 32)
-    ## `descripton` - Character length (1 - 100)
+    ## - `guild_id` - Optional
+    ## - `name` - Character length (3 - 32)
+    ## - `descripton` - Character length (1 - 100)
     ## 
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
@@ -153,9 +153,9 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
 ): Future[ApplicationCommand] {.async.} =
     ## Modify slash command for a specific application.
     ##
-    ## `guild_id` - Optional
-    ## `name` - Character length (3 - 32)
-    ## `descripton` - Character length (1 - 100)
+    ## - `guild_id` - Optional
+    ## - `name` - Character length (3 - 32)
+    ## - `descripton` - Character length (1 - 100)
     let payload = %*{"name": name, "description": description}
     if options.len > 0: payload["options"] = %(options.map(
         proc (x: ApplicationCommandOption): JsonNode =
@@ -186,7 +186,7 @@ proc createInteractionResponse*(api: RestApi,
         interaction_id, interaction_token: string;
         response: InteractionResponse) {.async.} =
     ## Create an interaction response.
-    ## `response.kind` is required as well as `response.data`.
+    ## `response.kind` is required.
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),

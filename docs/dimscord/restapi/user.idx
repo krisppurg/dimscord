@@ -1,0 +1,19 @@
+getGuildMember	dimscord/restapi/user.html#getGuildMember,RestApi,string,string	user: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]	
+getGuildMembers	dimscord/restapi/user.html#getGuildMembers,RestApi,string,int,string	user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[\n    seq[Member]]	
+setGuildNick	dimscord/restapi/user.html#setGuildNick,RestApi,string,string,string	user: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(\n    Future[void])	
+addGuildMemberRole	dimscord/restapi/user.html#addGuildMemberRole,RestApi,string,string,string,string	user: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(\n    Future[void])	
+removeGuildMemberRole	dimscord/restapi/user.html#removeGuildMemberRole,RestApi,string,string,string,string	user: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;\n                      reason = &quot;&quot;): owned(Future[void])	
+getUser	dimscord/restapi/user.html#getUser,RestApi,string	user: getUser(api: RestApi; user_id: string): Future[User]	
+leaveGuild	dimscord/restapi/user.html#leaveGuild,RestApi,string	user: leaveGuild(api: RestApi; guild_id: string): owned(Future[void])	
+createUserDm	dimscord/restapi/user.html#createUserDm,RestApi,string	user: createUserDm(api: RestApi; user_id: string): Future[DMChannel]	
+getCurrentUser	dimscord/restapi/user.html#getCurrentUser,RestApi	user: getCurrentUser(api: RestApi): Future[User]	
+getGatewayBot	dimscord/restapi/user.html#getGatewayBot,RestApi	user: getGatewayBot(api: RestApi): Future[GatewayBot]	
+getGateway	dimscord/restapi/user.html#getGateway,RestApi	user: getGateway(api: RestApi): Future[string]	
+editCurrentUser	dimscord/restapi/user.html#editCurrentUser,RestApi	user: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]	
+createGroupDm	dimscord/restapi/user.html#createGroupDm,RestApi,seq[string],Table[string,string]	user: createGroupDm(api: RestApi; access_tokens: seq[string];\n              nicks: Table[string, string]): Future[DMChannel]	
+getCurrentApplication	dimscord/restapi/user.html#getCurrentApplication,RestApi	user: getCurrentApplication(api: RestApi): Future[OAuth2Application]	
+registerApplicationCommand	dimscord/restapi/user.html#registerApplicationCommand,RestApi,string,string,string,string,seq[ApplicationCommandOption]	user: registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;\n                           name, description: string;\n                           options: seq[ApplicationCommandOption] = @[]): Future[\n    ApplicationCommand]	
+getApplicationCommands	dimscord/restapi/user.html#getApplicationCommands,RestApi,string,string	user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[\n    seq[ApplicationCommand]]	
+editApplicationCommand	dimscord/restapi/user.html#editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]	user: editApplicationCommand(api: RestApi; application_id, command_id: string;\n                       guild_id = &quot;&quot;; name, description: string;\n                       options: seq[ApplicationCommandOption] = @[]): Future[\n    ApplicationCommand]	
+deleteApplicationCommand	dimscord/restapi/user.html#deleteApplicationCommand,RestApi,string,string,string	user: deleteApplicationCommand(api: RestApi; application_id, command_id: string;\n                         guild_id = &quot;&quot;): owned(Future[void])	
+createInteractionResponse	dimscord/restapi/user.html#createInteractionResponse,RestApi,string,string,InteractionResponse	user: createInteractionResponse(api: RestApi;\n                          interaction_id, interaction_token: string;\n                          response: InteractionResponse): owned(Future[void])	

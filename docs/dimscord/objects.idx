@@ -75,6 +75,11 @@ Events	dimscord/objects.html#Events	objects: Events
 kind	dimscord/objects.html#kind,CacheTable,string	objects: kind(c: CacheTable; channel_id: string): ChannelType	
 clear	dimscord/objects.html#clear,CacheTable	objects: clear(c: CacheTable)	
 `$`	dimscord/objects.html#$,Emoji	objects: `$`(e: Emoji): string	
+keyCheckOptInt	dimscord/objects.html#keyCheckOptInt.m,typed,typed,varargs[untyped]	objects: keyCheckOptInt(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
+keyCheckOptBool	dimscord/objects.html#keyCheckOptBool.m,typed,typed,varargs[untyped]	objects: keyCheckOptBool(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
+keyCheckBool	dimscord/objects.html#keyCheckBool.m,typed,typed,varargs[untyped]	objects: keyCheckBool(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
+keyCheckOptStr	dimscord/objects.html#keyCheckOptStr.m,typed,typed,varargs[untyped]	objects: keyCheckOptStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
+keyCheckStr	dimscord/objects.html#keyCheckStr.m,typed,typed,varargs[untyped]	objects: keyCheckStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
 newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	objects: newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient	
 newInviteMetadata	dimscord/objects.html#newInviteMetadata,JsonNode	objects: newInviteMetadata(data: JsonNode): InviteMetadata	

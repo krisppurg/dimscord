@@ -1,0 +1,6 @@
+request	dimscord/restapi/requester.html#request,RestApi,string,string,string,string,MultipartData	requester: request(api: RestApi; meth, endpoint: string; pl, audit_reason = &quot;&quot;;\n        mp: MultipartData = nil; auth = true): Future[JsonNode]	
+`%`	dimscord/restapi/requester.html#%,Overwrite	requester: `%`(o: Overwrite): JsonNode	
+`%`	dimscord/restapi/requester.html#%,set[PermissionFlags]	requester: `%`(flags: set[PermissionFlags]): JsonNode	
+loadOpt	dimscord/restapi/requester.html#loadOpt.m,typed,varargs[untyped]	requester: loadOpt(obj: typed; lits: varargs[untyped]): untyped	
+loadNullableOptStr	dimscord/restapi/requester.html#loadNullableOptStr.m,typed,varargs[untyped]	requester: loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped	
+loadNullableOptInt	dimscord/restapi/requester.html#loadNullableOptInt.m,typed,varargs[untyped]	requester: loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped	

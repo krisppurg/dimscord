@@ -399,7 +399,7 @@ proc endpointOAuth2Application*(): string =
     result = "oauth2/applications/@me"
 
 proc endpointGlobalCommands*(aid: string; cid = ""): string =
-    result = "applications/" & aid & "/commands/" & (if cid != "": cid else: "")
+    result = "applications/" & aid & "/commands" & (if cid != "": "/" & cid else: "")
 
 proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
     result = "applications/" & aid & "/guilds/" & gid & "/commands"

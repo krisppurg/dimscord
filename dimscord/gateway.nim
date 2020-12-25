@@ -2,9 +2,9 @@
 ## Especially `startSession`, `updateStatus`.
 
 import httpclient, ws, asyncnet, asyncdispatch
-import strformat, options, strutils, restapi, dispatch
+import strformat, options, strutils, ./restapi/user
 import tables, random, times, constants, objects, json
-import nativesockets, helpers
+import nativesockets, helpers, dispatch
 
 when defined(discordCompress):
     import zippy

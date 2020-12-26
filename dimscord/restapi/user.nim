@@ -3,6 +3,17 @@ import ../objects, ../constants
 import tables, sequtils, strutils
 import requester
 
+proc getInvite*(api: RestApi, code: string;
+        with_counts, auth = false): Future[Invite] {.async.} =
+    ## Gets a discord invite, it can be a vanity code.
+    ##
+    ## - `auth` Whether you should get the invite while authenticated.
+    result = (await api.request(
+        "GET",
+        endpointInvites(code) & "?with_counts=" & ($with_counts),
+        auth = auth
+    )).newInvite
+
 proc getGuildMember*(api: RestApi,
         guild_id, user_id: string): Future[Member] {.async.} =
     ## Gets a guild member.

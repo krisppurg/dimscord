@@ -645,7 +645,7 @@ proc newOAuth2Application*(data: JsonNode): OAuth2Application =
     data.keyCheckOptStr(result, icon, guild_id,
         primary_sku_id, slug, cover_image)
 
-    if "team" in data:
+    if "team" in data and data["team"].kind != JNull:
         result.team = some newTeam(data["team"])
 
 proc newGuild*(data: JsonNode): Guild =

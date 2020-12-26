@@ -435,14 +435,14 @@ function main() {
                       reason = &quot;&quot;): owned(Future[void])">removeGuildMemberRole,RestApi,string,string,string,string<span class="attachedType"></span></a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">getInvite
-      <li><a class="reference" href="#getInvite%2CRestApi%2Cstring"
-    title="getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]">getInvite,RestApi,string<span class="attachedType"></span></a></li>
-
-  </ul>
   <ul class="simple nested-toc-section">getGuildBans
       <li><a class="reference" href="#getGuildBans%2CRestApi%2Cstring"
     title="getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]">getGuildBans,RestApi,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getInvite
+      <li><a class="reference" href="#getInvite%2CRestApi%2Cstring"
+    title="getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]">getInvite,RestApi,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getChannelMessage
@@ -1072,21 +1072,6 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L87" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getInvite,RestApi,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getInvite%2CRestApi%2Cstring"><span class="Identifier">getInvite</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">with_counts</span><span class="Other">,</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="objects.html#Invite"><span class="Identifier">Invite</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-              <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-Get's a channel invite.<ul class="simple"><li><tt class="docutils literal"><span class="pre">auth</span></tt> Whether you should get the invite while authenticated.</li>
-</ul>
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L112"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L112" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
 <a id="createChannelInvite,RestApi,string,int,int,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#createChannelInvite%2CRestApi%2Cstring%2Cint%2Cint%2Cstring"><span class="Identifier">createChannelInvite</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">max_age</span> <span class="Other">=</span> <span class="DecNumber">86400</span><span class="Other">;</span>
                          <span class="Identifier">max_uses</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span> <span class="Identifier">temp</span><span class="Other">,</span> <span class="Identifier">unique</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
@@ -1098,9 +1083,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates an instant invite.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L125"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L114"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L114" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteGuildChannelPermission,RestApi,string,string,string"></a>
@@ -1112,9 +1097,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Deletes a guild channel overwrite.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L143"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L132"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L143" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L132" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteInvite,RestApi,string,string"></a>
@@ -1125,9 +1110,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Deletes a guild invite.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L151"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L140"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L151" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L140" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getChannelInvites,RestApi,string"></a>
@@ -1138,9 +1123,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a list of a channel's invites.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L160"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L149"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L149" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildChannel,RestApi,string,string"></a>
@@ -1151,9 +1136,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a guild channel.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L168"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L157"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L168" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L157" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildChannels,RestApi,string"></a>
@@ -1164,9 +1149,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a list of a guild's channels
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L176"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L165"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L176" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editGuildChannelPositions,RestApi,string,string,string"></a>
@@ -1178,9 +1163,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Edits a guild channel's position.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L184"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L173"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L184" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L173" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getChannelWebhooks,RestApi,string"></a>
@@ -1191,9 +1176,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a list of a channel's webhooks.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L197"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L186"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L197" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L186" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createWebhook,RestApi,string,string,string"></a>
@@ -1205,9 +1190,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a webhook. (webhook names cannot be: 'clyde', and they range 1-80)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L205"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L194"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L205" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getWebhook,RestApi,string"></a>
@@ -1218,9 +1203,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L218"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L207"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L218" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L207" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteWebhook,RestApi,string,string"></a>
@@ -1231,9 +1216,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Deletes a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L222"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L211"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L222" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L211" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editWebhook,RestApi,string,string"></a>
@@ -1245,9 +1230,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modifies a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L231"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L220"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L231" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="beginGuildPrune,RestApi,string,int,string"></a>
@@ -1799,6 +1784,21 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L487" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="getInvite,RestApi,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getInvite%2CRestApi%2Cstring"><span class="Identifier">getInvite</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">with_counts</span><span class="Other">,</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="objects.html#Invite"><span class="Identifier">Invite</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+              <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Gets a discord invite, it can be a vanity code.<ul class="simple"><li><tt class="docutils literal"><span class="pre">auth</span></tt> Whether you should get the invite while authenticated.</li>
+</ul>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L7"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L7" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="getGuildMember,RestApi,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#getGuildMember%2CRestApi%2Cstring%2Cstring"><span class="Identifier">getGuildMember</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">user_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
@@ -1807,9 +1807,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a guild member.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L7"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L18"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L7" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L18" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildMembers,RestApi,string,int,string"></a>
@@ -1820,9 +1820,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a list of a guild's members.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L15"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L26"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L26" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="setGuildNick,RestApi,string,string,string"></a>
@@ -1833,9 +1833,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sets the current user's guild nickname, defaults to &quot;&quot; if no nick is set.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L23"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L34"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L34" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="addGuildMemberRole,RestApi,string,string,string,string"></a>
@@ -1846,9 +1846,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Assigns a member's role.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L35"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L46"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L35" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L46" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="removeGuildMemberRole,RestApi,string,string,string,string"></a>
@@ -1860,9 +1860,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Removes a member's role.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L44"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L55"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L44" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L55" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getUser,RestApi,string"></a>
@@ -1873,9 +1873,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a user.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L52"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L63"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L52" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="leaveGuild,RestApi,string"></a>
@@ -1886,9 +1886,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Leaves a guild.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L56"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L67"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L56" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L67" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createUserDm,RestApi,string"></a>
@@ -1899,9 +1899,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create user dm.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L60"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L71"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L60" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getCurrentUser,RestApi"></a>
@@ -1912,9 +1912,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the current user.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L67"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L78"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L67" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L78" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGatewayBot,RestApi"></a>
@@ -1925,9 +1925,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get gateway bot with authentication.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L71"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L82"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L82" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGateway,RestApi"></a>
@@ -1937,9 +1937,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get Discord gateway URL.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L75"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L86"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L75" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L86" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editCurrentUser,RestApi"></a>
@@ -1950,9 +1950,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modifies the bot's username or avatar.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L80"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L91"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L91" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createGroupDm,RestApi,seq[string],Table[string,string]"></a>
@@ -1966,9 +1966,9 @@ Creates a Group DM Channel.<ul class="simple"><li><tt class="docutils literal"><
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L91"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L102"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L91" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L102" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getCurrentApplication,RestApi"></a>
@@ -1979,9 +1979,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the current application for the current user (bot user).
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L103"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L114"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L103" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L114" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="registerApplicationCommand,RestApi,string,string,string,string,seq[ApplicationCommandOption]"></a>
@@ -1999,9 +1999,9 @@ Create a global or guild only slash command.<ul class="simple"><li><tt class="do
 <p><strong>NOTE:</strong> Creating a command with the same name as an existing command for your application will overwrite the old command.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L113"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L124"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L113" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L124" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getApplicationCommands,RestApi,string,string"></a>
@@ -2012,9 +2012,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash commands for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L140"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L151"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L140" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L151" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]"></a>
@@ -2031,9 +2031,9 @@ Modify slash command for a specific application.<ul class="simple"><li><tt class
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L153"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L164"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteApplicationCommand,RestApi,string,string,string"></a>
@@ -2045,9 +2045,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L175"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L186"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L175" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L186" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createInteractionResponse,RestApi,string,string,InteractionResponse"></a>
@@ -2060,9 +2060,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create an interaction response. <tt class="docutils literal"><span class="pre">response.kind</span></tt> is required.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L187"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L198"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L187" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -2075,7 +2075,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-25 22:06:25 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-26 16:24:54 UTC</small>
       </div>
     </div>
   </div>

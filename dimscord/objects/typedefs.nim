@@ -1,5 +1,6 @@
 import options as optns, json, asyncdispatch
-import tables, ../constants, ws
+import tables, ../constants
+from ws import Websocket
 
 type
     RestError* = object of CatchableError

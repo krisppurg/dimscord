@@ -1,6 +1,6 @@
-import httpclient, asyncdispatch, json, options
+import asyncdispatch, json, options
 import ../objects, ../constants, ../helpers
-import tables, times, os, sequtils, strutils, strformat
+import tables, sequtils
 import uri, macros, requester
 
 proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async.} =
@@ -107,17 +107,6 @@ proc editGuildChannelPermissions*(api: RestApi,
         $payload,
         audit_reason = reason
     )
-
-proc getInvite*(api: RestApi, code: string;
-        with_counts, auth = false): Future[Invite] {.async.} =
-    ## Get's a channel invite.
-    ##
-    ## - `auth` Whether you should get the invite while authenticated.
-    result = (await api.request(
-        "GET",
-        endpointInvites(code) & fmt"?with_counts={with_counts}",
-        auth = auth
-    )).newInvite
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
         max_age = 86400; max_uses = 0;

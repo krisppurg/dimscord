@@ -95,7 +95,7 @@ type
         ufEarlyVerifiedBotDeveloper
 const
     libName* = "Dimscord"
-    libVer* = "1.2.0"
+    libVer* = "1.2.4"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
     cdnBase* = "https://cdn.discordapp.com/"

@@ -17,9 +17,6 @@ Why Dimscord?
     [You can read the Nim FAQ here](https://nim-lang.org/faq.html)
  * Is there a command handler for Dimscord?
    * [Yes](https://github.com/ire4ever1190/dimscmd), but not in this library.
-## Notes:
- * If  bot is in a large_threshold guild (>50-250) and you have presence intent enabled and you are debugging with a large guild,
- dont debug because it will slow down your bot.
 
 ## Getting Started:
 1. Install Nim using [choosenim](https://github.com/dom96/choosenim) or [Nim's website](https://nim-lang.org/install.html)

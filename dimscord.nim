@@ -67,7 +67,11 @@
 
 import dimscord/[
     gateway, restapi, constants,
-    objects, helpers, voice
+    objects, helpers
 ]
 
-export gateway, restapi, constants, objects, helpers, voice
+export gateway, restapi, constants, objects, helpers
+
+when defined(dimscordVoice):
+    import dimscord/voice
+    export voice

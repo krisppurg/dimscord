@@ -7,7 +7,7 @@
 ##   
 ## Some may not be optional, but they can be assumable or always present.
 
-import options as optins, json, tables, constants
+import options, json, tables, constants
 import sequtils, strutils, asyncdispatch
 include objects/typedefs, objects/macros
 

@@ -64,10 +64,15 @@
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
 ## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
+## - `-d:dimscordVoice` Enables the voice module. Requires libsodium
 
 import dimscord/[
     gateway, restapi, constants,
-    objects, helpers, voice
+    objects, helpers
 ]
 
-export gateway, restapi, constants, objects, helpers, voice
+export gateway, restapi, constants, objects, helpers
+
+when defined(dimscordVoice):
+    import dimscord/voice
+    export voice

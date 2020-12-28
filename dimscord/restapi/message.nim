@@ -24,7 +24,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if nonce.isSome:
         payload["nonce"] = %get nonce
     if message_reference.isSome:
-        payload["message_reference"] = %message_reference
+        payload["message_reference"] = %get message_reference
 
     if files.isSome:
         var mpd = newMultipartData()

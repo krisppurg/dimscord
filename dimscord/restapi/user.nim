@@ -186,7 +186,7 @@ proc deleteApplicationCommand*(
         guild_id = "") {.async.} =
     ## Delete slash command for a specific application, `guild_id` is optional.
     discard await api.request(
-        "GET",
+        "DELETE",
         (if guild_id != "":
             endpointGuildCommands(application_id, guild_id, command_id)
         else:

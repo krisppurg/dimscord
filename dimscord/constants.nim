@@ -429,7 +429,7 @@ proc endpointGlobalCommands*(aid: string; cid = ""): string =
 proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
     result = "applications/" & aid & "/guilds/" & gid & "/commands"
     if cid != "":
-        result &= cid
+        result &= "/" & cid
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"

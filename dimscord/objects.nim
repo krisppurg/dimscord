@@ -153,7 +153,7 @@ proc newRole*(data: JsonNode): Role =
     )
     when defined(discordv8):
         result.permissions = cast[set[PermissionFlags]](
-            data["permissions"].str.parseInt
+            data["permissions"].str.parseBiggestInt
         )
     else:
         result.permissions = cast[set[PermissionFlags]](

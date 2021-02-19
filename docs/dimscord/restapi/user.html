@@ -170,9 +170,9 @@ function main() {
 
   </ul>
   <ul class="simple nested-toc-section">getGuildMembers
-      <li><a class="reference" href="#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring"
-    title="getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
-    seq[Member]]">getGuildMembers,RestApi,string,int,string<span class="attachedType"></span></a></li>
+      <li><a class="reference" href="#getGuildMembers%2CRestApi%2Cstring%2Crange%5B%5D%2Cstring"
+    title="getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;
+                after = &quot;0&quot;): Future[seq[Member]]">getGuildMembers,RestApi,string,range[],string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getCurrentUser
@@ -262,8 +262,9 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L18" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getGuildMembers,RestApi,string,int,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring"><span class="Identifier">getGuildMembers</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">limit</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">;</span> <span class="Identifier">after</span> <span class="Other">=</span> <span class="StringLit">&quot;0&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+<a id="getGuildMembers,RestApi,string,range[],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getGuildMembers%2CRestApi%2Cstring%2Crange%5B%5D%2Cstring"><span class="Identifier">getGuildMembers</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                     <span class="Identifier">limit</span><span class="Other">:</span> <span class="Identifier">range</span><span class="Other">[</span><span class="DecNumber">1</span> <span class="Operator">..</span> <span class="DecNumber">1000</span><span class="Other">]</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">;</span> <span class="Identifier">after</span> <span class="Other">=</span> <span class="StringLit">&quot;0&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
@@ -462,9 +463,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash commands for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L151"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L154"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L151" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L154" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]"></a>
@@ -481,9 +482,9 @@ Modify slash command for a specific application.<ul class="simple"><li><tt class
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L164"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L167"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L167" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteApplicationCommand,RestApi,string,string,string"></a>
@@ -495,9 +496,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L186"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L192"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L186" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L192" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createInteractionResponse,RestApi,string,string,InteractionResponse"></a>
@@ -510,9 +511,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create an interaction response. <tt class="docutils literal"><span class="pre">response.kind</span></tt> is required.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L198"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L204"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L204" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -525,7 +526,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-26 16:24:22 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-02-19 17:09:14 UTC</small>
       </div>
     </div>
   </div>

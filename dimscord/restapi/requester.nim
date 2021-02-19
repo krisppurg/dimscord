@@ -251,14 +251,13 @@ proc request*(api: RestApi, meth, endpoint: string;
             raise newException(RestError, err)
 
 proc `%`*(o: Overwrite): JsonNode =
-    result = newJObject()
-    result["id"] = %o.id
-    result["type"] = %o.kind
-    result["allow"] = %cast[int](o.allow)
-    result["deny"] = %cast[int](o.deny)
+    %* {"id": o.id,
+        "type": %o.kind,
+        "allow": %cast[int](o.allow),
+        "deny": %cast[int](o.deny)}
 
 proc `%`*(flags: set[PermissionFlags]): JsonNode =
-    return %cast[int](flags)
+    %cast[int](flags)
 
 macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()

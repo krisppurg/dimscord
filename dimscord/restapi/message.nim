@@ -7,18 +7,19 @@ proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false; embed = none Embed;
         allowed_mentions = none AllowedMentions;
         nonce: Option[string] or Option[int] = none(int);
-        files = none seq[DiscordFile];
+        files = newSeq[DiscordFile](10);
         message_reference = none MessageReference
 ): Future[Message] {.async.} =
     ## Sends a discord message.
     ## - `nonce` This can be used for optimistic message sending
+    assert content.len <= 2000
     let payload = %*{
         "content": content,
-        "tts": tts
+        "tts": tts,
+        "embed": %embed
     }
 
-    if embed.isSome:
-        payload["embed"] = %get embed
+
     if allowed_mentions.isSome:
         payload["allowed_mentions"] = %get allowed_mentions
     if nonce.isSome:
@@ -26,9 +27,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if message_reference.isSome:
         payload["message_reference"] = %get message_reference
 
-    if files.isSome:
+    if files.len > 0:
         var mpd = newMultipartData()
-        for file in get files:
+        for file in files:
             var contenttype = ""
             if file.name == "":
                 raise newException(Exception, "File name needs to be provided.")
@@ -63,6 +64,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none(int);
         embed = none Embed): Future[Message] {.async.} =
     ## Edits a discord message.
+    assert content.len <= 2000
     let payload = %*{
         "content": content,
         "tts": tts,
@@ -95,7 +97,7 @@ proc deleteMessage*(api: RestApi, channel_id, message_id: string;
 
 proc getChannelMessages*(api: RestApi, channel_id: string;
         around, before, after = "";
-        limit = 50): Future[seq[Message]] {.async.} =
+        limit: range[1..100] = 50): Future[seq[Message]] {.async.} =
     ## Gets channel messages.
     var url = endpointChannelMessages(channel_id) & "?"
 
@@ -105,10 +107,10 @@ proc getChannelMessages*(api: RestApi, channel_id: string;
         url &= "after=" & after & "&"
     if around != "":
         url &= "around=" & around & "&"
-    if limit > 0 and limit <= 100:
-        url &= "limit=" & $limit
 
-    result = (await api.request("GET", url)).elems.map(newMessage)
+    result = (await api.request("GET",
+        url & "limit=" & $limit
+    )).elems.map(newMessage)
 
 proc getChannelMessage*(api: RestApi, channel_id,
         message_id: string): Future[Message] {.async.} =
@@ -121,6 +123,7 @@ proc getChannelMessage*(api: RestApi, channel_id,
 proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         message_ids: seq[string]; reason = "") {.async.} =
     ## Bulk deletes messages.
+    assert message_ids.len >= 100
     discard await api.request(
         "POST",
         endpointBulkDeleteMessages(channel_id),
@@ -140,8 +143,7 @@ proc addMessageReaction*(api: RestApi,
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
 
-    discard await api.request(
-        "PUT",
+    discard await api.request("PUT",
         endpointReactions(channel_id, message_id, e=emj, uid="@me")
     )
 
@@ -169,7 +171,7 @@ proc deleteMessageReactionEmoji*(api: RestApi,
 proc getMessageReactions*(api: RestApi,
         channel_id, message_id, emoji: string;
         before, after = "";
-        limit = 25): Future[seq[User]] {.async.} =
+        limit: range[1..100] = 25): Future[seq[User]] {.async.} =
     ## Get all user message reactions on the emoji provided.
     var emj = emoji
     var url = endpointReactions(channel_id, message_id, e=emj, uid="@me") & "?"
@@ -181,8 +183,8 @@ proc getMessageReactions*(api: RestApi,
         url = url & "before=" & before & "&"
     if after != "":
         url = url & "after=" & after & "&"
-    if limit > 0 and limit <= 100:
-        url = url & "limit=" & $limit
+
+    url = url & "limit=" & $limit
 
     result = (await api.request(
         "GET",
@@ -200,13 +202,14 @@ proc deleteAllMessageReactions*(api: RestApi,
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
             wait = true; content = ""; tts = false;
             file = none DiscordFile;
-            embeds = none array[10, Embed];
+            embeds = none seq[Embed];
             allowed_mentions = none AllowedMentions;
             username, avatar_url = none string): Future[Message] {.async.} =
     ## Executes a webhook or create a followup message.
     ## If `wait` is `false` make sure to `discard await` it.
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
+    
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
     let payload = %*{
         "content": content,
@@ -245,7 +248,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         content = none string;
-        embeds = none array[10, Embed];
+        embeds = newSeq[Embed](10);
         allowed_mentions = none AllowedMentions) {.async.} =
     ## Modifies the webhook message.
     ## You can actually use this to modify
@@ -271,8 +274,7 @@ proc deleteWebhookMessage*(api: RestApi;
     ##
     ## - `webhook_id` can also be application_id
     ## - `webhook_token` can also be interaction token.
-    discard await api.request(
-        "DELETE",
+    discard await api.request("DELETE",
         endpointWebhookMessage(webhook_id, webhook_token, message_id)
     )
 

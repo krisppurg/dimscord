@@ -1,6 +1,6 @@
 getInvite	dimscord/restapi/user.html#getInvite,RestApi,string	user: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]	
 getGuildMember	dimscord/restapi/user.html#getGuildMember,RestApi,string,string	user: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]	
-getGuildMembers	dimscord/restapi/user.html#getGuildMembers,RestApi,string,int,string	user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[\n    seq[Member]]	
+getGuildMembers	dimscord/restapi/user.html#getGuildMembers,RestApi,string,range[],string	user: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;\n                after = &quot;0&quot;): Future[seq[Member]]	
 setGuildNick	dimscord/restapi/user.html#setGuildNick,RestApi,string,string,string	user: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(\n    Future[void])	
 addGuildMemberRole	dimscord/restapi/user.html#addGuildMemberRole,RestApi,string,string,string,string	user: addGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string; reason = &quot;&quot;): owned(\n    Future[void])	
 removeGuildMemberRole	dimscord/restapi/user.html#removeGuildMemberRole,RestApi,string,string,string,string	user: removeGuildMemberRole(api: RestApi; guild_id, user_id, role_id: string;\n                      reason = &quot;&quot;): owned(Future[void])	

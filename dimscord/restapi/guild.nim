@@ -4,7 +4,7 @@ import sequtils, strutils
 import requester
 
 proc beginGuildPrune*(api: RestApi, guild_id: string;
-        days = 7;
+        days: range[1..7] = 7;
         compute_prune_count = true;
         reason = "") {.async.} =
     ## Begins a guild prune.
@@ -69,6 +69,11 @@ proc createGuild*(api: RestApi, name, region = none string;
     ## Please read these notes: https://discord.com/developers/docs/resources/guild#create-guild
     let payload = newJObject()
 
+    if roles.isSome:
+        assert roles.get.len <= 250
+    if channels.isSome:
+        assert channels.get.len <= 500
+
     payload.loadOpt(name, region, verification_level, afk_timeout,
         default_message_notifications, icon, explicit_content_filter,
         afk_channel_id, system_channel_id, roles, channels)
@@ -114,7 +119,7 @@ proc getGuild*(api: RestApi, guild_id: string;
 proc getGuildAuditLogs*(api: RestApi, guild_id: string;
         user_id, before = "";
         action_type = -1;
-        limit = 50): Future[AuditLog] {.async.} =
+        limit: range[1..100] = 50): Future[AuditLog] {.async.} =
     ## Get guild audit logs. The maximum limit is 100.
     var url = endpointGuildAuditLogs(guild_id) & "?"
 
@@ -246,7 +251,7 @@ proc getGuildBans*(api: RestApi,
     )).elems.map(newGuildBan)
 
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
-        deletemsgdays = 0; reason = "") {.async.} =
+        deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     let payload = %*{
         "reason": reason

@@ -63,7 +63,7 @@ function main() {
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
-    Modules: <a href="dimscord.html">dimscord</a>, <a href="dimscord/constants.html">dimscord/constants</a>, <a href="dimscord/dispatch.html">dimscord/dispatch</a>, <a href="dimscord/gateway.html">dimscord/gateway</a>, <a href="dimscord/helpers.html">dimscord/helpers</a>, <a href="dimscord/objects.html">dimscord/objects</a>, <a href="dimscord/restapi.html">dimscord/restapi</a>, <a href="dimscord/restapi/requester.html">dimscord/restapi/requester</a>, <a href="dimscord/restapi/user.html">dimscord/restapi/user</a>, <a href="dimscord/voice.html">dimscord/voice</a>.<br/><p /><h2>API symbols</h2>
+    Modules: <a href="dimscord.html">dimscord</a>, <a href="dimscord/constants.html">dimscord/constants</a>, <a href="dimscord/dispatch.html">dimscord/dispatch</a>, <a href="dimscord/gateway.html">dimscord/gateway</a>, <a href="dimscord/helpers.html">dimscord/helpers</a>, <a href="dimscord/objects.html">dimscord/objects</a>, <a href="dimscord/restapi.html">dimscord/restapi</a>, <a href="dimscord/restapi/requester.html">dimscord/restapi/requester</a>, <a href="dimscord/restapi/user.html">dimscord/restapi/user</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: `$`(g: GuildChannel): string" href="dimscord/helpers.html#%24%2CGuildChannel">helpers: `$`(g: GuildChannel): string</a></li>
@@ -444,8 +444,8 @@ function main() {
           </ul></dd>
 <dt><a name="beginGuildPrune" href="#beginGuildPrune"><span>beginGuildPrune:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="restapi: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
-                compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#beginGuildPrune%2CRestApi%2Cstring%2Cint%2Cstring">restapi: beginGuildPrune(api: RestApi; guild_id: string; days = 7;
+          data-doc-search-tag="restapi: beginGuildPrune(api: RestApi; guild_id: string; days: range[1 .. 7] = 7;
+                compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#beginGuildPrune%2CRestApi%2Cstring%2Crange%5B%5D%2Cstring">restapi: beginGuildPrune(api: RestApi; guild_id: string; days: range[1 .. 7] = 7;
                 compute_prune_count = true; reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="bulkDeleteMessages" href="#bulkDeleteMessages"><span>bulkDeleteMessages:</span></a></dt><dd><ul class="simple">
@@ -574,9 +574,11 @@ function main() {
           </ul></dd>
 <dt><a name="createGuildBan" href="#createGuildBan"><span>createGuildBan:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="restapi: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
-               reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#createGuildBan%2CRestApi%2Cstring%2Cstring%2Cint%2Cstring">restapi: createGuildBan(api: RestApi; guild_id, user_id: string; deletemsgdays = 0;
-               reason = &quot;&quot;): owned(Future[void])</a></li>
+          data-doc-search-tag="restapi: createGuildBan(api: RestApi; guild_id, user_id: string;
+               deletemsgdays: range[0 .. 7] = 0; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#createGuildBan%2CRestApi%2Cstring%2Cstring%2Crange%5B%5D%2Cstring">restapi: createGuildBan(api: RestApi; guild_id, user_id: string;
+               deletemsgdays: range[0 .. 7] = 0; reason = &quot;&quot;): owned(
+    Future[void])</a></li>
           </ul></dd>
 <dt><a name="createGuildChannel" href="#createGuildChannel"><span>createGuildChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -767,8 +769,6 @@ function main() {
 <dt><a name="disconnect" href="#disconnect"><span>disconnect:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])" href="dimscord/gateway.html#disconnect%2CShard">gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="voice: disconnect(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#disconnect%2CVoiceClient">voice: disconnect(v: VoiceClient): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="DiscordClient" href="#DiscordClient"><span>DiscordClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -840,13 +840,15 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="restapi: editGuildChannel(api: RestApi; channel_id: string;
                  name, parent_id, topic = none string;
-                 rate_limit_per_user, bitrate = none int;
-                 position, user_limit = none int;
+                 rate_limit_per_user = none range[0 .. 21600];
+                 bitrate = none range[8000 .. 128000];
+                 user_limit = none range[0 .. 99]; position = none int;
                  permission_overwrites = none seq[Overwrite]; nsfw = none bool;
                  reason = &quot;&quot;): Future[GuildChannel]" href="dimscord/restapi.html#editGuildChannel%2CRestApi%2Cstring%2Cstring">restapi: editGuildChannel(api: RestApi; channel_id: string;
                  name, parent_id, topic = none string;
-                 rate_limit_per_user, bitrate = none int;
-                 position, user_limit = none int;
+                 rate_limit_per_user = none range[0 .. 21600];
+                 bitrate = none range[8000 .. 128000];
+                 user_limit = none range[0 .. 99]; position = none int;
                  permission_overwrites = none seq[Overwrite]; nsfw = none bool;
                  reason = &quot;&quot;): Future[GuildChannel]</a></li>
           </ul></dd>
@@ -933,9 +935,9 @@ function main() {
 <dt><a name="editWebhookMessage" href="#editWebhookMessage"><span>editWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content = none string; embeds = none array[10, Embed];
+                   content = none string; embeds = newSeq[Embed](10);
                    allowed_mentions = none AllowedMentions): owned(Future[void])" href="dimscord/restapi.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content = none string; embeds = none array[10, Embed];
+                   content = none string; embeds = newSeq[Embed](10);
                    allowed_mentions = none AllowedMentions): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="Embed" href="#Embed"><span>Embed:</span></a></dt><dd><ul class="simple">
@@ -1182,11 +1184,11 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                content = &quot;&quot;; tts = false; file = none DiscordFile;
-               embeds = none array[10, Embed];
+               embeds = none seq[Embed];
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string): Future[Message]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                content = &quot;&quot;; tts = false; file = none DiscordFile;
-               embeds = none array[10, Embed];
+               embeds = none seq[Embed];
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string): Future[Message]</a></li>
           </ul></dd>
@@ -1231,8 +1233,8 @@ function main() {
 <dt><a name="getChannelMessages" href="#getChannelMessages"><span>getChannelMessages:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
-                   limit = 50): Future[seq[Message]]" href="dimscord/restapi.html#getChannelMessages%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">restapi: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
-                   limit = 50): Future[seq[Message]]</a></li>
+                   limit: range[1 .. 100] = 50): Future[seq[Message]]" href="dimscord/restapi.html#getChannelMessages%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Crange%5B%5D">restapi: getChannelMessages(api: RestApi; channel_id: string; around, before, after = &quot;&quot;;
+                   limit: range[1 .. 100] = 50): Future[seq[Message]]</a></li>
           </ul></dd>
 <dt><a name="getChannelPins" href="#getChannelPins"><span>getChannelPins:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1273,8 +1275,10 @@ function main() {
 <dt><a name="getGuildAuditLogs" href="#getGuildAuditLogs"><span>getGuildAuditLogs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
-                  action_type = -1; limit = 50): Future[AuditLog]" href="dimscord/restapi.html#getGuildAuditLogs%2CRestApi%2Cstring%2Cstring%2Cstring%2Cint">restapi: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
-                  action_type = -1; limit = 50): Future[AuditLog]</a></li>
+                  action_type = -1; limit: range[1 .. 100] = 50): Future[
+    AuditLog]" href="dimscord/restapi.html#getGuildAuditLogs%2CRestApi%2Cstring%2Cstring%2Cstring%2Crange%5B%5D">restapi: getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
+                  action_type = -1; limit: range[1 .. 100] = 50): Future[
+    AuditLog]</a></li>
           </ul></dd>
 <dt><a name="getGuildBan" href="#getGuildBan"><span>getGuildBan:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1308,13 +1312,13 @@ function main() {
           </ul></dd>
 <dt><a name="getGuildMembers" href="#getGuildMembers"><span>getGuildMembers:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="restapi: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
-    seq[Member]]" href="dimscord/restapi.html#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring">restapi: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
-    seq[Member]]</a></li>
+          data-doc-search-tag="restapi: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;
+                after = &quot;0&quot;): Future[seq[Member]]" href="dimscord/restapi.html#getGuildMembers%2CRestApi%2Cstring%2Crange%5B%5D%2Cstring">restapi: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;
+                after = &quot;0&quot;): Future[seq[Member]]</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
-    seq[Member]]" href="dimscord/restapi/user.html#getGuildMembers%2CRestApi%2Cstring%2Cint%2Cstring">user: getGuildMembers(api: RestApi; guild_id: string; limit = 1; after = &quot;0&quot;): Future[
-    seq[Member]]</a></li>
+          data-doc-search-tag="user: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;
+                after = &quot;0&quot;): Future[seq[Member]]" href="dimscord/restapi/user.html#getGuildMembers%2CRestApi%2Cstring%2Crange%5B%5D%2Cstring">user: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;
+                after = &quot;0&quot;): Future[seq[Member]]</a></li>
           </ul></dd>
 <dt><a name="getGuildPreview" href="#getGuildPreview"><span>getGuildPreview:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1361,8 +1365,10 @@ function main() {
 <dt><a name="getMessageReactions" href="#getMessageReactions"><span>getMessageReactions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
-                    before, after = &quot;&quot;; limit = 25): Future[seq[User]]" href="dimscord/restapi.html#getMessageReactions%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cint">restapi: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
-                    before, after = &quot;&quot;; limit = 25): Future[seq[User]]</a></li>
+                    before, after = &quot;&quot;; limit: range[1 .. 100] = 25): Future[
+    seq[User]]" href="dimscord/restapi.html#getMessageReactions%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Crange%5B%5D">restapi: getMessageReactions(api: RestApi; channel_id, message_id, emoji: string;
+                    before, after = &quot;&quot;; limit: range[1 .. 100] = 25): Future[
+    seq[User]]</a></li>
           </ul></dd>
 <dt><a name="getUser" href="#getUser"><span>getUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1593,10 +1599,6 @@ function main() {
 <dt><a name="libName" href="#libName"><span>libName:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: libName" href="dimscord/constants.html#libName">constants: libName</a></li>
-          </ul></dd>
-<dt><a name="libsodium_fn" href="#libsodium_fn"><span>libsodium_fn:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="voice: libsodium_fn" href="dimscord/voice.html#libsodium_fn">voice: libsodium_fn</a></li>
           </ul></dd>
 <dt><a name="libVer" href="#libVer"><span>libVer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1928,10 +1930,6 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: PartialGuild" href="dimscord/objects.html#PartialGuild">objects: PartialGuild</a></li>
           </ul></dd>
-<dt><a name="pause" href="#pause"><span>pause:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="voice: pause(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#pause%2CVoiceClient">voice: pause(v: VoiceClient): owned(Future[void])</a></li>
-          </ul></dd>
 <dt><a name="permAddReactions" href="#permAddReactions"><span>permAddReactions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="PermissionFlags.permAddReactions" href="dimscord/constants.html#permAddReactions">PermissionFlags.permAddReactions</a></li>
@@ -2090,10 +2088,6 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="PermissionFlags.permVoiceStream" href="dimscord/constants.html#permVoiceStream">PermissionFlags.permVoiceStream</a></li>
           </ul></dd>
-<dt><a name="playFFmpeg" href="#playFFmpeg"><span>playFFmpeg:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="voice: playFFmpeg(v: VoiceClient; input: string): owned(Future[void])" href="dimscord/voice.html#playFFmpeg%2CVoiceClient%2Cstring">voice: playFFmpeg(v: VoiceClient; input: string): owned(Future[void])</a></li>
-          </ul></dd>
 <dt><a name="PremiumTier" href="#PremiumTier"><span>PremiumTier:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: PremiumTier" href="dimscord/constants.html#PremiumTier">constants: PremiumTier</a></li>
@@ -2199,8 +2193,6 @@ function main() {
 <dt><a name="resume" href="#resume"><span>resume:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="gateway: resume(s: Shard): owned(Future[void])" href="dimscord/gateway.html#resume%2CShard">gateway: resume(s: Shard): owned(Future[void])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="voice: resume(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#resume%2CVoiceClient">voice: resume(v: VoiceClient): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="Role" href="#Role"><span>Role:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2211,11 +2203,11 @@ function main() {
           data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile];
+            files = newSeq[DiscordFile](10);
             message_reference = none MessageReference): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = none seq[DiscordFile];
+            files = newSeq[DiscordFile](10);
             message_reference = none MessageReference): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="setGuildNick" href="#setGuildNick"><span>setGuildNick:</span></a></dt><dd><ul class="simple">
@@ -2247,8 +2239,6 @@ function main() {
              max_shards = none int;
              cache_users, cache_guilds, guild_subscriptions = true;
              cache_guild_channels, cache_dm_channels = true): owned(Future[void])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="voice: startSession(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#startSession%2CVoiceClient">voice: startSession(v: VoiceClient): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="Sticker" href="#Sticker"><span>Sticker:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2477,7 +2467,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-26 16:25:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-02-19 17:09:18 UTC</small>
       </div>
     </div>
   </div>

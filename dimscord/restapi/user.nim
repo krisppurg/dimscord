@@ -23,7 +23,7 @@ proc getGuildMember*(api: RestApi,
     )).newMember
 
 proc getGuildMembers*(api: RestApi, guild_id: string;
-        limit = 1, after = "0"): Future[seq[Member]] {.async.} =
+        limit: range[1..1000] = 1, after = "0"): Future[seq[Member]] {.async.} =
     ## Gets a list of a guild's members.
     result = ((await api.request(
         "GET",
@@ -131,6 +131,9 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
     ## overwrite the old command.
+    assert name.len >= 3 and name.len <= 32
+    assert description.len >= 1 and description.len <= 100
+
     let payload = %*{"name": name, "description": description}
     if options.len > 0: payload["options"] = %(options.map(
         proc (x: ApplicationCommandOption): JsonNode =
@@ -167,6 +170,9 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
     ## - `guild_id` - Optional
     ## - `name` - Character length (3 - 32)
     ## - `descripton` - Character length (1 - 100)
+    assert name.len >= 3 and name.len <= 32
+    assert description.len >= 1 and description.len <= 100
+
     let payload = %*{"name": name, "description": description}
     if options.len > 0: payload["options"] = %(options.map(
         proc (x: ApplicationCommandOption): JsonNode =

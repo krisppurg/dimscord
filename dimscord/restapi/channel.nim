@@ -36,12 +36,17 @@ proc getChannelPins*(api: RestApi,
 
 proc editGuildChannel*(api: RestApi, channel_id: string;
             name, parent_id, topic = none string;
-            rate_limit_per_user, bitrate = none int;
-            position, user_limit = none int;
-            permission_overwrites = none seq[Overwrite];
+            rate_limit_per_user = none range[0..21600];
+            bitrate = none range[8000..128000]; user_limit = none range[0..99];
+            position = none int; permission_overwrites = none seq[Overwrite];
             nsfw = none bool; reason = ""): Future[GuildChannel] {.async.} =
     ## Modify a guild channel.
     let payload = newJObject()
+
+    if name.isSome:
+        assert name.get.len >= 2 and name.get.len <= 100
+    if topic.isSome:
+        assert topic.get.len <= 1024
 
     payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user,
         bitrate, user_limit, permission_overwrites, parent_id)

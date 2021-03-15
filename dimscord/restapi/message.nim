@@ -7,7 +7,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false; embed = none Embed;
         allowed_mentions = none AllowedMentions;
         nonce: Option[string] or Option[int] = none(int);
-        files = newSeq[DiscordFile](10);
+        files = newSeq[DiscordFile]();
         message_reference = none MessageReference
 ): Future[Message] {.async.} =
     ## Sends a discord message.

@@ -158,12 +158,12 @@ proc getChannelInvites*(api: RestApi,
         endpointChannelInvites(channel_id)
     )).elems.map(newInvite)
 
-proc getGuildChannel*(api: RestApi,
-        guild_id, channel_id: string): Future[GuildChannel] {.async.} =
+proc getChannel*(api: RestApi,
+        channel_id: string): Future[GuildChannel] {.async.} =
     ## Gets a guild channel.
     result = (await api.request(
         "GET",
-        endpointGuildChannels(guild_id, channel_id),
+        endpointChannels(channel_id),
     )).newGuildChannel
 
 proc getGuildChannels*(api: RestApi,

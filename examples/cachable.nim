@@ -31,7 +31,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         discard await discord.api.sendMessage(
             m.channel_id, "Getting guild channel!"
         )
-        let channel = await s.getGuildChannel(get m.guild_id, m.channel_id)
+        let channel = (await s.getChannel(get m.guild_id, m.channel_id))[0]
         echo channel[]
     elif m.content == "#!getuser": # Gets a user from rest or cache
         discard await discord.api.sendMessage(

@@ -90,6 +90,14 @@ function main() {
           <li><a class="reference external"
           data-doc-search-tag="helpers: `@`(u: User; nick = false): string" href="dimscord/helpers.html#%40%2CUser">helpers: `@`(u: User; nick = false): string</a></li>
           </ul></dd>
+<dt><a name="%60in%60" href="#%60in%60"><span>`in`:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="helpers: `in`(x, y: set[PermissionFlags]): bool" href="dimscord/helpers.html#in%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D">helpers: `in`(x, y: set[PermissionFlags]): bool</a></li>
+          </ul></dd>
+<dt><a name="%60notin%60" href="#%60notin%60"><span>`notin`:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="helpers: `notin`(x, y: set[PermissionFlags]): bool" href="dimscord/helpers.html#notin%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D">helpers: `notin`(x, y: set[PermissionFlags]): bool</a></li>
+          </ul></dd>
 <dt><a name="acotBool" href="#acotBool"><span>acotBool:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="ApplicationCommandOptionType.acotBool" href="dimscord/constants.html#acotBool">ApplicationCommandOptionType.acotBool</a></li>
@@ -454,6 +462,16 @@ function main() {
                    reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#bulkDeleteMessages%2CRestApi%2Cstring%2Cseq%5Bstring%5D%2Cstring">restapi: bulkDeleteMessages(api: RestApi; channel_id: string; message_ids: seq[string];
                    reason = &quot;&quot;): owned(Future[void])</a></li>
           </ul></dd>
+<dt><a name="bulkOverwriteApplicationCommands" href="#bulkOverwriteApplicationCommands"><span>bulkOverwriteApplicationCommands:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: bulkOverwriteApplicationCommands(api: RestApi; application_id: string;
+                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]" href="dimscord/restapi.html#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cstring">restapi: bulkOverwriteApplicationCommands(api: RestApi; application_id: string;
+                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: bulkOverwriteApplicationCommands(api: RestApi; application_id: string;
+                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]" href="dimscord/restapi/user.html#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cstring">user: bulkOverwriteApplicationCommands(api: RestApi; application_id: string;
+                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]</a></li>
+          </ul></dd>
 <dt><a name="CacheError" href="#CacheError"><span>CacheError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: CacheError" href="dimscord/objects.html#CacheError">objects: CacheError</a></li>
@@ -465,6 +483,14 @@ function main() {
 <dt><a name="CacheTablePrefs" href="#CacheTablePrefs"><span>CacheTablePrefs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: CacheTablePrefs" href="dimscord/objects.html#CacheTablePrefs">objects: CacheTablePrefs</a></li>
+          </ul></dd>
+<dt><a name="CallbackDataFlags" href="#CallbackDataFlags"><span>CallbackDataFlags:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: CallbackDataFlags" href="dimscord/constants.html#CallbackDataFlags">constants: CallbackDataFlags</a></li>
+          </ul></dd>
+<dt><a name="cdfEphemeral" href="#cdfEphemeral"><span>cdfEphemeral:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="CallbackDataFlags.cdfEphemeral" href="dimscord/constants.html#cdfEphemeral">CallbackDataFlags.cdfEphemeral</a></li>
           </ul></dd>
 <dt><a name="cdnAppAssets" href="#cdnAppAssets"><span>cdnAppAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1212,6 +1238,16 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: GatewaySession" href="dimscord/objects.html#GatewaySession">objects: GatewaySession</a></li>
           </ul></dd>
+<dt><a name="getApplicationCommand" href="#getApplicationCommand"><span>getApplicationCommand:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                      command_id: string): Future[ApplicationCommand]" href="dimscord/restapi.html#getApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: getApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                      command_id: string): Future[ApplicationCommand]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: getApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                      command_id: string): Future[ApplicationCommand]" href="dimscord/restapi/user.html#getApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring">user: getApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
+                      command_id: string): Future[ApplicationCommand]</a></li>
+          </ul></dd>
 <dt><a name="getApplicationCommands" href="#getApplicationCommands"><span>getApplicationCommands:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
@@ -1221,6 +1257,12 @@ function main() {
           data-doc-search-tag="user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
     seq[ApplicationCommand]]" href="dimscord/restapi/user.html#getApplicationCommands%2CRestApi%2Cstring%2Cstring">user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[
     seq[ApplicationCommand]]</a></li>
+          </ul></dd>
+<dt><a name="getChannel" href="#getChannel"><span>getChannel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getChannel(api: RestApi; channel_id: string): Future[
+    (Option[GuildChannel], Option[DMChannel])]" href="dimscord/restapi.html#getChannel%2CRestApi%2Cstring">restapi: getChannel(api: RestApi; channel_id: string): Future[
+    (Option[GuildChannel], Option[DMChannel])]</a></li>
           </ul></dd>
 <dt><a name="getChannelInvites" href="#getChannelInvites"><span>getChannelInvites:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1287,10 +1329,6 @@ function main() {
 <dt><a name="getGuildBans" href="#getGuildBans"><span>getGuildBans:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]" href="dimscord/restapi.html#getGuildBans%2CRestApi%2Cstring">restapi: getGuildBans(api: RestApi; guild_id: string): Future[seq[GuildBan]]</a></li>
-          </ul></dd>
-<dt><a name="getGuildChannel" href="#getGuildChannel"><span>getGuildChannel:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="restapi: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]" href="dimscord/restapi.html#getGuildChannel%2CRestApi%2Cstring%2Cstring">restapi: getGuildChannel(api: RestApi; guild_id, channel_id: string): Future[GuildChannel]</a></li>
           </ul></dd>
 <dt><a name="getGuildChannels" href="#getGuildChannels"><span>getGuildChannels:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1530,21 +1568,13 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: InviteMetadata" href="dimscord/objects.html#InviteMetadata">objects: InviteMetadata</a></li>
           </ul></dd>
-<dt><a name="irtAcknowledge" href="#irtAcknowledge"><span>irtAcknowledge:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="InteractionResponseType.irtAcknowledge" href="dimscord/constants.html#irtAcknowledge">InteractionResponseType.irtAcknowledge</a></li>
-          </ul></dd>
-<dt><a name="irtAckWithSource" href="#irtAckWithSource"><span>irtAckWithSource:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="InteractionResponseType.irtAckWithSource" href="dimscord/constants.html#irtAckWithSource">InteractionResponseType.irtAckWithSource</a></li>
-          </ul></dd>
-<dt><a name="irtChannelMessage" href="#irtChannelMessage"><span>irtChannelMessage:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="InteractionResponseType.irtChannelMessage" href="dimscord/constants.html#irtChannelMessage">InteractionResponseType.irtChannelMessage</a></li>
-          </ul></dd>
 <dt><a name="irtChannelMessageWithSource" href="#irtChannelMessageWithSource"><span>irtChannelMessageWithSource:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="InteractionResponseType.irtChannelMessageWithSource" href="dimscord/constants.html#irtChannelMessageWithSource">InteractionResponseType.irtChannelMessageWithSource</a></li>
+          </ul></dd>
+<dt><a name="irtDeferredChannelMessageWithSource" href="#irtDeferredChannelMessageWithSource"><span>irtDeferredChannelMessageWithSource:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="InteractionResponseType.irtDeferredChannelMessageWithSource" href="dimscord/constants.html#irtDeferredChannelMessageWithSource">InteractionResponseType.irtDeferredChannelMessageWithSource</a></li>
           </ul></dd>
 <dt><a name="irtPong" href="#irtPong"><span>irtPong:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1968,8 +1998,6 @@ function main() {
           </ul></dd>
 <dt><a name="permCheck" href="#permCheck"><span>permCheck:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: permCheck(perms, perm: int): bool" href="dimscord/helpers.html#permCheck%2Cint%2Cint">helpers: permCheck(perms, perm: int): bool</a></li>
-          <li><a class="reference external"
           data-doc-search-tag="helpers: permCheck(perms: int; p: PermObj): bool" href="dimscord/helpers.html#permCheck%2Cint%2CPermObj">helpers: permCheck(perms: int; p: PermObj): bool</a></li>
           </ul></dd>
 <dt><a name="permCreateInstantInvite" href="#permCreateInstantInvite"><span>permCreateInstantInvite:</span></a></dt><dd><ul class="simple">
@@ -2203,11 +2231,11 @@ function main() {
           data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = newSeq[DiscordFile](10);
+            files = newSeq[DiscordFile]();
             message_reference = none MessageReference): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             embed = none Embed; allowed_mentions = none AllowedMentions;
             nonce: Option[string] or Option[int] = none(int);
-            files = newSeq[DiscordFile](10);
+            files = newSeq[DiscordFile]();
             message_reference = none MessageReference): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="setGuildNick" href="#setGuildNick"><span>setGuildNick:</span></a></dt><dd><ul class="simple">
@@ -2467,7 +2495,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-02-19 17:09:18 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:31 UTC</small>
       </div>
     </div>
   </div>

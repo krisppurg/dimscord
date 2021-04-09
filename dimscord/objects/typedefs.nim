@@ -317,9 +317,16 @@ type
         name*: string
         value*: (Option[string], Option[int])
     Interaction* = object
-        id*, guild_id*, channel_id*: string
+        ## if `member` is present, then that means the interaction is in guild,
+        ## and `user` is therefore not present.
+        ##
+        ## if `user` is present and `member` isn't, then that means that the
+        ## interaction is in a DM.
+        id*, channel_id*: string
+        guild_id*: Option[string]
         kind*: InteractionType
-        member*: Member
+        member*: Option[Member]
+        user*: Option[User]
         token*: string
         data*: Option[ApplicationCommandInteractionData]
         version*: int
@@ -340,6 +347,7 @@ type
         content*: string
         embeds*: seq[Embed]
         allowed_mentions*: AllowedMentions
+        flags*: CallbackDataFlags
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
@@ -462,6 +470,7 @@ type
         on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
         on_ready*: proc (s: Shard, r: Ready) {.async.}
         on_disconnect*: proc (s: Shard) {.async.}
+        on_invalid_session: proc (s: Shard, resumable: bool) {.async.}
         message_create*: proc (s: Shard, m: Message) {.async.}
         message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
         message_update*: proc (s: Shard, m: Message,

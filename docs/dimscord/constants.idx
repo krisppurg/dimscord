@@ -221,11 +221,11 @@ itPing	dimscord/constants.html#itPing	InteractionType.itPing
 itApplicationCommand	dimscord/constants.html#itApplicationCommand	InteractionType.itApplicationCommand	
 InteractionType	dimscord/constants.html#InteractionType	constants: InteractionType	
 irtPong	dimscord/constants.html#irtPong	InteractionResponseType.irtPong	
-irtAcknowledge	dimscord/constants.html#irtAcknowledge	InteractionResponseType.irtAcknowledge	
-irtChannelMessage	dimscord/constants.html#irtChannelMessage	InteractionResponseType.irtChannelMessage	
 irtChannelMessageWithSource	dimscord/constants.html#irtChannelMessageWithSource	InteractionResponseType.irtChannelMessageWithSource	
-irtAckWithSource	dimscord/constants.html#irtAckWithSource	InteractionResponseType.irtAckWithSource	
+irtDeferredChannelMessageWithSource	dimscord/constants.html#irtDeferredChannelMessageWithSource	InteractionResponseType.irtDeferredChannelMessageWithSource	
 InteractionResponseType	dimscord/constants.html#InteractionResponseType	constants: InteractionResponseType	
+cdfEphemeral	dimscord/constants.html#cdfEphemeral	CallbackDataFlags.cdfEphemeral	
+CallbackDataFlags	dimscord/constants.html#CallbackDataFlags	constants: CallbackDataFlags	
 permAllText	dimscord/constants.html#permAllText	constants: permAllText	
 permAllVoice	dimscord/constants.html#permAllVoice	constants: permAllVoice	
 permAllChannel	dimscord/constants.html#permAllChannel	constants: permAllChannel	

@@ -159,12 +159,24 @@ proc getChannelInvites*(api: RestApi,
     )).elems.map(newInvite)
 
 proc getChannel*(api: RestApi,
-        channel_id: string): Future[GuildChannel] {.async.} =
-    ## Gets a guild channel.
-    result = (await api.request(
+        channel_id: string): Future[(Option[GuildChannel], Option[DMChannel])] {.async.} =
+    ## Gets channel by ID.
+    ## 
+    ## Another thing to keep in mind is that it returns a tuple of each
+    ## possible channel as an option.
+    ## 
+    ## Example:
+    ## - `channel` Is the result tuple, returned after `await`ing getChannel.
+    ## - If you want to get guild channel, then do `channel[0]`
+    ## - OR if you want DM channel then do `channel[1]`
+    let data = (await api.request(
         "GET",
-        endpointChannels(channel_id),
-    )).newGuildChannel
+        endpointChannels(channel_id)
+    ))
+    if data["type"].getInt == int ctDirect:
+        result = (none GuildChannel, some newDMChannel(data))
+    else:
+        result = (some newGuildChannel(data), none DMChannel)
 
 proc getGuildChannels*(api: RestApi,
         guild_id: string): Future[seq[GuildChannel]] {.async.} =

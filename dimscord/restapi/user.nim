@@ -161,6 +161,32 @@ proc getApplicationCommands*(
             endpointGlobalCommands(application_id)),
     )).elems.map(newApplicationCommand)
 
+proc getApplicationCommand*(
+        api: RestApi, application_id: string; guild_id = "",
+        command_id: string
+): Future[ApplicationCommand] {.async.} =
+    ## Get slash command for a specific application, `guild_id` is optional.
+    result = (await api.request(
+        "GET",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id, command_id)
+        else:
+            endpointGlobalCommands(application_id, command_id)),
+    )).newApplicationCommand
+
+proc bulkOverwriteApplicationCommands*(
+        api: RestApi, application_id: string; guild_id = ""
+): Future[seq[ApplicationCommand]] {.async.} =
+    ## Overwrites existing commands slash command that were registered in guild or application.
+    ## - `guild_id` is optional.
+    result = (await api.request(
+        "PUT",
+        (if guild_id != "":
+            endpointGuildCommands(application_id, guild_id)
+        else:
+            endpointGlobalCommands(application_id)),
+    )).elems.map(newApplicationCommand)
+
 proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
         guild_id = ""; name, description: string;
         options: seq[ApplicationCommandOption] = @[]
@@ -204,11 +230,14 @@ proc createInteractionResponse*(api: RestApi,
         response: InteractionResponse) {.async.} =
     ## Create an interaction response.
     ## `response.kind` is required.
+    let data = %response.data
+    if response.data.isSome:
+        data["flags"] = %int response.data.get.flags
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),
         $(%*{
             "type": int response.kind,
-            "data": %response.data
+            "data": %data
         })
     )

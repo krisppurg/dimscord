@@ -211,8 +211,11 @@ function main() {
   itPing = 1, itApplicationCommand = 2"><wbr />Interaction<wbr />Type<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#InteractionResponseType"
     title="InteractionResponseType = enum
-  irtPong = 1, irtAcknowledge = 2, irtChannelMessage = 3,
-  irtChannelMessageWithSource = 4, irtAckWithSource = 5"><wbr />Interaction<wbr />Response<wbr />Type<span class="attachedType"></span></a></li>
+  irtPong = 1, irtChannelMessageWithSource = 4,
+  irtDeferredChannelMessageWithSource = 5"><wbr />Interaction<wbr />Response<wbr />Type<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#CallbackDataFlags"
+    title="CallbackDataFlags = enum
+  cdfEphemeral = 64"><wbr />Callback<wbr />Data<wbr />Flags<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -841,8 +844,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="InteractionResponseType"></a>
 <dt><pre><a href="constants.html#InteractionResponseType"><span class="Identifier">InteractionResponseType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">irtPong</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">irtAcknowledge</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">irtChannelMessage</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span>
-  <span class="Identifier">irtChannelMessageWithSource</span> <span class="Other">=</span> <span class="DecNumber">4</span><span class="Other">,</span> <span class="Identifier">irtAckWithSource</span> <span class="Other">=</span> <span class="DecNumber">5</span></pre></dt>
+  <span class="Identifier">irtPong</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">irtChannelMessageWithSource</span> <span class="Other">=</span> <span class="DecNumber">4</span><span class="Other">,</span>
+  <span class="Identifier">irtDeferredChannelMessageWithSource</span> <span class="Other">=</span> <span class="DecNumber">5</span></pre></dt>
 <dd>
 
 
@@ -850,6 +853,18 @@ class="link-seesrc" target="_blank">Source</a>
 href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L235"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L235" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="CallbackDataFlags"></a>
+<dt><pre><a href="constants.html#CallbackDataFlags"><span class="Identifier">CallbackDataFlags</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">cdfEphemeral</span> <span class="Other">=</span> <span class="DecNumber">64</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L239"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L239" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1626,7 +1641,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-02-19 17:09:09 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:20 UTC</small>
       </div>
     </div>
   </div>

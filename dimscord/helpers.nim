@@ -101,9 +101,18 @@ proc perms*(p: PermObj): int =
         for it in p.denied:
             result = result and (it.int - it.int - it.int)
 
-proc permCheck*(perms, perm: int): bool =
+proc permCheck(perms, perm: int): bool =
     ## Checks if the set of permissions has the specific permission.
     result = (perms and perm) == perm
+
+proc `in`*(x, y: set[PermissionFlags]): bool =
+    if x.len == 0: return false
+    result = false
+    for flag in x:
+        result = flag in y
+
+proc `notin`*(x, y: set[PermissionFlags]): bool =
+    not (x in y)
 
 proc permCheck*(perms: int, p: PermObj): bool =
     ## Just like permCheck, but with a PermObj.

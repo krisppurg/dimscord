@@ -128,10 +128,13 @@ function main() {
                 guild_id = &quot;&quot;; disable_guild_select = false): string">createBotInvite,string,set[PermissionFlags],string<span class="attachedType"></span></a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">in
+      <li><a class="reference" href="#in%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D"
+    title="`in`(x, y: set[PermissionFlags]): bool">in,set[PermissionFlags],set[PermissionFlags]<span class="attachedType"></span></a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">permCheck
-      <li><a class="reference" href="#permCheck%2Cint%2Cint"
-    title="permCheck(perms, perm: int): bool">permCheck,int,int<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#permCheck%2Cint%2CPermObj"
+      <li><a class="reference" href="#permCheck%2Cint%2CPermObj"
     title="permCheck(perms: int; p: PermObj): bool">permCheck,int,PermObj<span class="attachedType"></span></a></li>
 
   </ul>
@@ -169,6 +172,11 @@ function main() {
   <ul class="simple nested-toc-section">getGuildWidget
       <li><a class="reference" href="#getGuildWidget%2Cstring%2Cstring"
     title="getGuildWidget(guild_id, style: string): string">getGuildWidget,string,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">notin
+      <li><a class="reference" href="#notin%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D"
+    title="`notin`(x, y: set[PermissionFlags]): bool">notin,set[PermissionFlags],set[PermissionFlags]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">computePerms
@@ -353,15 +361,26 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L94" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="permCheck,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#permCheck%2Cint%2Cint"><span class="Identifier">permCheck</span></a><span class="Other">(</span><span class="Identifier">perms</span><span class="Other">,</span> <span class="Identifier">perm</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="in,set[PermissionFlags],set[PermissionFlags]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#in%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D"><span class="Identifier">`in`</span></a><span class="Other">(</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Checks if the set of permissions has the specific permission.
+
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L104"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L108"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L104" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L108" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="notin,set[PermissionFlags],set[PermissionFlags]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#notin%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D"><span class="Identifier">`notin`</span></a><span class="Other">(</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L114"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L114" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="permCheck,int,PermObj"></a>
@@ -370,9 +389,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Just like permCheck, but with a PermObj.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L108"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L117"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L108" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Role"></a>
@@ -382,9 +401,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Computes the guild permissions for a role.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L130"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L139"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L130" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L139" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Member"></a>
@@ -394,9 +413,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Computes the guild permissions for a member.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L141"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L150"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L141" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L150" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="computePerms,Guild,Member,GuildChannel"></a>
@@ -408,9 +427,9 @@ Returns the permissions for the guild member of the channel. For permission chec
     <span class="Identifier">allowed</span><span class="Punctuation">:</span> <span class="Punctuation">{</span><span class="Identifier">permExample</span><span class="Punctuation">}</span>
 <span class="Punctuation">)</span><span class="Punctuation">)</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L156"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L165"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createBotInvite,string,set[PermissionFlags],string"></a>
@@ -424,9 +443,9 @@ class="link-seesrc" target="_blank">Source</a>
 <p>See <a class="reference external" href="https://discord.com/developers/docs/topics/oauth2#bots">https://discord.com/developers/docs/topics/oauth2#bots</a> for more information.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L194"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L203"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L203" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripUserMentions,Message"></a>
@@ -436,9 +455,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Strips out user mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@1234567890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@TheMostMysteriousUser#0000</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L209"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L218"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L209" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L218" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripRoleMentions,Message"></a>
@@ -448,9 +467,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Strips out role mentions. Example: <tt class="docutils literal"><span class="pre">&lt;@&amp;123456890&gt;</span></tt> to <tt class="docutils literal"><span class="pre">@1243456890</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L216"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L225"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripChannelMentions,Message"></a>
@@ -460,9 +479,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Strips out channel mentions. Example: <tt class="docutils literal"><span class="pre">&lt;#123456790&gt;</span></tt> to <tt class="docutils literal"><span class="pre">#such-a_long-time-ago</span></tt> or <tt class="docutils literal"><span class="pre">#123456790</span></tt>
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L223"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L223" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stripMentions,Message"></a>
@@ -472,9 +491,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Strips all mentions.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L233"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L242"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L233" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L242" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -503,7 +522,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-02-19 17:09:14 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:26 UTC</small>
       </div>
     </div>
   </div>

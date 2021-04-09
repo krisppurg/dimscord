@@ -46,6 +46,7 @@ proc newDiscordClient*(token: string;
             on_dispatch: proc (s: Shard, evt: string,
                     data: JsonNode) {.async.} = discard,
             on_ready: proc (s: Shard, r: Ready) {.async.} = discard,
+            on_invalid_session: proc (s: Shard, resumable: bool) {.async.} = discard,
             message_create: proc (s: Shard, m: Message) {.async.} = discard,
             message_delete: proc (s: Shard, m: Message,
                     exists: bool) {.async.} = discard,
@@ -762,12 +763,17 @@ proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
         id: data["id"].str,
         kind: InteractionType data["type"].getInt,
-        guild_id: data["guild_id"].str,
         channel_id: data["channel_id"].str,
-        member: newMember(data["member"]),
         token: data["token"].str,
         version: data["version"].getInt
     )
+    data.keyCheckOptStr(result, guild_id)
+
+    if "member" in data and data["member"].kind != JNull:
+        result.member = some data["member"].newMember
+    if "user" in data and data["user"].kind != JNull:
+        result.user = some data["user"].newUser
+
     if "data" in data and data["data"].kind != JNull: # nice
         result.data = some newApplicationCommandInteractionData(data["data"])
 
@@ -790,21 +796,19 @@ proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
     data.keyCheckOptBool(result, default, required)
 
 proc `%%*`*(a: ApplicationCommandOption): JsonNode =
-    result = newJObject()
-    result["type"] = % int a.kind
-    result["name"] = %a.name
-    result["description"] = %a.description
-    result["required"] = %(a.required.get false)
+    result = %*{"type": int a.kind, "name": a.name,
+                "description": a.description,
+                "required": %(a.required.get false)
+    }
 
     if a.choices.len > 0:
         result["choices"] = %a.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =
-                let json = newJObject()
-                json["name"] = %x.name
+                let json = %*{"name": %x.name}
                 if x.value[0].isSome:
                     json["value"] = %x.value[0]
                 if x.value[1].isSome:
-                    json["value"] = %x.value[0]
+                    json["value"] = %x.value[1]
                 return json
         )
     if a.options.len > 0:

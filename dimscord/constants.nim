@@ -234,10 +234,10 @@ type
         itApplicationCommand = 2
     InteractionResponseType* = enum
         irtPong = 1
-        irtAcknowledge = 2
-        irtChannelMessage = 3
         irtChannelMessageWithSource = 4
-        irtAckWithSource = 5
+        irtDeferredChannelMessageWithSource = 5
+    CallbackDataFlags* = enum # This is for the future.
+        cdfEphemeral = 64
 
 const
     permAllText* = {permSendTTSMessage,
@@ -433,4 +433,3 @@ proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"
-

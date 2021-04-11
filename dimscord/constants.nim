@@ -93,6 +93,12 @@ type
         ufBugHunterLevel2 = 16384
         ufVerifiedBot = 65536,
         ufEarlyVerifiedBotDeveloper
+    CallbackDataFlags* = enum # This is for the future.
+        cdfEphemeral = 64
+    SystemChannelFlags* = enum
+        scfSuppressJoinNotifications,
+        scfSupressPremiumSubscriptions,
+        scfSupressGuildReminderNotifications
 const
     libName* = "Dimscord"
     libVer* = "1.2.4"
@@ -131,6 +137,7 @@ type
         mtGuildDiscoveryRequalified = 15
         mtReply = 19
         mtApplicationCommand = 20
+        mtGuildInviteReminder = 22
     MessageActivityType* = enum
         matJoin = 1
         matSpectate = 2
@@ -144,6 +151,7 @@ type
         ctGuildParent = 4
         ctGuildNews = 5
         ctGuildStore = 6
+        ctGuildStageVoice = 13
     MessageNotificationLevel* = enum
         mnlAllMessages = 0
         mnlOnlyMentions = 1
@@ -236,8 +244,7 @@ type
         irtPong = 1
         irtChannelMessageWithSource = 4
         irtDeferredChannelMessageWithSource = 5
-    CallbackDataFlags* = enum # This is for the future.
-        cdfEphemeral = 64
+
 
 const
     permAllText* = {permSendTTSMessage,
@@ -319,6 +326,9 @@ proc endpointGuildAuditLogs*(gid: string): string =
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
+
+proc endpointGuildMembersSearch*(gid: string): string =
+    result = endpointGuildMembers(gid) & "/search"
 
 proc endpointGuildMembersNick*(gid: string; mid = "@me"): string =
     result = endpointGuildMembers(gid, mid) & "/nick"

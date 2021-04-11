@@ -35,6 +35,7 @@ GuildChannel	dimscord/objects.html#GuildChannel	objects: GuildChannel
 GameAssets	dimscord/objects.html#GameAssets	objects: GameAssets	
 Activity	dimscord/objects.html#Activity	objects: Activity	
 Presence	dimscord/objects.html#Presence	objects: Presence	
+WelcomeChannel	dimscord/objects.html#WelcomeChannel	objects: WelcomeChannel	
 Guild	dimscord/objects.html#Guild	objects: Guild	
 VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
 Role	dimscord/objects.html#Role	objects: Role	

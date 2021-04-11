@@ -178,12 +178,10 @@ function main() {
     title="getChannelPins(api: RestApi; channel_id: string): Future[seq[Message]]">getChannelPins,RestApi,string<span class="attachedType"></span></a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">editApplicationCommand
-      <li><a class="reference" href="#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"
-    title="editApplicationCommand(api: RestApi; application_id, command_id: string;
-                       guild_id = &quot;&quot;; name, description: string;
-                       options: seq[ApplicationCommandOption] = @[]): Future[
-    ApplicationCommand]">editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]<span class="attachedType"></span></a></li>
+  <ul class="simple nested-toc-section">searchGuildMembers
+      <li><a class="reference" href="#searchGuildMembers%2CRestApi%2Cstring%2Cstring%2Crange%5B%5D"
+    title="searchGuildMembers(api: RestApi; guild_id: string; query = &quot;&quot;;
+                   limit: range[1 .. 1000] = 1): Future[seq[Member]]">searchGuildMembers,RestApi,string,string,range[]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getGuildAuditLogs
@@ -191,6 +189,14 @@ function main() {
     title="getGuildAuditLogs(api: RestApi; guild_id: string; user_id, before = &quot;&quot;;
                   action_type = -1; limit: range[1 .. 100] = 50): Future[
     AuditLog]">getGuildAuditLogs,RestApi,string,string,string,range[]<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">editApplicationCommand
+      <li><a class="reference" href="#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"
+    title="editApplicationCommand(api: RestApi; application_id, command_id: string;
+                       guild_id = &quot;&quot;; name, description: string;
+                       options: seq[ApplicationCommandOption] = @[]): Future[
+    ApplicationCommand]">editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getGuildMembers
@@ -313,7 +319,9 @@ function main() {
   <ul class="simple nested-toc-section">editGuildChannelPositions
       <li><a class="reference" href="#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
-                          position = none int; reason = &quot;&quot;): owned(Future[void])">editGuildChannelPositions,RestApi,string,string,string<span class="attachedType"></span></a></li>
+                          position = none int; parent_id = none string;
+                          lock_permissions = false; reason = &quot;&quot;): owned(
+    Future[void])">editGuildChannelPositions,RestApi,string,string,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getGuildTemplate
@@ -632,7 +640,7 @@ function main() {
   <ul class="simple nested-toc-section">editWebhookMessage
       <li><a class="reference" href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content = none string; embeds = newSeq[Embed](10);
+                   content = none string; embeds = newSeq[Embed]();
                    allowed_mentions = none AllowedMentions): owned(Future[void])">editWebhookMessage,RestApi,string,string,string<span class="attachedType"></span></a></li>
 
   </ul>
@@ -912,7 +920,7 @@ class="link-seesrc" target="_blank">Source</a>
 <a id="editWebhookMessage,RestApi,string,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">editWebhookMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
                         <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                        <span class="Identifier">content</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="DecNumber">10</span><span class="Other">)</span><span class="Other">;</span>
+                        <span class="Identifier">content</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                         <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
                     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
@@ -1182,16 +1190,17 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="editGuildChannelPositions,RestApi,string,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">editGuildChannelPositions</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                               <span class="Identifier">position</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">reason</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+                               <span class="Identifier">position</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">parent_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
+                               <span class="Identifier">lock_permissions</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">reason</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
                     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Edits a guild channel's position.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L190"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L191"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L190" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L191" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getChannelWebhooks,RestApi,string"></a>
@@ -1202,9 +1211,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a list of a channel's webhooks.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L203"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L207"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L203" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L207" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createWebhook,RestApi,string,string,string"></a>
@@ -1216,9 +1225,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a webhook. (webhook names cannot be: 'clyde', and they range 1-80)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L211"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L215"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L211" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L215" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getWebhook,RestApi,string"></a>
@@ -1229,9 +1238,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L224"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L228"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L228" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteWebhook,RestApi,string,string"></a>
@@ -1242,9 +1251,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Deletes a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L228"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L228" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editWebhook,RestApi,string,string"></a>
@@ -1256,9 +1265,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modifies a webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L237"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L241"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L237" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L241" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="beginGuildPrune,RestApi,string,range[],string"></a>
@@ -1649,6 +1658,20 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L355" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="searchGuildMembers,RestApi,string,string,range[]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#searchGuildMembers%2CRestApi%2Cstring%2Cstring%2Crange%5B%5D"><span class="Identifier">searchGuildMembers</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">query</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                        <span class="Identifier">limit</span><span class="Other">:</span> <span class="Identifier">range</span><span class="Other">[</span><span class="DecNumber">1</span> <span class="Operator">..</span> <span class="DecNumber">1000</span><span class="Other">]</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Member"><span class="Identifier">Member</span></a><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Search for guild members.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L363"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L363" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="addGuildMember,RestApi,string,string,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#addGuildMember%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring"><span class="Identifier">addGuildMember</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">user_id</span><span class="Other">,</span> <span class="Identifier">access_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                     <span class="Identifier">nick</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">roles</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">;</span>
@@ -1659,9 +1682,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Adds a guild member. If member is in the guild, then exists will be true.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L367"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L378"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L367" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L378" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createGuildEmoji,RestApi,string,string,string,seq[string],string"></a>
@@ -1673,9 +1696,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a guild emoji. The image needs to be a base64 string. (See: <a class="reference external" href="https://nim-lang.org/docs/base64.html">https://nim-lang.org/docs/base64.html</a>)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L387"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L398"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L387" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L398" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editGuildEmoji,RestApi,string,string,string"></a>
@@ -1687,9 +1710,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modifies a guild emoji.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L401"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L412"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L401" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L412" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteGuildEmoji,RestApi,string,string,string"></a>
@@ -1700,9 +1723,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Deletes a guild emoji.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L421"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L432"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L421" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L432" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildVoiceRegions,RestApi,string"></a>
@@ -1713,9 +1736,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets a guild's voice regions.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L430"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L441"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L430" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L441" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getVoiceRegions,RestApi"></a>
@@ -1726,9 +1749,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get voice regions
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L440"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L451"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L440" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L451" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createGuildFromTemplate,RestApi,string"></a>
@@ -1739,9 +1762,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create a guild from a template, this endpoint is used for bots that are in &gt;10 guilds
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L451"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L462"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L451" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L462" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGuildTemplate,RestApi,string"></a>
@@ -1752,9 +1775,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get guild template from its code.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L459"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L470"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L459" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L470" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createGuildTemplate,RestApi,string,string"></a>
@@ -1766,9 +1789,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create a guild template
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L467"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L478"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L467" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L478" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="syncGuildTemplate,RestApi,string,string"></a>
@@ -1779,9 +1802,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sync guild template.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L474"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L485"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L474" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L485" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editGuildTemplate,RestApi,string,string"></a>
@@ -1793,9 +1816,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modify a guild template.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L482"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L493"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L482" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L493" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteGuildTemplate,RestApi,string,string"></a>
@@ -1806,9 +1829,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete guild template.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L492"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/guild.nim#L503"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L492" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/guild.nim#L503" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getInvite,RestApi,string"></a>
@@ -2133,7 +2156,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:29 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-11 18:04:02 UTC</small>
       </div>
     </div>
   </div>

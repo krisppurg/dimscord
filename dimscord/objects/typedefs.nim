@@ -136,6 +136,8 @@ type
         joined_at*: string
         roles*: seq[string]
         deaf*, mute*: bool
+        pending*: Option[bool]
+        permissions*: Option[set[PermissionFlags]]
         presence*: Presence
         voice_state*: Option[VoiceState]
     Attachment* = object
@@ -213,6 +215,9 @@ type
         guild_id*, status*: string
         activities*: seq[Activity]
         client_status*: tuple[web, desktop, mobile: string]
+    WelcomeChannel* = object
+        channel_id*, description: string
+        emoji_id*, emoji_name*: Option[string]
     Guild* = ref object
         id*, name*, owner_id*: string
         region*, preferred_locale*: string
@@ -222,6 +227,7 @@ type
         icon*, splash*, discovery_splash*: Option[string]
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
+        system_channel_flags*: set[SystemChannelFlags]
         owner*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
         max_video_channel_uses*: Option[int]
@@ -229,6 +235,10 @@ type
         approximate_member_count*, approximate_presence_count*: Option[int]
         max_presences*, max_members*, premium_subscription_count*: Option[int]
         explicit_content_filter*: ExplicitContentFilter
+        welcome_screen*: Option[tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+        ]]
         mfa_level*: MFALevel
         premium_tier*: PremiumTier
         verification_level*: VerificationLevel
@@ -399,9 +409,11 @@ type
         account*: tuple[id, name: string]
     GuildPreview* = object
         id*, name*: string
-        icon*, splash, emojis*: Option[string]
-        discovery_splash*, description*: Option[string]
+        system_channel_flags*: SystemChannelFlags
+        icon*, banner*, splash*, emojis*: Option[string]
+        preferred_locale*, discovery_splash*, description*: Option[string]
         approximate_member_count*, approximate_presence_count*: int
+        features*: seq[string]
     VoiceRegion* = object
         id*, name*: string
         vip*, optimal*: bool

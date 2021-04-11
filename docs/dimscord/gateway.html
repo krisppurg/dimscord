@@ -124,14 +124,14 @@ function main() {
 
   </ul>
   <ul class="simple nested-toc-section">startSession
-      <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"
+      <li><a class="reference" href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint%2Cint"
     title="startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 6;
-             max_shards = none int;
+             max_shards = none int; shard_id = 0;
              cache_users, cache_guilds, guild_subscriptions = true;
-             cache_guild_channels, cache_dm_channels = true): owned(Future[void])">startSession,DiscordClient,set[GatewayIntent],int,int,int,int<span class="attachedType"></span></a></li>
+             cache_guild_channels, cache_dm_channels = true): owned(Future[void])">startSession,DiscordClient,set[GatewayIntent],int,int,int,int,int<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">updateStatus
@@ -180,9 +180,9 @@ function main() {
 
 Updates the shard's status.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L117"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L120"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L120" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="updateStatus,Shard,seq[ActivityStatus],string"></a>
@@ -194,9 +194,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Updates the shard's status.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L140"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L143"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L140" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L143" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="resume,Shard"></a>
@@ -206,9 +206,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L198"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L202"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L202" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="requestGuildMembers,Shard,,string,seq[string]"></a>
@@ -220,9 +220,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Requests the offline members to a guild. (See: <a class="reference external" href="https://discord.com/developers/docs/topics/gateway#request-guild-members">https://discord.com/developers/docs/topics/gateway#request-guild-members</a>)
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L217"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L221"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L217" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L221" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="voiceStateUpdate,Shard,string"></a>
@@ -234,9 +234,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Allows the shard to either join, move to, or disconnect. If channel_id param is not provided. It will disconnect.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L242"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L242" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="disconnect,Shard"></a>
@@ -247,9 +247,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Disconnects a shard.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L362"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L366"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L362" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L366" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="endSession,DiscordClient"></a>
@@ -260,17 +260,17 @@ class="link-seesrc" target="_blank">Source</a>
 
 Ends the session.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L523"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L536"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L523" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L536" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="startSession,DiscordClient,set[GatewayIntent],int,int,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+<a id="startSession,DiscordClient,set[GatewayIntent],int,int,int,int,int"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint%2Cint"><span class="Identifier">startSession</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">autoreconnect</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                   <span class="Identifier">gateway_intents</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#GatewayIntent"><span class="Identifier">GatewayIntent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
                   <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
                   <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">6</span><span class="Other">;</span>
-                  <span class="Identifier">max_shards</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span>
+                  <span class="Identifier">max_shards</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">shard_id</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span>
                   <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span><span class="Other">,</span> <span class="Identifier">guild_subscriptions</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                   <span class="Identifier">cache_guild_channels</span><span class="Other">,</span> <span class="Identifier">cache_dm_channels</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
@@ -286,9 +286,9 @@ Connects the client to Discord via gateway.<ul class="simple"><li><tt class="doc
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L567"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L580"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L567" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L580" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="latency,Shard"></a>
@@ -297,9 +297,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the shard's latency ms.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L659"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L680"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L659" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L680" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -312,7 +312,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-11 18:04:00 UTC</small>
       </div>
     </div>
   </div>

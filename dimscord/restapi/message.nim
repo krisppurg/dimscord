@@ -248,7 +248,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         content = none string;
-        embeds = newSeq[Embed](10);
+        embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions) {.async.} =
     ## Modifies the webhook message.
     ## You can actually use this to modify

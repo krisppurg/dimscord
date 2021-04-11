@@ -688,6 +688,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="ChannelType.ctGuildParent" href="dimscord/constants.html#ctGuildParent">ChannelType.ctGuildParent</a></li>
           </ul></dd>
+<dt><a name="ctGuildStageVoice" href="#ctGuildStageVoice"><span>ctGuildStageVoice:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="ChannelType.ctGuildStageVoice" href="dimscord/constants.html#ctGuildStageVoice">ChannelType.ctGuildStageVoice</a></li>
+          </ul></dd>
 <dt><a name="ctGuildStore" href="#ctGuildStore"><span>ctGuildStore:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="ChannelType.ctGuildStore" href="dimscord/constants.html#ctGuildStore">ChannelType.ctGuildStore</a></li>
@@ -889,8 +893,12 @@ function main() {
 <dt><a name="editGuildChannelPositions" href="#editGuildChannelPositions"><span>editGuildChannelPositions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
-                          position = none int; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
-                          position = none int; reason = &quot;&quot;): owned(Future[void])</a></li>
+                          position = none int; parent_id = none string;
+                          lock_permissions = false; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#editGuildChannelPositions%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editGuildChannelPositions(api: RestApi; guild_id, channel_id: string;
+                          position = none int; parent_id = none string;
+                          lock_permissions = false; reason = &quot;&quot;): owned(
+    Future[void])</a></li>
           </ul></dd>
 <dt><a name="editGuildEmoji" href="#editGuildEmoji"><span>editGuildEmoji:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -961,9 +969,9 @@ function main() {
 <dt><a name="editWebhookMessage" href="#editWebhookMessage"><span>editWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content = none string; embeds = newSeq[Embed](10);
+                   content = none string; embeds = newSeq[Embed]();
                    allowed_mentions = none AllowedMentions): owned(Future[void])" href="dimscord/restapi.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content = none string; embeds = newSeq[Embed](10);
+                   content = none string; embeds = newSeq[Embed]();
                    allowed_mentions = none AllowedMentions): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="Embed" href="#Embed"><span>Embed:</span></a></dt><dd><ul class="simple">
@@ -1089,6 +1097,10 @@ function main() {
 <dt><a name="endpointGuildMembersRole" href="#endpointGuildMembersRole"><span>endpointGuildMembersRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: endpointGuildMembersRole(gid, mid, rid: string): string" href="dimscord/constants.html#endpointGuildMembersRole%2Cstring%2Cstring%2Cstring">constants: endpointGuildMembersRole(gid, mid, rid: string): string</a></li>
+          </ul></dd>
+<dt><a name="endpointGuildMembersSearch" href="#endpointGuildMembersSearch"><span>endpointGuildMembersSearch:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: endpointGuildMembersSearch(gid: string): string" href="dimscord/constants.html#endpointGuildMembersSearch%2Cstring">constants: endpointGuildMembersSearch(gid: string): string</a></li>
           </ul></dd>
 <dt><a name="endpointGuildPreview" href="#endpointGuildPreview"><span>endpointGuildPreview:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1792,6 +1804,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="MessageType.mtGuildDiscoveryRequalified" href="dimscord/constants.html#mtGuildDiscoveryRequalified">MessageType.mtGuildDiscoveryRequalified</a></li>
           </ul></dd>
+<dt><a name="mtGuildInviteReminder" href="#mtGuildInviteReminder"><span>mtGuildInviteReminder:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageType.mtGuildInviteReminder" href="dimscord/constants.html#mtGuildInviteReminder">MessageType.mtGuildInviteReminder</a></li>
+          </ul></dd>
 <dt><a name="mtGuildMemberJoin" href="#mtGuildMemberJoin"><span>mtGuildMemberJoin:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="MessageType.mtGuildMemberJoin" href="dimscord/constants.html#mtGuildMemberJoin">MessageType.mtGuildMemberJoin</a></li>
@@ -2226,6 +2242,24 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="objects: Role" href="dimscord/objects.html#Role">objects: Role</a></li>
           </ul></dd>
+<dt><a name="scfSuppressJoinNotifications" href="#scfSuppressJoinNotifications"><span>scfSuppressJoinNotifications:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="SystemChannelFlags.scfSuppressJoinNotifications" href="dimscord/constants.html#scfSuppressJoinNotifications">SystemChannelFlags.scfSuppressJoinNotifications</a></li>
+          </ul></dd>
+<dt><a name="scfSupressGuildReminderNotifications" href="#scfSupressGuildReminderNotifications"><span>scfSupressGuildReminderNotifications:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="SystemChannelFlags.scfSupressGuildReminderNotifications" href="dimscord/constants.html#scfSupressGuildReminderNotifications">SystemChannelFlags.scfSupressGuildReminderNotifications</a></li>
+          </ul></dd>
+<dt><a name="scfSupressPremiumSubscriptions" href="#scfSupressPremiumSubscriptions"><span>scfSupressPremiumSubscriptions:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="SystemChannelFlags.scfSupressPremiumSubscriptions" href="dimscord/constants.html#scfSupressPremiumSubscriptions">SystemChannelFlags.scfSupressPremiumSubscriptions</a></li>
+          </ul></dd>
+<dt><a name="searchGuildMembers" href="#searchGuildMembers"><span>searchGuildMembers:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: searchGuildMembers(api: RestApi; guild_id: string; query = &quot;&quot;;
+                   limit: range[1 .. 1000] = 1): Future[seq[Member]]" href="dimscord/restapi.html#searchGuildMembers%2CRestApi%2Cstring%2Cstring%2Crange%5B%5D">restapi: searchGuildMembers(api: RestApi; guild_id: string; query = &quot;&quot;;
+                   limit: range[1 .. 1000] = 1): Future[seq[Member]]</a></li>
+          </ul></dd>
 <dt><a name="sendMessage" href="#sendMessage"><span>sendMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
@@ -2258,13 +2292,13 @@ function main() {
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 6;
-             max_shards = none int;
+             max_shards = none int; shard_id = 0;
              cache_users, cache_guilds, guild_subscriptions = true;
-             cache_guild_channels, cache_dm_channels = true): owned(Future[void])" href="dimscord/gateway.html#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint">gateway: startSession(discord: DiscordClient; autoreconnect = true;
+             cache_guild_channels, cache_dm_channels = true): owned(Future[void])" href="dimscord/gateway.html#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint%2Cint">gateway: startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent] = {};
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 6;
-             max_shards = none int;
+             max_shards = none int; shard_id = 0;
              cache_users, cache_guilds, guild_subscriptions = true;
              cache_guild_channels, cache_dm_channels = true): owned(Future[void])</a></li>
           </ul></dd>
@@ -2297,6 +2331,10 @@ function main() {
 <dt><a name="syncGuildTemplate" href="#syncGuildTemplate"><span>syncGuildTemplate:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: syncGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]" href="dimscord/restapi.html#syncGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: syncGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]</a></li>
+          </ul></dd>
+<dt><a name="SystemChannelFlags" href="#SystemChannelFlags"><span>SystemChannelFlags:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: SystemChannelFlags" href="dimscord/constants.html#SystemChannelFlags">constants: SystemChannelFlags</a></li>
           </ul></dd>
 <dt><a name="Team" href="#Team"><span>Team:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2482,6 +2520,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="constants: WebhookType" href="dimscord/constants.html#WebhookType">constants: WebhookType</a></li>
           </ul></dd>
+<dt><a name="WelcomeChannel" href="#WelcomeChannel"><span>WelcomeChannel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="objects: WelcomeChannel" href="dimscord/objects.html#WelcomeChannel">objects: WelcomeChannel</a></li>
+          </ul></dd>
 <dt><a name="whFollower" href="#whFollower"><span>whFollower:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="WebhookType.whFollower" href="dimscord/constants.html#whFollower">WebhookType.whFollower</a></li>
@@ -2495,7 +2537,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-09 14:49:31 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-04-11 18:04:04 UTC</small>
       </div>
     </div>
   </div>

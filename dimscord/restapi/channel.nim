@@ -187,15 +187,19 @@ proc getGuildChannels*(api: RestApi,
     )).elems.map(newGuildChannel)
 
 proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
-        position = none int; reason = "") {.async.} =
+        position = none int; parent_id = none string; lock_permissions = false;
+        reason = "") {.async.} =
     ## Edits a guild channel's position.
+    let payload = %*{
+        "id": channel_id,
+        "position": %position,
+        "lock_permissions": lock_permissions
+    }
+    payload.loadNullableOptStr(parent_id)
     discard await api.request(
         "PATCH",
         endpointGuildChannels(guild_id, channel_id),
-        $(%*{
-            "id": channel_id,
-            "position": %position
-        }),
+        $payload,
         audit_reason = reason
     )
 

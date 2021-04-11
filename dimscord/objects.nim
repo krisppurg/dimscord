@@ -399,11 +399,15 @@ proc newMember*(data: JsonNode): Member =
             client_status: ("offline", "offline", "offline")
         )
     )
-
+    if "permissions" in data and data["permissions"].kind != JNull:
+        result.permissions = some cast[set[PermissionFlags]](
+            data["permissions"].str.parseBiggestInt
+        )
     if "user" in data and data["user"].kind != JNull:
         result.user = newUser(data["user"])
 
     data.keyCheckOptStr(result, nick, premium_since)
+    data.keyCheckOptBool(result, pending)
 
 proc newTypingStart*(data: JsonNode): TypingStart =
     result = TypingStart(
@@ -666,6 +670,9 @@ proc newGuild*(data: JsonNode): Guild =
         default_message_notifications: MessageNotificationLevel(
             data["default_message_notifications"].getInt
         ),
+        system_channel_flags: cast[set[SystemChannelFlags]](
+            data{"system_channel_flags"}.getStr("0").parseBiggestInt
+        ),
         roles: initTable[string, Role](),
         emojis: initTable[string, Emoji](),
         voice_states: initTable[string, VoiceState](),
@@ -680,6 +687,11 @@ proc newGuild*(data: JsonNode): Guild =
         result.roles[r["id"].str] = newRole(r)
     for e in data["emojis"].elems:
         result.emojis[e["id"].str] = newEmoji(e)
+    if "welcome_screen" in data and data["welcome_screen"].kind != JNull:
+        result.welcome_screen = some data.to(tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+        ])
 
     data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
         premium_subscription_count, max_presences, approximate_member_count,

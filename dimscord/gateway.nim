@@ -8,6 +8,8 @@ import nativesockets, helpers, dispatch
 
 when defined(discordCompress):
     import zippy
+    # let zlib_suffix = "\x00\x00\xff\xff"
+    # var buffer = ""
 
 randomize()
 
@@ -27,6 +29,7 @@ const
 var
     backoff = false
     reconnectable = true
+    invididualShard = false
 
 proc reset(s: Shard) {.used.} =
     s.authenticating = false
@@ -193,7 +196,8 @@ proc identify(s: Shard) {.async, used.} =
         payload["intents"] = %cast[int](s.client.intents)
 
     await s.sendSock(opIdentify, payload, ignore = true)
-    if s.client.max_shards > 1: await sleepAsync 5000
+    if s.client.max_shards > 1 and not invididualShard:
+        await sleepAsync 5000
 
 proc resume*(s: Shard) {.async.} =
     if s.authenticating or s.sockClosed: return
@@ -437,6 +441,15 @@ proc handleSocketMessage(s: Shard) {.async.} =
         when defined(discordCompress):
             if packet[0] == Binary:
                 packet[1] = uncompress(packet[1])
+                # buffer &= packet[1]
+                # if len(packet[1]) >= 4:
+                #     if packet[1][^4..^1] == zlib_suffix:
+                #         packet[1] = uncompress(buffer)
+                #         buffer = ""
+                #     else:
+                #         return
+                # else:
+                #     return
 
         try:
             data = parseJson(packet[1])
@@ -562,7 +575,7 @@ proc startSession*(discord: DiscordClient,
             large_message_threshold, large_threshold = 50;
             max_message_size = 5_000_000;
             gateway_version = 6;
-            max_shards = none int;
+            max_shards = none int; shard_id = 0;
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
@@ -608,6 +621,9 @@ proc startSession*(discord: DiscordClient,
         query = "/?v=" & $discord.gatewayVersion
         info: GatewayBot
 
+    # when defined(discordCompress):
+    #     query &= "&compress=zlib-stream"
+
     if discord.shards.len == 0:
         log("Starting gateway session.")
 
@@ -628,8 +644,7 @@ proc startSession*(discord: DiscordClient,
             log("WARNING: Your session start limit has reached to 10.")
 
         if info.session_start_limit.remaining == 0:
-            let time = getTime().toUnix()-info.session_start_limit.reset_after
-
+            let time = info.session_start_limit.reset_after - getTime().toUnix()
             log("Your session start limit has reached its limit", (
                 sleep_time: time
             ))
@@ -639,7 +654,12 @@ proc startSession*(discord: DiscordClient,
             discord.max_shards = info.shards
 
     for id in 0..discord.max_shards - 1:
-        let s = discord.setupShard(id, CacheTablePrefs(
+        var sid = id
+        if shard_id != 0:
+            invididualShard = true
+            sid = shard_id
+
+        let s = discord.setupShard(sid, CacheTablePrefs(
             cache_users: cache_users,
             cache_guilds: cache_guilds,
             cache_guild_channels: cache_guild_channels,
@@ -649,12 +669,13 @@ proc startSession*(discord: DiscordClient,
         ))
         s.gatewayUrl = info.url
 
-        if id == discord.max_shards - 1: # Last shard.
+        if id == discord.max_shards - 1 or invididualShard: # Last shard.
             await s.startSession(s.gatewayUrl, query)
         else:
             asyncCheck s.startSession(s.gatewayUrl, query)
 
         await s.waitWhenReady()
+        if invididualShard: break
 
 proc latency*(s: Shard): int =
     ## Gets the shard's latency ms.

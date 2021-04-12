@@ -85,6 +85,7 @@ keyCheckOptStr	dimscord/objects.html#keyCheckOptStr.m,typed,typed,varargs[untype
 keyCheckStr	dimscord/objects.html#keyCheckStr.m,typed,typed,varargs[untyped]	objects: keyCheckStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
 newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	objects: newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient	
+newGuildPreview	dimscord/objects.html#newGuildPreview,JsonNode	objects: newGuildPreview(data: JsonNode): GuildPreview	
 newInviteMetadata	dimscord/objects.html#newInviteMetadata,JsonNode	objects: newInviteMetadata(data: JsonNode): InviteMetadata	
 newOverwrite	dimscord/objects.html#newOverwrite,JsonNode	objects: newOverwrite(data: JsonNode): Overwrite	
 newRole	dimscord/objects.html#newRole,JsonNode	objects: newRole(data: JsonNode): Role	

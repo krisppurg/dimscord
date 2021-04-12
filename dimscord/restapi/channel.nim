@@ -193,6 +193,7 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
     let payload = %*{
         "id": channel_id,
         "position": %position,
+        "parent_id": %parent_id,
         "lock_permissions": lock_permissions
     }
     payload.loadNullableOptStr(parent_id)

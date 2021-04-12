@@ -119,6 +119,20 @@ proc newDiscordClient*(token: string;
             interaction_create: proc(s:Shard, i:Interaction){.async.} = discard
         ))
 
+proc newGuildPreview*(data: JsonNode): GuildPreview =
+    result = GuildPreview(
+        id: data["id"].str,
+        name: data["name"].str,
+        features: data["features"].elems.mapIt(it.getStr),
+        approximate_member_count: data["approximate_member_count"].getInt,
+        approximate_presence_count: data["approximate_presence_count"].getInt,
+        system_channel_flags: cast[set[SystemChannelFlags]](
+            data{"system_channel_flags"}.getStr("0").parseBiggestInt
+        )
+    )
+    data.keyCheckOptStr(result, icon, banner, splash, emojis,
+        preferred_locale, discovery_splash, description)
+
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = InviteMetadata(
         code: data["code"].str,
@@ -397,12 +411,11 @@ proc newMember*(data: JsonNode): Member =
         presence: Presence(
             status: "offline",
             client_status: ("offline", "offline", "offline")
+        ),
+        permissions: cast[set[PermissionFlags]](
+            data{"permissions"}.getStr("0").parseBiggestInt
         )
     )
-    if "permissions" in data and data["permissions"].kind != JNull:
-        result.permissions = some cast[set[PermissionFlags]](
-            data["permissions"].str.parseBiggestInt
-        )
     if "user" in data and data["user"].kind != JNull:
         result.user = newUser(data["user"])
 

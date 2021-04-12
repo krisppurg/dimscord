@@ -137,7 +137,7 @@ type
         roles*: seq[string]
         deaf*, mute*: bool
         pending*: Option[bool]
-        permissions*: Option[set[PermissionFlags]]
+        permissions*: set[PermissionFlags]
         presence*: Presence
         voice_state*: Option[VoiceState]
     Attachment* = object
@@ -409,7 +409,7 @@ type
         account*: tuple[id, name: string]
     GuildPreview* = object
         id*, name*: string
-        system_channel_flags*: SystemChannelFlags
+        system_channel_flags*: set[SystemChannelFlags]
         icon*, banner*, splash*, emojis*: Option[string]
         preferred_locale*, discovery_splash*, description*: Option[string]
         approximate_member_count*, approximate_presence_count*: int

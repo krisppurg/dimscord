@@ -357,7 +357,7 @@ proc getGuildPreview*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildPreview(guild_id)
-    )).to(GuildPreview)
+    )).newGuildPreview
 
 proc searchGuildMembers*(api: RestApi, guild_id: string;
     query = ""; limit: range[1..1000] = 1): Future[seq[Member]] {.async.} =

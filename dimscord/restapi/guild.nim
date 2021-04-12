@@ -4,7 +4,7 @@ import sequtils, strutils
 import requester
 
 proc beginGuildPrune*(api: RestApi, guild_id: string;
-        days: range[1..7] = 7;
+        days: range[1..30] = 7;
         compute_prune_count = true;
         reason = "") {.async.} =
     ## Begins a guild prune.

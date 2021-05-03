@@ -147,8 +147,12 @@ proc newOverwrite*(data: JsonNode): Overwrite =
     result.id = data["id"].str
     when defined(discordv8):
         result.kind = data["type"].getInt
-        result.allow = cast[set[PermissionFlags]](data["allow"].str.parseInt)
-        result.deny = cast[set[PermissionFlags]](data["deny"].str.parseInt)
+        result.allow = cast[set[PermissionFlags]](
+            data["allow"].str.parseBiggestInt
+        )
+        result.deny = cast[set[PermissionFlags]](
+            data["deny"].str.parseBiggestInt
+        )
     else:
         result.kind = data["type"].str
         result.allow = cast[set[PermissionFlags]](data["allow"].getInt)

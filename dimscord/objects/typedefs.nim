@@ -11,6 +11,7 @@ type
         ## An object of allowed mentions.
         ## For parse: The values should be "roles", "users", "everyone"
         parse*, roles*, users*: seq[string]
+        replied_user*: bool
     DiscordClient* = ref object
         api*: RestApi
         events*: Events

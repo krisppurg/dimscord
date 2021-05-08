@@ -36,10 +36,10 @@ proc parseRoute(endpoint, meth: string): string =
 
     result = route
 
-proc handleRoute(api: RestApi, global = false; route = "") {.async.} =
+proc handleRoute(api: RestApi, glbal = false; route = "") {.async.} =
     var rl: tuple[retry_after: float, ratelimited: bool]
 
-    if global:
+    if glbal:
         rl = (global_retry_after, ratelimited)
     elif route != "":
         rl = (api.endpoints[route].retry_after,
@@ -48,14 +48,15 @@ proc handleRoute(api: RestApi, global = false; route = "") {.async.} =
     if rl.ratelimited:
         log "Delaying " & (if global: "all" else: "HTTP") &
             " requests in (" & $(int(rl.retry_after * 1000) + 250) &
-            "ms) [" & (if global: "global" else: route) & "]"
+            "ms) [" & (if glbal: "global" else: route) & "]"
 
         await sleepAsync int(rl.retry_after * 1000) + 250
 
-        if not global:
+        if not glbal:
             api.endpoints[route].ratelimited = false
         else:
             ratelimited = false
+            global = false
 
 proc discordDetailedErrors(errors: JsonNode, extra = ""): seq[string] =
     let ext = extra
@@ -116,7 +117,9 @@ proc request*(api: RestApi, meth, endpoint: string;
         var resp: AsyncResponse
 
         if audit_reason != "":
-            client.headers["X-Audit-Log-Reason"] = encodeUrl(audit_reason)
+            client.headers["X-Audit-Log-Reason"] = encodeUrl(
+                audit_reason, usePlus = false
+            ).replace(" ", "%20")
         if auth:
             client.headers["Authorization"] = api.token
 
@@ -158,7 +161,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 if resp.headers["content-type"] == "application/json":
                     let body = resp.body
 
-                    if (await withTimeout(body, 60_000)) == false:
+                    if not (await withTimeout(body, 60_000)):
                         raise newException(RestError,
                             "Body took too long to parse.")
                     else:
@@ -182,8 +185,8 @@ proc request*(api: RestApi, meth, endpoint: string;
                     invalid_requests += 1
 
                     error = fin & "You are being rate-limited."
-                    if resp.headers.hasKey("Retry-After"): # ;-; no `in` support
-                        await sleepAsync resp.headers["Retry-After"].parseInt
+                    let retry = (data["retry_after"].getFloat(1.25) * 1000)
+                    await sleepAsync retry
 
                     await doreq()
                 else:
@@ -209,7 +212,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 log("Awaiting for body to be parsed")
                 let body = resp.body
 
-                if (await withTimeout(body, 60_000)) == false:
+                if not (await withTimeout(body, 60_000)):
                     raise newException(RestError,
                         "Body took too long to parse.")
                 else:
@@ -226,11 +229,13 @@ proc request*(api: RestApi, meth, endpoint: string;
         if headerLimited:
             if resp.headers.hasKey("X-RateLimit-Global"):
                 global = true
+                global_retry_after = r.retry_after
                 ratelimited = true
                 r.ratelimited = true
 
                 await api.handleRoute(global)
             else:
+                global = false #if it was global before set it to false
                 r.ratelimited = true
                 await api.handleRoute(false, route)
 

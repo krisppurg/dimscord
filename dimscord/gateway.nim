@@ -72,7 +72,7 @@ proc sendSock(s: Shard, opcode: int, data: JsonNode;
         "d": data
     }))
 
-    if (await withTimeout(fut, 20000)) == false:
+    if not (await withTimeout(fut, 20000)):
         s.logShard("Payload was taking longer to send. Retrying in 5000ms...")
         await sleepAsync 5000
         await s.sendSock(opcode, data, ignore)
@@ -331,7 +331,7 @@ proc reconnect(s: Shard) {.async.} =
         s.reconnecting = false
         s.stop = false
 
-        if (await withTimeout(future, 25000)) == false:
+        if not (await withTimeout(future, 25000)):
             s.logShard("Websocket timed out.\n\n  Retrying connection...")
 
             await s.reconnect()
@@ -552,7 +552,7 @@ proc startSession(s: Shard, url, query: string) {.async.} =
     try:
         let future = newWebsocket(url & query)
 
-        if (await withTimeout(future, 25000)) == false:
+        if not (await withTimeout(future, 25000)):
             s.logShard("Websocket timed out.\n\n  Retrying connection...")
             await s.startSession(url, query)
             return

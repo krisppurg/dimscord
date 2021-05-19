@@ -118,6 +118,7 @@ proc getCurrentApplication*(api: RestApi): Future[OAuth2Application] {.async.} =
         endpointOAuth2Application()
     )).newOAuth2Application
 
+
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         guild_id = ""; name, description: string;
         options: seq[ApplicationCommandOption] = @[]
@@ -175,16 +176,21 @@ proc getApplicationCommand*(
     )).newApplicationCommand
 
 proc bulkOverwriteApplicationCommands*(
-        api: RestApi, application_id: string; guild_id = ""
+        api: RestApi, application_id: string; commands: seq[ApplicationCommand], guild_id = ""
 ): Future[seq[ApplicationCommand]] {.async.} =
     ## Overwrites existing commands slash command that were registered in guild or application.
     ## - `guild_id` is optional.
+    let payload = %(commands.map(
+        proc (a: ApplicationCommand): JsonNode =
+            %%* a
+    ))
     result = (await api.request(
         "PUT",
         (if guild_id != "":
             endpointGuildCommands(application_id, guild_id)
         else:
             endpointGlobalCommands(application_id)),
+        $payload
     )).elems.map(newApplicationCommand)
 
 proc editApplicationCommand*(api: RestApi, application_id, command_id: string;

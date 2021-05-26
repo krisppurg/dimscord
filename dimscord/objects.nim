@@ -846,6 +846,15 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 return %%*x # avoid conflicts with json
         )
 
+proc `%%*`*(a: ApplicationCommand): JsonNode =
+    assert a.name.len in 3..32
+    assert a.description.len in 1..100
+    result = %*{"name": a.name, "description": a.description}
+    if a.options.len > 0: result["options"] = %(a.options.map(
+        proc (x: ApplicationCommandOption): JsonNode =
+            %%*x
+    ))
+
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,

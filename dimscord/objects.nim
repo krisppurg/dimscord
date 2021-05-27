@@ -496,6 +496,8 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         )
 
 proc newMessage*(data: JsonNode): Message =
+    if data.isNil:
+        return Message()
     result = Message(
         id: data["id"].str,
         channel_id: data["channel_id"].str,

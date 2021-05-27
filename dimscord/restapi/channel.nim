@@ -219,10 +219,8 @@ proc createWebhook*(api: RestApi, channel_id, username: string;
     result = (await api.request(
         "POST",
         endpointChannelWebhooks(channel_id),
-        $(%*{
-            "username": username,
-            "avatar": avatar
-        }),
+        if avatar.isNone: $(%*{"name": username})
+        else: $(%*{"name": username, "avatar": avatar.get}),
         audit_reason = reason
     )).newWebhook
 

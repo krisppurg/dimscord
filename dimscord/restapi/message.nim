@@ -144,7 +144,7 @@ proc addMessageReaction*(api: RestApi,
         emj = encodeUrl(emoji)
 
     discard await api.request("PUT",
-        endpointReactions(channel_id, message_id, e=emj, uid="@me")
+        endpointReactions(channel_id, message_id, e = emj, uid = "@me")
     )
 
 proc deleteMessageReaction*(api: RestApi,
@@ -157,7 +157,7 @@ proc deleteMessageReaction*(api: RestApi,
 
     discard await api.request(
         "DELETE",
-        endpointReactions(channel_id, message_id, e=emj, uid=user_id)
+        endpointReactions(channel_id, message_id, e = emj, uid = user_id)
     )
 
 proc deleteMessageReactionEmoji*(api: RestApi,
@@ -174,7 +174,7 @@ proc getMessageReactions*(api: RestApi,
         limit: range[1..100] = 25): Future[seq[User]] {.async.} =
     ## Get all user message reactions on the emoji provided.
     var emj = emoji
-    var url = endpointReactions(channel_id, message_id, e=emj, uid="@me") & "?"
+    var url = endpointReactions(channel_id, message_id, e = emj, uid = "@me") & "?"
 
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
@@ -204,12 +204,13 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
             file = none DiscordFile;
             embeds = none seq[Embed];
             allowed_mentions = none AllowedMentions;
-            username, avatar_url = none string): Future[Message] {.async.} =
+            username, avatar_url = none string): Future[Option[Message]] {.async.} =
     ## Executes a webhook or create a followup message.
     ## If `wait` is `false` make sure to `discard await` it.
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
-    
+    var rawResult: JsonNode
+
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
     let payload = %*{
         "content": content,
@@ -242,8 +243,11 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
         mpd.add("payload_json", $payload, contentType = "application/json")
 
-        return (await api.request("POST", url, $payload, mp = mpd)).newMessage
-    result = (await api.request("POST", url, $payload)).newMessage
+        rawResult = await api.request("POST", url, $payload, mp = mpd)
+    else:
+        rawResult = await api.request("POST", url, $payload)
+
+    return if wait: some(rawResult.newMessage) else: none(Message)
 
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
@@ -279,19 +283,21 @@ proc deleteWebhookMessage*(api: RestApi;
     )
 
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true): Future[Message] {.async.} =
+        wait = true): Future[Option[Message]] {.async.} =
     ## Executes a slack webhook.
     ## If `wait` is `false` make sure to `discard await` it.
-    result = (await api.request(
+    let rawResult = await api.request(
         "POST",
         endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
-    )).newMessage
+    )
+    return if wait: some(rawResult.newMessage) else: none(Message)
 
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true): Future[Message] {.async.} =
+        wait = true): Future[Option[Message]] {.async.} =
     ## Executes a github webhook.
     ## If `wait` is `false` make sure to `discard await` it.
-    result = (await api.request(
+    let rawResult = await api.request(
         "POST",
         endpointWebhookTokenGithub(webhook_id, token) & "?wait=" & $wait
-    )).newMessage
+    )
+    return if wait: some(rawResult.newMessage) else: none(Message)

@@ -46,7 +46,8 @@ proc newDiscordClient*(token: string;
             on_dispatch: proc (s: Shard, evt: string,
                     data: JsonNode) {.async.} = discard,
             on_ready: proc (s: Shard, r: Ready) {.async.} = discard,
-            on_invalid_session: proc (s: Shard, resumable: bool) {.async.} = discard,
+            on_invalid_session: proc (s: Shard, resumable: bool) {.
+                    async.} = discard,
             message_create: proc (s: Shard, m: Message) {.async.} = discard,
             message_delete: proc (s: Shard, m: Message,
                     exists: bool) {.async.} = discard,
@@ -116,7 +117,8 @@ proc newDiscordClient*(token: string;
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
             on_disconnect: proc (s: Shard) {.async.} = discard,
-            interaction_create: proc(s:Shard, i:Interaction){.async.} = discard
+            interaction_create: proc(s: Shard, i: Interaction){.
+                    async.} = discard
         ))
 
 proc newGuildPreview*(data: JsonNode): GuildPreview =
@@ -463,7 +465,7 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
     result.attachments = data{"attachments"}.getElems.map(newAttachment)
     result.embeds = data{"embeds"}.getElems.map(
         proc (x: JsonNode): Embed =
-            x.to(Embed)
+        x.to(Embed)
     )
     if "type" in data and data["type"].kind != JNull:
         result.kind = MessageType data["type"].getInt
@@ -496,8 +498,6 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         )
 
 proc newMessage*(data: JsonNode): Message =
-    if data.isNil:
-        return Message()
     result = Message(
         id: data["id"].str,
         channel_id: data["channel_id"].str,
@@ -510,8 +510,8 @@ proc newMessage*(data: JsonNode): Message =
         flags: cast[set[MessageFlags]](data["flags"].getInt),
         stickers: data{"stickers"}.getElems.map(
             proc (x: JsonNode): Sticker =
-                x.to(Sticker)
-        ),
+        x.to(Sticker)
+    ),
         reactions: initTable[string, Reaction]()
     )
     data.keyCheckOptStr(result, edited_timestamp,
@@ -521,7 +521,7 @@ proc newMessage*(data: JsonNode): Message =
         result.author = newUser(data["author"])
     if "member" in data and data["member"].kind != JNull:
         result.member = some newMember(data["member"])
-    if "referenced_message" in data and data["referenced_message"].kind!=JNull:
+    if "referenced_message" in data and data["referenced_message"].kind != JNull:
         result.referenced_message = some data["referenced_message"].newMessage
 
     for r in data{"mention_roles"}.getElems:
@@ -591,7 +591,7 @@ proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
             result = AuditLogChangeValue(kind: alcRoles)
             result.roles = data.elems.map(
                 proc (x: JsonNode): tuple[id, name: string] =
-                    x.to(tuple[id, name: string])
+                x.to(tuple[id, name: string])
             )
         elif "permission_overwrites" in key:
             result = AuditLogChangeValue(kind: alcOverwrites)
@@ -632,8 +632,8 @@ proc newAuditLog*(data: JsonNode): AuditLog =
             newAuditLogEntry),
         integrations: data["integrations"].elems.map(
             proc (x: JsonNode): Integration =
-                result = x.to(Integration)
-        )
+        result = x.to(Integration)
+    )
     )
 
 proc newTeam(data: JsonNode): Team =
@@ -642,15 +642,15 @@ proc newTeam(data: JsonNode): Team =
         owner_user_id: data["owner_user_id"].str,
         members: data["members"].elems.map(
             proc (x: JsonNode): TeamMember =
-                result = TeamMember(
-                    membership_state: TeamMembershipState(
-                        x["membership_state"].getInt
-                    ),
-                    permissions: x["permissions"].elems.mapIt(it.str),
-                    team_id: x["team_id"].str,
-                    user: newUser(x["user"])
-                )
+        result = TeamMember(
+            membership_state: TeamMembershipState(
+                x["membership_state"].getInt
+            ),
+            permissions: x["permissions"].elems.mapIt(it.str),
+            team_id: x["team_id"].str,
+            user: newUser(x["user"])
         )
+    )
     )
     data.keyCheckOptStr(result, icon)
 
@@ -753,7 +753,7 @@ proc newGuildTemplate*(data: JsonNode): GuildTemplate =
         created_at: data["created_at"].str,
         updated_at: data["updated_at"].str,
         source_guild_id: data["source_guild_id"].str,
-        serialized_source_guild:data["serialized_source_guild"].to PartialGuild
+        serialized_source_guild: data["serialized_source_guild"].to PartialGuild
     )
     data.keyCheckOptBool(result, is_dirty)
     data.keyCheckOptStr(result, description)
@@ -763,9 +763,9 @@ proc newApplicationCommandInteractionDataOption(
 ): ApplicationCommandInteractionDataOption =
     result = ApplicationCommandInteractionDataOption(
         options: data{"options"}.getElems.map(
-            proc(x: JsonNode):(string,ApplicationCommandInteractionDataOption)=
-                (x["name"].str, newApplicationCommandInteractionDataOption(x))
-        ).toTable
+            proc(x: JsonNode): (string, ApplicationCommandInteractionDataOption) =
+        (x["name"].str, newApplicationCommandInteractionDataOption(x))
+    ).toTable
     )
     if "value" in data and data["value"].kind != JNull:
         case data["value"].kind:
@@ -787,7 +787,7 @@ proc newApplicationCommandInteractionData*(
         options: initTable[string, ApplicationCommandInteractionDataOption]()
     )
     for option in data{"options"}.getElems:
-        result.options[option["name"].str] = 
+        result.options[option["name"].str] =
             newApplicationCommandInteractionDataOption(option)
 
 proc newInteraction*(data: JsonNode): Interaction =
@@ -815,13 +815,13 @@ proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
         description: data["description"].str,
         choices: data{"choices"}.getElems.map(
             proc (x: JsonNode): ApplicationCommandOptionChoice =
-                result = ApplicationCommandOptionChoice(
-                    name: x["name"].str)
-                if x["value"].kind == JInt:
-                    result.value[1] = some x["value"].getInt # this is 
-                if x["value"].kind == JString: # a tuple btw
-                    result.value[0] = some x["value"].str
-        ),
+        result = ApplicationCommandOptionChoice(
+            name: x["name"].str)
+        if x["value"].kind == JInt:
+            result.value[1] = some x["value"].getInt # this is
+        if x["value"].kind == JString: # a tuple btw
+            result.value[0] = some x["value"].str
+    ),
         options: data{"options"}.getElems.map newApplicationCommandOption
     )
     data.keyCheckOptBool(result, default, required)
@@ -835,17 +835,17 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
     if a.choices.len > 0:
         result["choices"] = %a.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =
-                let json = %*{"name": %x.name}
-                if x.value[0].isSome:
-                    json["value"] = %x.value[0]
-                if x.value[1].isSome:
-                    json["value"] = %x.value[1]
-                return json
+            let json = %*{"name": %x.name}
+            if x.value[0].isSome:
+                json["value"] = %x.value[0]
+            if x.value[1].isSome:
+                json["value"] = %x.value[1]
+            return json
         )
     if a.options.len > 0:
         result["options"] = %a.options.map(
             proc (x: ApplicationCommandOption): JsonNode =
-                return %%*x # avoid conflicts with json
+            return %%*x # avoid conflicts with json
         )
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
@@ -854,7 +854,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     result = %*{"name": a.name, "description": a.description}
     if a.options.len > 0: result["options"] = %(a.options.map(
         proc (x: ApplicationCommandOption): JsonNode =
-            %%*x
+        %%*x
     ))
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =

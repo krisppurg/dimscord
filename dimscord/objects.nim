@@ -697,6 +697,7 @@ proc newGuild*(data: JsonNode): Guild =
         channels: initTable[string, GuildChannel](),
         presences: initTable[string, Presence](),
         mfa_level: MFALevel data["mfa_level"].getInt,
+        nsfw_level: GuildNSFWLevel data["nsfw_level"].getInt,
         premium_tier: PremiumTier data["premium_tier"].getInt,
         preferred_locale: data["preferred_locale"].str)
 

@@ -345,11 +345,26 @@ type
         ## `options` Table[option_name, obj]
         id*, name*: string
         options*: Table[string, ApplicationCommandInteractionDataOption]
+
     ApplicationCommandInteractionDataOption* = object
-        bval*: Option[bool]
-        ival*: Option[int]
-        str*: Option[string]
-        options*: Table[string, ApplicationCommandInteractionDataOption]
+        name*: string
+        case kind*: ApplicationCommandOptionType
+            of acotNothing: discard
+            of acotBool:
+                bval*: bool
+            of acotInt:
+                ival*: int
+            of acotStr:
+                str*: string
+            of acotUser:
+                userID*: string
+            of acotChannel:
+                channelID*: string
+            of acotRole:
+                roleID*: string
+            of acotSubCommand, acotSubCommandGroup:
+                options*: Table[string, ApplicationCommandInteractionDataOption]
+
     InteractionResponse* = object
         kind*: InteractionResponseType
         data*: Option[InteractionApplicationCommandCallbackData]

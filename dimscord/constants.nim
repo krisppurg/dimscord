@@ -229,6 +229,7 @@ type
         msfAPng = 2
         msfLottie = 3
     ApplicationCommandOptionType* = enum
+        acotNothing = 0 # Will never popup unless the user shoots themselves in the foot
         acotSubCommand = 1
         acotSubCommandGroup = 2
         acotStr = 3

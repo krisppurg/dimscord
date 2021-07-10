@@ -241,6 +241,7 @@ type
             welcome_channels: seq[WelcomeChannel]
         ]]
         mfa_level*: MFALevel
+        nsfw_level*: GuildNSFWLevel
         premium_tier*: PremiumTier
         verification_level*: VerificationLevel
         default_message_notifications*: MessageNotificationLevel

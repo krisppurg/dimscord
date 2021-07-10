@@ -168,6 +168,11 @@ type
         vlMedium = 2
         vlHigh = 3
         vlVeryHigh = 4
+    GuildNSFWLevel* = enum
+        gnlDefault = 0
+        gnlExplicit = 1
+        gnlSafe = 2
+        gnlAgeRestricted = 3
     PremiumTier* = enum
         ptNone = 0
         ptTier1 = 1

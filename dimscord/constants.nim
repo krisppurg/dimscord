@@ -168,6 +168,11 @@ type
         vlMedium = 2
         vlHigh = 3
         vlVeryHigh = 4
+    GuildNSFWLevel* = enum
+        gnlDefault = 0
+        gnlExplicit = 1
+        gnlSafe = 2
+        gnlAgeRestricted = 3
     PremiumTier* = enum
         ptNone = 0
         ptTier1 = 1
@@ -229,6 +234,7 @@ type
         msfAPng = 2
         msfLottie = 3
     ApplicationCommandOptionType* = enum
+        acotNothing = 0 # Will never popup unless the user shoots themselves in the foot
         acotSubCommand = 1
         acotSubCommandGroup = 2
         acotStr = 3

@@ -1,6 +1,5 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
-# let discord = newDiscordClient("<your bot token goes here>")
-let discord = newDiscordClient("NzQyMDEwNzY0MzAyMjIxMzM0.Xy_5YA.djAXDK-oWzYKA7d1fWpkfa5X5qU")
+let discord = newDiscordClient("<your bot token goes here>")
 
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let content = m.content

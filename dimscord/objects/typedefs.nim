@@ -424,6 +424,49 @@ type
         expire_behavior*, expire_grace_period*: int
         user*: User
         account*: tuple[id, name: string]
+
+    MessageComponentType* = enum
+        None = 0 # This should never happen
+        ActionRow = 1
+        Button = 2
+        SelectMenu = 3
+
+    SelectMenuOption* = object
+        label*: string
+        value*: string
+        description*: Option[string]
+        emoji*: Option[Emoji]
+        default*: Option[bool]
+
+    ButtonStyle* = enum
+        Primary = 1
+        Secondary = 2
+        Success = 3
+        Danger = 4
+        Link = 5
+
+    MessageComponent* = object
+        # custom_id is only needed for things other than action row
+        # but the new case object stuff isn't implemented in nim
+        # so it can't be shared
+        # same goes with disabled
+        custom_id*: Option[string]
+        disabled*: Option[bool]
+        case kind*: MessageComponentType
+            of None: discard
+            of ActionRow:
+                components*: seq[MessageComponent]
+            of Button: # Message Component
+                style*: Option[ButtonStyle]
+                label*: Option[string]
+                emoji*: Option[Emoji]
+                url*: Option[string]
+            of SelectMenu:
+                options*: seq[SelectMenuOption]
+                placeholder*: Option[string]
+                min_values*: Option[int]
+                max_values*: Option[int]
+
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]

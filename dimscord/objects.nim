@@ -879,3 +879,21 @@ proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
         description: data["description"].str,
         options: data{"options"}.getElems.map newApplicationCommandOption
     )
+
+proc `%%*`*(comp: MessageComponent): JsonNode =
+    # TODO
+    # - structure validation
+    result = %*{"type": comp.kind.ord}
+    case comp.kind:
+        of None: discard
+        of ActionRow:
+            result["components"] = newJArray()
+            for child in comp.components:
+                result["components"] &= %%* child
+        of Button:
+            result["style"] = %comp.style.get(Primary).ord
+            result["label"] = %comp.label
+            result["custom_id"] = %comp.customID
+            # result["emoji"] = %comp.emoji
+            # result["url"] = %comp.url
+        of SelectMenu: discard

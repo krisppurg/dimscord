@@ -246,6 +246,7 @@ type
     InteractionType* = enum
         itPing = 1
         itApplicationCommand = 2
+        itMessageComponent = 3
     InteractionResponseType* = enum
         irtPong = 1
         irtChannelMessageWithSource = 4

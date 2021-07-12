@@ -1,14 +1,17 @@
-import httpclient, mimetypes, asyncdispatch, json, options
+import httpclient, mimetypes, asyncdispatch, options
 import ../objects, ../constants
 import tables, os, sequtils
 import uri, ../helpers, requester
+import std/json
 
 proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false; embed = none Embed;
         allowed_mentions = none AllowedMentions;
         nonce: Option[string] or Option[int] = none(int);
         files = newSeq[DiscordFile]();
-        message_reference = none MessageReference
+        message_reference = none MessageReference,
+        components = none seq[MessageComponent]
+
 ): Future[Message] {.async.} =
     ## Sends a discord message.
     ## - `nonce` This can be used for optimistic message sending
@@ -26,6 +29,11 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["nonce"] = %get nonce
     if message_reference.isSome:
         payload["message_reference"] = %get message_reference
+    if components.isSome:
+        payload["components"] = newJArray()
+        for component in get components:
+            payload["components"].add %%*component
+        echo payload.pretty()
 
     if files.len > 0:
         var mpd = newMultipartData()

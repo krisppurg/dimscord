@@ -425,25 +425,12 @@ type
         user*: User
         account*: tuple[id, name: string]
 
-    MessageComponentType* = enum
-        None = 0 # This should never happen
-        ActionRow = 1
-        Button = 2
-        SelectMenu = 3
-
     SelectMenuOption* = object
         label*: string
         value*: string
         description*: Option[string]
         emoji*: Option[Emoji]
         default*: Option[bool]
-
-    ButtonStyle* = enum
-        Primary = 1
-        Secondary = 2
-        Success = 3
-        Danger = 4
-        Link = 5
 
     MessageComponent* = object
         # custom_id is only needed for things other than action row

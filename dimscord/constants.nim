@@ -251,6 +251,17 @@ type
         irtPong = 1
         irtChannelMessageWithSource = 4
         irtDeferredChannelMessageWithSource = 5
+    ButtonStyle* = enum
+        Primary = 1
+        Secondary = 2
+        Success = 3
+        Danger = 4
+        Link = 5
+    MessageComponentType* = enum
+        None = 0 # This should never happen
+        ActionRow = 1
+        Button = 2
+        SelectMenu = 3
 
 
 const

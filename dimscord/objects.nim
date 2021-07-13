@@ -894,6 +894,10 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["style"] = %comp.style.get(Primary).ord
             result["label"] = %comp.label
             result["custom_id"] = %comp.customID
-            # result["emoji"] = %comp.emoji
-            # result["url"] = %comp.url
-        of SelectMenu: discard
+            result["emoji"] = %comp.emoji
+            result["url"] = %comp.url
+        of SelectMenu:
+            result["options"] = %* comp.options
+            result["placeholder"] = %comp.placeholder
+            result["min_values"] = %comp.minValues
+            result["max_values"] = %comp.maxValues

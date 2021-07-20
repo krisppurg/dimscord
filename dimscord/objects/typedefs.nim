@@ -188,12 +188,20 @@ type
         id*, name*, guild_id*: string
         last_message_id*: string
         kind*: ChannelType
-        position*, rate_limit_per_user*: int
+        position*: Option[int]
+        rate_limit_per_user*: int
         bitrate*, user_limit*: int
-        parent_id*, topic*: Option[string]
+        parent_id*, owner_id*, topic*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
+        message_count*, member_count*: Option[int]
+        thread_metadata*: Option[ThreadMetadata]
         messages*: Table[string, Message]
-        nsfw*: bool
+        nsfw*: Option[bool]
+    ThreadMetadata* = ref object
+        archived*: bool
+        # TODO(dannyhpy): archive_timestamp | ISO8601 timestamp
+        auto_archive_duration*: int
+        locked*: Option[bool]
     GameAssets* = object
         small_text*, small_image*: string
         large_text*, large_image*: string
@@ -523,6 +531,10 @@ type
                 c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
         channel_pins_update*: proc (s: Shard, cid: string,
                 g: Option[Guild], last_pin: Option[string]) {.async.}
+        thread_create*: proc (s: Shard) {.async.} # TODO(dannyhpy):
+        thread_update*: proc (s: Shard) {.async.} # TODO(dannyhpy):
+        thread_delete*: proc (s: Shard) {.async.} # TODO(dannyhpy):
+        thread_list_sync*: proc (s: Shard) {.async.} # TODO(dannyhpy):
         presence_update*: proc (s: Shard, p: Presence,
                 o: Option[Presence]) {.async.}
         typing_start*: proc (s: Shard, t: TypingStart) {.async.}

@@ -119,6 +119,8 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
         await s.client.events.presence_update(s, presence, oldPresence)
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
+    # TODO(dannyhpy): Messages from a thread aren't detected
+
     let msg = newMessage(data)
 
     if msg.channel_id in s.cache.guildChannels:
@@ -439,6 +441,22 @@ proc channelDelete(s: Shard, data: JsonNode) {.async.} =
 
     await s.client.events.channel_delete(s, guild, gc, dm)
 
+proc threadCreate(s: Shard, data: JsonNode) {.async.} =
+    # TODO(dannyhpy):
+    await s.client.events.thread_create(s)
+
+proc threadUpdate(s: Shard, data: JsonNode) {.async.} =
+    # TODO(dannyhpy):
+    await s.client.events.thread_update(s)
+
+proc threadDelete(s: Shard, data: JsonNode) {.async.} =
+    # TODO(dannyhpy):
+    await s.client.events.thread_delete(s)
+
+proc threadListSync(s: Shard, data: JsonNode) {.async.} =
+    # TODO(dannyhpy):
+    await s.client.events.thread_list_sync(s)
+
 proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
@@ -702,6 +720,10 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "CHANNEL_CREATE": await s.channelCreate(data)
     of "CHANNEL_UPDATE": await s.channelUpdate(data)
     of "CHANNEL_DELETE": await s.channelDelete(data)
+    of "THREAD_CREATE": await s.threadCreate(data)
+    of "THREAD_UPDATE": await s.threadUpdate(data)
+    of "THREAD_DELETE": await s.threadDelete(data)
+    of "THREAD_LIST_SYNC": await s.threadListSync(data)
     of "GUILD_MEMBERS_CHUNK": await s.guildMembersChunk(data)
     of "GUILD_MEMBER_ADD": await s.guildMemberAdd(data)
     of "GUILD_MEMBER_UPDATE": await s.guildMemberUpdate(data)

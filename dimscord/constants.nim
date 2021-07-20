@@ -151,6 +151,9 @@ type
         ctGuildParent = 4
         ctGuildNews = 5
         ctGuildStore = 6
+        ctGuildNewsThread = 10
+        ctGuildPublicThread = 11
+        ctGuildPrivateThread = 12
         ctGuildStageVoice = 13
     MessageNotificationLevel* = enum
         mnlAllMessages = 0
@@ -317,6 +320,15 @@ proc endpointUserGuilds*(gid: string): string =
 proc endpointChannels*(cid = ""): string =
     result = "channels"
     if cid != "": result = result & "/" & cid
+
+proc endpointChannelThreads*(cid: string): string =
+    result = endpointChannels(cid) & "/threads"
+
+proc endpointMessageThreads*(cid: string, mid: string): string =
+    result = endpointChannels(cid) & "/messages/" & mid & "/threads"
+
+proc endpointChannelThreadMembers*(cid: string): string =
+    result = endpointChannels(cid) & "/thread-members"
 
 proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")

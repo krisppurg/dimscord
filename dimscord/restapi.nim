@@ -5,4 +5,4 @@
 ## 
 ## Endpoint aliases start here:
 ## https://discord.com/developers/docs/interactions/slash-commands#edit-original-interaction-response
-include restapi/[message, channel, guild, user]
+include restapi/[message, channel, thread, guild, user]

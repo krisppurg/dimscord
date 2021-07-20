@@ -38,6 +38,8 @@ proc newDiscordClient*(token: string;
             token: auth_token,
             restVersion: when defined(discordv8):
                 8
+            elif defined(discordv9):
+                9
             else:
                 restVersion),
         max_shards: 1,
@@ -75,6 +77,10 @@ proc newDiscordClient*(token: string;
             channel_pins_update: proc (s: Shard, cid: string,
                     g: Option[Guild],
                     last_pin: Option[string]) {.async.} = discard,
+            thread_create: proc (s: Shard) {.async.} = discard, # TODO(dannyhpy):
+            thread_update: proc (s: Shard) {.async.} = discard, # TODO(dannyhpy):
+            thread_delete: proc (s: Shard) {.async.} = discard, # TODO(dannyhpy):
+            thread_list_sync: proc (s: Shard) {.async.} = discard, # TODO(dannyhpy):
             presence_update: proc (s: Shard, p: Presence,
                     o: Option[Presence]) {.async.} = discard,
             typing_start: proc (s: Shard, t: TypingStart) {.async.} = discard,
@@ -180,17 +186,19 @@ proc newRole*(data: JsonNode): Role =
         )
         result.permissions_new = data["permissions_new"].str
 
+proc newThreadMetadata*(data: JsonNode): ThreadMetadata =
+    result = data.to ThreadMetadata
+
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = GuildChannel(
-        id: data["id"].str,
-        name: data["name"].str,
+        id: data["id"].getStr,
+        name: data["name"].getStr,
         kind: ChannelType data["type"].getInt,
-        guild_id: data["guild_id"].str,
-        position: data["position"].getInt,
+        guild_id: data["guild_id"].getStr,
         last_message_id: data{"last_message_id"}.getStr
     )
 
-    for ow in data["permission_overwrites"].getElems:
+    for ow in data{"permission_overwrites"}.getElems:
         result.permission_overwrites[ow["id"].str] = newOverwrite(ow)
 
     case result.kind:
@@ -198,20 +206,26 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         result.rate_limit_per_user = data["rate_limit_per_user"].getInt
 
         data.keyCheckOptStr(result, topic)
-        data.keyCheckBool(result, nsfw)
+        data.keyCheckOptBool(result, nsfw)
 
         result.messages = initTable[string, Message]()
     of ctGuildNews:
         data.keyCheckOptStr(result, topic)
-
-        data.keyCheckBool(result, nsfw)
+        data.keyCheckOptBool(result, nsfw)
     of ctGuildVoice:
         result.bitrate = data["bitrate"].getInt
         result.user_limit = data["user_limit"].getInt
+    of ctGuildNewsThread, ctGuildPublicThread, ctGuildPrivateThread:
+        result.thread_metadata = some newThreadMetadata(data["thread_metadata"])
+
+        data.keyCheckOptInt(result, message_count)
+        data.keyCheckOptInt(result, member_count)
     else:
         discard
 
+    data.keyCheckOptInt(result, position)
     data.keyCheckOptStr(result, parent_id)
+    data.keyCheckOptStr(result, owner_id)
 
 proc newUser*(data: JsonNode): User =
     result = User(

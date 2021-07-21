@@ -33,7 +33,6 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
-        echo payload.pretty()
 
     if files.len > 0:
         var mpd = newMultipartData()

@@ -989,12 +989,11 @@ proc add*(component: var MessageComponent, item: MessageComponent) =
     checkActionRow component
 
 proc add*(component: var MessageComponent, item: SelectMenuOption) =
+    ## Add another menu option onto the select menu
     assert component.kind == SelectMenu, "Can only add menu options to a SelectMenu"
     component.options &= item
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
-    # TODO
-    # - structure validation
     result = %*{"type": comp.kind.ord}
     case comp.kind:
         of None: discard

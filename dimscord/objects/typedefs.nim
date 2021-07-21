@@ -428,9 +428,9 @@ type
     SelectMenuOption* = object
         label*: string
         value*: string
-        # description*: Option[string]
-        # emoji*: Option[Emoji]
-        # default*: Option[bool]
+        description*: Option[string]
+        emoji*: Option[Emoji]
+        default*: Option[bool]
 
     MessageComponent* = object
         # custom_id is only needed for things other than action row
@@ -444,7 +444,7 @@ type
             of ActionRow:
                 components*: seq[MessageComponent]
             of Button: # Message Component
-                style*: Option[ButtonStyle]
+                style*: ButtonStyle
                 label*: Option[string]
                 emoji*: Option[Emoji]
                 url*: Option[string]

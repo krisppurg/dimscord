@@ -1,5 +1,6 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
-let discord = newDiscordClient("<your bot token goes here>")
+const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
+let discord = newDiscordClient(token)
 
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let content = m.content
@@ -16,9 +17,32 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
                     customID: some "foobar" # Used to identify it later
                 )]
             )]
+        of "menu":
+            components = @[MessageComponent(
+                kind: ActionRow,
+                components: @[MessageComponent(
+                    kind: SelectMenu,
+                    placeholder: some "Select colour",
+                    customID: some "colourSelect",
+                    options: @[
+                        SelectMenuOption(
+                            label: "Red",
+                            value: "red"
+                        ),
+                        SelectMenuOption(
+                            label: "Green",
+                            value: "green"
+                        ),
+                        SelectMenuOption(
+                            label: "Blue",
+                            value: "blue"
+                        )
+                    ]
+                )]
+            )]
     echo components.len
     if components.len > 0:
-        discard await discord.api.sendMessage(m.channelID, "hello", components = some components)
+        discard await discord.api.sendMessage(m.channelID, "hello", components = components)
 
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as: " & $r.user

@@ -10,7 +10,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         nonce: Option[string] or Option[int] = none(int);
         files = newSeq[DiscordFile]();
         message_reference = none MessageReference,
-        components = none seq[MessageComponent]
+        components: seq[MessageComponent] = @[]
 
 ): Future[Message] {.async.} =
     ## Sends a discord message.
@@ -29,9 +29,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["nonce"] = %get nonce
     if message_reference.isSome:
         payload["message_reference"] = %get message_reference
-    if components.isSome:
+    if components.len > 0:
         payload["components"] = newJArray()
-        for component in get components:
+        for component in components:
             payload["components"].add %%*component
         echo payload.pretty()
 

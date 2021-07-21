@@ -891,12 +891,13 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             for child in comp.components:
                 result["components"] &= %%* child
         of Button:
-            result["style"] = %comp.style.get(Primary).ord
-            result["label"] = %comp.label
             result["custom_id"] = %comp.customID
+            result["label"] = %comp.label
+            result["style"] = %comp.style.get(Primary).ord
             result["emoji"] = %comp.emoji
             result["url"] = %comp.url
         of SelectMenu:
+            result["custom_id"] = %comp.customID
             result["options"] = %* comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] = %comp.minValues

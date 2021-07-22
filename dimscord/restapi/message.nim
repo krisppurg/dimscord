@@ -9,8 +9,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
-        message_reference = none MessageReference
-): Future[Message] {.async.} =
+        message_reference = none MessageReference,
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     assert content.len <= 2000

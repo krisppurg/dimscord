@@ -4,19 +4,19 @@ import tables, os, sequtils
 import uri, ../helpers, requester
 
 proc sendMessage*(api: RestApi, channel_id: string;
-        content = ""; tts = false; embed = none Embed;
-        allowed_mentions = none AllowedMentions;
+        content = ""; tts = false;
         nonce: Option[string] or Option[int] = none(int);
         files = newSeq[DiscordFile]();
+        embeds = newSeq[Embed]();
+        allowed_mentions = none AllowedMentions;
         message_reference = none MessageReference
 ): Future[Message] {.async.} =
-    ## Sends a discord message.
+    ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     assert content.len <= 2000
     let payload = %*{
         "content": content,
         "tts": tts,
-        "embed": %embed
     }
 
 
@@ -26,6 +26,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["nonce"] = %get nonce
     if message_reference.isSome:
         payload["message_reference"] = %get message_reference
+
+    if embeds.len > 0:
+        payload["embeds"] = %embeds
 
     if files.len > 0:
         var mpd = newMultipartData()
@@ -60,23 +63,62 @@ proc sendMessage*(api: RestApi, channel_id: string;
         $payload
     )).newMessage
 
+proc sendMessage*(api: RestApi, channel_id: string;
+        content = ""; tts = false; embed = none Embed;
+        nonce: Option[string] or Option[int] = none(int);
+        files = newSeq[DiscordFile]();
+        allowed_mentions = none AllowedMentions;
+        message_reference = none MessageReference
+): Future[Message] {.async, deprecated: "`embed` has been replaced by `embeds`".} =
+    return await api.sendMessage(
+        channel_id = channel_id,
+        content = content, tts = tts,
+        embeds = (
+            if embed.isSome:
+                @[get embed]
+            else:
+                newSeq[Embed]()
+        ),
+        allowed_mentions = allowed_mentions,
+        nonce = nonce, files = files,
+        message_reference = message_reference
+    )
+
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none(int);
-        embed = none Embed): Future[Message] {.async.} =
+        embeds = newSeq[Embed]()): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000
     let payload = %*{
         "content": content,
         "tts": tts,
-        "flags": %flags,
-        "embed": %embed
+        "flags": %flags
     }
+
+    if embeds.len > 0:
+        payload["embeds"] = %embeds
 
     result = (await api.request(
         "PATCH",
         endpointChannelMessages(channel_id, message_id),
         $payload
     )).newMessage
+
+proc editMessage*(api: RestApi, channel_id, message_id: string;
+        content = ""; tts = false; flags = none(int);
+        embed = none Embed
+): Future[Message] {.async, deprecated: "`embed` has been replaced by `embeds`".} =
+    return await api.editMessage(
+        channel_id = channel_id,
+        message_id = message_id,
+        content = content, tts = tts, flags = flags,
+        embeds = (
+            if embed.isSome:
+                @[get embed]
+            else:
+                newSeq[Embed]()
+        )
+    )
 
 proc crosspostMessage*(api: RestApi;
         channel_id, message_id: string): Future[Message] {.async.} =
@@ -219,7 +261,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     payload.loadOpt(username, avatar_url, allowed_mentions)
 
-    if embeds.isSome:
+    if embeds.len > 0:
         payload["embeds"] = %embeds
 
     if file.isSome:
@@ -248,6 +290,27 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         rawResult = await api.request("POST", url, $payload)
 
     return if wait: some(rawResult.newMessage) else: none(Message)
+
+proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
+        wait = true; content = ""; tts = false;
+        file = none DiscordFile;
+        embeds = none seq[Embed];
+        allowed_mentions = none AllowedMentions;
+        username, avatar_url = none string
+): Future[Message] {.async, deprecated: "`embeds` is now a `seq[Embed]`".} =
+    return await api.executeWebhook(
+        webhook_id = webhook_id,
+        webhook_token = webhook_token,
+        wait = wait, content = content, tts = tts,
+        file = file, embeds = (
+            if embeds.isSome:
+                get embeds
+            else:
+                newSeq[Embed]()
+        ),
+        allowed_mentions = allowed_mentions,
+        username = username, avatar_url = avatar_url
+    )
 
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;

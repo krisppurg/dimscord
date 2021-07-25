@@ -1,6 +1,5 @@
 import dimscord, asyncdispatch, strutils, options, tables
-
-let discord = newDiscordClient("<your bot token goes here>")
+let discord = newDiscordClient("")
 
 proc getGuild(s: Shard, guild_id: string): Future[Guild] {.async.} =
     if guild_id in s.cache.guilds:
@@ -8,11 +7,14 @@ proc getGuild(s: Shard, guild_id: string): Future[Guild] {.async.} =
 
     result = await discord.api.getGuild(guild_id)
 
-proc getGuildChannel(s: Shard, guild_id, chan_id: string): Future[GuildChannel] {.async.} =
+proc getGuildChannel(s: Shard, chan_id: string): Future[GuildChannel] {.async.} =
     if chan_id in s.cache.guildChannels:
         return s.cache.guildChannels[chan_id]
 
-    result = await discord.api.getGuildChannel(guild_id, chan_id)
+    let channel = await discord.api.getChannel(chan_id)
+    if channel[0].isNone:
+        raise newException(Exception, "The channel is not a guild channel")
+    result = channel[0].get
 
 proc getUser(s: Shard, user_id: string): Future[User] {.async.} =
     if user_id in s.cache.users:
@@ -31,7 +33,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         discard await discord.api.sendMessage(
             m.channel_id, "Getting guild channel!"
         )
-        let channel = (await s.getChannel(get m.guild_id, m.channel_id))[0]
+        let channel = await s.getGuildChannel(m.channel_id)
         echo channel[]
     elif m.content == "#!getuser": # Gets a user from rest or cache
         discard await discord.api.sendMessage(

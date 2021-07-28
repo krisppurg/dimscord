@@ -243,6 +243,8 @@ type
         acotUser = 6
         acotChannel = 7
         acotRole = 8
+        acotMentionable = 9 ## Includes Users and Roles
+        acotNumber = 10     ## A double
     InteractionType* = enum
         itPing = 1
         itApplicationCommand = 2

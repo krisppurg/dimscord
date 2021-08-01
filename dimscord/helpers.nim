@@ -109,6 +109,8 @@ proc `in`*(x, y: set[PermissionFlags]): bool =
     if x.len == 0: return false
     result = false
     for flag in x:
+        if flag notin y:
+            return false
         result = flag in y
 
 proc `notin`*(x, y: set[PermissionFlags]): bool =

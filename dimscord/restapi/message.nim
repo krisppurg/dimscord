@@ -6,7 +6,7 @@ import uri, ../helpers, requester
 proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false; embed = none Embed;
         allowed_mentions = none AllowedMentions;
-        nonce: Option[string] or Option[int] = none(int);
+        nonce: Option[string] or Option[int] = none int;
         files = newSeq[DiscordFile]();
         message_reference = none MessageReference
 ): Future[Message] {.async.} =
@@ -18,14 +18,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "tts": tts,
         "embed": %embed
     }
-
-
-    if allowed_mentions.isSome:
-        payload["allowed_mentions"] = %get allowed_mentions
-    if nonce.isSome:
-        payload["nonce"] = %get nonce
-    if message_reference.isSome:
-        payload["message_reference"] = %get message_reference
+    payload["message_reference"] = %*{"fail_if_not_exists": true}
+    payload.loadOpt(allowed_mentions, nonce, message_reference)
 
     if files.len > 0:
         var mpd = newMultipartData()
@@ -61,7 +55,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
     )).newMessage
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
-        content = ""; tts = false; flags = none(int);
+        content = ""; tts = false; flags = none int;
         embed = none Embed): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000

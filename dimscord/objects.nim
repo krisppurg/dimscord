@@ -46,7 +46,8 @@ proc newDiscordClient*(token: string;
             on_dispatch: proc (s: Shard, evt: string,
                     data: JsonNode) {.async.} = discard,
             on_ready: proc (s: Shard, r: Ready) {.async.} = discard,
-            on_invalid_session: proc (s: Shard, resumable: bool) {.async.} = discard,
+            on_invalid_session: proc (s: Shard,
+                    resumable: bool) {.async.} = discard,
             message_create: proc (s: Shard, m: Message) {.async.} = discard,
             message_delete: proc (s: Shard, m: Message,
                     exists: bool) {.async.} = discard,
@@ -176,7 +177,7 @@ proc newRole*(data: JsonNode): Role =
         )
     else:
         result.permissions = cast[set[PermissionFlags]](
-            data["permissions"].getInt
+            data{"permissions"}.getBiggestInt # incase
         )
         result.permissions_new = data["permissions_new"].str
 
@@ -189,6 +190,10 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         position: data["position"].getInt,
         last_message_id: data{"last_message_id"}.getStr
     )
+    if "member" in data and data["member"].kind != JNull:
+        result.member = some data["member"].to ThreadMember
+    if "thread_metadata" in data and data["thread_metadata"].kind != JNull:
+        result.thread_metadata = some data["thread_metadata"].to ThreadMetadata
 
     for ow in data["permission_overwrites"].getElems:
         result.permission_overwrites[ow["id"].str] = newOverwrite(ow)
@@ -211,7 +216,12 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     else:
         discard
 
-    data.keyCheckOptStr(result, parent_id)
+    data.keyCheckOptStr(result, rtc_region)
+    data.keyCheckOptInt(result,
+        video_quality_mode,
+        message_count,
+        member_count
+    )
 
 proc newUser*(data: JsonNode): User =
     result = User(
@@ -219,11 +229,59 @@ proc newUser*(data: JsonNode): User =
         username: data{"username"}.getStr,
         discriminator: data{"discriminator"}.getStr,
         bot: data{"bot"}.getBool,
-        system: data{"system"}.getBool
+        system: data{"system"}.getBool,
+        public_flags: cast[set[UserFlags]](
+            data{"public_flags"}.getBiggestInt
+        ),
+        flags: cast[set[UserFlags]](
+            data{"flags"}.getBiggestInt
+        )
     )
 
-    data.keyCheckOptStr(result, avatar)
-    data.keyCheckOptInt(result, public_flags)
+    data.keyCheckOptStr(result,
+        avatar, locale)
+    data.keyCheckOptBool(result,
+        mfa_enabled)
+
+proc newTeam(data: JsonNode): Team =
+    result = Team(
+        id: data["id"].str,
+        owner_user_id: data["owner_user_id"].str,
+        members: data["members"].elems.map(
+            proc(x:JsonNode):TeamMember =
+                TeamMember(
+                    membership_state: TeamMembershipState(
+                        x["membership_state"].getInt
+                    ),
+                    permissions: x["permissions"].elems.mapIt(it.getStr),
+                    team_id: x["team_id"].str,
+                    user: x["user"].newUser
+                )
+        )
+    )
+    data.keyCheckOptStr(result, icon)
+
+proc newApplication*(data: JsonNode): Application =
+    result = Application(
+        id: data["id"].str,
+        name: data["name"].str,
+        description: data["description"].str,
+        rpc_origins: data{"rpc_origins"}.getElems.mapIt(it.getStr),
+        bot_public: data{"bot_public"}.getBool,
+        bot_require_code_grant: data{"bot_require_code_grant"}.getBool,
+        owner: data["owner"].newUser,
+        summary: data["summary"].str,
+        verify_key: data["verify_key"].str,
+        flags: cast[set[ApplicationFlags]](
+            data{"flags"}.getBiggestInt
+        )
+    )
+    data.keyCheckOptStr(result, icon,
+        terms_of_service_url, privacy_policy_url,
+        guild_id, primary_sku_id, slug, cover_image)
+
+    if "team" in data and data["team"].kind != JNull:
+        result.team = some data["team"].newTeam
 
 proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
@@ -251,73 +309,6 @@ proc newDMChannel*(data: JsonNode): DMChannel = # rip dmchannels
     for r in data["recipients"].elems:
         result.recipients.add(newUser(r))
 
-proc newInvite*(data: JsonNode): Invite =
-    result = Invite(
-        code: data["code"].str,
-        channel: PartialChannel(
-            id: data["channel"]["id"].str,
-            kind: ChannelType data["channel"]["type"].getInt,
-            name: data["channel"]["name"].str
-        )
-    )
-
-    if "guild" in data:
-        result.guild = some data["guild"].to(PartialGuild)
-    if "inviter" in data:
-        result.inviter = some newUser(data["inviter"])
-    if "target_user" in data:
-        result.target_user = some newUser(data["target_user"])
-
-    data.keyCheckOptInt(result, target_user_type,
-        approximate_presence_count, approximate_member_count)
-
-proc newInviteCreate*(data: JsonNode): InviteCreate =
-    result = InviteCreate(
-        code: data["code"].str,
-        created_at: data["created_at"].str,
-        uses: data["uses"].getInt,
-        max_uses: data["max_uses"].getInt,
-        max_age: data["max_age"].getInt,
-        channel_id: data["channel_id"].str,
-        temporary: data["temporary"].bval
-    )
-
-    if "target_user" in data:
-        result.target_user = some newUser(data["target_user"])
-    if "inviter" in data:
-        result.inviter = some newUser(data["inviter"])
-
-    data.keyCheckOptStr(result, guild_id)
-    data.keyCheckOptInt(result, target_user_type)
-
-proc newReady*(data: JsonNode): Ready =
-    result = Ready(
-        v: data["v"].getInt,
-        user: newUser(data["user"]),
-        session_id: data["session_id"].str
-    )
-
-    for guild in data{"guilds"}.getElems:
-        result.guilds.add(UnavailableGuild(
-            id: guild["id"].str,
-            unavailable: guild["unavailable"].bval
-        ))
-
-    if "shard" in data:
-        result.shard = some newSeq[int]()
-
-        for s in data["shard"].elems:
-            get(result.shard).add(s.getInt)
-
-proc newAttachment(data: JsonNode): Attachment =
-    result = Attachment(
-        id: data["id"].str,
-        filename: data["filename"].str,
-        size: data["size"].getInt,
-        url: data["url"].str,
-        proxy_url: data["proxy_url"].str,
-    )
-    data.keyCheckOptInt(result, height, width)
 
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = VoiceState(
@@ -426,6 +417,103 @@ proc newMember*(data: JsonNode): Member =
     data.keyCheckOptStr(result, nick, premium_since)
     data.keyCheckOptBool(result, pending)
 
+proc newInvite*(data: JsonNode): Invite =
+    result = Invite(
+        code: data["code"].str,
+        channel: PartialChannel(
+            id: data["channel"]["id"].str,
+            kind: ChannelType data["channel"]["type"].getInt,
+            name: data["channel"]["name"].str
+        )
+    )
+
+    if "guild" in data:
+        result.guild = some data["guild"].to(PartialGuild)
+    if "inviter" in data:
+        result.inviter = some data["inviter"].newUser
+    if "target_user" in data:
+        result.target_user = some data["target_user"].newUser
+    if "target_type" in data:
+        result.target_type = some InviteTargetType(
+            data["target_type"].getInt
+        )
+    if "target_application" in data:
+        result.target_application = some data[
+            "target_application"
+        ].newApplication
+
+    if "stage_instance" in data:
+        let x = data["stage_instance"]
+        result.stage_instance = some (
+            members: x{"members"}.getElems.map(newMember),
+            topic: x["topic"].str,
+            participant_count: x["participant_count"].getInt,
+            speaker_count: x["speaker_count"].getInt
+        )
+
+    data.keyCheckOptStr(result,expires_at)
+    data.keyCheckOptInt(result,
+        approximate_presence_count,
+        approximate_member_count
+    )
+
+proc newInviteCreate*(data: JsonNode): InviteCreate =
+    result = InviteCreate(
+        code: data["code"].str,
+        created_at: data["created_at"].str,
+        uses: data["uses"].getInt,
+        max_uses: data["max_uses"].getInt,
+        max_age: data["max_age"].getInt,
+        channel_id: data["channel_id"].str,
+        temporary: data["temporary"].bval
+    )
+
+    if "target_user" in data:
+        result.target_user = some newUser(data["target_user"])
+    if "inviter" in data:
+        result.inviter = some newUser(data["inviter"])
+    if "target_application" in data and data["target_application"].kind!=JNull:
+        result.target_application=some data["target_application"].newApplication
+    if "target_type" in data and data["target_type"].kind != JNull:
+        result.target_type = some InviteTargetType data["target_type"].getInt
+
+    data.keyCheckOptStr(result, guild_id)
+
+proc newReady*(data: JsonNode): Ready =
+    result = Ready(
+        v: data["v"].getInt,
+        user: newUser(data["user"]),
+        session_id: data["session_id"].str,
+        application: (
+            data["application"]["id"].str,
+            cast[set[ApplicationFlags]](
+                data["application"]["flags"].getBiggestInt
+            )
+        )
+    )
+
+    for guild in data{"guilds"}.getElems:
+        result.guilds.add(UnavailableGuild(
+            id: guild["id"].str,
+            unavailable: guild["unavailable"].bval
+        ))
+
+    if "shard" in data:
+        result.shard = some newSeq[int]()
+
+        for s in data["shard"].elems:
+            get(result.shard).add(s.getInt)
+
+proc newAttachment(data: JsonNode): Attachment =
+    result = Attachment(
+        id: data["id"].str,
+        filename: data["filename"].str,
+        size: data["size"].getInt,
+        url: data["url"].str,
+        proxy_url: data["proxy_url"].str,
+    )
+    data.keyCheckOptInt(result, height, width)
+
 proc newTypingStart*(data: JsonNode): TypingStart =
     result = TypingStart(
         channel_id: data["channel_id"].str,
@@ -444,7 +532,7 @@ proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
         chunk_index: data["chunk_index"].getInt,
         chunk_count: data["chunk_count"].getInt,
         members: data["members"].elems.map(newMember),
-        not_found: data{"not_found"}.getElems.mapIt(it.getStr()),
+        not_found: data{"not_found"}.getElems.mapIt(it.getStr),
         presences: data{"presences"}.getElems.map(newPresence)
     )
     data.keyCheckOptStr(result, nonce)
@@ -485,15 +573,7 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         )
 
     if "application" in data:
-        let app = data["application"]
-
-        result.application = some Application(
-            id: app["id"].str,
-            description: app["description"].str,
-            cover_image: app{"cover_image"}.getStr,
-            icon: app{"icon"}.getStr,
-            name: app["name"].str
-        )
+        result.application = some data["application"].newApplication
 
 proc newMessage*(data: JsonNode): Message =
     result = Message(
@@ -505,28 +585,24 @@ proc newMessage*(data: JsonNode): Message =
         mention_everyone: data["mention_everyone"].bval,
         pinned: data["pinned"].bval,
         kind: MessageType data["type"].getInt,
-        flags: cast[set[MessageFlags]](data["flags"].getInt),
-        stickers: data{"stickers"}.getElems.map(
-            proc (x: JsonNode): Sticker =
-                x.to(Sticker)
+        flags: cast[set[MessageFlags]](
+            data{"flags"}.getBiggestInt
         ),
+        attachments: data{"attachments"}.getElems.map newAttachment,
+        mention_roles: data{"mention_roles"}.getElems.mapIt(it.str),
+        mention_users: data{"mentions"}.getElems.map newUser,
+        embeds:data{"embeds"}.getElems.map(proc(e:JsonNode):Embed=e.to(Embed)),
         reactions: initTable[string, Reaction]()
     )
     data.keyCheckOptStr(result, edited_timestamp,
         guild_id, nonce, webhook_id)
 
     if "author" in data:
-        result.author = newUser(data["author"])
+        result.author = data["author"].newUser
     if "member" in data and data["member"].kind != JNull:
-        result.member = some newMember(data["member"])
+        result.member = some data["member"].newMember
     if "referenced_message" in data and data["referenced_message"].kind!=JNull:
         result.referenced_message = some data["referenced_message"].newMessage
-
-    for r in data{"mention_roles"}.getElems:
-        result.mention_roles.add(r.str)
-
-    for usr in data{"mentions"}.getElems:
-        result.mention_users.add(newUser(usr))
 
     for chan in data{"mention_channels"}.getElems:
         result.mention_channels.add(MentionChannel(
@@ -536,41 +612,32 @@ proc newMessage*(data: JsonNode): Message =
             name: chan["name"].str
         ))
 
-    for attach in data{"attachments"}.getElems:
-        result.attachments.add(newAttachment(attach))
+    for s in data{"sticker_items"}.getElems:
+        result.sticker_items[s["id"].str] = (
+            id: s["id"].str,
+            name: s["name"].str,
+            format_type: MessageStickerFormat s["format_type"].getInt
+        )
 
-    for embed in data{"embeds"}.getElems:
-        result.embeds.add(embed.to(Embed))
-    for reaction in data{"reactions"}.getElems:
-        let rtn = newReaction(reaction)
-        result.reactions[$rtn.emoji] = rtn
+    for rn in data{"reactions"}.getElems:
+        let r = rn.newReaction
+        result.reactions[$r.emoji] = r
 
     if "activity" in data:
-        let activity = data["activity"]
-
+        let act = data["activity"]
         result.activity = some (
-            kind: activity["type"].getInt,
-            party_id: activity{"party_id"}.getStr
+            kind: act["type"].getInt,
+            party_id: act{"party_id"}.getStr
         )
 
     if "application" in data:
-        let app = data["application"]
-
-        result.application = some Application(
-            id: app["id"].str,
-            description: app["description"].str,
-            cover_image: app{"cover_image"}.getStr,
-            icon: app{"icon"}.getStr,
-            name: app["name"].str
-        )
-
+        result.application = some data["application"].newApplication
     if "message_reference" in data:
-        let reference = data["message_reference"]
-
-        var message_reference = MessageReference(
-            channel_id: reference["channel_id"].str
+        var message_reference = MessageReference()
+        data["message_reference"].keyCheckOptStr(
+            message_reference, channel_id,
+            message_id, guild_id
         )
-        reference.keyCheckOptStr(message_reference, message_id, guild_id)
         result.message_reference = some message_reference
 
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
@@ -622,61 +689,42 @@ proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
                 change["key"].str
             )
 
+proc newIntegration*(data: JsonNode): Integration =
+    result = Integration(
+        id: data["id"].str,
+        name: data["name"].str,
+        kind: data["type"].str,
+        enabled: data["enabled"].bval,
+        account: data["account"].to(tuple[id, name: string]),
+    )
+    if "expire_behavior" in data and data["expire_behavior"].kind != JNull:
+        result.expire_behavior = some IntegrationExpireBehavior(
+            data["expire_behavior"].getInt
+        )
+    if "user" in data and data["user"].kind != JNull:
+        result.user = some data["user"].newUser
+
+    data.keyCheckOptBool(result, syncing, enable_emoticons, revoked)
+    data.keyCheckOptStr(result, role_id, synced_at)
+    data.keyCheckOptInt(result, expire_grace_period, subscriber_count)
+
 proc newAuditLog*(data: JsonNode): AuditLog =
-    result = AuditLog(
+    AuditLog(
         webhooks: data["webhooks"].elems.map(newWebhook),
         users: data["users"].elems.map(newUser),
         audit_log_entries: data["audit_log_entries"].elems.map(
             newAuditLogEntry),
-        integrations: data["integrations"].elems.map(
-            proc (x: JsonNode): Integration =
-                result = x.to(Integration)
-        )
+        integrations: data{"integrations"}.getElems.map(
+            newIntegration)
     )
-
-proc newTeam(data: JsonNode): Team =
-    result = Team(
-        id: data["id"].str,
-        owner_user_id: data["owner_user_id"].str,
-        members: data["members"].elems.map(
-            proc (x: JsonNode): TeamMember =
-                result = TeamMember(
-                    membership_state: TeamMembershipState(
-                        x["membership_state"].getInt
-                    ),
-                    permissions: x["permissions"].elems.mapIt(it.str),
-                    team_id: x["team_id"].str,
-                    user: newUser(x["user"])
-                )
-        )
-    )
-    data.keyCheckOptStr(result, icon)
-
-proc newOAuth2Application*(data: JsonNode): OAuth2Application =
-    result = OAuth2Application(
-        id: data["id"].str,
-        name: data["name"].str,
-        description: data["description"].str,
-        rpc_origins: data{"rpc_orgins"}.getElems.mapIt(it.str),
-        bot_public: data["bot_public"].bval,
-        bot_require_code_grant: data["bot_require_code_grant"].bval,
-        owner: newUser(data["owner"]),
-        summary: data["summary"].str,
-        verify_key: data["verify_key"].str,
-    )
-    data.keyCheckOptStr(result, icon, guild_id,
-        primary_sku_id, slug, cover_image)
-
-    if "team" in data and data["team"].kind != JNull:
-        result.team = some newTeam(data["team"])
 
 proc newGuild*(data: JsonNode): Guild =
     result = Guild(
         id: data["id"].str,
         name: data["name"].str,
-        owner: data{"owner"}.getBool,
-        owner_id: data["owner_id"].str,
-        region: data["region"].str,
+        nsfw: data["nsfw"].bval,
+        owner: data{"owner"}.getBool, # it is actually possible to
+        owner_id: data["owner_id"].str, # have no owner, just a glitch ;)
         widget_enabled: data{"widget_enabled"}.getBool,
         verification_level: VerificationLevel(
             data["verification_level"].getInt
@@ -698,7 +746,14 @@ proc newGuild*(data: JsonNode): Guild =
         presences: initTable[string, Presence](),
         mfa_level: MFALevel data["mfa_level"].getInt,
         premium_tier: PremiumTier data["premium_tier"].getInt,
-        preferred_locale: data["preferred_locale"].str)
+        preferred_locale: data["preferred_locale"].str
+    )
+    when defined(discordv9):
+        if "rtc_region" in data and data["rtc_region"].kind != JNull:
+            result.rtc_region = some data["rtc_region"].str
+    else:
+        if "region" in data and data["region"].kind != JNull:
+            result.rtc_region = some data["region"].str
 
     for r in data["roles"].elems:
         result.roles[r["id"].str] = newRole(r)
@@ -713,10 +768,10 @@ proc newGuild*(data: JsonNode): Guild =
     data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
         premium_subscription_count, max_presences, approximate_member_count,
         approximate_presence_count, max_video_channel_uses)
-    data.keyCheckOptStr(result, joined_at, icon, splash, afk_channel_id,
-        permissions_new, application_id, system_channel_id, vanity_url_code,
-        discovery_splash, description, banner, widget_channel_id,
-        public_updates_channel_id)
+    data.keyCheckOptStr(result, joined_at, icon, icon_hash, splash,
+        afk_channel_id, permissions_new, application_id, system_channel_id,
+        vanity_url_code, discovery_splash, description, banner,
+        widget_channel_id, public_updates_channel_id)
     data.keyCheckOptBool(result, large, unavailable)
 
     for m in data{"members"}.getElems:

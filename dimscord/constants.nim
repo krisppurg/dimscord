@@ -3,46 +3,55 @@
 ## is GatewayIntent.
 when defined(dimscordDebug):
     import strformat
-{.hint[XDeclaredButNotUsed]: off.}
+#{.hint[XDeclaredButNotUsed]: off.} Unsure when am I gonna use this
+import strutils, regex
 
 type
     PermissionFlags* = enum
-        permCreateInstantInvite = "Create Instant Invite"
-        permKickMembers = "Kick Members"
-        permBanMembers = "Ban Members"
-        permAdministrator = "Administrator"
-        permManageChannels = "Manage Channels"
-        permManageGuild = "Manage Server"
-        permAddReactions = "Add Reactions"
-        permViewAuditLogs = "View Audit Log"
-        permPrioritySpeaker = "Priority Speaker"
-        permVoiceStream = "Voice Stream"
-        permViewChannel = "View Channel"
-        permSendMessages = "Send Messages"
-        permSendTTSMessage = "Send TTS Messages"
-        permManageMessages = "Manage Messages"
-        permEmbedLinks = "Embed Links"
-        permAttachFiles = "Attach Files"
-        permReadMessageHistory = "Read Message History"
-        permMentionEveryone = "Mention @everyone, @here and All Roles"
-        permUseExternalEmojis = "Use External Emojis"
-        permViewGuildInsights = "View Guild Insights"
-        permVoiceConnect = "Voice Connect"
-        permVoiceSpeak = "Voice Speak"
-        permVoiceMuteMembers = "Voice Mute Members"
-        permVoiceDeafenMembers = "Voice Deafen Members"
-        permVoiceMoveMembers = "Voice Move Members"
-        permUseVAD = "Use VAD"
-        permChangeNickname = "Change Nickname"
-        permManageNicknames = "Manage Nicknames"
-        permManageRoles = "Manage Roles"
-        permManageWebhooks = "Manage Webhooks"
-        permManageEmojis = "Manage Emojis"
+        ## Note on this enum:
+        ## - The values assigned `n` are equal to `1 shl n`, e.g.
+        ## `cast[int]({permManageThreads})` == `1 shl 34`
+        permCreateInstantInvite,
+        permKickMembers =      1
+        permBanMembers
+        permAdministrator
+        permManageChannels
+        permManageGuild
+        permAddReactions
+        permViewAuditLogs
+        permPrioritySpeaker
+        permVoiceStream
+        permViewChannel
+        permSendMessages
+        permSendTTSMessage
+        permManageMessages
+        permEmbedLinks
+        permAttachFiles
+        permReadMessageHistory
+        permMentionEveryone
+        permUseExternalEmojis
+        permViewGuildInsights
+        permVoiceConnect
+        permVoiceSpeak
+        permVoiceMuteMembers
+        permVoiceDeafenMembers
+        permVoiceMoveMembers
+        permUseVAD
+        permChangeNickname
+        permManageNicknames
+        permManageRoles
+        permManageWebhooks
+        permManageEmojis
+        permUseSlashCommands
+        permRequestToSpeak
+        permManageThreads =   34
+        permUsePublicThreads
+        permUsePrivateThreads
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
         giGuildBans,
-        giGuildEmojis,
+        giGuildEmojisAndStickers,
         giGuildIntegrations,
         giGuildWebhooks,
         giGuildInvites,
@@ -77,208 +86,269 @@ type
         mfIsCrosspost,
         mfSupressEmbeds,
         mfSourceMessageDeleted
-        mfUrgent
+        mfUrgent,
+        mfHasThread,
+        mfEphemeral,
+        mfLoading
     UserFlags* = enum
+        ## Note on this enum:
+        ## - The values assigned `n` are equal to `1 shl n`, if
+        ## you were to do for example: `cast[int]({apfGatewayPresence})`
         ufNone,
         ufDiscordEmployee,
         ufPartneredServerOwner,
         ufHypesquadEvents,
         ufBugHunterLevel1,
-        ufHouseBravery = 64,
+        ufHouseBravery =          6,
         ufHouseBrilliance,
         ufHouseBalance,
         ufEarlySupporter,
         ufTeamUser,
-        ufSystem = 4096
-        ufBugHunterLevel2 = 16384
-        ufVerifiedBot = 65536,
-        ufEarlyVerifiedBotDeveloper
-    CallbackDataFlags* = enum # This is for the future.
-        cdfEphemeral = 64
+        ufBugHunterLevel2 =      14,
+        ufVerifiedBot =          16,
+        ufEarlyVerifiedBotDeveloper,
+        ufDiscordCertifiedModerator
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
         scfSupressPremiumSubscriptions,
         scfSupressGuildReminderNotifications
+    ApplicationFlags* = enum
+        ## Note on this enum:
+        ## - The values assigned `n` are equal to `1 shl n`, if
+        ## you were to do for example: `cast[int]({apfGatewayPresence})`
+        apfNone,
+        apfGatewayPresence =          12,
+        apfGatewayPresenceLimited,
+        apfGatewayGuildMembers,
+        apfGatewayGuildMembersLimited,
+        apfVerificationPendingGuildLimit,
+        apfEmbeded
 const
-    libName* = "Dimscord"
-    libVer* = "1.2.7"
+    libName* =  "Dimscord"
+    libVer* =   "1.3.0"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
 
-    cdnBase* = "https://cdn.discordapp.com/"
-    restBase* = "https://discord.com/api/"
-    cdnCustomEmojis* = cdnBase & "emojis/"
-    cdnAttachments* = cdnBase & "attachments/"
-    cdnAvatars* = cdnBase & "avatars/"
-    cdnIcons* = cdnBase & "icons/"
-    cdnSplashes* = cdnBase & "splashes/"
-    cdnChannelIcons* = cdnBase & "channel-icons/"
-    cdnTeamIcons* = cdnBase & "team-icons/"
-    cdnAppAssets* = cdnBase & "app-assets/" # KrispPurg, really? Come on you can do better than that no one is going to use this.
-    cdnDiscoverySplashes* = cdnBase & "discovery-splashes/"
+    cdnBase* =               "https://cdn.discordapp.com/"
+    restBase* =              "https://discord.com/api/"
+    cdnCustomEmojis* =       cdnBase & "emojis/"
+    cdnAttachments* =        cdnBase & "attachments/"
+    cdnAvatars* =            cdnBase & "avatars/"
+    cdnIcons* =              cdnBase & "icons/"
+    cdnSplashes* =           cdnBase & "splashes/"
+    cdnChannelIcons* =       cdnBase & "channel-icons/"
+    cdnTeamIcons* =          cdnBase & "team-icons/"
+    cdnAppAssets* =          cdnBase & "app-assets/" # KrispPurg, really? Come on you can do better than that no one is going to use this.
+    cdnDiscoverySplashes* =  cdnBase & "discovery-splashes/"
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
-    cdnAppIcons* = cdnBase & "app-icons/"
+    cdnAppIcons* =           cdnBase & "app-icons/"
 
 type
     MessageType* = enum
-        mtDefault = 0
-        mtRecipientAdd = 1
-        mtRecipientRemove = 2
-        mtCall = 3
-        mtChannelNameChange = 4
-        mtChannelIconChange = 5
-        mtChannelPinnedMessage = 6
-        mtGuildMemberJoin = 7
-        mtUserGuildBoost = 8
-        mtUserGuildBoostTier1 = 9
-        mtUserGuildBoostTier2 = 10
-        mtUserGuildBoostTier3 = 11
-        mtChannelFollowAdd = 12
-        mtGuildDiscoveryDisqualified = 14
-        mtGuildDiscoveryRequalified = 15
-        mtReply = 19
-        mtApplicationCommand = 20
-        mtGuildInviteReminder = 22
+        mtDefault =                                 0
+        mtRecipientAdd =                            1
+        mtRecipientRemove =                         2
+        mtCall =                                    3
+        mtChannelNameChange =                       4
+        mtChannelIconChange =                       5
+        mtChannelPinnedMessage =                    6
+        mtGuildMemberJoin =                         7
+        mtUserGuildBoost =                          8
+        mtUserGuildBoostTier1 =                     9
+        mtUserGuildBoostTier2 =                     10
+        mtUserGuildBoostTier3 =                     11
+        mtChannelFollowAdd =                        12
+        mtGuildDiscoveryDisqualified =              14
+        mtGuildDiscoveryRequalified =               15
+        mtGuildDiscoveryGracePeriodInitialWarning = 16
+        mtGuildDiscoveryGracePeriodFinalWarning =   17
+        mtThreadCreated =                           18
+        mtReply =                                   19
+        mtApplicationCommand =                      20
+        mtThreadStarterMessage =                    21
+        mtGuildInviteReminder =                     22
     MessageActivityType* = enum
-        matJoin = 1
-        matSpectate = 2
-        matListen = 3
+        matJoin =        1
+        matSpectate =    2
+        matListen =      3
         matJoinRequest = 4
     ChannelType* = enum
-        ctGuildText = 0
-        ctDirect = 1
-        ctGuildVoice = 2
-        ctGroupDM = 3
-        ctGuildParent = 4
-        ctGuildNews = 5
-        ctGuildStore = 6
-        ctGuildStageVoice = 13
+        ctGuildText =          0
+        ctDirect =             1
+        ctGuildVoice =         2
+        ctGroupDM =            3
+        ctGuildParent =        4
+        ctGuildNews =          5
+        ctGuildStore =         6
+        ctGuildNewsThread =    10
+        ctGuildPublicThread =  11
+        ctGuildPrivateThread = 12
+        ctGuildStageVoice =    13
     MessageNotificationLevel* = enum
-        mnlAllMessages = 0
+        mnlAllMessages =  0
         mnlOnlyMentions = 1
     ExplicitContentFilter* = enum
-        ecfDisabled = 0
+        ecfDisabled =            0
         ecfMembersWithoutRoles = 1
-        ecfAllMembers = 2
+        ecfAllMembers =          2
     MFALevel* = enum
-        mfaNone = 0
+        mfaNone =     0
         mfaElevated = 1
     VerificationLevel* = enum
-        vlNone = 0
-        vlLow = 1
-        vlMedium = 2
-        vlHigh = 3
+        vlNone =     0
+        vlLow =      1
+        vlMedium =   2
+        vlHigh =     3
         vlVeryHigh = 4
     PremiumTier* = enum
-        ptNone = 0
+        ptNone =  0
         ptTier1 = 1
         ptTier2 = 2
         ptTier3 = 3
     ActivityType* = enum
-        atPlaying = 0
+        atPlaying =   0
         atStreaming = 1
         atListening = 2
-        atWatching = 3 # shhhh, this is a secret
-        atCustom = 4
+        atWatching =  3
+        atCustom =    4
+        atCompeting = 5
     WebhookType* = enum
         whIncoming = 1
         whFollower = 2
     IntegrationExpireBehavior* = enum
         iebRemoveRole = 0
-        iebKick = 1
+        iebKick =       1
     AuditLogEntryType* = enum
-        aleGuildUpdate = 1
-        aleChannelCreate = 10
-        aleChannelUpdate = 11
-        aleChannelDelete = 12
+        aleGuildUpdate =            1
+        aleChannelCreate =          10
+        aleChannelUpdate =          11
+        aleChannelDelete =          12
         aleChannelOverwriteCreate = 13
         aleChannelOverwriteUpdate = 14
         aleChannelOverwriteDelete = 15
-        aleMemberKick = 20
-        aleMemberPrune = 21
-        aleMemberBanAdd = 22
-        aleMemberBanRemove = 23
-        aleMemberUpdate = 24
-        aleMemberRoleUpdate = 25
-        aleMemberMove = 26
-        aleMemberDisconnect = 27
-        aleBotAdd = 28
-        aleRoleCreate = 30
-        aleRoleUpdate = 31
-        aleRoleDelete = 32
-        aleInviteCreate = 40
-        aleInviteUpdate = 41
-        aleInviteDelete = 42
-        aleWebhookCreate = 50
-        aleWebhookUpdate = 51
-        aleWebhookDelete = 52
-        aleEmojiCreate = 60
-        aleEmojiUpdate = 61
-        aleEmojiDelete = 62
-        aleMessageDelete = 72
-        aleMessageBulkDelete = 73
-        aleMessagePin = 74
-        aleMessageUnpin = 75
-        aleIntegrationCreate = 80
-        aleIntegrationUpdate = 81
-        aleIntegrationDelete = 82
+        aleMemberKick =             20
+        aleMemberPrune =            21
+        aleMemberBanAdd =           22
+        aleMemberBanRemove =        23
+        aleMemberUpdate =           24
+        aleMemberRoleUpdate =       25
+        aleMemberMove =             26
+        aleMemberDisconnect =       27
+        aleBotAdd =                 28
+        aleRoleCreate =             30
+        aleRoleUpdate =             31
+        aleRoleDelete =             32
+        aleInviteCreate =           40
+        aleInviteUpdate =           41
+        aleInviteDelete =           42
+        aleWebhookCreate =          50
+        aleWebhookUpdate =          51
+        aleWebhookDelete =          52
+        aleEmojiCreate =            60
+        aleEmojiUpdate =            61
+        aleEmojiDelete =            62
+        aleMessageDelete =          72
+        aleMessageBulkDelete =      73
+        aleMessagePin =             74
+        aleMessageUnpin =           75
+        aleIntegrationCreate =      80
+        aleIntegrationUpdate =      81
+        aleIntegrationDelete =      82
+        aleStageInstanceCreate =    83
+        aleStageInstanceUpdate =    84
+        aleStageInstanceDelete =    85
+        aleStickerCreate =          90
+        aleStickerUpdate =          91
+        aleStickerDelete =          92
     TeamMembershipState* = enum
-        tmsInvited = 1 # not to be confused with "The Mysterious Song" lol
+        tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
     MessageStickerFormat* = enum
-        msfPng = 1
-        msfAPng = 2
+        msfPng =    1
+        msfAPng =   2
         msfLottie = 3
     ApplicationCommandOptionType* = enum
-        acotSubCommand = 1
+        acotSubCommand =      1
         acotSubCommandGroup = 2
-        acotStr = 3
-        acotInt = 4
-        acotBool = 5
-        acotUser = 6
-        acotChannel = 7
-        acotRole = 8
+        acotStr =             3
+        acotInt =             4
+        acotBool =            5
+        acotUser =            6
+        acotChannel =         7
+        acotRole =            8
+        acotMentionable =     9
+        acotNumber =          10
     InteractionType* = enum
-        itPing = 1
+        itPing =               1
         itApplicationCommand = 2
     InteractionResponseType* = enum
-        irtPong = 1
-        irtChannelMessageWithSource = 4
+        irtPong =                             1
+        irtChannelMessageWithSource =         4
         irtDeferredChannelMessageWithSource = 5
-
-
+        irtDeferredUpdateMessage =            6
+        irtUpdateMessage =                    7
+    InviteTargetType* = enum
+        ittStream =              1
+        ittEmbeddedApplication = 2
+    PrivacyLevel* = enum
+        plPublic =    1
+        plGuildOnly = 2
+    UserPremiumType* = enum
+        uptNone =         0
+        uptNitroClassic = 1
+        uptNitro =        2
 const
-    permAllText* = {permSendTTSMessage,
-        permEmbedLinks,
-        permReadMessageHistory,
-        permUseExternalEmojis,
-        permSendMessages,
-        permManageMessages,
-        permAttachFiles,
-        permMentionEveryone,
-        permAddReactions}
-    permAllVoice* = {permVoiceConnect,
-        permVoiceMuteMembers,
-        permVoiceMoveMembers,
-        permVoiceSpeak,
-        permVoiceDeafenMembers,
-        permPrioritySpeaker,
-        permUseVAD,
-        permVoiceStream}
-    permAllChannel* = permAllText + permAllVoice
-    permAll* = {permAdministrator,
-        permManageRoles,
-        permKickMembers,
-        permCreateInstantInvite,
-        permManageNicknames,
-        permManageGuild,
+    ## This flag is used for Slash Command interaction callback.
+    callbackDataFlagEphemeral* = 1 shl 6
+const  
+    permAllText* = {permCreateInstantInvite,
         permManageChannels,
-        permBanMembers,
-        permChangeNickname,
+        permAddReactions,
+        permViewChannel,
+        permSendMessages,
+        permSendTTSMessage,
+        permManageMessages,
+        permEmbedLinks,
+        permAttachFiles,
+        permReadMessageHistory,
+        permMentionEveryone,
+        permUseExternalEmojis,
+        permManageRoles,
         permManageWebhooks,
-        permViewGuildInsights,
-        permManageEmojis,
+        permUseSlashCommands,
+        permManageThreads,
+        permUsePublicThreads,
+        permUsePrivateThreads}
+    permAllVoice* = {permCreateInstantInvite,
+        permManageChannels,
+        permPrioritySpeaker,
+        permVoiceStream,
+        permViewChannel,
+        permVoiceConnect,
+        permVoiceSpeak,
+        permVoiceMuteMembers,
+        permVoiceDeafenMembers,
+        permVoiceMoveMembers,
+        permUseVAD,
+        permManageRoles}
+    permAllStage* = {permCreateInstantInvite,
+        permManageChannels,
+        permViewChannel,
+        permVoiceConnect,
+        permVoiceMuteMembers,
+        permVoiceDeafenMembers,
+        permVoiceMoveMembers,
+        permManageRoles,
+        permRequestToSpeak}
+    permAllChannel* = permAllText + permAllVoice + permAllStage
+    permAll* = {permKickMembers,
+        permBanMembers,
+        permAdministrator,
+        permManageGuild,
         permViewAuditLogs,
-        permViewChannel} + permAllChannel
+        permViewGuildInsights,
+        permChangeNickname,
+        permManageNicknames,
+        permManageEmojis} + permAllChannel
 
 # Logging stuffs
 proc log*(msg: string, info: tuple) =
@@ -293,6 +363,13 @@ proc log*(msg: string, info: tuple) =
 proc log*(msg: string) =
     when defined(dimscordDebug):
         echo "[Lib]: " & msg
+
+proc `$`*(p:PermissionFlags): string=
+    if p==permMentionEveryone:
+        return "Mention @everyone, @here and All Roles"
+    system.`$`(p)[4..^1].findAndCaptureAll(
+        re"(^[a-z]|[A-Z])[a-z]*"
+    ).join" "
 
 # Rest Endpoints
 
@@ -309,8 +386,10 @@ proc endpointUserGuilds*(gid: string): string =
     result = endpointUsers("@me") & "/guilds/" & gid
 
 proc endpointChannels*(cid = ""): string =
-    result = "channels"
-    if cid != "": result = result & "/" & cid
+    result = "channels"&(if cid != "": "/" & cid else: "")
+
+proc endpointStageChannels*(cid = ""): string =
+    result = "stage-channels" & (if cid != "": "/" & cid else: "")
 
 proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")
@@ -338,6 +417,12 @@ proc endpointGuildMembersRole*(gid, mid, rid: string): string =
 
 proc endpointGuildIntegrations*(gid: string; iid = ""): string =
     result = endpointGuilds(gid)&"/integrations"&(if iid!="":"/"&iid else:"")
+
+proc endpointGuildVoiceStatesUser*(gid, uid = "@me"): string =
+    result = endpointGuilds(gid) & "/voice-states/" & uid
+
+proc endpointGuildWelcomeScreen*(gid: string): string =
+    result = endpointGuilds(gid) & "/welcome-screen"
 
 proc endpointGuildIntegrationsSync*(gid, iid: string): string =
     result = endpointGuildIntegrations(gid, iid) & "/sync"
@@ -396,6 +481,28 @@ proc endpointWebhookTokenGithub*(wid, tok: string): string =
 proc endpointChannelMessages*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/messages"
     if mid != "": result = result & "/" & mid
+
+proc endpointChannelMessagesThreads*(cid, mid: string): string =
+    result = endpointChannelMessages(cid, mid) & "/threads"
+
+
+
+proc endpointChannelThreads*(cid: string): string =
+    result = endpointChannels(cid) & "/threads"
+
+proc endpointChannelThreadsActive*(cid: string): string =
+    result = endpointChannelThreads(cid) & "/active"
+
+proc endpointChannelThreadsArchived*(cid: string, typ: string): string =
+    result = endpointChannelThreads(cid) & "/archived/" & typ
+
+proc endpointChannelUsersThreadsArchived*(cid: string, typ: string): string =
+    result = endpointChannels(cid) & endpointUsers() & "/archived/" & typ
+
+proc endpointChannelThreadsMembers*(cid: string; uid = ""): string =
+    result = endpointChannels(cid) & "/threads-members"
+    if uid != "":
+        result = "/" & uid
 
 proc endpointChannelMessagesCrosspost*(cid, mid: string): string =
     result = endpointChannelMessages(cid, mid) & "/crosspost"

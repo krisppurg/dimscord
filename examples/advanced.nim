@@ -1,5 +1,5 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
-let discord = newDiscordClient("<your bot token goes here>") 
+let discord = newDiscordClient("<your bot token goes here>")
 
 proc getGuildMember(s: Shard, guild, user: string): Future[Member] {.async.} =
     var
@@ -79,7 +79,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as: " & $r.user
 
-    await s.updateStatus(activity = ActivityStatus(
+    await s.updateStatus(activity = some ActivityStatus(
         name: "around.",
         kind: atPlaying
     ), status = "idle")

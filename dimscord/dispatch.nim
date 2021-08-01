@@ -34,7 +34,7 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
                     deepCopy guild.voice_states[voiceState.user_id]
                 )
             guild.voice_states[voiceState.user_id] = voiceState
-    
+
     if voiceState.user_id == s.user.id:
         if voiceState.channel_id.isNone:
             s.voiceConnections.del(guild.id)
@@ -89,6 +89,7 @@ proc guildEmojisUpdate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_emojis_update(s, guild, emojis)
 
 proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
+    echo data
     var oldPresence: Option[Presence]
     let presence = newPresence(data)
 
@@ -101,9 +102,18 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
 
         let member = guild.members.getOrDefault(presence.user.id, Member(
             user: User(
-                id: data["user"]["id"].str
+                id: data["user"]["id"].str,
+
+            ),
+            presence: Presence(
+                status: "offline",
+                client_status: ("offline", "offline", "offline")
             )
         ))
+        echo member[]
+        if not member.user.isNil:
+            echo $(member.user[])
+        echo member.presence.isNil
         let offline = member.presence.status in ["offline", ""]
 
         if presence.status == "offline":

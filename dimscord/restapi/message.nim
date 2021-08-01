@@ -19,17 +19,12 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "tts": tts,
     }
 
-
-    if allowed_mentions.isSome:
-        payload["allowed_mentions"] = %get allowed_mentions
-    if nonce.isSome:
-        payload["nonce"] = %get nonce
-    if message_reference.isSome:
-        payload["message_reference"] = %get message_reference
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
+    payload["message_reference"] = %*{"fail_if_not_exists": true}
+    payload.loadOpt(allowed_mentions, nonce, message_reference)
 
     if embeds.len > 0:
         payload["embeds"] = %embeds

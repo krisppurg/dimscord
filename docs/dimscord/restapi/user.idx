@@ -1,4 +1,4 @@
-getInvite	dimscord/restapi/user.html#getInvite,RestApi,string	user: getInvite(api: RestApi; code: string; with_counts, auth = false): Future[Invite]	
+getInvite	dimscord/restapi/user.html#getInvite,RestApi,string	user: getInvite(api: RestApi; code: string; with_counts, with_expiration, auth = false): Future[\n    Invite]	
 getGuildMember	dimscord/restapi/user.html#getGuildMember,RestApi,string,string	user: getGuildMember(api: RestApi; guild_id, user_id: string): Future[Member]	
 getGuildMembers	dimscord/restapi/user.html#getGuildMembers,RestApi,string,range[],string	user: getGuildMembers(api: RestApi; guild_id: string; limit: range[1 .. 1000] = 1;\n                after = &quot;0&quot;): Future[seq[Member]]	
 setGuildNick	dimscord/restapi/user.html#setGuildNick,RestApi,string,string,string	user: setGuildNick(api: RestApi; guild_id: string; nick, reason = &quot;&quot;): owned(\n    Future[void])	
@@ -12,7 +12,7 @@ getGatewayBot	dimscord/restapi/user.html#getGatewayBot,RestApi	user: getGatewayB
 getGateway	dimscord/restapi/user.html#getGateway,RestApi	user: getGateway(api: RestApi): Future[string]	
 editCurrentUser	dimscord/restapi/user.html#editCurrentUser,RestApi	user: editCurrentUser(api: RestApi; username, avatar = none string): Future[User]	
 createGroupDm	dimscord/restapi/user.html#createGroupDm,RestApi,seq[string],Table[string,string]	user: createGroupDm(api: RestApi; access_tokens: seq[string];\n              nicks: Table[string, string]): Future[DMChannel]	
-getCurrentApplication	dimscord/restapi/user.html#getCurrentApplication,RestApi	user: getCurrentApplication(api: RestApi): Future[OAuth2Application]	
+getCurrentApplication	dimscord/restapi/user.html#getCurrentApplication,RestApi	user: getCurrentApplication(api: RestApi): Future[Application]	
 registerApplicationCommand	dimscord/restapi/user.html#registerApplicationCommand,RestApi,string,string,string,string,seq[ApplicationCommandOption]	user: registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;\n                           name, description: string;\n                           options: seq[ApplicationCommandOption] = @[]): Future[\n    ApplicationCommand]	
 getApplicationCommands	dimscord/restapi/user.html#getApplicationCommands,RestApi,string,string	user: getApplicationCommands(api: RestApi; application_id: string; guild_id = &quot;&quot;): Future[\n    seq[ApplicationCommand]]	
 getApplicationCommand	dimscord/restapi/user.html#getApplicationCommand,RestApi,string,string,string	user: getApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;\n                      command_id: string): Future[ApplicationCommand]	

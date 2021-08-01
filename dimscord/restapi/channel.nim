@@ -33,7 +33,6 @@ proc getChannelPins*(api: RestApi,
         endpointChannelPins(channel_id)
     )).elems.map(newMessage)
 
-
 proc editGuildChannel*(api: RestApi, channel_id: string;
             name, parent_id, topic = none string;
             rate_limit_per_user = none range[0..21600];
@@ -116,15 +115,19 @@ proc editGuildChannelPermissions*(api: RestApi,
 proc createChannelInvite*(api: RestApi, channel_id: string;
         max_age = 86400; max_uses = 0;
         temp, unique = false; target_user = none string;
+        target_user_id, target_application_id = none string;
         target_user_type = none int; reason = ""): Future[Invite] {.async.} =
     ## Creates an instant invite.
     let payload = %*{
         "max_age": max_age,
         "max_uses": max_uses,
         "temp": temp,
-        "unique": unique,
+        "unique": unique
     }
-    payload.loadOpt(target_user, target_user_type)
+    payload.loadOpt(
+        target_user, target_user_type,
+        target_user_id, target_application_id
+    )
 
     result = (await api.request(
         "POST",
@@ -251,3 +254,90 @@ proc editWebhook*(api: RestApi, webhook_id: string;
         $payload,
         audit_reason = reason
     )
+
+proc startPublicThread*(api: RestApi,
+    channel_id, message_id, name: string;
+    auto_archive_duration: range[60..10080]
+): Future[GuildChannel] {.async.} =
+    ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
+    assert name.len in 2..100
+    result = (await api.request(
+        "POST",
+        $(%*{
+            "name": name,
+            "auto_archive_duration": auto_archive_duration
+        }),
+        endpointChannelMessagesThreads(channel_id, message_id)
+    )).newGuildChannel
+
+proc startPrivateThread*(api: RestApi,
+    channel_id: string,
+    name: string;
+    auto_archive_duration: range[60..10080]
+): Future[GuildChannel] {.async.} =
+    ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
+    assert name.len < 2 and name.len <= 100
+    result = (await api.request(
+        "POST",
+        $(%*{
+            "name": name,
+            "auto_archive_duration": auto_archive_duration
+        }),
+        endpointChannelThreads(channel_id)
+    )).newGuildChannel
+
+proc listActiveThreads*(
+    api: RestApi,
+    channel_id: string
+): Future[tuple[
+    threads: seq[GuildChannel],
+    members: seq[ThreadMember],
+    has_more: bool
+]] {.async.} =
+    ## Returns all active threads in the channel.
+    let data = await api.request("GET",endpointChannelThreadsActive(channel_id))
+
+    result = (
+        threads: data["threads"].elems.map(newGuildChannel),
+        members: data["threads"].elems.map(
+            proc (x: JsonNode): ThreadMember =
+                x.to(ThreadMember)
+        ),
+        has_more: data["has_more"].bval
+    )
+
+proc listArchivedThreads*(
+    api: RestApi,
+    joined: bool,
+    typ, channel_id: string,
+    before = none string; limit = none int
+): Future[tuple[
+    threads: seq[GuildChannel],
+    members: seq[ThreadMember],
+    has_more: bool
+]] {.async.} =
+    ## List public or private archived threads, either joined or not.
+    ## - `typ` "public" or "private"
+    ## - `joined` list joined private or public archived threads
+    var url = endpointChannelThreadsArchived(channel_id, typ)
+    if joined:
+        url = endpointChannelThreads(channel_id)
+
+    if before.isSome:
+        url &= "?before=" & before.get
+        if limit.isSome:
+            url &= "&limit=" & $limit.get
+    elif limit.isSome:
+        url &= "?limit=" & $limit.get
+
+    let data = await api.request("GET", url)
+
+    result = (
+        threads: data["threads"].elems.map(newGuildChannel),
+        members: data["threads"].elems.map(
+            proc (x: JsonNode): ThreadMember =
+                x.to(ThreadMember)
+        ),
+        has_more: data["has_more"].bval
+    )
+

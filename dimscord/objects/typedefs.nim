@@ -410,7 +410,10 @@ type
                 roleID*: string
             of acotSubCommand, acotSubCommandGroup:
                 options*: Table[string, ApplicationCommandInteractionDataOption]
-
+            of acotNumber:
+                fval*: float
+            of acotMentionable:
+                mentionID*: string
     InteractionResponse* = object
         kind*: InteractionResponseType
         data*: Option[InteractionApplicationCommandCallbackData]

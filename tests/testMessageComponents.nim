@@ -1,4 +1,5 @@
 import objects
+import helpers
 import std/unittest
 
 let basicMenuOptions = @[

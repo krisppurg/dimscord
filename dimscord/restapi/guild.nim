@@ -5,12 +5,22 @@ import requester
 
 proc beginGuildPrune*(api: RestApi, guild_id: string;
         days: range[1..30] = 7;
+        include_roles: seq[string] = @[];
         compute_prune_count = true;
         reason = "") {.async.} =
     ## Begins a guild prune.
-    let url = endpointGuildPrune(guild_id) & "?days=" & $days &
-        "&compute_prune_count=" & $compute_prune_count
-    discard await api.request("POST", url, audit_reason = reason)
+    let payload = %*{
+        "days":days,
+        "compute_prune_count":compute_prune_count,
+    }
+    if include_roles.len > 0:
+        payload["include_roles"] = %include_roles
+    discard await api.request(
+        "POST",
+        endpointGuildPrune(guild_id),
+        $(payload),
+        audit_reason = reason
+    )
 
 proc getGuildPruneCount*(api: RestApi, guild_id: string,
         days: int): Future[int] {.async.} =
@@ -66,7 +76,8 @@ proc createGuild*(api: RestApi, name, region = none string;
         roles = none seq[Role];
         channels = none seq[Channel]): Future[Guild] {.async.} =
     ## Create a guild.
-    ## Please read these notes: https://discord.com/developers/docs/resources/guild#create-guild
+    ## Please read these notes:
+    ## https://discord.com/developers/docs/resources/guild#create-guild
     let payload = newJObject()
 
     if roles.isSome:
@@ -281,10 +292,7 @@ proc getGuildIntegrations*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildIntegrations(guild_id)
-    )).elems.map(
-        proc (x: JsonNode): Integration =
-            x.to(Integration)
-    )
+    )).elems.map(newIntegration)
 
 proc getGuildWebhooks*(api: RestApi,
         guild_id: string): Future[seq[Webhook]] {.async.} =
@@ -337,8 +345,9 @@ proc getGuildWidget*(api: RestApi,
 
 proc editGuildWidget*(api: RestApi, guild_id: string,
         enabled = none bool;
-        channel_id = none string): Future[tuple[enabled: bool,
-                                        channel_id: Option[string]]] {.async.} =
+        channel_id = none string;
+        reason = ""): Future[tuple[enabled: bool,
+                                    channel_id: Option[string]]] {.async.} =
     ## Modifies a guild widget.
     let payload = newJObject()
 
@@ -414,17 +423,15 @@ proc editGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
     let payload = newJObject()
 
     payload.loadOpt(name)
-    payload.loadNullableOptStr(name)
 
-    if roles.isSome and roles.get.len < 0:
+    if roles.isSome and roles.get.len == 0:
         payload["roles"] = newJNull()
+    elif roles.isSome and roles.get.len > 0:
+        payload["roles"] = %roles
 
     result = (await api.request("PATCH",
         endpointGuildEmojis(guild_id, emoji_id),
-        $(%*{
-            "name": name,
-            "roles": roles
-        }),
+        $payload,
         audit_reason = reason
     )).newEmoji
 
@@ -436,6 +443,12 @@ proc deleteGuildEmoji*(api: RestApi, guild_id, emoji_id: string;
         audit_reason = reason
     )
 
+proc getGuildEmojis*(
+    api: RestApi, guild_id: string
+): Future[seq[Emoji]] {.async.} =
+    result = (await api.request("GET",
+        endpointGuildEmojis(guild_id)
+    )).elems.map(newEmoji)
 
 proc getGuildVoiceRegions*(api: RestApi,
         guild_id: string): Future[seq[VoiceRegion]] {.async.} =
@@ -505,3 +518,62 @@ proc deleteGuildTemplate*(api: RestApi;
     result = (await api.request(
         "DELETE", endpointGuildTemplates(gid=guild_id,tid=code)
     )).newGuildTemplate
+
+proc editUserVoiceState*(api: RestApi,
+    guild_id, channel_id: string;
+    user_id: string; suppress = false;
+    request_to_speak_timestamp = none string) {.async.} =
+    ## Modify current user voice state, read more at:
+    ## https://discord.com/developers/docs/resources/guild#update-current-user-voice-state
+    ## or 
+    ## https://discord.com/developers/docs/resources/guild#update-user-voice-state-caveats
+    ## - `user_id` You can set "@me", as the bot. 
+    if user_id != "@me":
+        assert request_to_speak_timestamp.isNone
+
+    let payload = %*{
+        "channel_id": channel_id,
+        "suppress": suppress
+    }
+    payload.loadNullableOptStr(request_to_speak_timestamp)
+
+    discard await api.request(
+        "PATCH", endpointGuildVoiceStatesUser(guild_id, user_id),
+        $payload
+    )
+
+proc editGuildWelcomeScreen*(api: RestApi, guild_id: string;
+    enabled = none bool;
+    welcome_channels = none seq[WelcomeChannel];
+    description = none string; reason = ""
+): Future[tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+    ]] {.async.} =
+    let payload = newJObject()
+    payload.loadOpt(enabled)
+    payload.loadNullableOptStr(description)
+
+    if welcome_channels.isSome and welcome_channels.get.len == 0:
+        payload["welcome_channels"] = newJNull()
+
+    return (await api.request(
+        "PATCH", endpointGuildWelcomeScreen(guild_id),
+        $payload
+    )).to(tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+        ])
+
+proc getGuildWelcomeScreen*(
+    api: RestApi, guild_id: string
+): Future[tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+        ]] {.async.} =
+    result = (await api.request(
+        "GET", endpointGuildWelcomeScreen(guild_id)
+    )).to(tuple[
+            description: Option[string],
+            welcome_channels: seq[WelcomeChannel]
+        ])

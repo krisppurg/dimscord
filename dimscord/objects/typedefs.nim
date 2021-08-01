@@ -82,7 +82,7 @@ type
         url*, proxy_url*: Option[string]
         height*, width*: Option[int]
     EmbedVideo* = object
-        url*: Option[string]
+        url*, proxy_url*: Option[string]
         height*, width*: Option[int]
     EmbedImage* = object
         url*, proxy_url*: Option[string]
@@ -102,13 +102,16 @@ type
         id*, guild_id*, name*: string
         kind*: ChannelType
     MessageReference* = object
-        channel_id*: string
+        channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
+        fail_if_not_exists*: Option[bool]
     Message* = ref object
+        ## - `sticker_items` == Table[sticker_id, object]
+        ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
         content*, timestamp*: string
         edited_timestamp*, guild_id*: Option[string]
-        webhook_id*, nonce*: Option[string]
+        webhook_id*, nonce*, application_id*: Option[string]
         tts*, mention_everyone*, pinned*: bool
         kind*: MessageType
         flags*: set[MessageFlags]
@@ -123,15 +126,23 @@ type
         activity*: Option[tuple[kind: int, party_id: string]]
         application*: Option[Application]
         message_reference*: Option[MessageReference]
-        stickers*: seq[Sticker]
+        sticker_items*: Table[string, tuple[
+            id, name: string,
+            format_type: MessageStickerFormat
+        ]]
         referenced_message*: Option[Message]
     User* = ref object
+        ## The fields for bot and system are false by default
+        ## simply because they are assumable.
         id*, username*, discriminator*: string
         bot*, system*: bool
-        premium_type*, flags*: Option[int]
-        public_flags*: Option[int]
-        avatar*: Option[string]
+        mfa_enabled*: Option[bool]
+        premium_type*: Option[int]
+        flags*: set[UserFlags]
+        public_flags*: set[UserFlags]
+        avatar*, locale*: Option[string]
     Member* = ref object
+        ## - `permissions` Returned in the interaction object.
         user*: User
         nick*, premium_since*: Option[string]
         joined_at*: string
@@ -143,6 +154,7 @@ type
         voice_state*: Option[VoiceState]
     Attachment* = object
         id*, filename*: string
+        content_type*: Option[string]
         proxy_url*, url*: string
         height*, width*: Option[int]
         size*: int
@@ -155,14 +167,18 @@ type
         require_colons*, managed*, animated*: Option[bool]
         user*: Option[User]
         roles*: seq[string]
-    Application* = object
-        id*, cover_image*: string
-        description*, icon*, name*: string
+    PartialUser* = object
+        id*, username*, discriminator*: string
+        avatar*: Option[string]
+        public_flags*: set[UserFlags]
+        bot*: bool
     Sticker* = object
-        id*, pack_id*: string
-        name*, description*: string
-        tags*, asset*, format_asset*: Option[string]
+        id*: string
+        name*, description*, tags*: string
+        guild_id*, pack_id*, format_asset*: Option[string]
         format_type*: MessageStickerFormat
+        available*: Option[bool]
+        user*: Option[User]
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
@@ -179,6 +195,7 @@ type
         guilds*: seq[UnavailableGuild]
         session_id*: string
         shard*: Option[seq[int]]
+        application*: tuple[id: string, flags: set[ApplicationFlags]]
     DMChannel* = ref object
         id*, last_message_id*: string
         kind*: ChannelType
@@ -190,10 +207,33 @@ type
         kind*: ChannelType
         position*, rate_limit_per_user*: int
         bitrate*, user_limit*: int
-        parent_id*, topic*: Option[string]
+        rtc_region*, parent_id*, topic*: Option[string]
+        video_quality_mode*, message_count*, member_count*: Option[int]
+        default_auto_archive_duration*: Option[int]
         permission_overwrites*: Table[string, Overwrite]
         messages*: Table[string, Message]
+        permissions*: set[PermissionFlags]
         nsfw*: bool
+        thread_metadata*: Option[ThreadMetadata]
+        member*: Option[ThreadMember] # I swear if I get anyone joining my
+    StageInstance* = object # server for threads im gonna ban 'em :)
+        id*: string
+        guild_id*: string
+        channel_id*: string
+        topic*: string
+        privacy_level*: PrivacyLevel
+        discoverable_disabled*: bool
+    ThreadMetadata* = object
+        archived*: bool
+        archiver_id*: Option[string]
+        auto_archive_duration*: int
+        archive_timestamp*: string
+        locked*: Option[bool]
+    ThreadMember* = object
+        ## - `id` The thread id the member is in.
+        id*, user_id*: Option[string]
+        join_timestamp*: string
+        flags*: int
     GameAssets* = object
         small_text*, small_image*: string
         large_text*, large_image*: string
@@ -221,15 +261,15 @@ type
         emoji_id*, emoji_name*: Option[string]
     Guild* = ref object
         id*, name*, owner_id*: string
-        region*, preferred_locale*: string
-        permissions_new*: Option[string]
-        description*, banner*: Option[string]
+        preferred_locale*: string
+        rtc_region*, permissions_new*: Option[string]
+        icon_hash*, description*, banner*: Option[string]
         public_updates_channel_id*: Option[string]
         icon*, splash*, discovery_splash*: Option[string]
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
         system_channel_flags*: set[SystemChannelFlags]
-        owner*, widget_enabled*: bool
+        nsfw*, owner*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
         max_video_channel_uses*: Option[int]
         permissions*, afk_timeout*, member_count*: Option[int]
@@ -252,11 +292,14 @@ type
         members*: Table[string, Member]
         channels*: Table[string, GuildChannel]
         presences*: Table[string, Presence]
+        stage_instances*: Table[string, StageInstance]
+
     VoiceState* = ref object
         guild_id*, channel_id*: Option[string]
         user_id*, session_id*: string
         deaf*, mute*, suppress*: bool
         self_deaf*, self_mute*, self_stream*: bool
+        request_to_speak_timestamp*: Option[string]
     Role* = object
         id*, name*, permissions_new*: string
         color*, position*: int
@@ -303,18 +346,20 @@ type
         user*: User
     Team* = object
         icon*: Option[string]
+        name*: string
         id*, owner_user_id*: string
         members*: seq[TeamMember]
-    OAuth2Application* = object
-        id*, name*: string
-        description*, summary*: string
-        verify_key*: string
-        icon*, guild_id*, primary_sku_id*: Option[string]
-        slug*, cover_image*: Option[string]
+    Application* = object
+        id*, description*, name*: string
         rpc_origins*: seq[string]
         bot_public*, bot_require_code_grant*: bool
+        terms_of_service_url*, privacy_policy_url*: Option[string]
+        guild_id*: Option[string]
         owner*: User
+        summary*, verify_key*: string
         team*: Option[Team]
+        icon*, primary_sku_id*, slug*, cover_image*: Option[string]
+        flags*: set[ApplicationFlags]
     ApplicationCommand* = object
         id*, application_id*: string
         name*, description*: string
@@ -374,14 +419,21 @@ type
         content*: string
         embeds*: seq[Embed]
         allowed_mentions*: AllowedMentions
-        flags*: CallbackDataFlags
+        flags*: int
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
         channel*: PartialChannel
-        inviter*, target_user*: Option[User]
-        target_user_type*: Option[int]
+        target_type*: Option[InviteTargetType]
+        target_user*, inviter*: Option[User]
+        target_application*: Option[Application]
         approximate_presence_count*, approximate_member_count*: Option[int]
+        expires_at*: Option[string]
+        stage_instance*: Option[tuple[
+            members: seq[Member],
+            topic: string,
+            participant_count, speaker_count: int
+        ]]
     InviteMetadata* = object
         code*, created_at*: string
         guild_id*: Option[string]
@@ -393,7 +445,8 @@ type
         uses*, max_uses*, max_age*: int
         channel_id*: string
         inviter*, target_user*: Option[User]
-        target_user_type*: Option[int]
+        target_type*: Option[InviteTargetType]
+        target_application*: Option[Application]
         temporary*: bool
     TypingStart* = object
         channel_id*, user_id*: string
@@ -418,12 +471,16 @@ type
         user*: Option[User]
     Integration* = object
         id*, name*, kind*: string
-        role_id*, synced_at*: string
-        enabled*, syncing*: bool
-        enable_emoticons*: Option[bool]
-        expire_behavior*, expire_grace_period*: int
-        user*: User
+        role_id*, synced_at*: Option[string]
+        enabled*: bool
+        syncing*: Option[bool]
+        enable_emoticons*, revoked*: Option[bool]
+        expire_behavior*: Option[IntegrationExpireBehavior]
+        expire_grace_period*: Option[int]
+        user*: Option[User]
         account*: tuple[id, name: string]
+        subscriber_count*: Option[int]
+        application*: Option[Application]
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]
@@ -472,8 +529,8 @@ type
     GuildWidgetJson* = object
         id*, name*: string
         instant_invite*: string
-        channels*: seq[tuple[ # dear god how many versions of partial channels are there?
-            id, name: string,
+        channels*: seq[tuple[ # dear god how many 
+            id, name: string,# versions of partial channels are there?
             position: int
         ]]
         members*: seq[tuple[

@@ -4,13 +4,16 @@ import tables, sequtils, strutils
 import requester
 
 proc getInvite*(api: RestApi, code: string;
-        with_counts, auth = false): Future[Invite] {.async.} =
+        with_counts, with_expiration, auth = false
+): Future[Invite] {.async.} =
     ## Gets a discord invite, it can be a vanity code.
     ##
     ## - `auth` Whether you should get the invite while authenticated.
+    let queryparams = "?with_counts="&($with_counts) &
+        "&with_expiration="&($with_counts)
     result = (await api.request(
         "GET",
-        endpointInvites(code) & "?with_counts=" & ($with_counts),
+        endpointInvites(code) & queryparams,
         auth = auth
     )).newInvite
 
@@ -111,12 +114,12 @@ proc createGroupDm*(api: RestApi,
         })
     )).newDMChannel
 
-proc getCurrentApplication*(api: RestApi): Future[OAuth2Application] {.async.} =
+proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
     ## Gets the current application for the current user (bot user).
     result = (await api.request(
         "GET",
         endpointOAuth2Application()
-    )).newOAuth2Application
+    )).newApplication
 
 
 proc registerApplicationCommand*(api: RestApi; application_id: string;

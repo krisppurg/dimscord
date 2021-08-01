@@ -745,6 +745,7 @@ proc newGuild*(data: JsonNode): Guild =
         channels: initTable[string, GuildChannel](),
         presences: initTable[string, Presence](),
         mfa_level: MFALevel data["mfa_level"].getInt,
+        nsfw_level: GuildNSFWLevel data["nsfw_level"].getInt,
         premium_tier: PremiumTier data["premium_tier"].getInt,
         preferred_locale: data["preferred_locale"].str
     )
@@ -815,21 +816,36 @@ proc newApplicationCommandInteractionDataOption(
     data: JsonNode
 ): ApplicationCommandInteractionDataOption =
     result = ApplicationCommandInteractionDataOption(
-        options: data{"options"}.getElems.map(
-            proc(x: JsonNode):(string,ApplicationCommandInteractionDataOption)=
-                (x["name"].str, newApplicationCommandInteractionDataOption(x))
-        ).toTable
+        kind: ApplicationCommandOptionType(data["type"].getInt())
     )
-    if "value" in data and data["value"].kind != JNull:
-        case data["value"].kind:
-        of JBool:
-            result.bval = some data["value"].bval
-        of JString:
-            result.str = some data["value"].str
-        of JInt:
-            result.ival = some data["value"].getInt
-        else:
-            discard
+    result.name = data["name"].getStr()
+    if result.kind notin {acotSubCommand, acotSubCommandGroup}:
+        # SubCommands/Groups don't have a value
+        let value = data["value"]
+        case result.kind
+            of acotBool:
+                result.bval = value.bval
+            of acotInt:
+                result.ival = value.getInt()
+            of acotStr:
+                result.str  = value.getStr()
+            of acotUser:
+                result.userID = value.getStr()
+            of acotChannel:
+                result.channelID = value.getStr()
+            of acotRole:
+                result.roleID = value.getStr()
+            else: discard
+    else:
+        # Convert the array of sub options into a key value table
+        result.options = toTable data{"options"}
+            .getElems
+            .map() do (x: JsonNode) -> (string, ApplicationCommandInteractionDataOption):
+                    (
+                        x["name"].str,
+                        newApplicationCommandInteractionDataOption(x)
+                    )
+
 
 proc newApplicationCommandInteractionData*(
     data: JsonNode
@@ -900,6 +916,15 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
             proc (x: ApplicationCommandOption): JsonNode =
                 return %%*x # avoid conflicts with json
         )
+
+proc `%%*`*(a: ApplicationCommand): JsonNode =
+    assert a.name.len in 3..32
+    assert a.description.len in 1..100
+    result = %*{"name": a.name, "description": a.description}
+    if a.options.len > 0: result["options"] = %(a.options.map(
+        proc (x: ApplicationCommandOption): JsonNode =
+            %%*x
+    ))
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(

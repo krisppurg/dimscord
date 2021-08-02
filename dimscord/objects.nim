@@ -935,6 +935,24 @@ proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
         options: data{"options"}.getElems.map newApplicationCommandOption
     )
 
+proc toPartial(emoji: Emoji): JsonNode =
+    ## Creates a partial emoji from an Emoji object
+    result = %* { # create partial emoji
+        "name": emoji.name,
+        "id": emoji.id,
+        "animated": emoji.animated
+    }
+
+proc `%`(option: SelectMenuOption): JsonNode =
+    result = %* {
+        "label": option.label,
+        "value": option.value,
+        "description": option.description,
+        "default": option.default.get(false)
+    }
+    echo option.emoji
+    if option.emoji.isSome:
+        result["emoji"] = option.emoji.get().toPartial()
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
@@ -948,11 +966,12 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["custom_id"] = %comp.customID.get()
             result["label"] = %comp.label
             result["style"] = %comp.style.ord
-            result["emoji"] = %comp.emoji
+            if comp.emoji.isSome:
+                result["emoji"] = comp.emoji.get().toPartial()
             result["url"] = %comp.url
         of SelectMenu:
             result["custom_id"] = %comp.customID.get()
-            result["options"] = %* comp.options
+            result["options"] = %comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] = %comp.minValues
             result["max_values"] = %comp.maxValues

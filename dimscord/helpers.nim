@@ -294,7 +294,8 @@ proc newActionRow*(components: seq[MessageComponent] = @[]): MessageComponent =
         kind: ActionRow,
         components: components
     )
-    checkActionRow result
+    if components.len > 0:
+        checkActionRow result
 
 proc len*(component: MessageComponent): int =
     ## Returns number of items in an ActionRow or number of options in a menu
@@ -307,7 +308,7 @@ proc len*(component: MessageComponent): int =
             raise newException(ValueError, "Component must be ActionRow or SelectMenu")
 
 template optionalEmoji(): untyped {.dirty.} =
-    (if emoji.id.isSome(): some emoji else: none Emoji)
+    (if emoji.id.isSome() or emoji.name.isSome(): some emoji else: none Emoji)
 
 proc newButton*(label, idOrUrl: string, style = Primary, emoji = Emoji(),
                 disabled = false): MessageComponent =

@@ -23,9 +23,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
-    payload["message_reference"] = %*{"fail_if_not_exists": true}
+    # payload["message_reference"] = %*{"fail_if_not_exists": true}
     payload.loadOpt(allowed_mentions, nonce, message_reference)
-
+    echo "payload ", payload.pretty()
     if embeds.len > 0:
         payload["embeds"] = %embeds
 

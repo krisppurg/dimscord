@@ -11,7 +11,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             row &= newButton("click me!", "btnClick")
         of "menu":
             row &= newSelectMenu("slmColours", @[
-                newMenuOption("Red", "red"),
+                newMenuOption("Red", "red", emoji = Emoji(name: some ":fire:")),
                 newMenuOption("Green", "green"),
                 newMenuOption("Blue", "blue")
             ])

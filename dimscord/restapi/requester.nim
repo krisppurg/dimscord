@@ -166,7 +166,8 @@ proc request*(api: RestApi, meth, endpoint: string;
                             "Body took too long to parse.")
                     else:
                         data = (await body).parseJson
-
+                    when defined(dimscordDebug):
+                        log data.pretty()
                 case status:
                 of Http400:
                     error = fin & "Bad request."

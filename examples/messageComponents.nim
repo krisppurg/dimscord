@@ -8,10 +8,10 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     var row = newActionRow()
     case content.replace("$$", "").toLowerAscii():
         of "button":
-            row &= newButton("click me!", "btnClick")
+            row &= newButton("click me!", "btnClick",  emoji = Emoji(name: some "🔥"))
         of "menu":
             row &= newSelectMenu("slmColours", @[
-                newMenuOption("Red", "red", emoji = Emoji(name: some ":fire:")),
+                newMenuOption("Red", "red", emoji = Emoji(name: some "🔥")),
                 newMenuOption("Green", "green"),
                 newMenuOption("Blue", "blue")
             ])

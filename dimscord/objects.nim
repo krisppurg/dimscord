@@ -950,7 +950,6 @@ proc `%`(option: SelectMenuOption): JsonNode =
         "description": option.description,
         "default": option.default.get(false)
     }
-    echo option.emoji
     if option.emoji.isSome:
         result["emoji"] = option.emoji.get().toPartial()
 

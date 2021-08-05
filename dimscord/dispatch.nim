@@ -89,7 +89,6 @@ proc guildEmojisUpdate(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.guild_emojis_update(s, guild, emojis)
 
 proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
-    echo data
     var oldPresence: Option[Presence]
     let presence = newPresence(data)
 
@@ -110,10 +109,6 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
                 client_status: ("offline", "offline", "offline")
             )
         ))
-        echo member[]
-        if not member.user.isNil:
-            echo $(member.user[])
-        echo member.presence.isNil
         let offline = member.presence.status in ["offline", ""]
 
         if presence.status == "offline":

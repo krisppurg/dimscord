@@ -8,11 +8,11 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
     discard await discord.api.bulkOverwriteApplicationCommands(
         applicationID,
         @[
-            ApplicationCommand(
+            ApplicationCommand( # Just say who they high fived
                 name: "High Five",
                 kind: atUser
             ),
-            ApplicationCommand(
+            ApplicationCommand( # Echo a message back
                 name: "Echo",
                 kind: atMessage
             )

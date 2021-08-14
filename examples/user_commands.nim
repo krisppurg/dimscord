@@ -7,10 +7,16 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
     let applicationID = (await discord.api.getCurrentApplication()).id
     discard await discord.api.bulkOverwriteApplicationCommands(
         applicationID,
-        @[ApplicationCommand(
-            name: "High Five",
-            kind: atUser
-        )],
+        @[
+            ApplicationCommand(
+                name: "High Five",
+                kind: atUser
+            ),
+            ApplicationCommand(
+                name: "Echo",
+                kind: atMessage
+            )
+        ],
         guildID = "479193574341214208"
     )
 
@@ -20,8 +26,9 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     if data.kind == atUser:
         for user in data.resolved.users.values: # Loop will only happen one
             msg &= "You have high fived " & user.username & "\n"
-    else:
-        msg = "Not implemented yet"
+    elif data.kind == atMessage:
+        for message in data.resolved.messages.values: # Same here
+                msg &= message.content & "\n"
     let response = InteractionResponse(
         kind: irtChannelMessageWithSource,
         data: some InteractionApplicationCommandCallbackData(

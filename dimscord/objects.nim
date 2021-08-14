@@ -401,8 +401,8 @@ proc newMember*(data: JsonNode): Member =
     result = Member(
         joined_at: data["joined_at"].str,
         roles: data["roles"].elems.mapIt(it.str),
-        deaf: data["deaf"].bval,
-        mute: data["mute"].bval,
+        deaf: data{"deaf"}.getBool(false),
+        mute: data{"mute"}.getBool(false),
         presence: Presence(
             status: "offline",
             client_status: ("offline", "offline", "offline")
@@ -853,7 +853,7 @@ proc newApplicationCommandInteractionData*(
     result = ApplicationCommandInteractionData(
         id: data["id"].str,
         name: data["name"].str,
-        kind: ApplicationCommandType data["type"].getInt(1)
+        kind: ApplicationCommandType data{"type"}.getInt(1)
     )
     case result.kind:
         of atSlash:
@@ -862,13 +862,23 @@ proc newApplicationCommandInteractionData*(
                 result.options[option["name"].str] =
                     newApplicationCommandInteractionDataOption(option)
         of atUser, atMessage:
-            echo "Getting resoltion stuff"
             result.targetID = data["target_id"].str
+            # Set the resolution kind to be the same as the interaction
+            # data kind, saves the user needing to user options when it
+            # isn't necessary
             var resolution = ApplicationCommandResolution(kind: result.kind)
+            let resolvedJson = data["resolved"]
             if result.kind == atUser:
-                echo data.pretty()
-                for userID, userJson in data["resolved"]{"users"}.getFields:
-                    resolution.users[userID] = newUser(userJson)
+                # Get users
+                for id, jsonData in resolvedJson{"users"}:
+                    resolution.users[id] = newUser(jsonData)
+                # Get members
+                for id, jsonData in resolvedJson{"members"}:
+                    resolution.members[id] = newMember(jsonData)
+            else: # result.kind will equal atMessage
+                # Get messages
+                for id, jsonData in resolvedJson{"messages"}:
+                    resolution.messages[id] = newMessage(jsonData)
             result.resolved = resolution
         else:
             discard

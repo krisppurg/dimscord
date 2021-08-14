@@ -362,6 +362,7 @@ type
         flags*: set[ApplicationFlags]
     ApplicationCommand* = object
         id*, application_id*: string
+        kind*: ApplicationCommandType
         name*, description*: string
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOption* = object
@@ -390,7 +391,21 @@ type
     ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
         id*, name*: string
-        options*: Table[string, ApplicationCommandInteractionDataOption]
+        case kind*: ApplicationCommandType
+            of atSlash:
+                options*: Table[string, ApplicationCommandInteractionDataOption]
+            of atUser, atMessage:
+                target_id*: string
+                resolved*: ApplicationCommandResolution
+            of atNothing: discard
+    ApplicationCommandResolution* = object
+        case kind*: ApplicationCommandType:
+            of atUser:
+                members*: Table[string, Member]
+                users*: Table[string, User]
+            of atMessage:
+                messages*: Table[string, Message]
+            else: discard
 
     ApplicationCommandInteractionDataOption* = object
         name*: string

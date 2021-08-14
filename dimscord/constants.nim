@@ -283,6 +283,14 @@ type
         acotRole = 8
         acotMentionable = 9 ## Includes Users and Roles
         acotNumber = 10     ## A double
+    ApplicationCommandType* = enum
+        atNothing  ## Should never appear
+        atSlash    ## CHAT_INPUT
+        atUser     ## USER
+        atMessage  ## MESSAGE
+    ApplicationCommandPermission* = enum
+        acpRole = 1
+        acpUser
     InteractionType* = enum
         itPing =               1
         itApplicationCommand = 2

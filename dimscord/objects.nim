@@ -853,11 +853,27 @@ proc newApplicationCommandInteractionData*(
     result = ApplicationCommandInteractionData(
         id: data["id"].str,
         name: data["name"].str,
-        options: initTable[string, ApplicationCommandInteractionDataOption]()
+        kind: ApplicationCommandType data["type"].getInt(1)
     )
-    for option in data{"options"}.getElems:
-        result.options[option["name"].str] = 
-            newApplicationCommandInteractionDataOption(option)
+    case result.kind:
+        of atSlash:
+            result.options = initTable[string, ApplicationCommandInteractionDataOption]()
+            for option in data{"options"}.getElems:
+                result.options[option["name"].str] =
+                    newApplicationCommandInteractionDataOption(option)
+        of atUser, atMessage:
+            echo "Getting resoltion stuff"
+            result.targetID = data["target_id"].str
+            var resolution = ApplicationCommandResolution(kind: result.kind)
+            if result.kind == atUser:
+                echo data.pretty()
+                for userID, userJson in data["resolved"]{"users"}.getFields:
+                    resolution.users[userID] = newUser(userJson)
+            result.resolved = resolution
+        else:
+            discard
+
+
 
 proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
@@ -919,16 +935,19 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
     assert a.name.len in 3..32
-    assert a.description.len in 1..100
-    result = %*{"name": a.name, "description": a.description}
-    if a.options.len > 0: result["options"] = %(a.options.map(
-        proc (x: ApplicationCommandOption): JsonNode =
-            %%*x
-    ))
+    result = %*{"name": a.name, "type": a.kind.ord}
+    if a.kind == atSlash:
+        assert a.description.len in 1..100
+        result["description"] = %a.description
+        if a.options.len > 0: result["options"] = %(a.options.map(
+            proc (x: ApplicationCommandOption): JsonNode =
+                %%*x
+        ))
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
+        kind: ApplicationCOmmandType data["type"].getInt(),
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,

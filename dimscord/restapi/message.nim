@@ -9,8 +9,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
-        message_reference = none MessageReference
-): Future[Message] {.async.} =
+        message_reference = none MessageReference,
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     assert content.len <= 2000
@@ -18,9 +18,13 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "content": content,
         "tts": tts,
     }
-    payload["message_reference"] = %*{"fail_if_not_exists": true}
-    payload.loadOpt(allowed_mentions, nonce, message_reference)
 
+    if components.len > 0:
+        payload["components"] = newJArray()
+        for component in components:
+            payload["components"].add %%*component
+    # payload["message_reference"] = %*{"fail_if_not_exists": true}
+    payload.loadOpt(allowed_mentions, nonce, message_reference)
     if embeds.len > 0:
         payload["embeds"] = %embeds
 
@@ -240,7 +244,8 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         file = none DiscordFile;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
-        username, avatar_url = none string): Future[Message] {.async.} =
+        username, avatar_url = none string,
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Executes a webhook or create a followup message.
     ## If `wait` is `false` make sure to `discard await` it.
     ## - `webhook_id` can be used as application id
@@ -256,6 +261,11 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
+
+    if components.len > 0:
+        payload["components"] = newJArray()
+        for component in components:
+            payload["components"].add %%*component
 
     if file.isSome:
         var mpd = newMultipartData()

@@ -44,3 +44,19 @@ macro keyCheckStr*(obj: typed, obj2: typed,
     result.add quote do:
       if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
         `obj2`.`lit` = `obj`[`fieldName`].getStr
+
+macro optionIf*(check: typed): untyped =
+    ## Runs `check` to see if a variable is considered empty
+    ## - if check is true, then it returns None[T]
+    ## - if check is false, then it returns some(variable)
+    ## not very robust but supports basics like calls, field access
+    expectKind check, nnkInfix
+    let symbol = case check[1].kind:
+        of nnkDotExpr: check[1][1]
+        else: check[1]
+    let
+        variable = check[1]
+        varType  = ident $symbol.getType()
+
+    result = quote do:
+        if `check`: none `varType` else: some (`variable`)

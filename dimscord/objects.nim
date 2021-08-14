@@ -945,8 +945,14 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
     assert a.name.len in 3..32
-    result = %*{"name": a.name, "type": a.kind.ord}
-    if a.kind == atSlash:
+    # This ternary is needed so that the enums can stay similar to
+    # the discord api
+    let commandKind = if a.kind == atNothing: atSlash else: a.kind
+    result = %*{
+        "name": a.name,
+        "type": commandKind.ord
+    }
+    if commandKind == atSlash:
         assert a.description.len in 1..100
         result["description"] = %a.description
         if a.options.len > 0: result["options"] = %(a.options.map(

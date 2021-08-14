@@ -286,6 +286,7 @@ type
     InteractionType* = enum
         itPing =               1
         itApplicationCommand = 2
+        itMessageComponent =   3
     InteractionResponseType* = enum
         irtPong =                             1
         irtChannelMessageWithSource =         4
@@ -302,10 +303,23 @@ type
         uptNone =         0
         uptNitroClassic = 1
         uptNitro =        2
+    ButtonStyle* = enum
+        Primary = 1
+        Secondary = 2
+        Success = 3
+        Danger = 4
+        Link = 5
+    MessageComponentType* = enum
+        None = 0 # This should never happen
+        ActionRow = 1
+        Button = 2
+        SelectMenu = 3
+
+
 const
     ## This flag is used for Slash Command interaction callback.
     callbackDataFlagEphemeral* = 1 shl 6
-const  
+const
     permAllText* = {permCreateInstantInvite,
         permManageChannels,
         permAddReactions,

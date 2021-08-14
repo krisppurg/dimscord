@@ -410,7 +410,10 @@ type
                 roleID*: string
             of acotSubCommand, acotSubCommandGroup:
                 options*: Table[string, ApplicationCommandInteractionDataOption]
-
+            of acotNumber:
+                fval*: float
+            of acotMentionable:
+                mentionID*: string
     InteractionResponse* = object
         kind*: InteractionResponseType
         data*: Option[InteractionApplicationCommandCallbackData]
@@ -481,6 +484,34 @@ type
         account*: tuple[id, name: string]
         subscriber_count*: Option[int]
         application*: Option[Application]
+    SelectMenuOption* = object
+        label*: string
+        value*: string
+        description*: Option[string]
+        emoji*: Option[Emoji]
+        default*: Option[bool]
+
+    MessageComponent* = object
+        # custom_id is only needed for things other than action row
+        # but the new case object stuff isn't implemented in nim
+        # so it can't be shared
+        # same goes with disabled
+        custom_id*: Option[string]
+        disabled*: Option[bool]
+        case kind*: MessageComponentType
+            of None: discard
+            of ActionRow:
+                components*: seq[MessageComponent]
+            of Button: # Message Component
+                style*: ButtonStyle
+                label*: Option[string]
+                emoji*: Option[Emoji]
+                url*: Option[string]
+            of SelectMenu:
+                options*: seq[SelectMenuOption]
+                placeholder*: Option[string]
+                min_values*: Option[int]
+                max_values*: Option[int]
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]
@@ -529,7 +560,7 @@ type
     GuildWidgetJson* = object
         id*, name*: string
         instant_invite*: string
-        channels*: seq[tuple[ # dear god how many 
+        channels*: seq[tuple[ # dear god how many
             id, name: string,# versions of partial channels are there?
             position: int
         ]]

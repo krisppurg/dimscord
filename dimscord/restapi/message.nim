@@ -1,6 +1,6 @@
-import httpclient, mimetypes, asyncdispatch, json, options
+import httpclient, mimetypes, asyncdispatch, options
 import ../objects, ../constants
-import tables, os, sequtils
+import tables, os, json, sequtils
 import uri, ../helpers, requester
 
 proc sendMessage*(api: RestApi, channel_id: string;
@@ -10,23 +10,27 @@ proc sendMessage*(api: RestApi, channel_id: string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         message_reference = none MessageReference,
-        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+        components = newSeq[MessageComponent](),
+        sticker_ids = newSeq[string]()): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
-    assert content.len <= 2000
+    assert content.len in 1..2000
+    assert sticker_ids.len in 0..3
     let payload = %*{
         "content": content,
         "tts": tts,
     }
+    payload["message_reference"] = %*{"fail_if_not_exists": true}
+
+    if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
+    if embeds.len > 0: payload["embeds"] = %embeds
+
+    payload.loadOpt(allowed_mentions, nonce, message_reference)
 
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
-    # payload["message_reference"] = %*{"fail_if_not_exists": true}
-    payload.loadOpt(allowed_mentions, nonce, message_reference)
-    if embeds.len > 0:
-        payload["embeds"] = %embeds
 
     if files.len > 0:
         var mpd = newMultipartData()
@@ -61,27 +65,6 @@ proc sendMessage*(api: RestApi, channel_id: string;
         $payload
     )).newMessage
 
-proc sendMessage*(api: RestApi, channel_id: string;
-        content = ""; tts = false; embed = none Embed;
-        nonce: Option[string] or Option[int] = none(int);
-        files = newSeq[DiscordFile]();
-        allowed_mentions = none AllowedMentions;
-        message_reference = none MessageReference
-): Future[Message] {.async, deprecated: "`embed` has been replaced by `embeds`".} =
-    return await api.sendMessage(
-        channel_id = channel_id,
-        content = content, tts = tts,
-        embeds = (
-            if embed.isSome:
-                @[get embed]
-            else:
-                newSeq[Embed]()
-        ),
-        allowed_mentions = allowed_mentions,
-        nonce = nonce, files = files,
-        message_reference = message_reference
-    )
-
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none(int);
         embeds = newSeq[Embed]()): Future[Message] {.async.} =
@@ -101,22 +84,6 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         endpointChannelMessages(channel_id, message_id),
         $payload
     )).newMessage
-
-proc editMessage*(api: RestApi, channel_id, message_id: string;
-        content = ""; tts = false; flags = none(int);
-        embed = none Embed
-): Future[Message] {.async, deprecated: "`embed` has been replaced by `embeds`".} =
-    return await api.editMessage(
-        channel_id = channel_id,
-        message_id = message_id,
-        content = content, tts = tts, flags = flags,
-        embeds = (
-            if embed.isSome:
-                @[get embed]
-            else:
-                newSeq[Embed]()
-        )
-    )
 
 proc crosspostMessage*(api: RestApi;
         channel_id, message_id: string): Future[Message] {.async.} =
@@ -292,27 +259,6 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     result = (await api.request("POST", url, $payload)).newMessage
 
-proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
-        wait = true; content = ""; tts = false;
-        file = none DiscordFile;
-        embeds = none seq[Embed];
-        allowed_mentions = none AllowedMentions;
-        username, avatar_url = none string
-): Future[Message] {.async, deprecated: "`embeds` is now a `seq[Embed]`".} =
-    return await api.executeWebhook(
-        webhook_id = webhook_id,
-        webhook_token = webhook_token,
-        wait = wait, content = content, tts = tts,
-        file = file, embeds = (
-            if embeds.isSome:
-                get embeds
-            else:
-                newSeq[Embed]()
-        ),
-        allowed_mentions = allowed_mentions,
-        username = username, avatar_url = avatar_url
-    )
-
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         content = none string;
@@ -363,3 +309,76 @@ proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
         "POST",
         endpointWebhookTokenGithub(webhook_id, token) & "?wait=" & $wait
     )).newMessage
+
+proc getSticker*(api: RestApi, sticker_id: string): Future[Sticker] {.async.} =
+    result = (await api.request("GET", endpointStickers(sticker_id))).newSticker
+
+proc getNitroStickerPacks*(api: RestApi): Future[seq[StickerPack]] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointStickerPacks()
+    )).elems.map(newStickerPack)
+
+proc getThreadMembers*(api: RestApi;
+        channel_id: string): Future[seq[ThreadMember]] {.async.} =
+    ## List thread members.
+    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent 
+    ## if not enabled on your application.
+    result = (await api.request(
+        "GET",
+        endpointChannelThreadsMembers(channel_id)
+    )).getElems.map(proc (x: JsonNode): ThreadMember =
+        x.to(ThreadMember)
+    )
+
+proc removeThreadMember*(api: RestApi;
+        channel_id, user_id: string;
+        reason = "") {.async.} =
+    ## Remove thread member.
+    discard await api.request(
+        "DELETE",
+        endpointChannelThreadsMembers(channel_id, user_id),
+        audit_reason = reason
+    )
+
+proc addThreadMember*(api: RestApi;
+        channel_id, user_id: string;
+        reason = "") {.async.} =
+    ## Adds a thread member.
+    discard await api.request(
+        "PUT",
+        endpointChannelThreadsMembers(channel_id, user_id),
+        audit_reason = reason
+    )
+
+proc leaveThread*(api: RestApi; channel_id: string) {.async.} =
+    ## Leave thread.
+    discard await api.request(
+        "DELETE",
+        endpointChannelThreadsMembers(channel_id, "@me")
+    )
+
+proc joinThread*(api: RestApi; channel_id: string) {.async.} =
+    ## Join thread.
+    discard await api.request(
+        "PUT",
+        endpointChannelThreadsMembers(channel_id, "@me")
+    )
+
+proc startThreadWithMessage*(api: RestApi,
+    channel_id, message_id, name: string;
+    auto_archive_duration: range[60..10080];
+    reason = ""
+): Future[GuildChannel] {.async.} =
+    ## Starts a public thread.
+    ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
+    assert name.len in 1..100
+    result = (await api.request(
+        "POST",
+        endpointChannelMessagesThreads(channel_id, message_id),
+        $(%*{
+            "name": name,
+            "auto_archive_duration": auto_archive_duration
+        }),
+        audit_reason = reason
+    )).newGuildChannel

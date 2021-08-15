@@ -117,6 +117,18 @@ function main() {
     title="timestamp(id: string): Time">timestamp,<wbr>string</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">newMenuOption
+      <li><a class="reference" href="#newMenuOption%2Cstring%2Cstring%2Cstring"
+    title="newMenuOption(label: string; value: string; description = &quot;&quot;; emoji = Emoji();
+              default = false): SelectMenuOption">newMenuOption,<wbr>string,<wbr>string,<wbr>string</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newButton
+      <li><a class="reference" href="#newButton%2Cstring%2Cstring"
+    title="newButton(label, idOrUrl: string; style = Primary; emoji = Emoji();
+          disabled = false): MessageComponent">newButton,<wbr>string,<wbr>string</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">stripChannelMentions
       <li><a class="reference" href="#stripChannelMentions%2CMessage"
     title="stripChannelMentions(m: Message): string">stripChannelMentions,<wbr>Message</a></li>
@@ -131,6 +143,18 @@ function main() {
   <ul class="simple nested-toc-section">in
       <li><a class="reference" href="#in%2Cset%5BPermissionFlags%5D%2Cset%5BPermissionFlags%5D"
     title="`in`(x, y: set[PermissionFlags]): bool">in,<wbr>set[PermissionFlags],<wbr>set[PermissionFlags]</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">len
+      <li><a class="reference" href="#len%2CMessageComponent"
+    title="len(component: MessageComponent): int">len,<wbr>MessageComponent</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">add
+      <li><a class="reference" href="#add%2CMessageComponent%2CMessageComponent"
+    title="add(component: var MessageComponent; item: MessageComponent)">add,<wbr>MessageComponent,<wbr>MessageComponent</a></li>
+  <li><a class="reference" href="#add%2CMessageComponent%2CSelectMenuOption"
+    title="add(component: var MessageComponent; item: SelectMenuOption)">add,<wbr>MessageComponent,<wbr>SelectMenuOption</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">permCheck
@@ -150,6 +174,11 @@ function main() {
     title="`@`(r: Role): string">@,<wbr>Role</a></li>
   <li><a class="reference" href="#%40%2CGuildChannel"
     title="`@`(g: GuildChannel): string">@,<wbr>GuildChannel</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newActionRow
+      <li><a class="reference" href="#newActionRow%2Cseq%5BMessageComponent%5D"
+    title="newActionRow(components: seq[MessageComponent] = @[]): MessageComponent">newActionRow,<wbr>seq[MessageComponent]</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">avatarUrl
@@ -186,6 +215,17 @@ function main() {
     title="computePerms(guild: Guild; member: Member): PermObj">computePerms,<wbr>Guild,<wbr>Member</a></li>
   <li><a class="reference" href="#computePerms%2CGuild%2CMember%2CGuildChannel"
     title="computePerms(guild: Guild; member: Member; channel: GuildChannel): PermObj">computePerms,<wbr>Guild,<wbr>Member,<wbr>GuildChannel</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">checkActionRow
+      <li><a class="reference" href="#checkActionRow%2CMessageComponent"
+    title="checkActionRow(row: MessageComponent)">checkActionRow,<wbr>MessageComponent</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">newSelectMenu
+      <li><a class="reference" href="#newSelectMenu%2Cstring%2Cseq%5BSelectMenuOption%5D%2Cstring%2Cint%2Cint"
+    title="newSelectMenu(customID: string; options: seq[SelectMenuOption];
+              placeholder = &quot;&quot;; minValues, maxValues = 1; disabled = false): MessageComponent">newSelectMenu,<wbr>string,<wbr>seq[SelectMenuOption],<wbr>string,<wbr>int,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">stripMentions
@@ -496,6 +536,115 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L244" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="checkActionRow,MessageComponent"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#checkActionRow%2CMessageComponent"><span class="Identifier">checkActionRow</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Checks if an action row meets these requirements<ul class="simple"><li>A row cannot contain another row</li>
+<li>If a row contains buttons, then it can only have 5 buttons</li>
+<li>If a row contains buttons, then it cannot contains select menu</li>
+<li>If a row contiains a select menu, then there can only be one select menu</li>
+</ul>
+<p>Throws an <tt class="docutils literal"><span class="pre">AssertionDefect</span></tt> if any of these checks fail</p>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L262"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L262" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="newActionRow,seq[MessageComponent]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newActionRow%2Cseq%5BMessageComponent%5D"><span class="Identifier">newActionRow</span></a><span class="Other">(</span><span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates a new action row which you can add components to. It is recommended to use this over raw objects since this does validation of the row as you add objects
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L286"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L286" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="len,MessageComponent"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#len%2CMessageComponent"><span class="Identifier">len</span></a><span class="Other">(</span><span class="Identifier">component</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Returns number of items in an ActionRow or number of options in a menu
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L297"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L297" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="newButton,string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newButton%2Cstring%2Cstring"><span class="Identifier">newButton</span></a><span class="Other">(</span><span class="Identifier">label</span><span class="Other">,</span> <span class="Identifier">idOrUrl</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">style</span> <span class="Other">=</span> <span class="Identifier">Primary</span><span class="Other">;</span> <span class="Identifier">emoji</span> <span class="Other">=</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+               <span class="Identifier">disabled</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates a new button.<ul class="simple"><li>If the buttons style is NOT Link then it requires a customID</li>
+<li>If the buttons style is Link then it requires a url</li>
+</ul>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L310"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="newMenuOption,string,string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newMenuOption%2Cstring%2Cstring%2Cstring"><span class="Identifier">newMenuOption</span></a><span class="Other">(</span><span class="Identifier">label</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">description</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                   <span class="Identifier">emoji</span> <span class="Other">=</span> <a href="objects.html#Emoji"><span class="Identifier">Emoji</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">default</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#SelectMenuOption"><span class="Identifier">SelectMenuOption</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates a new menu option for a select menu.<ul class="simple"><li>label: The user facing value</li>
+<li>value: The dev facing value</li>
+<li>default: Whether this option is the default</li>
+</ul>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L327"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L327" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="newSelectMenu,string,seq[SelectMenuOption],string,int,int"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newSelectMenu%2Cstring%2Cseq%5BSelectMenuOption%5D%2Cstring%2Cint%2Cint"><span class="Identifier">newSelectMenu</span></a><span class="Other">(</span><span class="Identifier">customID</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">options</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#SelectMenuOption"><span class="Identifier">SelectMenuOption</span></a><span class="Other">]</span><span class="Other">;</span>
+                   <span class="Identifier">placeholder</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">minValues</span><span class="Other">,</span> <span class="Identifier">maxValues</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">;</span> <span class="Identifier">disabled</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates a new select menu. Options can be an empty seq but you MUST add options before adding it to the option row. min and max values is if you want users to be able to select multiple options
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L342"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L342" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="add,MessageComponent,MessageComponent"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#add%2CMessageComponent%2CMessageComponent"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">component</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">;</span> <span class="Identifier">item</span><span class="Other">:</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Add another component onto an ActionRow
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L360"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L360" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="add,MessageComponent,SelectMenuOption"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#add%2CMessageComponent%2CSelectMenuOption"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">component</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">;</span> <span class="Identifier">item</span><span class="Other">:</span> <a href="objects.html#SelectMenuOption"><span class="Identifier">SelectMenuOption</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Add another menu option onto the select menu
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L366"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L366" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 <div class="section" id="17">
@@ -522,7 +671,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-01 13:18:15 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-15 17:13:23 UTC</small>
       </div>
     </div>
   </div>

@@ -35,32 +35,45 @@ proc deleteGuild*(api: RestApi, guild_id: string) {.async.} =
     discard await api.request("DELETE", endpointGuilds(guild_id))
 
 proc editGuild*(api: RestApi, guild_id: string;
-        name, region, afk_channel_id, icon = none string;
-        discovery_splash, owner_id, splash, banner = none string;
-        system_channel_id, rules_channel_id = none string;
-        preferred_locale, public_updates_channel_id = none string;
-        verification_level, default_message_notifications = none int;
-        explicit_content_filter, afk_timeout = none int;
-        reason = ""): Future[Guild] {.async.} =
-    ## Edits a guild.
+    name, description, region, afk_channel_id, icon = none string;
+    discovery_splash, owner_id, splash, banner = none string;
+    system_channel_id, rules_channel_id = none string;
+    preferred_locale, public_updates_channel_id = none string;
+    verification_level, default_message_notifications = none int;
+    system_channel_flags = none int,
+    explicit_content_filter, afk_timeout = none int;
+    features: seq[string] = @[];
+    reason = ""
+): Future[Guild] {.async.} =
+    ## Modifies a guild.
     ## Icon needs to be a base64 image.
     ## (See: https://nim-lang.org/docs/base64.html)
+    ## 
+    ## 
+    ## Read more at: 
+    ## https://discord.com/developers/docs/resources/guild#modify-guild
 
     let payload = newJObject()
 
-    payload.loadOpt(name, region, verification_level, afk_timeout,
+    payload.loadOpt(name, description, region, verification_level, afk_timeout,
         default_message_notifications, icon, explicit_content_filter,
         afk_channel_id, discovery_splash, owner_id, splash, banner,
         system_channel_id, rules_channel_id, public_updates_channel_id,
-        preferred_locale)
+        preferred_locale, system_channel_flags)
 
     payload.loadNullableOptInt(verification_level,
         default_message_notifications,
         explicit_content_filter, afk_timeout)
 
-    payload.loadNullableOptStr(icon, region, splash, discovery_splash, banner,
-        system_channel_id, rules_channel_id, public_updates_channel_id,
-        preferred_locale)
+    payload.loadNullableOptStr(icon, description, region, splash,
+        discovery_splash, banner, system_channel_id, rules_channel_id,
+        public_updates_channel_id, preferred_locale)
+
+    if features.len > 0:
+        payload["features"] = %[]
+        for f in features:
+            payload["features"].add(%f)
+
 
     result = (await api.request(
         "PATCH",
@@ -87,7 +100,7 @@ proc createGuild*(api: RestApi, name, region = none string;
 
     payload.loadOpt(name, region, verification_level, afk_timeout,
         default_message_notifications, icon, explicit_content_filter,
-        afk_channel_id, system_channel_id, roles, channels)
+        afk_channel_id, system_channel_id)
 
     payload.loadNullableOptInt(verification_level,
         default_message_notifications,
@@ -110,7 +123,7 @@ proc createGuild*(api: RestApi, name, region = none string;
 
     if roles.isSome:
         payload["roles"] = %[]
-        for r, i in roles.get:
+        for r in roles.get:
             payload["roles"].add(%r)
 
     result = (await api.request(
@@ -264,11 +277,7 @@ proc getGuildBans*(api: RestApi,
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
-    let payload = %*{
-        "reason": reason
-    }
-    when defined(discordv8):
-        payload["delete-message-days"] = %deletemsgdays
+    let payload = %*{"delete_message_days": deletemsgdays}
 
     discard await api.request(
         "PUT",
@@ -383,8 +392,8 @@ proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
         nick = none string;
         roles = none seq[string];
         mute, deaf = none bool;
-        reason = ""): Future[tuple[member: Member,
-                                            exists: bool]] {.async.} =
+        reason = ""):  Future[tuple[member: Member,
+                                    exists: bool]] {.async.} =
     ## Adds a guild member.
     ## If member is in the guild, then exists will be true.
     let payload = %*{"access_token": access_token}
@@ -456,20 +465,14 @@ proc getGuildVoiceRegions*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildRegions(guild_id)
-    )).elems.map(
-        proc (x: JsonNode): VoiceRegion =
-            x.to(VoiceRegion)
-    )
+    )).elems.mapIt(it.to(VoiceRegion))
 
 proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
     ## Get voice regions
     result = (await api.request(
         "GET",
         endpointVoiceRegions()
-    )).elems.map(
-        proc (x: JsonNode): VoiceRegion =
-            x.to(VoiceRegion)
-    )
+    )).elems.mapIt(it.to(VoiceRegion))
 
 proc createGuildFromTemplate*(api: RestApi;
         code: string): Future[Guild] {.async.} =
@@ -577,3 +580,89 @@ proc getGuildWelcomeScreen*(
             description: Option[string],
             welcome_channels: seq[WelcomeChannel]
         ])
+
+proc getGuildStickers*(
+    api: RestApi, guild_id: string
+): Future[seq[Sticker]] {.async.} =
+    ## List guild stickers. 
+    result = (await api.request(
+        "GET",
+        endpointGuildStickers(guild_id)
+    )).elems.map(newSticker)
+
+proc getGuildSticker*(
+    api: RestApi, guild_id, sticker_id: string
+): Future[Sticker] {.async.} =
+    ## Gets a guild sticker.
+    result = (await api.request(
+        "GET",
+        endpointGuildStickers(guild_id, sticker_id)
+    )).newSticker
+
+proc createGuildSticker*(api: RestApi, guild_id: string;
+    name, tags, file: string;
+    description, reason = ""
+): Future[Sticker] {.async.} =
+    ## Create a guild sticker. Max `file` size 500KB.
+    assert file.len <= (500 * 1000)
+    assert name.len in 2..30 and tags.len in 2..200
+    if description != "":
+        assert description.len in 2..100
+
+    let payload = %*{
+        "name": name,
+        "description": description,
+        "tags": tags,
+        "file": file
+    }
+
+    result = (await api.request(
+        "POST",
+        endpointGuildStickers(guild_id),
+        $payload,
+        reason
+    )).newSticker
+
+proc editGuildSticker*(api: RestApi, guild_id, sticker_id: string;
+        name, description, tags = none string;
+        reason = ""
+): Future[Sticker] {.async.} =
+    ## Modify a guild sticker.
+    let payload = newJObject()
+    if name.isSome:
+        assert name.get.len in 2..30
+    if tags.isSome:
+        assert tags.get.len in 2..200
+    if description.isSome:
+        assert description.get.len in 2..100
+    payload.loadNullableOptStr(name, description, tags)
+    result = (await api.request(
+        "PATCH",
+        endpointGuildStickers(guild_id, sticker_id),
+        $payload,
+        reason
+    )).newSticker
+
+proc deleteGuildSticker*(
+    api: RestApi, guild_id, sticker_id: string
+): Future[Sticker] {.async.} =
+    ## Deletes a guild sticker.
+    result = (await api.request(
+        "DELETE",
+        endpointGuildStickers(guild_id, sticker_id)
+    )).newSticker
+
+proc listActiveGuildThreads*(
+    api: RestApi,
+    channel_id: string
+): Future[tuple[
+    threads: seq[GuildChannel],
+    members: seq[ThreadMember]
+]] {.async.} =
+    ## Returns all active threads in the guild.
+    let data = await api.request("GET",endpointGuildThreadsActive(channel_id))
+
+    result = (
+        threads: data["threads"].elems.map(newGuildChannel),
+        members: data["members"].elems.mapIt(it.to(ThreadMember))
+    )

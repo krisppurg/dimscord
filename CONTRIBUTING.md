@@ -15,3 +15,4 @@
 * Make spam comments or less detailed issues.
 * Make command handler PRs or issues. [There is already a command handler](https://github.com/ire4ever1190/dimscmd)
 * Make lines over 80-81 characters, unless it's comments which limits to around 120 characters.
+* Having echos in code unless if it checks dimscordDebug enabled, but debugs should be helpful and not rather too spammy (e.g. echoing a raw guild object would be considered spammy).

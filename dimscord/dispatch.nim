@@ -1,4 +1,6 @@
-import objects, options, json, asyncdispatch, tables, constants
+import objects, constants
+import options, json, asyncdispatch
+import sequtils, tables
 
 proc addMsg(c: GuildChannel, m: Message, data: string;
         prefs: CacheTablePrefs) {.async.} =
@@ -298,27 +300,25 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
 
-        chan.messages.del(msg.id)
-
         if msg.id in chan.messages:
             msg = chan.messages[msg.id]
 
             if chan.last_message_id == msg.id:
                 chan.last_message_id = ""
-
             exists = true
+
+        chan.messages.del(msg.id)
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
-        chan.messages.del(msg.id)
-
         if msg.id in chan.messages:
             msg = chan.messages[msg.id]
 
             if chan.last_message_id == msg.id:
                 chan.last_message_id = ""
-
             exists = true
+
+        chan.messages.del(msg.id)
 
     await s.client.events.message_delete(s, msg, exists)
 
@@ -667,6 +667,147 @@ proc inviteDelete(s: Shard, data: JsonNode) {.async.} =
     await s.client.events.invite_delete(s, guild, data["channel_id"].str,
         data["code"].str)
 
+proc applicationCommandCreate(s: Shard, data: JsonNode) {.async.} =
+    let cmd = newApplicationCommand(data)
+    var guild: Option[Guild]
+    if "guild_id" in data:
+        guild = some s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+
+    await s.client.events.application_command_create(s, guild, cmd)
+
+proc applicationCommandDelete(s: Shard, data: JsonNode) {.async.} =
+    let cmd = newApplicationCommand(data)
+    var guild: Option[Guild]
+    if "guild_id" in data:
+        guild = some s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+
+    await s.client.events.application_command_delete(s, guild, cmd)
+
+proc applicationCommandUpdate(s: Shard, data: JsonNode) {.async.} =
+    let cmd = newApplicationCommand(data)
+    var guild: Option[Guild]
+    if "guild_id" in data:
+        guild = some s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+
+    await s.client.events.application_command_update(s, guild, cmd)
+
+proc stageInstanceCreate(s: Shard, data: JsonNode) {.async.} =
+    let stage = newStageInstance(data)
+    let guild = s.cache.guilds.getOrDefault(
+        data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    if s.cache.preferences.cache_guild_channels:
+        guild.stage_instances[stage.id] = stage
+    await s.client.events.stage_instance_create(s, guild, stage)
+
+proc stageInstanceUpdate(s: Shard, data: JsonNode) {.async.} =
+    let
+        stage = newStageInstance(data)
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+    var oldStage: Option[StageInstance]
+
+    if stage.id in guild.stage_instances:
+        when declared(deepCopy):
+            oldStage = some deepCopy guild.stage_instances[stage.id]
+        guild.stage_instances[stage.id] = stage
+
+    await s.client.events.stage_instance_update(s, guild, stage, oldStage)
+
+proc stageInstanceDelete(s: Shard, data: JsonNode) {.async.} =
+    let
+        stage = newStageInstance(data)
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+    var exists = false
+
+    if stage.id in guild.stage_instances:
+        guild.stage_instances.del(stage.id)
+        exists = true
+
+    await s.client.events.stage_instance_delete(s, guild, stage, exists)
+
+proc threadCreate(s: Shard, data: JsonNode) {.async.} =
+    let thread = newGuildChannel(data)
+    let guild = s.cache.guilds.getOrDefault(
+        data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    if s.cache.preferences.cache_guild_channels:
+        s.cache.guildChannels[thread.id] = thread 
+        guild.threads[thread.id] = thread
+    await s.client.events.thread_create(s, guild, thread)
+
+proc threadUpdate(s: Shard, data: JsonNode) {.async.} =
+    let
+        thread = newGuildChannel(data)
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+    var oldThread: Option[GuildChannel]
+
+    if thread.id in s.cache.guildChannels:
+        when declared(deepCopy):
+            oldThread = some deepCopy s.cache.guildChannels[thread.id]
+        s.cache.guildChannels[thread.id] = thread
+        guild.threads[thread.id] = thread
+
+    await s.client.events.thread_update(s, guild, thread, oldThread)
+
+proc threadDelete(s: Shard, data: JsonNode) {.async.} =
+    let
+        thread = s.cache.guildChannels.getOrDefault(
+            data["id"].str,
+            GuildChannel(
+                id: data["id"].str,
+                guild_id: data["guild_id"].str,
+                parent_id: some data["parent_id"].str,
+                kind: ChannelType data["type"].getInt
+            )
+        )
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+    var exists = false
+
+    if thread.id in s.cache.guildChannels:
+        s.cache.guildChannels.del(thread.id)
+        guild.threads.del(thread.id)
+        exists = true
+
+    await s.client.events.thread_delete(s, guild, thread, exists)
+
+proc threadMembersUpdate(s: Shard, data: JsonNode) {.async.} =
+    let e = ThreadMembersUpdate(
+        id: data["id"].str,
+        guild_id: data["guild_id"].str,
+        member_count: data["member_count"].getInt,
+        added_members: data{"added_members"}.getElems.map(
+            proc (x: JsonNode): ThreadMember =
+            x.to(ThreadMember)
+        ),
+        removed_member_ids: data{"removed_member_ids"}.getElems.mapIt(
+            it.getStr
+        )
+    )
+    await s.client.events.thread_members_update(s, e)
+
 proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
@@ -739,5 +880,32 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
         await s.client.events.user_update(s, user)
     of "INTERACTION_CREATE":
         await s.client.events.interaction_create(s, newInteraction(data))
+    of "APPLICATION_COMMAND_CREATE": await s.applicationCommandCreate(data)
+    of "APPLICATION_COMMAND_UPDATE": await s.applicationCommandUpdate(data)
+    of "APPLICATION_COMMAND_DELETE": await s.applicationCommandDelete(data)
+    of "THREAD_CREATE": await s.threadCreate(data)
+    of "THREAD_UPDATE": await s.threadUpdate(data)
+    of "THREAD_DELETE": await s.threadDelete(data)
+    of "THREAD_LIST_SYNC":
+        let e = ThreadListSync(
+            channel_ids: data{"channel_ids"}.getElems.mapIt(it.getStr),
+            threads: data{"threads"}.getElems.map(newGuildChannel),
+            members: data["members"].elems.map(
+                proc (x: JsonNode): ThreadMember =
+                x.to(ThreadMember)
+            )
+        )
+        await s.client.events.thread_list_sync(s, e)
+    of "THREAD_MEMBERS_UPDATE": await s.threadMembersUpdate(data)
+    of "THREAD_MEMBER_UPDATE":
+        let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        await s.client.events.thread_member_update(
+            s, guild, data.to(ThreadMember)
+        )
+    of "STAGE_INSTANCE_CREATE": await s.stageInstanceCreate(data)
+    of "STAGE_INSTANCE_UPDATE": await s.stageInstanceUpdate(data)
+    of "STAGE_INSTANCE_DELETE": await s.stageInstanceDelete(data)
     else:
         discard

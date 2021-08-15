@@ -126,7 +126,7 @@ type
 const
     libName* =  "Dimscord"
     libVer* =   "1.3.0"
-    libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v" & libVer & ")"
+    libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v"&libVer&")"
 
     cdnBase* =               "https://cdn.discordapp.com/"
     restBase* =              "https://discord.com/api/"
@@ -310,11 +310,13 @@ type
         Danger = 4
         Link = 5
     MessageComponentType* = enum
-        None = 0 # This should never happen
-        ActionRow = 1
-        Button = 2
+        None =       0 # This should never happen
+        ActionRow =  1
+        Button =     2
         SelectMenu = 3
-
+    StickerType* = enum
+        stStandard = 1
+        stGuild    = 2
 
 const
     ## This flag is used for Slash Command interaction callback.
@@ -387,7 +389,7 @@ proc log*(msg: string) =
 proc `$`*(p:PermissionFlags): string=
     if p==permMentionEveryone:
         return "Mention @everyone, @here and All Roles"
-    system.`$`(p)[4..^1].findAndCaptureAll(
+    system.`$`(p)[4..^1].findandcaptureall(
         re"(^[a-z]|[A-Z])[a-z]*"
     ).join" "
 
@@ -408,11 +410,14 @@ proc endpointUserGuilds*(gid: string): string =
 proc endpointChannels*(cid = ""): string =
     result = "channels"&(if cid != "": "/" & cid else: "")
 
-proc endpointStageChannels*(cid = ""): string =
-    result = "stage-channels" & (if cid != "": "/" & cid else: "")
+proc endpointStageInstances*(cid = ""): string =
+    result = "stage-instances" & (if cid != "": "/" & cid else: "")
 
 proc endpointGuilds*(gid = ""): string =
     result = "guilds" & (if gid != "": "/" & gid else: "")
+
+proc endpointGuildStickers*(gid: string; sid=""): string =
+    result = endpointGuilds(gid)&"/stickers"&(if sid != "": "/"&sid else: "")
 
 proc endpointGuildPreview*(gid: string): string =
     result = endpointGuilds(gid) & "/preview"
@@ -505,22 +510,23 @@ proc endpointChannelMessages*(cid: string; mid = ""): string =
 proc endpointChannelMessagesThreads*(cid, mid: string): string =
     result = endpointChannelMessages(cid, mid) & "/threads"
 
-
-
 proc endpointChannelThreads*(cid: string): string =
     result = endpointChannels(cid) & "/threads"
 
-proc endpointChannelThreadsActive*(cid: string): string =
-    result = endpointChannelThreads(cid) & "/active"
+proc endpointGuildThreads*(gid: string): string =
+    result = endpointGuilds(gid) & "/threads"
 
-proc endpointChannelThreadsArchived*(cid: string, typ: string): string =
+proc endpointGuildThreadsActive*(gid: string): string =
+    result = endpointGuildThreads(gid) & "/active"
+
+proc endpointChannelThreadsArchived*(cid, typ: string): string =
     result = endpointChannelThreads(cid) & "/archived/" & typ
 
-proc endpointChannelUsersThreadsArchived*(cid: string, typ: string): string =
+proc endpointChannelUsersThreadsArchived*(cid, typ: string): string =
     result = endpointChannels(cid) & endpointUsers() & "/archived/" & typ
 
 proc endpointChannelThreadsMembers*(cid: string; uid = ""): string =
-    result = endpointChannels(cid) & "/threads-members"
+    result = endpointChannels(cid) & "/thread-members"
     if uid != "":
         result = "/" & uid
 
@@ -570,3 +576,9 @@ proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"
+
+proc endpointStickers*(sid: string): string =
+    result = "stickers/"&sid
+
+proc endpointStickerPacks*(): string =
+    result = "sticker-packs"

@@ -211,7 +211,7 @@ proc createBotInvite*(client_id: string, permissions: set[PermissionFlags]={};
     ## 
     ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
     result = restBase & "oauth2/authorize?client_id=" & client_id &
-        "&scope=bot&permissions=" & $cast[int](permissions)   
+        "&scope=bot&permissions=" & $cast[int](permissions)
 
     if guild_id != "":
         result &= "&guild_id=" & guild_id &
@@ -255,8 +255,6 @@ proc stripMentions*(m: Message): string =
     else:
         for chan in m.mention_channels:
             result = result.replace(re"<#\d{17,19}>", "#" & chan.name)
-
-
 #
 # Message components
 #
@@ -284,7 +282,6 @@ proc checkActionRow*(row: MessageComponent) =
         assert contains[Button] <= 5, "Can only have <= 5 buttons per row"
     else:
         assert not contains.hasKey(ActionRow), "Action row cannot contain an action row"
-
 
 proc newActionRow*(components: seq[MessageComponent] = @[]): MessageComponent =
     ## Creates a new action row which you can add components to.

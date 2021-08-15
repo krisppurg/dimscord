@@ -31,15 +31,21 @@ proc newDiscordClient*(token: string;
     var auth_token = token
     if not token.startsWith("Bot "):
         auth_token = "Bot " & token
-
+    
+    var apiVersion = restVersion
+    when defined(discordv8) and not defined(discordv9):
+        apiVersion = 8
+    when defined(discordv9) and not defined(discordv8): 
+        apiVersion = 9
+    when defined(discordv8) and defined(discordv9):
+        raise newException(Exception,
+            "Both v8 and v9 are defined, please define either one of them only."
+        )
     result = DiscordClient(
         token: auth_token,
         api: RestApi(
             token: auth_token,
-            restVersion: when defined(discordv8):
-                8
-            else:
-                restVersion),
+            restVersion: apiVersion),
         max_shards: 1,
         restMode: rest_mode,
         events: Events(
@@ -117,7 +123,22 @@ proc newDiscordClient*(token: string;
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
             on_disconnect: proc (s: Shard) {.async.} = discard,
-            interaction_create: proc(s:Shard, i:Interaction){.async.} = discard
+            interaction_create: proc (s:Shard, i:Interaction){.async.} = discard,
+            application_command_create: proc (s: Shard, g: Option[Guild],
+                    a: ApplicationCommand) {.async.} = discard,
+            application_command_update: proc(s: Shard, g: Option[Guild],
+                    a: ApplicationCommand) {.async.} = discard,
+            application_command_delete: proc (s: Shard,
+                    g: Option[Guild], a: ApplicationCommand) {.async.} = discard,
+            thread_create: proc (s: Shard, g: Guild,
+                    c: GuildChannel) {.async.} = discard,
+            thread_update: proc (s: Shard, g: Guild,
+                    c:GuildChannel, o:Option[GuildChannel]){.async.} = discard,
+            thread_delete: proc (s: Shard, g: Guild,
+                    c: GuildChannel, exists: bool) {.async.} = discard,
+            thread_list_sync: proc (s: Shard, e: ThreadListSync) {.async.} = discard,
+            thread_member_update: proc (s: Shard, g: Guild, t: ThreadMember) {.async.} = discard,
+            thread_members_update: proc (s: Shard, e: ThreadMembersUpdate) {.async.} = discard
         ))
 
 proc newGuildPreview*(data: JsonNode): GuildPreview =
@@ -146,7 +167,7 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
 
 proc newOverwrite*(data: JsonNode): Overwrite =
     result.id = data["id"].str
-    when defined(discordv8):
+    when defined(discordv8) or defined(discordv9):
         result.kind = data["type"].getInt
         result.allow = cast[set[PermissionFlags]](
             data["allow"].str.parseBiggestInt
@@ -171,7 +192,9 @@ proc newRole*(data: JsonNode): Role =
         managed: data["managed"].bval,
         mentionable: data["mentionable"].bval
     )
-    when defined(discordv8):
+    if "tags" in data:
+        result.tags = some data["tags"].to(RoleTag)
+    when defined(discordv8) or defined(discordv9):
         result.permissions = cast[set[PermissionFlags]](
             data["permissions"].str.parseBiggestInt
         )
@@ -187,41 +210,42 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         name: data["name"].str,
         kind: ChannelType data["type"].getInt,
         guild_id: data["guild_id"].str,
-        position: data["position"].getInt,
+        nsfw: data{"nsfw"}.getBool,
         last_message_id: data{"last_message_id"}.getStr
     )
-    if "member" in data and data["member"].kind != JNull:
-        result.member = some data["member"].to ThreadMember
-    if "thread_metadata" in data and data["thread_metadata"].kind != JNull:
-        result.thread_metadata = some data["thread_metadata"].to ThreadMetadata
 
-    for ow in data["permission_overwrites"].getElems:
+    if "permissions" in data and data["permissions"].kind != JNull:
+        result.permissions = cast[set[PermissionFlags]](
+            data["permissions"].str.parseBiggestInt
+        )
+    for ow in data{"permission_overwrites"}.getElems:
         result.permission_overwrites[ow["id"].str] = newOverwrite(ow)
 
+    data.keyCheckOptStr(result, parent_id)
+    data.keyCheckOptInt(result,
+        position,
+        default_auto_archive_duration,
+        rate_limit_per_user
+    )
+
     case result.kind:
-    of ctGuildText:
-        result.rate_limit_per_user = data["rate_limit_per_user"].getInt
-
+    of ctGuildText, ctGuildNews:
         data.keyCheckOptStr(result, topic)
-        data.keyCheckBool(result, nsfw)
-
         result.messages = initTable[string, Message]()
-    of ctGuildNews:
-        data.keyCheckOptStr(result, topic)
-
-        data.keyCheckBool(result, nsfw)
-    of ctGuildVoice:
+    of ctGuildVoice, ctGuildStageVoice:
         result.bitrate = data["bitrate"].getInt
         result.user_limit = data["user_limit"].getInt
+        data.keyCheckOptStr(result, rtc_region)
+        data.keyCheckOptInt(result, video_quality_mode)
+    of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
+        if "member" in data and data["member"].kind != JNull:
+            result.member = some data["member"].to ThreadMember
+        if "thread_metadata" in data and data["thread_metadata"].kind != JNull:
+            result.thread_metadata = some data["thread_metadata"].to ThreadMetadata
+
+        data.keyCheckOptInt(result, message_count, member_count)
     else:
         discard
-
-    data.keyCheckOptStr(result, rtc_region)
-    data.keyCheckOptInt(result,
-        video_quality_mode,
-        message_count,
-        member_count
-    )
 
 proc newUser*(data: JsonNode): User =
     result = User(
@@ -246,6 +270,7 @@ proc newUser*(data: JsonNode): User =
 proc newTeam(data: JsonNode): Team =
     result = Team(
         id: data["id"].str,
+        name: data["name"].str,
         owner_user_id: data["owner_user_id"].str,
         members: data["members"].elems.map(
             proc(x:JsonNode):TeamMember =
@@ -309,7 +334,6 @@ proc newDMChannel*(data: JsonNode): DMChannel = # rip dmchannels
     for r in data["recipients"].elems:
         result.recipients.add(newUser(r))
 
-
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = VoiceState(
         user_id: data["user_id"].str,
@@ -324,6 +348,16 @@ proc newVoiceState*(data: JsonNode): VoiceState =
     data.keyCheckBool(result, self_stream)
     data.keyCheckOptStr(result, guild_id, channel_id)
 
+proc newStageInstance*(data: JsonNode): StageInstance =
+    result = StageInstance(
+        id: data["id"].str,
+        guild_id: data["guild_id"].str,
+        channel_id: data["channel_id"].str,
+        topic: data["topic"].str,
+        privacy_level: PrivacyLevel data["privacy_level"].getInt,
+        discoverable_disabled: data["discoverable_disabled"].bval
+    )
+
 proc newEmoji*(data: JsonNode): Emoji =
     result = Emoji(
         roles: data{"roles"}.getElems.mapIt(it.str)
@@ -334,13 +368,17 @@ proc newEmoji*(data: JsonNode): Emoji =
 
     data.keyCheckOptStr(result, id, name)
     data.keyCheckOptBool(result, require_colons, managed, animated)
+    data.keyCheckOptBool(result, available, managed, animated)
 
 proc newActivity*(data: JsonNode): Activity =
     result = Activity(
         name: data["name"].str,
         kind: ActivityType data["type"].getInt,
         created_at: data["created_at"].num,
-        flags: cast[set[ActivityFlags]](data{"flags"}.getInt)
+        flags: cast[set[ActivityFlags]](data{"flags"}.getInt),
+        buttons: data{"buttons"}.getElems.mapIt(
+            it.to(tuple[label, url:string])
+        )
     )
 
     data.keyCheckOptStr(result, url, application_id, details, state)
@@ -351,16 +389,13 @@ proc newActivity*(data: JsonNode): Activity =
             start: data["timestamps"]{"start"}.getBiggestInt,
             final: data["timestamps"]{"end"}.getBiggestInt
         )
-
     if "emoji" in data:
         result.emoji = some newEmoji(data["emoji"])
-
     if "party" in data:
         result.party = some (
             id: data["party"]{"id"}.getStr,
             size: data["party"]{"size"}.getElems.mapIt(it.getInt)
         )
-
     if "assets" in data:
         result.assets = some GameAssets(
             small_text: data["assets"]{"small_text"}.getStr,
@@ -368,7 +403,6 @@ proc newActivity*(data: JsonNode): Activity =
             large_text: data["assets"]{"large_text"}.getStr,
             large_image: data["assets"]{"large_image"}.getStr
         )
-
     if "secrets" in data:
         result.secrets = some (
             join: data["secrets"]{"join"}.getStr,
@@ -390,7 +424,7 @@ proc newPresence*(data: JsonNode): Presence =
 
     for activity in data["activities"].elems:
         result.activities.add(newActivity(activity))
-    when not defined(discordv8):
+    when not defined(discordv8) and not defined(discordv9):
         if data["game"].kind != JNull:
             result.activity = some newActivity(data["game"])
 
@@ -575,6 +609,32 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
     if "application" in data:
         result.application = some data["application"].newApplication
 
+proc newSticker*(data: JsonNode): Sticker =
+    result = Sticker(
+        id: data["id"].str,
+        name: data["name"].str,
+        tags: data["tags"].str,
+        kind: StickerType data["type"].getInt
+    )
+
+    if "user" in data and data["user"].kind != JNull:
+        result.user = some data["user"].newUser
+
+    data.keyCheckOptStr(result, description, guild_id)
+    data.keyCheckOptBool(result, available)
+    data.keyCheckOptInt(result, sort_value)
+
+proc newStickerPack*(data: JsonNode): StickerPack =
+    result = StickerPack(
+        id: data["id"].str,
+        stickers: data["stickers"].getElems.map(newSticker),
+        name: data["name"].str,
+        sku_id: data["sku_id"].str,
+        description: data["description"].str,
+        banner_asset_id: data["banner_asset_id"].str
+    )
+    data.keyCheckOptStr(result, cover_sticker_id)
+
 proc newMessage*(data: JsonNode): Message =
     result = Message(
         id: data["id"].str,
@@ -695,8 +755,7 @@ proc newIntegration*(data: JsonNode): Integration =
         name: data["name"].str,
         kind: data["type"].str,
         enabled: data["enabled"].bval,
-        account: data["account"].to(tuple[id, name: string]),
-    )
+        account: data["account"].to(tuple[id, name: string]))
     if "expire_behavior" in data and data["expire_behavior"].kind != JNull:
         result.expire_behavior = some IntegrationExpireBehavior(
             data["expire_behavior"].getInt
@@ -743,6 +802,8 @@ proc newGuild*(data: JsonNode): Guild =
         voice_states: initTable[string, VoiceState](),
         members: initTable[string, Member](),
         channels: initTable[string, GuildChannel](),
+        threads: initTable[string, GuildChannel](),
+        stickers: initTable[string, Sticker](),
         presences: initTable[string, Presence](),
         mfa_level: MFALevel data["mfa_level"].getInt,
         nsfw_level: GuildNSFWLevel data["nsfw_level"].getInt,
@@ -784,6 +845,13 @@ proc newGuild*(data: JsonNode): Guild =
         result.members[v["user_id"].str].voice_state = some state
         result.voice_states[v["user_id"].str] = state
 
+    for sticker in data{"stickers"}.getElems:
+        result.stickers[sticker["id"].str] = newSticker(sticker)
+
+    for thread in data{"threads"}.getElems:
+        thread["guild_id"] = %result.id
+        result.threads[thread["id"].str] = newGuildChannel(thread)
+
     for chan in data{"channels"}.getElems:
         chan["guild_id"] = %result.id
         result.channels[chan["id"].str] = newGuildChannel(chan)
@@ -791,7 +859,6 @@ proc newGuild*(data: JsonNode): Guild =
     for p in data{"presences"}.getElems:
         let presence = newPresence(p)
         let uid = presence.user.id
-
         presence.guild_id = result.id
 
         result.members[uid].presence = presence
@@ -845,7 +912,6 @@ proc newApplicationCommandInteractionDataOption(
                         x["name"].str,
                         newApplicationCommandInteractionDataOption(x)
                     )
-
 
 proc newApplicationCommandInteractionData*(
     data: JsonNode

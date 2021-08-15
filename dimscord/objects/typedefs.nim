@@ -164,7 +164,8 @@ type
         reacted*: bool
     Emoji* = object
         id*, name*: Option[string]
-        require_colons*, managed*, animated*: Option[bool]
+        require_colons*, animated*: Option[bool]
+        managed*, available*: Option[bool]
         user*: Option[User]
         roles*: seq[string]
     PartialUser* = object
@@ -174,11 +175,19 @@ type
         bot*: bool
     Sticker* = object
         id*: string
-        name*, description*, tags*: string
-        guild_id*, pack_id*, format_asset*: Option[string]
+        name*, tags*: string
+        guild_id*, description*: Option[string]
+        pack_id*, format_asset*: Option[string]
         format_type*: MessageStickerFormat
+        kind*: StickerType
+        sort_value*: Option[int]
         available*: Option[bool]
         user*: Option[User]
+    StickerPack* = object
+        id*, name*, description*: string
+        stickers*: seq[Sticker]
+        sku_id*, banner_asset_id*: string
+        cover_sticker_id*: Option[string]
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
@@ -203,24 +212,31 @@ type
         messages*: Table[string, Message]
     GuildChannel* = ref object
         id*, name*, guild_id*: string
-        last_message_id*: string
-        kind*: ChannelType
-        position*, rate_limit_per_user*: int
-        bitrate*, user_limit*: int
-        rtc_region*, parent_id*, topic*: Option[string]
-        video_quality_mode*, message_count*, member_count*: Option[int]
-        default_auto_archive_duration*: Option[int]
-        permission_overwrites*: Table[string, Overwrite]
-        messages*: Table[string, Message]
-        permissions*: set[PermissionFlags]
         nsfw*: bool
-        thread_metadata*: Option[ThreadMetadata]
-        member*: Option[ThreadMember] # I swear if I get anyone joining my
+        parent_id*: Option[string]
+        permission_overwrites*: Table[string, Overwrite]
+        position*: Option[int]
+        default_auto_archive_duration*: Option[int]
+        rate_limit_per_user*: Option[int]
+        permissions*: set[PermissionFlags]
+        last_message_id*: string
+        case kind*: ChannelType
+        of ctGuildText, ctGuildNews:
+            topic*: Option[string]
+            messages*: Table[string, Message]
+        of ctGuildVoice, ctGuildStageVoice:
+            rtc_region*: Option[string]
+            video_quality_mode*: Option[int]
+            bitrate*, user_limit*: int
+        of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
+            message_count*, member_count*: Option[int]
+            thread_metadata*: Option[ThreadMetadata]
+            member*: Option[ThreadMember] # I swear if I get anyone joining my
+        else:
+            discard
     StageInstance* = object # server for threads im gonna ban 'em :)
-        id*: string
-        guild_id*: string
-        channel_id*: string
-        topic*: string
+        id*, guild_id*: string
+        channel_id*, topic*: string
         privacy_level*: PrivacyLevel
         discoverable_disabled*: bool
     ThreadMetadata* = object
@@ -234,6 +250,16 @@ type
         id*, user_id*: Option[string]
         join_timestamp*: string
         flags*: int
+    ThreadListSync* = object
+        id*, guild_id*: string
+        channel_ids*: seq[string]
+        threads*: seq[GuildChannel]
+        members*: seq[ThreadMember]
+    ThreadMembersUpdate* = object
+        id*, guild_id*: string
+        member_count*: int
+        added_members*: seq[ThreadMember]
+        removed_member_ids*: seq[string]
     GameAssets* = object
         small_text*, small_image*: string
         large_text*, large_image*: string
@@ -248,10 +274,11 @@ type
         party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[GameAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
+        buttons*: seq[tuple[label, url: string]]
         instance*: bool
     Presence* = ref object
         user*: User
-        when not defined(discordv8):
+        when not defined(discordv8) and not defined(discordv9):
             activity*: Option[Activity]
         guild_id*, status*: string
         activities*: seq[Activity]
@@ -290,10 +317,10 @@ type
         emojis*: Table[string, Emoji]
         voice_states*: Table[string, VoiceState]
         members*: Table[string, Member]
-        channels*: Table[string, GuildChannel]
+        threads*, channels*: Table[string, GuildChannel]
         presences*: Table[string, Presence]
         stage_instances*: Table[string, StageInstance]
-
+        stickers*: Table[string, Sticker]
     VoiceState* = ref object
         guild_id*, channel_id*: Option[string]
         user_id*, session_id*: string
@@ -305,6 +332,10 @@ type
         color*, position*: int
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
+        tags*: Option[RoleTag]
+    RoleTag* = object
+        bot_id*, integration_id*: Option[string]
+        premium_subscriber*: Option[bool] #no idea what type is supposed to be
     GuildTemplate* = object
         code*, name*, creator_id*: string
         description*: Option[string]
@@ -321,7 +352,7 @@ type
     Overwrite* = object
         ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string
-        when defined(discordv8):
+        when defined(discordv8) or defined(discordv9):
             kind*: int
         else:
             kind*: string
@@ -395,25 +426,25 @@ type
     ApplicationCommandInteractionDataOption* = object
         name*: string
         case kind*: ApplicationCommandOptionType
-            of acotNothing: discard
-            of acotBool:
-                bval*: bool
-            of acotInt:
-                ival*: int
-            of acotStr:
-                str*: string
-            of acotUser:
-                userID*: string
-            of acotChannel:
-                channelID*: string
-            of acotRole:
-                roleID*: string
-            of acotSubCommand, acotSubCommandGroup:
-                options*: Table[string, ApplicationCommandInteractionDataOption]
-            of acotNumber:
-                fval*: float
-            of acotMentionable:
-                mentionID*: string
+        of acotNothing: discard
+        of acotBool:
+            bval*: bool
+        of acotInt:
+            ival*: int
+        of acotStr:
+            str*: string
+        of acotUser:
+            userID*: string
+        of acotChannel:
+            channelID*: string
+        of acotRole:
+            roleID*: string
+        of acotSubCommand, acotSubCommandGroup:
+            options*: Table[string, ApplicationCommandInteractionDataOption]
+        of acotNumber:
+            fval*: float
+        of acotMentionable:
+            mentionID*: string
     InteractionResponse* = object
         kind*: InteractionResponseType
         data*: Option[InteractionApplicationCommandCallbackData]
@@ -490,7 +521,6 @@ type
         description*: Option[string]
         emoji*: Option[Emoji]
         default*: Option[bool]
-
     MessageComponent* = object
         # custom_id is only needed for things other than action row
         # but the new case object stuff isn't implemented in nim
@@ -499,19 +529,19 @@ type
         custom_id*: Option[string]
         disabled*: Option[bool]
         case kind*: MessageComponentType
-            of None: discard
-            of ActionRow:
-                components*: seq[MessageComponent]
-            of Button: # Message Component
-                style*: ButtonStyle
-                label*: Option[string]
-                emoji*: Option[Emoji]
-                url*: Option[string]
-            of SelectMenu:
-                options*: seq[SelectMenuOption]
-                placeholder*: Option[string]
-                min_values*: Option[int]
-                max_values*: Option[int]
+        of None: discard
+        of ActionRow:
+            components*: seq[MessageComponent]
+        of Button: # Message Component
+            style*: ButtonStyle
+            label*: Option[string]
+            emoji*: Option[Emoji]
+            url*: Option[string]
+        of SelectMenu:
+            options*: seq[SelectMenuOption]
+            placeholder*: Option[string]
+            min_values*: Option[int]
+            max_values*: Option[int]
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]
@@ -528,7 +558,7 @@ type
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*: Option[string]
         id*, role_name*: Option[string]
-        when defined(discordv8):
+        when defined(discordv8) or defined(discordv9):
             kind*: Option[int]
         else:
             kind*: Option[string] 
@@ -640,6 +670,23 @@ type
                 token: string, endpoint: Option[string]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
         interaction_create*: proc (s: Shard, i: Interaction) {.async.}
+        application_command_create*,application_command_update*: proc (s: Shard,
+                g: Option[Guild], a: ApplicationCommand) {.async.}
+        application_command_delete*: proc (s: Shard,
+                g: Option[Guild], a: ApplicationCommand) {.async.}
+        thread_create*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
+        thread_update*: proc (s: Shard, g: Guild,
+                c: GuildChannel, o: Option[GuildChannel]) {.async.}
+        thread_delete*: proc (s: Shard, g: Guild,
+                c: GuildChannel, exists: bool) {.async.}
+        thread_list_sync*: proc (s: Shard, e: ThreadListSync) {.async.}
+        thread_member_update*: proc (s: Shard, g: Guild, t: ThreadMember) {.async.}
+        thread_members_update*: proc (s: Shard, e: ThreadMembersUpdate) {.async.}
+        stage_instance_create*: proc (s: Shard, g: Guild, i: StageInstance) {.async.}
+        stage_instance_update*: proc (s: Shard, g: Guild,
+                i: StageInstance, o: Option[StageInstance]) {.async.}
+        stage_instance_delete*: proc (s: Shard, g: Guild,
+                i: StageInstance, exists: bool) {.async.}
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

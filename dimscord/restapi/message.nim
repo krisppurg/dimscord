@@ -14,7 +14,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         sticker_ids = newSeq[string]()): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
-    assert content.len in 1..2000
+    assert content.len in 0..2000
     assert sticker_ids.len in 0..3
     let payload = %*{
         "content": content,

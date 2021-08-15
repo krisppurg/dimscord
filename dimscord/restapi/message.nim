@@ -20,7 +20,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "content": content,
         "tts": tts,
     }
-    payload["message_reference"] = %*{"fail_if_not_exists": true}
+    if message_reference.isSome:
+        payload["message_reference"] = %*{"fail_if_not_exists": true}
 
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
     if embeds.len > 0: payload["embeds"] = %embeds

@@ -435,8 +435,8 @@ proc newMember*(data: JsonNode): Member =
     result = Member(
         joined_at: data["joined_at"].str,
         roles: data["roles"].elems.mapIt(it.str),
-        deaf: data["deaf"].bval,
-        mute: data["mute"].bval,
+        deaf: data{"deaf"}.getBool(false),
+        mute: data{"mute"}.getBool(false),
         presence: Presence(
             status: "offline",
             client_status: ("offline", "offline", "offline")
@@ -919,11 +919,37 @@ proc newApplicationCommandInteractionData*(
     result = ApplicationCommandInteractionData(
         id: data["id"].str,
         name: data["name"].str,
-        options: initTable[string, ApplicationCommandInteractionDataOption]()
+        kind: ApplicationCommandType data{"type"}.getInt(1)
     )
-    for option in data{"options"}.getElems:
-        result.options[option["name"].str] = 
-            newApplicationCommandInteractionDataOption(option)
+    case result.kind:
+        of atSlash:
+            result.options = initTable[string, ApplicationCommandInteractionDataOption]()
+            for option in data{"options"}.getElems:
+                result.options[option["name"].str] =
+                    newApplicationCommandInteractionDataOption(option)
+        of atUser, atMessage:
+            result.targetID = data["target_id"].str
+            # Set the resolution kind to be the same as the interaction
+            # data kind, saves the user needing to user options when it
+            # isn't necessary
+            var resolution = ApplicationCommandResolution(kind: result.kind)
+            let resolvedJson = data["resolved"]
+            if result.kind == atUser:
+                # Get users
+                for id, jsonData in resolvedJson{"users"}:
+                    resolution.users[id] = newUser(jsonData)
+                # Get members
+                for id, jsonData in resolvedJson{"members"}:
+                    resolution.members[id] = newMember(jsonData)
+            else: # result.kind will equal atMessage
+                # Get messages
+                for id, jsonData in resolvedJson{"messages"}:
+                    resolution.messages[id] = newMessage(jsonData)
+            result.resolved = resolution
+        else:
+            discard
+
+
 
 proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
@@ -985,16 +1011,25 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
     assert a.name.len in 3..32
-    assert a.description.len in 1..100
-    result = %*{"name": a.name, "description": a.description}
-    if a.options.len > 0: result["options"] = %(a.options.map(
-        proc (x: ApplicationCommandOption): JsonNode =
-            %%*x
-    ))
+    # This ternary is needed so that the enums can stay similar to
+    # the discord api
+    let commandKind = if a.kind == atNothing: atSlash else: a.kind
+    result = %*{
+        "name": a.name,
+        "type": commandKind.ord
+    }
+    if commandKind == atSlash:
+        assert a.description.len in 1..100
+        result["description"] = %a.description
+        if a.options.len > 0: result["options"] = %(a.options.map(
+            proc (x: ApplicationCommandOption): JsonNode =
+                %%*x
+        ))
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
+        kind: ApplicationCOmmandType data["type"].getInt(),
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,

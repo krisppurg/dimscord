@@ -26,6 +26,7 @@ Reaction	dimscord/objects.html#Reaction	objects: Reaction
 Emoji	dimscord/objects.html#Emoji	objects: Emoji	
 PartialUser	dimscord/objects.html#PartialUser	objects: PartialUser	
 Sticker	dimscord/objects.html#Sticker	objects: Sticker	
+StickerPack	dimscord/objects.html#StickerPack	objects: StickerPack	
 RestApi	dimscord/objects.html#RestApi	objects: RestApi	
 Ratelimit	dimscord/objects.html#Ratelimit	objects: Ratelimit	
 UnavailableGuild	dimscord/objects.html#UnavailableGuild	objects: UnavailableGuild	
@@ -35,6 +36,8 @@ GuildChannel	dimscord/objects.html#GuildChannel	objects: GuildChannel
 StageInstance	dimscord/objects.html#StageInstance	objects: StageInstance	
 ThreadMetadata	dimscord/objects.html#ThreadMetadata	objects: ThreadMetadata	
 ThreadMember	dimscord/objects.html#ThreadMember	objects: ThreadMember	
+ThreadListSync	dimscord/objects.html#ThreadListSync	objects: ThreadListSync	
+ThreadMembersUpdate	dimscord/objects.html#ThreadMembersUpdate	objects: ThreadMembersUpdate	
 GameAssets	dimscord/objects.html#GameAssets	objects: GameAssets	
 Activity	dimscord/objects.html#Activity	objects: Activity	
 Presence	dimscord/objects.html#Presence	objects: Presence	
@@ -42,6 +45,7 @@ WelcomeChannel	dimscord/objects.html#WelcomeChannel	objects: WelcomeChannel
 Guild	dimscord/objects.html#Guild	objects: Guild	
 VoiceState	dimscord/objects.html#VoiceState	objects: VoiceState	
 Role	dimscord/objects.html#Role	objects: Role	
+RoleTag	dimscord/objects.html#RoleTag	objects: RoleTag	
 GuildTemplate	dimscord/objects.html#GuildTemplate	objects: GuildTemplate	
 ActivityStatus	dimscord/objects.html#ActivityStatus	objects: ActivityStatus	
 Overwrite	dimscord/objects.html#Overwrite	objects: Overwrite	
@@ -68,6 +72,8 @@ GuildMembersChunk	dimscord/objects.html#GuildMembersChunk	objects: GuildMembersC
 GuildBan	dimscord/objects.html#GuildBan	objects: GuildBan	
 Webhook	dimscord/objects.html#Webhook	objects: Webhook	
 Integration	dimscord/objects.html#Integration	objects: Integration	
+SelectMenuOption	dimscord/objects.html#SelectMenuOption	objects: SelectMenuOption	
+MessageComponent	dimscord/objects.html#MessageComponent	objects: MessageComponent	
 GuildPreview	dimscord/objects.html#GuildPreview	objects: GuildPreview	
 VoiceRegion	dimscord/objects.html#VoiceRegion	objects: VoiceRegion	
 AuditLogOptions	dimscord/objects.html#AuditLogOptions	objects: AuditLogOptions	
@@ -86,6 +92,7 @@ keyCheckOptBool	dimscord/objects.html#keyCheckOptBool.m,typed,typed,varargs[unty
 keyCheckBool	dimscord/objects.html#keyCheckBool.m,typed,typed,varargs[untyped]	objects: keyCheckBool(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 keyCheckOptStr	dimscord/objects.html#keyCheckOptStr.m,typed,typed,varargs[untyped]	objects: keyCheckOptStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 keyCheckStr	dimscord/objects.html#keyCheckStr.m,typed,typed,varargs[untyped]	objects: keyCheckStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
+optionIf	dimscord/objects.html#optionIf.m,typed	objects: optionIf(check: typed): untyped	
 newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
 newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	objects: newDiscordClient(token: string; rest_mode = false; restVersion = 6): DiscordClient	
 newGuildPreview	dimscord/objects.html#newGuildPreview,JsonNode	objects: newGuildPreview(data: JsonNode): GuildPreview	
@@ -99,6 +106,7 @@ newWebhook	dimscord/objects.html#newWebhook,JsonNode	objects: newWebhook(data: J
 newGuildBan	dimscord/objects.html#newGuildBan,JsonNode	objects: newGuildBan(data: JsonNode): GuildBan	
 newDMChannel	dimscord/objects.html#newDMChannel,JsonNode	objects: newDMChannel(data: JsonNode): DMChannel	
 newVoiceState	dimscord/objects.html#newVoiceState,JsonNode	objects: newVoiceState(data: JsonNode): VoiceState	
+newStageInstance	dimscord/objects.html#newStageInstance,JsonNode	objects: newStageInstance(data: JsonNode): StageInstance	
 newEmoji	dimscord/objects.html#newEmoji,JsonNode	objects: newEmoji(data: JsonNode): Emoji	
 newActivity	dimscord/objects.html#newActivity,JsonNode	objects: newActivity(data: JsonNode): Activity	
 newPresence	dimscord/objects.html#newPresence,JsonNode	objects: newPresence(data: JsonNode): Presence	
@@ -110,6 +118,8 @@ newTypingStart	dimscord/objects.html#newTypingStart,JsonNode	objects: newTypingS
 newGuildMembersChunk	dimscord/objects.html#newGuildMembersChunk,JsonNode	objects: newGuildMembersChunk(data: JsonNode): GuildMembersChunk	
 newReaction	dimscord/objects.html#newReaction,JsonNode	objects: newReaction(data: JsonNode): Reaction	
 updateMessage	dimscord/objects.html#updateMessage,Message,JsonNode	objects: updateMessage(m: Message; data: JsonNode): Message	
+newSticker	dimscord/objects.html#newSticker,JsonNode	objects: newSticker(data: JsonNode): Sticker	
+newStickerPack	dimscord/objects.html#newStickerPack,JsonNode	objects: newStickerPack(data: JsonNode): StickerPack	
 newMessage	dimscord/objects.html#newMessage,JsonNode	objects: newMessage(data: JsonNode): Message	
 newIntegration	dimscord/objects.html#newIntegration,JsonNode	objects: newIntegration(data: JsonNode): Integration	
 newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	objects: newAuditLog(data: JsonNode): AuditLog	
@@ -119,4 +129,6 @@ newApplicationCommandInteractionData	dimscord/objects.html#newApplicationCommand
 newInteraction	dimscord/objects.html#newInteraction,JsonNode	objects: newInteraction(data: JsonNode): Interaction	
 newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	objects: newApplicationCommandOption(data: JsonNode): ApplicationCommandOption	
 `%%*`	dimscord/objects.html#%%*,ApplicationCommandOption	objects: `%%*`(a: ApplicationCommandOption): JsonNode	
+`%%*`	dimscord/objects.html#%%*,ApplicationCommand	objects: `%%*`(a: ApplicationCommand): JsonNode	
 newApplicationCommand	dimscord/objects.html#newApplicationCommand,JsonNode	objects: newApplicationCommand(data: JsonNode): ApplicationCommand	
+`%%*`	dimscord/objects.html#%%*,MessageComponent	objects: `%%*`(comp: MessageComponent): JsonNode	

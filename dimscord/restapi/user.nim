@@ -77,7 +77,6 @@ proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
         "recipient_id": user_id
     }))).newDMChannel
 
-
 proc getCurrentUser*(api: RestApi): Future[User] {.async.} =
     ## Gets the current user.
     result = (await api.request("GET", endpointUsers())).newUser
@@ -121,7 +120,6 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
         endpointOAuth2Application()
     )).newApplication
 
-
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         guild_id = ""; name, description: string;
         options: seq[ApplicationCommandOption] = @[]
@@ -151,7 +149,6 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
             endpointGlobalCommands(application_id)),
         $payload
     )).newApplicationCommand
-
 
 proc getApplicationCommands*(
         api: RestApi, application_id: string; guild_id = ""
@@ -206,8 +203,8 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
     ## - `guild_id` - Optional
     ## - `name` - Character length (3 - 32)
     ## - `descripton` - Character length (1 - 100)
-    assert name.len >= 3 and name.len <= 32
-    assert description.len >= 1 and description.len <= 100
+    assert name.len in 3..32
+    assert description.len in 1..100
 
     let payload = %*{"name": name, "description": description}
     if options.len > 0: payload["options"] = %(options.map(

@@ -166,8 +166,6 @@ proc request*(api: RestApi, meth, endpoint: string;
                             "Body took too long to parse.")
                     else:
                         data = (await body).parseJson
-                    when defined(dimscordDebug):
-                        log data.pretty()
                 case status:
                 of Http400:
                     error = fin & "Bad request."
@@ -186,7 +184,13 @@ proc request*(api: RestApi, meth, endpoint: string;
                     invalid_requests += 1
 
                     error = fin & "You are being rate-limited."
-                    let retry = (data["retry_after"].getFloat(1.25) * 1000)
+                    var retry: int 
+
+                    when defined(discordv8) or defined(discordv9):
+                        retry = data["retry_after"].getInt * 1000
+                    else:
+                        retry = int(data["retry_after"].getFloat(1.25) * 1000)
+
                     await sleepAsync retry
 
                     await doreq()
@@ -271,7 +275,7 @@ macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
         let fieldName = lit.strVal
         result.add quote do:
             if `lit`.isSome:
-                `obj`[`fieldName`] = %get(`lit`)
+                `obj`[`fieldName`] = %*get(`lit`)
 
 macro loadNullableOptStr*(obj: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()

@@ -94,10 +94,10 @@ proc editGuildChannelPermissions*(api: RestApi,
     ## - `kind` Must be "role" or "member", or 0 or 1 if v8.
     let payload = newJObject()
 
-    when kind is int and not defined(discordv8):
+    when kind is int and not (defined(discordv8) or defined(discordv9)):
         payload["type"] = %(if kind == 0: "role" else: "member") 
 
-    when kind is string and defined(discordv8):
+    when kind is string and (defined(discordv8) or defined(discordv9)):
         payload["type"] = %(if kind == "role": 0 else: 1)
 
     if perms.allowed.len > 0:
@@ -255,61 +255,26 @@ proc editWebhook*(api: RestApi, webhook_id: string;
         audit_reason = reason
     )
 
-proc startPublicThread*(api: RestApi,
-    channel_id, message_id, name: string;
-    auto_archive_duration: range[60..10080]
+proc startThreadWithoutMessage*(api: RestApi,
+    channel_id, name: string;
+    auto_archive_duration: range[60..10080];
+    reason = ""
 ): Future[GuildChannel] {.async.} =
+    ## Starts private thread.
     ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
-    assert name.len in 2..100
+    assert name.len in 1..100
     result = (await api.request(
         "POST",
+        endpointChannelThreads(channel_id),
         $(%*{
             "name": name,
             "auto_archive_duration": auto_archive_duration
         }),
-        endpointChannelMessagesThreads(channel_id, message_id)
+        audit_reason = reason
     )).newGuildChannel
 
-proc startPrivateThread*(api: RestApi,
-    channel_id: string,
-    name: string;
-    auto_archive_duration: range[60..10080]
-): Future[GuildChannel] {.async.} =
-    ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
-    assert name.len < 2 and name.len <= 100
-    result = (await api.request(
-        "POST",
-        $(%*{
-            "name": name,
-            "auto_archive_duration": auto_archive_duration
-        }),
-        endpointChannelThreads(channel_id)
-    )).newGuildChannel
-
-proc listActiveThreads*(
-    api: RestApi,
-    channel_id: string
-): Future[tuple[
-    threads: seq[GuildChannel],
-    members: seq[ThreadMember],
-    has_more: bool
-]] {.async.} =
-    ## Returns all active threads in the channel.
-    let data = await api.request("GET",endpointChannelThreadsActive(channel_id))
-
-    result = (
-        threads: data["threads"].elems.map(newGuildChannel),
-        members: data["threads"].elems.map(
-            proc (x: JsonNode): ThreadMember =
-                x.to(ThreadMember)
-        ),
-        has_more: data["has_more"].bval
-    )
-
-proc listArchivedThreads*(
-    api: RestApi,
-    joined: bool,
-    typ, channel_id: string,
+proc listArchivedThreads*(api: RestApi;
+    joined: bool; typ, channel_id: string;
     before = none string; limit = none int
 ): Future[tuple[
     threads: seq[GuildChannel],
@@ -321,7 +286,7 @@ proc listArchivedThreads*(
     ## - `joined` list joined private or public archived threads
     var url = endpointChannelThreadsArchived(channel_id, typ)
     if joined:
-        url = endpointChannelThreads(channel_id)
+        url = endpointChannelUsersThreadsArchived(channel_id, typ)
 
     if before.isSome:
         url &= "?before=" & before.get
@@ -341,3 +306,52 @@ proc listArchivedThreads*(
         has_more: data["has_more"].bval
     )
 
+proc createStageInstance*(api: RestApi; channel_id, topic: string;
+    privacy_level = int plGuildOnly; reason = ""
+): Future[StageInstance] {.async.} =
+    ## Create a stage instance.
+    ## Requires the current user to be a moderator of the stage channel.
+    assert topic.len in 1..120
+    let payload = %*{
+        "channel_id": channel_id,
+        "topic": topic,
+        "privacy_level": privacy_level
+    }
+    result = (await api.request(
+        "POST",
+        endpointStageInstances(),
+        $payload,
+        reason
+    )).newStageInstance
+
+proc getStageInstance*(api: RestApi;
+        channel_id: string): Future[StageInstance] {.async.} =
+    ## Get a stage instance.
+    result = (await api.request(
+        "GET",
+        endpointStageInstances(channel_id)
+    )).newStageInstance
+
+proc editStageInstance*(api: RestApi; channel_id, topic: string;
+    privacy_level = none int; reason = ""
+): Future[StageInstance] {.async.} =
+    ## Modify a stage instance.
+    ## Requires the current user to be a moderator of the stage channel.
+    assert topic.len in 1..120
+    let payload = %*{"topic": topic}
+    payload.loadNullableOptInt(privacy_level)
+    result = (await api.request(
+        "POST",
+        endpointStageInstances(channel_id),
+        $payload,
+        reason
+    )).newStageInstance
+
+proc deleteStageInstance*(api: RestApi;
+    channel_id: string, reason = "") {.async.} =
+    ## Delete the stage instance.
+    discard await api.request(
+        "DELETE",
+        endpointStageInstances(channel_id),
+        audit_reason = reason
+    )

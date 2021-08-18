@@ -143,9 +143,10 @@ function main() {
 
   </ul>
   <ul class="simple nested-toc-section">bulkOverwriteApplicationCommands
-      <li><a class="reference" href="#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cstring"
+      <li><a class="reference" href="#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cseq%5BApplicationCommand%5D%2Cstring"
     title="bulkOverwriteApplicationCommands(api: RestApi; application_id: string;
-                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]">bulkOverwriteApplicationCommands,<wbr>RestApi,<wbr>string,<wbr>string</a></li>
+                                 commands: seq[ApplicationCommand];
+                                 guild_id = &quot;&quot;): Future[seq[ApplicationCommand]]">bulkOverwriteApplicationCommands,<wbr>RestApi,<wbr>string,<wbr>seq[ApplicationCommand],<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">editCurrentUser
@@ -377,9 +378,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the current user.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L81"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L80"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L81" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGatewayBot,RestApi"></a>
@@ -390,9 +391,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get gateway bot with authentication.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L85"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L84"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L85" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L84" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getGateway,RestApi"></a>
@@ -402,9 +403,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get Discord gateway URL.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L89"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L88"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L89" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L88" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editCurrentUser,RestApi"></a>
@@ -415,9 +416,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Modifies the bot's username or avatar.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L94"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L93"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L94" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L93" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createGroupDm,RestApi,seq[string],Table[string,string]"></a>
@@ -431,9 +432,9 @@ Creates a Group DM Channel.<ul class="simple"><li><tt class="docutils literal"><
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L105"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L104"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L105" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L104" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getCurrentApplication,RestApi"></a>
@@ -444,9 +445,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets the current application for the current user (bot user).
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L117"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L116"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L116" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="registerApplicationCommand,RestApi,string,string,string,string,seq[ApplicationCommandOption]"></a>
@@ -464,9 +465,9 @@ Create a global or guild only slash command.<ul class="simple"><li><tt class="do
 <p><strong>NOTE:</strong> Creating a command with the same name as an existing command for your application will overwrite the old command.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L127"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L126"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L127" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getApplicationCommands,RestApi,string,string"></a>
@@ -477,9 +478,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash commands for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L157"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L155"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L157" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L155" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getApplicationCommand,RestApi,string,string,string"></a>
@@ -491,25 +492,26 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L170"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L168"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L168" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="bulkOverwriteApplicationCommands,RestApi,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cstring"><span class="Identifier">bulkOverwriteApplicationCommands</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+<a id="bulkOverwriteApplicationCommands,RestApi,string,seq[ApplicationCommand],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#bulkOverwriteApplicationCommands%2CRestApi%2Cstring%2Cseq%5BApplicationCommand%5D%2Cstring"><span class="Identifier">bulkOverwriteApplicationCommands</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                                      <span class="Identifier">commands</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#ApplicationCommand"><span class="Identifier">ApplicationCommand</span></a><span class="Other">]</span><span class="Other">;</span>
                                       <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#ApplicationCommand"><span class="Identifier">ApplicationCommand</span></a><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Overwrites existing commands slash command that were registered in guild or application.<ul class="simple"><li><tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.</li>
+Overwrites existing commands slash command that were registered in guild or application. This means that only the commands you send in this request will be available globally or in a specific guild<ul class="simple"><li><tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.</li>
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L182"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L180"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L182" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L180" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]"></a>
@@ -526,9 +528,9 @@ Modify slash command for a specific application.<ul class="simple"><li><tt class
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L196"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L200"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L196" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteApplicationCommand,RestApi,string,string,string"></a>
@@ -540,9 +542,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L221"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L225"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L221" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createInteractionResponse,RestApi,string,string,InteractionResponse"></a>
@@ -555,9 +557,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create an interaction response. <tt class="docutils literal"><span class="pre">response.kind</span></tt> is required.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L233"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L237"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L233" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L237" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -570,7 +572,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-01 13:18:15 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-15 17:13:23 UTC</small>
       </div>
     </div>
   </div>

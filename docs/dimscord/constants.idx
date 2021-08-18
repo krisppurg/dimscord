@@ -177,6 +177,11 @@ vlMedium	dimscord/constants.html#vlMedium	VerificationLevel.vlMedium
 vlHigh	dimscord/constants.html#vlHigh	VerificationLevel.vlHigh	
 vlVeryHigh	dimscord/constants.html#vlVeryHigh	VerificationLevel.vlVeryHigh	
 VerificationLevel	dimscord/constants.html#VerificationLevel	constants: VerificationLevel	
+gnlDefault	dimscord/constants.html#gnlDefault	GuildNSFWLevel.gnlDefault	
+gnlExplicit	dimscord/constants.html#gnlExplicit	GuildNSFWLevel.gnlExplicit	
+gnlSafe	dimscord/constants.html#gnlSafe	GuildNSFWLevel.gnlSafe	
+gnlAgeRestricted	dimscord/constants.html#gnlAgeRestricted	GuildNSFWLevel.gnlAgeRestricted	
+GuildNSFWLevel	dimscord/constants.html#GuildNSFWLevel	constants: GuildNSFWLevel	
 ptNone	dimscord/constants.html#ptNone	PremiumTier.ptNone	
 ptTier1	dimscord/constants.html#ptTier1	PremiumTier.ptTier1	
 ptTier2	dimscord/constants.html#ptTier2	PremiumTier.ptTier2	
@@ -244,6 +249,7 @@ msfPng	dimscord/constants.html#msfPng	MessageStickerFormat.msfPng
 msfAPng	dimscord/constants.html#msfAPng	MessageStickerFormat.msfAPng	
 msfLottie	dimscord/constants.html#msfLottie	MessageStickerFormat.msfLottie	
 MessageStickerFormat	dimscord/constants.html#MessageStickerFormat	constants: MessageStickerFormat	
+acotNothing	dimscord/constants.html#acotNothing	ApplicationCommandOptionType.acotNothing	
 acotSubCommand	dimscord/constants.html#acotSubCommand	ApplicationCommandOptionType.acotSubCommand	
 acotSubCommandGroup	dimscord/constants.html#acotSubCommandGroup	ApplicationCommandOptionType.acotSubCommandGroup	
 acotStr	dimscord/constants.html#acotStr	ApplicationCommandOptionType.acotStr	
@@ -257,6 +263,7 @@ acotNumber	dimscord/constants.html#acotNumber	ApplicationCommandOptionType.acotN
 ApplicationCommandOptionType	dimscord/constants.html#ApplicationCommandOptionType	constants: ApplicationCommandOptionType	
 itPing	dimscord/constants.html#itPing	InteractionType.itPing	
 itApplicationCommand	dimscord/constants.html#itApplicationCommand	InteractionType.itApplicationCommand	
+itMessageComponent	dimscord/constants.html#itMessageComponent	InteractionType.itMessageComponent	
 InteractionType	dimscord/constants.html#InteractionType	constants: InteractionType	
 irtPong	dimscord/constants.html#irtPong	InteractionResponseType.irtPong	
 irtChannelMessageWithSource	dimscord/constants.html#irtChannelMessageWithSource	InteractionResponseType.irtChannelMessageWithSource	
@@ -274,6 +281,20 @@ uptNone	dimscord/constants.html#uptNone	UserPremiumType.uptNone
 uptNitroClassic	dimscord/constants.html#uptNitroClassic	UserPremiumType.uptNitroClassic	
 uptNitro	dimscord/constants.html#uptNitro	UserPremiumType.uptNitro	
 UserPremiumType	dimscord/constants.html#UserPremiumType	constants: UserPremiumType	
+Primary	dimscord/constants.html#Primary	ButtonStyle.Primary	
+Secondary	dimscord/constants.html#Secondary	ButtonStyle.Secondary	
+Success	dimscord/constants.html#Success	ButtonStyle.Success	
+Danger	dimscord/constants.html#Danger	ButtonStyle.Danger	
+Link	dimscord/constants.html#Link	ButtonStyle.Link	
+ButtonStyle	dimscord/constants.html#ButtonStyle	constants: ButtonStyle	
+None	dimscord/constants.html#None	MessageComponentType.None	
+ActionRow	dimscord/constants.html#ActionRow	MessageComponentType.ActionRow	
+Button	dimscord/constants.html#Button	MessageComponentType.Button	
+SelectMenu	dimscord/constants.html#SelectMenu	MessageComponentType.SelectMenu	
+MessageComponentType	dimscord/constants.html#MessageComponentType	constants: MessageComponentType	
+stStandard	dimscord/constants.html#stStandard	StickerType.stStandard	
+stGuild	dimscord/constants.html#stGuild	StickerType.stGuild	
+StickerType	dimscord/constants.html#StickerType	constants: StickerType	
 callbackDataFlagEphemeral	dimscord/constants.html#callbackDataFlagEphemeral	constants: callbackDataFlagEphemeral	
 permAllText	dimscord/constants.html#permAllText	constants: permAllText	
 permAllVoice	dimscord/constants.html#permAllVoice	constants: permAllVoice	
@@ -288,8 +309,9 @@ endpointUserChannels	dimscord/constants.html#endpointUserChannels	constants: end
 endpointVoiceRegions	dimscord/constants.html#endpointVoiceRegions	constants: endpointVoiceRegions(): string	
 endpointUserGuilds	dimscord/constants.html#endpointUserGuilds,string	constants: endpointUserGuilds(gid: string): string	
 endpointChannels	dimscord/constants.html#endpointChannels,string	constants: endpointChannels(cid = &quot;&quot;): string	
-endpointStageChannels	dimscord/constants.html#endpointStageChannels,string	constants: endpointStageChannels(cid = &quot;&quot;): string	
+endpointStageInstances	dimscord/constants.html#endpointStageInstances,string	constants: endpointStageInstances(cid = &quot;&quot;): string	
 endpointGuilds	dimscord/constants.html#endpointGuilds,string	constants: endpointGuilds(gid = &quot;&quot;): string	
+endpointGuildStickers	dimscord/constants.html#endpointGuildStickers,string,string	constants: endpointGuildStickers(gid: string; sid = &quot;&quot;): string	
 endpointGuildPreview	dimscord/constants.html#endpointGuildPreview,string	constants: endpointGuildPreview(gid: string): string	
 endpointGuildRegions	dimscord/constants.html#endpointGuildRegions,string	constants: endpointGuildRegions(gid: string): string	
 endpointGuildAuditLogs	dimscord/constants.html#endpointGuildAuditLogs,string	constants: endpointGuildAuditLogs(gid: string): string	
@@ -321,9 +343,10 @@ endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,st
 endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	constants: endpointChannelMessages(cid: string; mid = &quot;&quot;): string	
 endpointChannelMessagesThreads	dimscord/constants.html#endpointChannelMessagesThreads,string,string	constants: endpointChannelMessagesThreads(cid, mid: string): string	
 endpointChannelThreads	dimscord/constants.html#endpointChannelThreads,string	constants: endpointChannelThreads(cid: string): string	
-endpointChannelThreadsActive	dimscord/constants.html#endpointChannelThreadsActive,string	constants: endpointChannelThreadsActive(cid: string): string	
-endpointChannelThreadsArchived	dimscord/constants.html#endpointChannelThreadsArchived,string,string	constants: endpointChannelThreadsArchived(cid: string; typ: string): string	
-endpointChannelUsersThreadsArchived	dimscord/constants.html#endpointChannelUsersThreadsArchived,string,string	constants: endpointChannelUsersThreadsArchived(cid: string; typ: string): string	
+endpointGuildThreads	dimscord/constants.html#endpointGuildThreads,string	constants: endpointGuildThreads(gid: string): string	
+endpointGuildThreadsActive	dimscord/constants.html#endpointGuildThreadsActive,string	constants: endpointGuildThreadsActive(gid: string): string	
+endpointChannelThreadsArchived	dimscord/constants.html#endpointChannelThreadsArchived,string,string	constants: endpointChannelThreadsArchived(cid, typ: string): string	
+endpointChannelUsersThreadsArchived	dimscord/constants.html#endpointChannelUsersThreadsArchived,string,string	constants: endpointChannelUsersThreadsArchived(cid, typ: string): string	
 endpointChannelThreadsMembers	dimscord/constants.html#endpointChannelThreadsMembers,string,string	constants: endpointChannelThreadsMembers(cid: string; uid = &quot;&quot;): string	
 endpointChannelMessagesCrosspost	dimscord/constants.html#endpointChannelMessagesCrosspost,string,string	constants: endpointChannelMessagesCrosspost(cid, mid: string): string	
 endpointChannelInvites	dimscord/constants.html#endpointChannelInvites,string	constants: endpointChannelInvites(cid: string): string	
@@ -338,3 +361,5 @@ endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	cons
 endpointGlobalCommands	dimscord/constants.html#endpointGlobalCommands,string,string	constants: endpointGlobalCommands(aid: string; cid = &quot;&quot;): string	
 endpointGuildCommands	dimscord/constants.html#endpointGuildCommands,string,string,string	constants: endpointGuildCommands(aid, gid: string; cid = &quot;&quot;): string	
 endpointInteractionsCallback	dimscord/constants.html#endpointInteractionsCallback,string,string	constants: endpointInteractionsCallback(iid, it: string): string	
+endpointStickers	dimscord/constants.html#endpointStickers,string	constants: endpointStickers(sid: string): string	
+endpointStickerPacks	dimscord/constants.html#endpointStickerPacks	constants: endpointStickerPacks(): string	

@@ -596,7 +596,7 @@ proc startSession*(discord: DiscordClient,
 
     discord.autoreconnect = autoreconnect
 
-    discord.intents = when defined(discordv8):
+    discord.intents = when defined(discordv8) or defined(discordv9):
         if gateway_intents.len == 0:
             {giGuilds, giGuildMessages, giDirectMessages}
         else:
@@ -610,10 +610,11 @@ proc startSession*(discord: DiscordClient,
     discord.largeThreshold = large_threshold
     discord.guildSubscriptions = guild_subscriptions
     discord.max_shards = max_shards.get(-1)
-    discord.gatewayVersion = when defined(discordv8):
-            8
-        else:
-            gateway_version
+    discord.gatewayVersion = gateway_version
+    when defined(discordv8):
+        discord.gatewayVersion = 8
+    when defined(discordv9):
+        discord.gatewayVersion = 9
 
     log "Dimscord (v" & $libVer & ") - v" & $discord.gatewayVersion
 

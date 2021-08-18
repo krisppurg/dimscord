@@ -77,33 +77,36 @@ macro construct*(data: JsonNode, kind: typedesc, args: static[openarray[string]]
         "bool":   "bval"
     }
     for paramNode in kind.getImpl()[2][2]:
-        let
-            parameter = $paramNode[0]
-            paramSymbol = paramNode[1]
-        if parameter notin args: continue # Don't try and parse if it isn't specified
-        let parameterName = if $parameter == "kind": "type" else: $parameter
+        let paramSymbol = paramNode[^2]
+        for parameterNode in paramNode[0 ..< ^2]:
+            var parameter = if parameterNode.kind == nnkPostfix:
+                $(parameterNode.basename)
+            else:
+                $parameterNode
+            if parameter notin args: continue # Don't try and parse if it isn't specified
+            let parameterName = if parameter == "kind": "type" else: parameter
 
-        let jsonAccess = nnkBracketExpr.newTree( # Add in nodes to access the json key
-            data,
-            newLit(parameter)
-        )
-        let paramImplementation = paramSymbol.getImpl()
-        var call: NimNode
-        # Check that the type is an enum, and that it isn't bool (which is an enum internally)
-        if paramImplementation.kind != nnkNilLit and
-            paramImplementation[2].kind == nnkEnumTy and
-            paramImplementation[0].kind != nnkPragmaExpr:
-            call = nnkCall.newTree(
-                ($paramSymbol).ident,
-                nnkDotExpr.newTree(jsonAccess, "getInt".ident)
+            let jsonAccess = nnkBracketExpr.newTree( # Add in nodes to access the json key
+                data,
+                newLit(parameterName)
             )
-        else:
-            call = nnkDotExpr.newTree(
-                jsonAccess,
-                callTable[($paramSymbol).normalize].ident # Get the call
-            )
+            let paramImplementation = paramSymbol.getImpl()
+            var call: NimNode
+            # Check that the type is an enum, and that it isn't bool (which is an enum internally)
+            if paramImplementation.kind != nnkNilLit and
+                paramImplementation[2].kind == nnkEnumTy and
+                paramImplementation[0].kind != nnkPragmaExpr:
+                call = nnkCall.newTree(
+                    ($paramSymbol).ident,
+                    nnkDotExpr.newTree(jsonAccess, "getInt".ident)
+                )
+            else:
+                call = nnkDotExpr.newTree(
+                    jsonAccess,
+                    callTable[($paramSymbol).normalize].ident # Get the call
+                )
 
-        result &= nnkExprColonExpr.newTree(
-            parameter.ident,
-            call
-        )
+            result &= nnkExprColonExpr.newTree(
+                parameter.ident,
+                call
+            )

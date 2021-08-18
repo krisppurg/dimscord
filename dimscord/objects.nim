@@ -1030,11 +1030,11 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
 
 proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
     result = data.construct(ApplicationCommandPermission,
-        ["id", "type", "permission"])
+        ["id", "kind", "permission"])
 
 proc newGuildApplicationCommandPermissions*(data: JsonNode): GuildApplicationCommandPermissions =
     result = data.construct(GuildApplicationCommandPermissions,
-        ["id", "kind", "application_id"])
+        ["id", "application_id", "guild_id"])
     result.permissions = data["permissions"].getElems.map newApplicationCommandPermission
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
@@ -1064,6 +1064,13 @@ proc `%`(option: SelectMenuOption): JsonNode =
     }
     if option.emoji.isSome:
         result["emoji"] = option.emoji.get().toPartial()
+
+proc `%`*(permission: ApplicationCommandPermission): JsonNode =
+    result = %* {
+        "id": %permission.id,
+        "type": %ord(permission.kind),
+        "permission": %permission.permission
+    }
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}

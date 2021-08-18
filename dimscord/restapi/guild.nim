@@ -581,14 +581,43 @@ proc getGuildWelcomeScreen*(
             welcome_channels: seq[WelcomeChannel]
         ])
 
-proc getGuildApplicationPermissions*(
-    api: RestApi, application_id, guild_id: string, command_id = ""
+proc getGuildApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id: string
 ): Future[seq[GuildApplicationCommandPermissions]] {.async.} =
     ## Fetches command permissions for all commands for your application in a guild
-    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id)
     result = await(api.request("GET", endpoint))
                 .getElems.map newGuildApplicationCommandPermissions
 
+proc getApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id, command_id: string
+    ): Future[GuildApplicationCommandPermissions] {.async.} =
+    ## Fetches command permissions for a specific command for your application in a guild
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    result = await(api.request("GET", endpoint))
+        .newGuildApplicationCommandPermissions()
+
+proc editApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id, command_id: string,
+    permissions: seq[ApplicationCommandPermission]
+): Future[GuildApplicationCommandPermissions] {.async.} =
+    ## Edits command permissions for a specific command for your application in a guild.
+    ## You can only add up to 10 permission overwrites for a command
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    let payload = %* {
+        "permissions": %*permissions
+    }
+    result = await(api.request("PUT", endpoint, pl = $payload)).newGuildApplicationCommandPermissions()
+
+proc bulkEditApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id: string,
+    permissions: seq[GuildApplicationCommandPermissions]
+): Future[seq[GuildApplicationCommandPermissions]] {.async.} =
+    ## Batch edits permissions for all commands in a guild
+    ## You can only add up to 10 permission overwrites for a command.
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id)
+    let payload = %*permissions
+    result = await(api.request("PUT", endpoint, pl = $payload)).getElems().map newGuildApplicationCommandPermissions
 
 proc getGuildStickers*(
     api: RestApi, guild_id: string

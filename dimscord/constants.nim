@@ -288,9 +288,9 @@ type
         atSlash    = 1 ## CHAT_INPUT
         atUser         ## USER
         atMessage      ## MESSAGE
-    ApplicationCommandPermission* = enum
-        acpRole = 1
-        acpUser
+    ApplicationCommandPermissionType* = enum
+        acptRole = 1
+        acptUser = 2
     InteractionType* = enum
         itPing =               1
         itApplicationCommand = 2
@@ -581,6 +581,9 @@ proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
     result = "applications/" & aid & "/guilds/" & gid & "/commands"
     if cid != "":
         result &= "/" & cid
+
+proc endpointGuildCommandPermission*(aid, gid: string; cid = ""): string =
+    endpointGuildCommands(aid, gid, cid) & "/permissions"
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"

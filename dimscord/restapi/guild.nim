@@ -581,6 +581,15 @@ proc getGuildWelcomeScreen*(
             welcome_channels: seq[WelcomeChannel]
         ])
 
+proc getGuildApplicationPermissions*(
+    api: RestApi, application_id, guild_id: string, command_id = ""
+): Future[seq[GuildApplicationCommandPermissions]] {.async.} =
+    ## Fetches command permissions for all commands for your application in a guild
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    result = await(api.request("GET", endpoint))
+                .getElems.map newGuildApplicationCommandPermissions
+
+
 proc getGuildStickers*(
     api: RestApi, guild_id: string
 ): Future[seq[Sticker]] {.async.} =

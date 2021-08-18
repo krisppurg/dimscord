@@ -1025,15 +1025,26 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x
         ))
+    if a.default_permission.isSome:
+        result["default_permission"] = %a.default_permission
+
+proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
+    result = data.construct(ApplicationCommandPermission,
+        ["id", "type", "permission"])
+
+proc newGuildApplicationCommandPermissions*(data: JsonNode): GuildApplicationCommandPermissions =
+    result = data.construct(GuildApplicationCommandPermissions,
+        ["id", "kind", "application_id"])
+    result.permissions = data["permissions"].getElems.map newApplicationCommandPermission
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
-        kind: ApplicationCOmmandType data["type"].getInt(),
+        kind: ApplicationCommandType data["type"].getInt(),
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,
-        options: data{"options"}.getElems.map newApplicationCommandOption
+        options: data{"options"}.getElems.map newApplicationCommandOption,
     )
 
 proc toPartial(emoji: Emoji): JsonNode =

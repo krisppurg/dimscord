@@ -1,4 +1,8 @@
-import std/macros
+import std/[
+    macros,
+    strutils,
+    tables
+]
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -60,3 +64,46 @@ macro optionIf*(check: typed): untyped =
 
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
+
+macro construct*(data: JsonNode, kind: typedesc, args: static[openarray[string]]): untyped =
+    ## Creates an object constructor with data from json.
+    ## Allows specifying the fields to include so that edge cases can be handled manually.
+    result = nnkObjConstr.newTree(kind)
+    # Add your own calls here (do in full lower case)
+    # The calls must only have a single parameter of kind JsonNode
+    let callTable = toTable {
+        "string": "str",
+        "int":    "getInt",
+        "bool":   "bval"
+    }
+    for paramNode in kind.getImpl()[2][2]:
+        let
+            parameter = $paramNode[0]
+            paramSymbol = paramNode[1]
+        if parameter notin args: continue # Don't try and parse if it isn't specified
+        let parameterName = if $parameter == "kind": "type" else: $parameter
+
+        let jsonAccess = nnkBracketExpr.newTree( # Add in nodes to access the json key
+            data,
+            newLit(parameter)
+        )
+        let paramImplementation = paramSymbol.getImpl()
+        var call: NimNode
+        # Check that the type is an enum, and that it isn't bool (which is an enum internally)
+        if paramImplementation.kind != nnkNilLit and
+            paramImplementation[2].kind == nnkEnumTy and
+            paramImplementation[0].kind != nnkPragmaExpr:
+            call = nnkCall.newTree(
+                ($paramSymbol).ident,
+                nnkDotExpr.newTree(jsonAccess, "getInt".ident)
+            )
+        else:
+            call = nnkDotExpr.newTree(
+                jsonAccess,
+                callTable[($paramSymbol).normalize].ident # Get the call
+            )
+
+        result &= nnkExprColonExpr.newTree(
+            parameter.ident,
+            call
+        )

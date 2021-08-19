@@ -337,6 +337,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
             when declared(deepCopy):
                 oldMessage = some deepCopy chan.messages[msg.id]
             msg = chan.messages[msg.id]
+            exists = true
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
@@ -344,6 +345,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
             when declared(deepCopy):
                 oldMessage = some deepCopy chan.messages[msg.id]
             msg = chan.messages[msg.id]
+            exists = true
 
     msg = msg.updateMessage(data)
 

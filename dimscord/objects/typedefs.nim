@@ -219,22 +219,22 @@ type
         default_auto_archive_duration*: Option[int]
         rate_limit_per_user*: Option[int]
         permissions*: set[PermissionFlags]
+        messages*: Table[string, Message]
         last_message_id*: string
         case kind*: ChannelType
         of ctGuildText, ctGuildNews:
             topic*: Option[string]
-            messages*: Table[string, Message]
         of ctGuildVoice, ctGuildStageVoice:
             rtc_region*: Option[string]
             video_quality_mode*: Option[int]
             bitrate*, user_limit*: int
         of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
             message_count*, member_count*: Option[int]
-            thread_metadata*: Option[ThreadMetadata]
-            member*: Option[ThreadMember] # I swear if I get anyone joining my
+            thread_metadata*: ThreadMetadata
+            member*: Option[ThreadMember]
         else:
             discard
-    StageInstance* = object # server for threads im gonna ban 'em :)
+    StageInstance* = object
         id*, guild_id*: string
         channel_id*, topic*: string
         privacy_level*: PrivacyLevel
@@ -274,7 +274,7 @@ type
         party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[GameAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
-        buttons*: seq[tuple[label, url: string]]
+        buttons*: seq[string]
         instance*: bool
     Presence* = ref object
         user*: User

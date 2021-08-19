@@ -211,7 +211,8 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
         kind: ChannelType data["type"].getInt,
         guild_id: data["guild_id"].str,
         nsfw: data{"nsfw"}.getBool,
-        last_message_id: data{"last_message_id"}.getStr
+        last_message_id: data{"last_message_id"}.getStr,
+        messages: initTable[string, Message]()
     )
 
     if "permissions" in data and data["permissions"].kind != JNull:
@@ -231,7 +232,6 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     case result.kind:
     of ctGuildText, ctGuildNews:
         data.keyCheckOptStr(result, topic)
-        result.messages = initTable[string, Message]()
     of ctGuildVoice, ctGuildStageVoice:
         result.bitrate = data["bitrate"].getInt
         result.user_limit = data["user_limit"].getInt
@@ -240,8 +240,7 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
     of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
         if "member" in data and data["member"].kind != JNull:
             result.member = some data["member"].to ThreadMember
-        if "thread_metadata" in data and data["thread_metadata"].kind != JNull:
-            result.thread_metadata = some data["thread_metadata"].to ThreadMetadata
+        result.thread_metadata = data["thread_metadata"].to ThreadMetadata
 
         data.keyCheckOptInt(result, message_count, member_count)
     else:
@@ -377,7 +376,7 @@ proc newActivity*(data: JsonNode): Activity =
         created_at: data["created_at"].num,
         flags: cast[set[ActivityFlags]](data{"flags"}.getInt),
         buttons: data{"buttons"}.getElems.mapIt(
-            it.to(tuple[label, url:string])
+            it.getStr
         )
     )
 

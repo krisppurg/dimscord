@@ -121,7 +121,10 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
     )).newApplication
 
 proc registerApplicationCommand*(api: RestApi; application_id: string;
-        guild_id = ""; name, description: string;
+        name, description: string;
+        kind = atSlash;
+        guild_id = "";
+        default_permission = true;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Create a global or guild only slash command.
@@ -134,13 +137,20 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## as an existing command for your application will
     ## overwrite the old command.
     assert name.len >= 3 and name.len <= 32
-    assert description.len >= 1 and description.len <= 100
+    var payload = %*{"name": name,
+                     "default_permission": default_permission,
+                     "type": ord kind}
+    if kind notin {atUser, atMessage}:
+        assert description.len >= 1 and description.len <= 100
+        payload["description"] = %description
+    else:
+        assert description == "", "Context menu commands cannot have description"
 
-    let payload = %*{"name": name, "description": description}
     if options.len > 0: payload["options"] = %(options.map(
         proc (x: ApplicationCommandOption): JsonNode =
             %%*x
     ))
+
     result = (await api.request(
         "POST",
         (if guild_id != "":
@@ -149,6 +159,25 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
             endpointGlobalCommands(application_id)),
         $payload
     )).newApplicationCommand
+
+proc getApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id, command_id: string
+    ): Future[GuildApplicationCommandPermissions] {.async.} =
+    ## Fetches command permissions for a specific command for your application in a guild
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    result = await(api.request("GET", endpoint))
+        .newGuildApplicationCommandPermissions()
+
+proc bulkEditApplicationCommandPermissions*(
+    api: RestApi, application_id, guild_id: string,
+    permissions: seq[GuildApplicationCommandPermissions]
+): Future[seq[GuildApplicationCommandPermissions]] {.async.} =
+    ## Batch edits permissions for all commands in a guild
+    ## You can only add up to 10 permission overwrites for a command.
+    let endpoint = endpointGuildCommandPermission(application_id, guild_id)
+    let payload = %*permissions
+    result = await(api.request("PUT", endpoint, pl = $payload)).getElems().map newGuildApplicationCommandPermissions
+
 
 proc getApplicationCommands*(
         api: RestApi, application_id: string; guild_id = ""
@@ -195,22 +224,26 @@ proc bulkOverwriteApplicationCommands*(
     )).elems.map(newApplicationCommand)
 
 proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
-        guild_id = ""; name, description: string;
+        guild_id, name, description: string = "";
+        default_permission = true;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Modify slash command for a specific application.
     ##
     ## - `guild_id` - Optional
-    ## - `name` - Character length (3 - 32)
-    ## - `descripton` - Character length (1 - 100)
-    assert name.len in 3..32
-    assert description.len in 1..100
+    ## - `name` - Optional Character length (3 - 32)
+    ## - `descripton` - Optional Character length (1 - 100)
+    ## - `default_permission` - Optional
+    var payload = %*{"default_permission": default_permission}
+    if name != "":
+        assert name.len in 3..32
+        payload["name"] = %name
 
-    let payload = %*{"name": name, "description": description}
-    if options.len > 0: payload["options"] = %(options.map(
-        proc (x: ApplicationCommandOption): JsonNode =
-            %%*x
-    ))
+    if description != "":
+        assert description.len in 1..100
+        payload["description"] = %description
+
+    if options.len > 0: payload["options"] = %(options.map(`%%*`))
     result = (await api.request(
         "PATCH",
         (if guild_id != "":

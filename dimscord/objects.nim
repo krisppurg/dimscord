@@ -1025,8 +1025,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x
         ))
-    if a.default_permission.isSome:
-        result["default_permission"] = %a.default_permission
+    result["default_permission"] = %a.default_permission
 
 proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
     result = data.construct(ApplicationCommandPermission,
@@ -1045,7 +1044,9 @@ proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
         name: data["name"].str,
         description: data["description"].str,
         options: data{"options"}.getElems.map newApplicationCommandOption,
+        default_permission: data["default_permission"].getBool(true)
     )
+
 
 proc toPartial(emoji: Emoji): JsonNode =
     ## Creates a partial emoji from an Emoji object

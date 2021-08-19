@@ -395,7 +395,7 @@ type
         id*, application_id*: string
         kind*: ApplicationCommandType
         name*, description*: string
-        default_permission*: Option[bool] # Needs to be Option or else the default would be false
+        default_permission*: bool
         options*: seq[ApplicationCommandOption]
     GuildApplicationCommandPermissions* = object
         id*, application_id*, guild_id*: string

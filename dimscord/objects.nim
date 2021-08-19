@@ -1027,12 +1027,18 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     result["default_permission"] = %a.default_permission
 
 proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
-    result = data.construct(ApplicationCommandPermission,
-        ["id", "kind", "permission"])
+    result = ApplicationCommandPermission(
+        id: data["id"].str,
+        kind: ApplicationCommandPermissionType data["type"].getInt(),
+        permission: data["permission"].getBool(true)
+    )
 
 proc newGuildApplicationCommandPermissions*(data: JsonNode): GuildApplicationCommandPermissions =
-    result = data.construct(GuildApplicationCommandPermissions,
-        ["id", "application_id", "guild_id"])
+    result = GuildApplicationCommandPermissions(
+        id: data["id"].str,
+        application_id: data["application_id"].str,
+        guild_id: data["guild_id"].str
+    )
     result.permissions = data["permissions"].getElems.map newApplicationCommandPermission
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =

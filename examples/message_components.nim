@@ -2,6 +2,21 @@ import dimscord, asyncdispatch, strutils, sequtils, options, tables
 const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
 let discord = newDiscordClient(token)
 
+proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
+    var msg = ""
+    let data = i.data.get()
+    if data.componentType == SelectMenu:
+        msg = "You selected " & data.values[0]
+    elif data.componentType == Button:
+        msg = "You clicked the button"
+    let response = InteractionResponse(
+            kind: irtChannelMessageWithSource,
+            data: some InteractionApplicationCommandCallbackData(
+                content: msg
+            )
+        )
+    await discord.api.createInteractionResponse(i.id, i.token, response)
+
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let content = m.content
     if m.author.bot or not content.startsWith("$$"): return

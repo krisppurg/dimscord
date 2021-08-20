@@ -295,6 +295,9 @@ type
         itPing =               1
         itApplicationCommand = 2
         itMessageComponent =   3
+    InteractionDataType* = enum
+        idtApplicationCommand
+        idtComponent
     InteractionResponseType* = enum
         irtPong =                             1
         irtChannelMessageWithSource =         4

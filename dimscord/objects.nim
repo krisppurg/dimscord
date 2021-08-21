@@ -1036,22 +1036,8 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x
         ))
-    result["default_permission"] = %a.default_permission
 
-proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
-    result = ApplicationCommandPermission(
-        id: data["id"].str,
-        kind: ApplicationCommandPermissionType data["type"].getInt(),
-        permission: data["permission"].getBool(true)
-    )
 
-proc newGuildApplicationCommandPermissions*(data: JsonNode): GuildApplicationCommandPermissions =
-    result = GuildApplicationCommandPermissions(
-        id: data["id"].str,
-        application_id: data["application_id"].str,
-        guild_id: data["guild_id"].str
-    )
-    result.permissions = data["permissions"].getElems.map newApplicationCommandPermission
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
@@ -1060,8 +1046,7 @@ proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,
-        options: data{"options"}.getElems.map newApplicationCommandOption,
-        default_permission: data["default_permission"].getBool(true)
+        options: data{"options"}.getElems.map newApplicationCommandOption
     )
 
 
@@ -1082,13 +1067,6 @@ proc `%`(option: SelectMenuOption): JsonNode =
     }
     if option.emoji.isSome:
         result["emoji"] = option.emoji.get().toPartial()
-
-proc `%`*(permission: ApplicationCommandPermission): JsonNode =
-    result = %* {
-        "id": %permission.id,
-        "type": %ord(permission.kind),
-        "permission": %permission.permission
-    }
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}

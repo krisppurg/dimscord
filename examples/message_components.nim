@@ -5,9 +5,10 @@ let discord = newDiscordClient(token)
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     var msg = ""
     let data = i.data.get()
-    if data.componentType == SelectMenu:
+    # You
+    if data.customID == "slmColours":
         msg = "You selected " & data.values[0]
-    elif data.componentType == Button:
+    elif data.customID == "btnClick":
         msg = "You clicked the button"
     let response = InteractionResponse(
             kind: irtChannelMessageWithSource,

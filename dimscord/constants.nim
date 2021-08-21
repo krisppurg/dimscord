@@ -288,6 +288,9 @@ type
         atSlash    = 1 ## CHAT_INPUT
         atUser         ## USER
         atMessage      ## MESSAGE
+    ApplicationCommandPermission* = enum
+        acpRole = 1
+        acpUser
     InteractionType* = enum
         itPing =               1
         itApplicationCommand = 2

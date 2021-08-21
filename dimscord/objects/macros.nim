@@ -1,8 +1,4 @@
-import std/[
-    macros,
-    strutils,
-    tables
-]
+import std/macros
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =

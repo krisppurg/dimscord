@@ -932,7 +932,7 @@ proc newApplicationCommandInteractionData*(
             interactionType: idtApplicationCommand,
             id: data["id"].str,
             name: data["name"].str,
-            kind: ApplicationCommandType data{"type"}.getInt1
+            kind: ApplicationCommandType data{"type"}.getInt
         )
         case result.kind:
             of atSlash:

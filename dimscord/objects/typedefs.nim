@@ -396,7 +396,15 @@ type
         guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
+        default_permission*: bool
         options*: seq[ApplicationCommandOption]
+    GuildApplicationCommandPermissions* = object
+        id*, application_id*, guild_id*: string
+        permissions*: seq[ApplicationCommandPermission]
+    ApplicationCommandPermission* = object
+        id*: string ## ID of role or user
+        kind*: ApplicationCommandPermissionType
+        permission*: bool ## true to allow, false to disallow
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string

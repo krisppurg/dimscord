@@ -921,12 +921,12 @@ proc newApplicationCommandInteractionData*(
     if "component_type" in data:
         result = ApplicationCommandInteractionData(
             interactionType: idtComponent,
-            component_type: MessageComponentType data["component_type"].getInt(),
+            component_type: MessageComponentType data["component_type"].getInt 1,
             custom_id: data["custom_id"].str
         )
         if result.component_type == SelectMenu:
             result.values = data["values"].getElems()
-                .map() do (x: JsonNode) -> string: x.str
+                .mapIt(it.str)
     else:
         result = ApplicationCommandInteractionData(
             interactionType: idtApplicationCommand,

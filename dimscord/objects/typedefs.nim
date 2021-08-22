@@ -296,10 +296,10 @@ type
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
         system_channel_flags*: set[SystemChannelFlags]
+        permissions*: set[PermissionFlags]
         nsfw*, owner*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
-        max_video_channel_uses*: Option[int]
-        permissions*, afk_timeout*, member_count*: Option[int]
+        max_video_channel_uses*, afk_timeout*, member_count*: Option[int]
         approximate_member_count*, approximate_presence_count*: Option[int]
         max_presences*, max_members*, premium_subscription_count*: Option[int]
         explicit_content_filter*: ExplicitContentFilter
@@ -393,13 +393,14 @@ type
         flags*: set[ApplicationFlags]
     ApplicationCommand* = object
         id*, application_id*: string
+        guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string
-        default*, required*: Option[bool]
+        required*: Option[bool]
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
@@ -439,36 +440,28 @@ type
             else: discard
             custom_id*: string
     ApplicationCommandResolution* = object
-        case kind*: ApplicationCommandType:
-            of atUser:
-                members*: Table[string, Member]
-                users*: Table[string, User]
-            of atMessage:
-                messages*: Table[string, Message]
-            else: discard
+        case kind*: ApplicationCommandType
+        of atUser:
+            members*: Table[string, Member]
+            users*: Table[string, User]
+        of atMessage:
+            messages*: Table[string, Message]
+        else: discard
 
     ApplicationCommandInteractionDataOption* = object
         name*: string
         case kind*: ApplicationCommandOptionType
         of acotNothing: discard
-        of acotBool:
-            bval*: bool
-        of acotInt:
-            ival*: int
-        of acotStr:
-            str*: string
-        of acotUser:
-            userID*: string
-        of acotChannel:
-            channelID*: string
-        of acotRole:
-            roleID*: string
+        of acotBool: bval*: bool
+        of acotInt: ival*: BiggestInt
+        of acotStr: str*: string
+        of acotUser: user_id*: string
+        of acotChannel: channel_id*: string
+        of acotRole: role_id*: string
         of acotSubCommand, acotSubCommandGroup:
             options*: Table[string, ApplicationCommandInteractionDataOption]
-        of acotNumber:
-            fval*: float
-        of acotMentionable:
-            mentionID*: string
+        of acotNumber: fval*: float
+        of acotMentionable: mention_id*: string
     InteractionResponse* = object
         kind*: InteractionResponseType
         data*: Option[InteractionApplicationCommandCallbackData]

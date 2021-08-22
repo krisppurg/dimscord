@@ -796,6 +796,9 @@ proc newGuild*(data: JsonNode): Guild =
         system_channel_flags: cast[set[SystemChannelFlags]](
             data{"system_channel_flags"}.getStr("0").parseBiggestInt
         ),
+        permissions: cast[set[PermissionFlags]](
+            data{"permissions"}.getStr("0").parseBiggestInt
+        ),
         roles: initTable[string, Role](),
         emojis: initTable[string, Emoji](),
         voice_states: initTable[string, VoiceState](),
@@ -826,7 +829,7 @@ proc newGuild*(data: JsonNode): Guild =
             welcome_channels: seq[WelcomeChannel]
         ])
 
-    data.keyCheckOptInt(result, afk_timeout, permissions, member_count,
+    data.keyCheckOptInt(result, afk_timeout, member_count,
         premium_subscription_count, max_presences, approximate_member_count,
         approximate_presence_count, max_video_channel_uses)
     data.keyCheckOptStr(result, joined_at, icon, icon_hash, splash,
@@ -882,35 +885,35 @@ proc newApplicationCommandInteractionDataOption(
     data: JsonNode
 ): ApplicationCommandInteractionDataOption =
     result = ApplicationCommandInteractionDataOption(
-        kind: ApplicationCommandOptionType(data["type"].getInt())
+        kind: ApplicationCommandOptionType data["type"].getInt
     )
-    result.name = data["name"].getStr()
+    result.name = data["name"].getStr
     if result.kind notin {acotSubCommand, acotSubCommandGroup}:
         # SubCommands/Groups don't have a value
         let value = data["value"]
         case result.kind
-            of acotBool:
-                result.bval = value.bval
-            of acotInt:
-                result.ival = value.getInt()
-            of acotStr:
-                result.str  = value.getStr()
-            of acotUser:
-                result.userID = value.getStr()
-            of acotChannel:
-                result.channelID = value.getStr()
-            of acotRole:
-                result.roleID = value.getStr()
-            else: discard
+        of acotBool:
+            result.bval       = value.bval
+        of acotInt:
+            result.ival       = value.getBiggestInt
+        of acotStr:
+            result.str        = value.getStr
+        of acotUser:
+            result.user_id    = value.getStr
+        of acotChannel:
+            result.channel_id = value.getStr
+        of acotRole:
+            result.role_id    = value.getStr
+        else: discard
     else:
         # Convert the array of sub options into a key value table
         result.options = toTable data{"options"}
             .getElems
-            .map() do (x: JsonNode) -> (string, ApplicationCommandInteractionDataOption):
-                    (
-                        x["name"].str,
-                        newApplicationCommandInteractionDataOption(x)
-                    )
+            .mapIt((
+                it["name"].str,
+                newApplicationCommandInteractionDataOption(it)
+            ))
+        # Nice trick, ire.
 
 proc newApplicationCommandInteractionData*(
     data: JsonNode
@@ -929,7 +932,7 @@ proc newApplicationCommandInteractionData*(
             interactionType: idtApplicationCommand,
             id: data["id"].str,
             name: data["name"].str,
-            kind: ApplicationCommandType data{"type"}.getInt(1)
+            kind: ApplicationCommandType data{"type"}.getInt1
         )
         case result.kind:
             of atSlash:
@@ -938,7 +941,7 @@ proc newApplicationCommandInteractionData*(
                     result.options[option["name"].str] =
                         newApplicationCommandInteractionDataOption(option)
             of atUser, atMessage:
-                result.targetID = data["target_id"].str
+                result.target_id = data["target_id"].str
                 # Set the resolution kind to be the same as the interaction
                 # data kind, saves the user needing to user options when it
                 # isn't necessary
@@ -958,8 +961,6 @@ proc newApplicationCommandInteractionData*(
                 result.resolved = resolution
             else:
                 discard
-
-
 
 proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
@@ -996,7 +997,7 @@ proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
         ),
         options: data{"options"}.getElems.map newApplicationCommandOption
     )
-    data.keyCheckOptBool(result, default, required)
+    data.keyCheckOptBool(result, required)
 
 proc `%%*`*(a: ApplicationCommandOption): JsonNode =
     result = %*{"type": int a.kind, "name": a.name,
@@ -1036,9 +1037,6 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x
         ))
-
-
-
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
@@ -1048,7 +1046,6 @@ proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
         description: data["description"].str,
         options: data{"options"}.getElems.map newApplicationCommandOption
     )
-
 
 proc toPartial(emoji: Emoji): JsonNode =
     ## Creates a partial emoji from an Emoji object
@@ -1063,10 +1060,10 @@ proc `%`(option: SelectMenuOption): JsonNode =
         "label": option.label,
         "value": option.value,
         "description": option.description,
-        "default": option.default.get(false)
+        "default": option.default.get false
     }
     if option.emoji.isSome:
-        result["emoji"] = option.emoji.get().toPartial()
+        result["emoji"] = option.emoji.get.toPartial
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
@@ -1077,14 +1074,14 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             for child in comp.components:
                 result["components"] &= %%* child
         of Button:
-            result["custom_id"] = %comp.customID.get()
+            result["custom_id"] = %comp.custom_id.get
             result["label"] = %comp.label
             result["style"] = %comp.style.ord
             if comp.emoji.isSome:
-                result["emoji"] = comp.emoji.get().toPartial()
+                result["emoji"] = comp.emoji.get.toPartial
             result["url"] = %comp.url
         of SelectMenu:
-            result["custom_id"] = %comp.customID.get()
+            result["custom_id"] = %comp.custom_id.get
             result["options"] = %comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] = %comp.minValues

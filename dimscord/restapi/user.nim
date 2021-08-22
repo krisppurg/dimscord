@@ -125,11 +125,11 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Create a global or guild only slash command.
-    ## 
+    ##
     ## - `guild_id` - Optional
     ## - `name` - Character length (3 - 32)
     ## - `descripton` - Character length (1 - 100)
-    ## 
+    ##
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
     ## overwrite the old command.

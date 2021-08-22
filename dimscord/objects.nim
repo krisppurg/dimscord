@@ -918,38 +918,49 @@ proc newApplicationCommandInteractionDataOption(
 proc newApplicationCommandInteractionData*(
     data: JsonNode
 ): ApplicationCommandInteractionData =
-    result = ApplicationCommandInteractionData(
-        id: data["id"].str,
-        name: data["name"].str,
-        kind: ApplicationCommandType data{"type"}.getInt 1
-    )
-    case result.kind:
-    of atSlash:
-        result.options=initTable[string,ApplicationCommandInteractionDataOption]()
-        for option in data{"options"}.getElems:
-            result.options[option["name"].str] =
-                newApplicationCommandInteractionDataOption(option)
-    of atUser, atMessage:
-        result.target_id = data["target_id"].str
-        # Set the resolution kind to be the same as the interaction
-        # data kind, saves the user needing to user options when it
-        # isn't necessary
-        var resolution = ApplicationCommandResolution(kind: result.kind)
-        let resolvedJson = data["resolved"]
-        if result.kind == atUser:
-            # Get users
-            for id, jsonData in resolvedJson{"users"}:
-                resolution.users[id] = newUser(jsonData)
-            # Get members
-            for id, jsonData in resolvedJson{"members"}:
-                resolution.members[id] = newMember(jsonData)
-        else: # result.kind will equal atMessage
-            # Get messages
-            for id, jsonData in resolvedJson{"messages"}:
-                resolution.messages[id] = newMessage(jsonData)
-        result.resolved = resolution
+    if "component_type" in data:
+        result = ApplicationCommandInteractionData(
+            interactionType: idtComponent,
+            component_type: MessageComponentType data["component_type"].getInt 1,
+            custom_id: data["custom_id"].str
+        )
+        if result.component_type == SelectMenu:
+            result.values = data["values"].getElems()
+                .mapIt(it.str)
     else:
-        discard
+        result = ApplicationCommandInteractionData(
+            interactionType: idtApplicationCommand,
+            id: data["id"].str,
+            name: data["name"].str,
+            kind: ApplicationCommandType data{"type"}.getInt
+        )
+        case result.kind:
+            of atSlash:
+                result.options = initTable[string, ApplicationCommandInteractionDataOption]()
+                for option in data{"options"}.getElems:
+                    result.options[option["name"].str] =
+                        newApplicationCommandInteractionDataOption(option)
+            of atUser, atMessage:
+                result.target_id = data["target_id"].str
+                # Set the resolution kind to be the same as the interaction
+                # data kind, saves the user needing to user options when it
+                # isn't necessary
+                var resolution = ApplicationCommandResolution(kind: result.kind)
+                let resolvedJson = data["resolved"]
+                if result.kind == atUser:
+                    # Get users
+                    for id, jsonData in resolvedJson{"users"}:
+                        resolution.users[id] = newUser(jsonData)
+                    # Get members
+                    for id, jsonData in resolvedJson{"members"}:
+                        resolution.members[id] = newMember(jsonData)
+                else: # result.kind will equal atMessage
+                    # Get messages
+                    for id, jsonData in resolvedJson{"messages"}:
+                        resolution.messages[id] = newMessage(jsonData)
+                result.resolved = resolution
+            else:
+                discard
 
 proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
@@ -965,7 +976,8 @@ proc newInteraction*(data: JsonNode): Interaction =
         result.member = some data["member"].newMember
     if "user" in data and data["user"].kind != JNull:
         result.user = some data["user"].newUser
-
+    if "message" in data and data["message"].kind != JNull:
+        result.message = some data["message"].newMessage
     if "data" in data and data["data"].kind != JNull: # nice
         result.data = some newApplicationCommandInteractionData(data["data"])
 
@@ -1028,7 +1040,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
-        kind: ApplicationCOmmandType data["type"].getInt(),
+        kind: ApplicationCommandType data["type"].getInt(),
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,

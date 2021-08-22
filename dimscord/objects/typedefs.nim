@@ -415,6 +415,7 @@ type
         id*, channel_id*: string
         guild_id*: Option[string]
         kind*: InteractionType
+        message*: Option[Message]
         member*: Option[Member]
         user*: Option[User]
         token*: string
@@ -422,14 +423,22 @@ type
         version*: int
     ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
-        id*, name*: string
-        case kind*: ApplicationCommandType
-        of atSlash:
-            options*: Table[string, ApplicationCommandInteractionDataOption]
-        of atUser, atMessage:
-            target_id*: string
-            resolved*: ApplicationCommandResolution
-        of atNothing: discard
+        case interactionType*: InteractionDataType:
+        of idtApplicationCommand:
+            id*, name*: string
+            case kind*: ApplicationCommandType
+            of atSlash:
+                options*: Table[string, ApplicationCommandInteractionDataOption]
+            of atUser, atMessage:
+                target_id*: string
+                resolved*: ApplicationCommandResolution
+            of atNothing: discard
+        of idtComponent:
+            case component_type*: MessageComponentType:
+            of SelectMenu:
+                values*: seq[string]
+            else: discard
+            custom_id*: string
     ApplicationCommandResolution* = object
         case kind*: ApplicationCommandType
         of atUser:

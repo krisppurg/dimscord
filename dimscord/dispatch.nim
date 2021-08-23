@@ -90,6 +90,19 @@ proc guildEmojisUpdate(s: Shard, data: JsonNode) {.async.} =
 
     await s.client.events.guild_emojis_update(s, guild, emojis)
 
+proc guildStickersUpdate(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+
+    var stickers: seq[Sticker] = @[]
+    for sticker in data["stickers"]:
+        let st = newSticker(sticker)
+        stickers.add(st)
+        guild.stickers[st.id] = st
+
+    await s.client.events.guild_stickers_update(s, guild, stickers)
+
 proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldPresence: Option[Presence]
     let presence = newPresence(data)
@@ -818,9 +831,6 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     var endpoint: Option[string]
 
     if "endpoint" in data and data["endpoint"].kind != JNull:
-        # apparently this field could be nullable, so we'll need to check it.
-        # incase if it crashes.
-
         endpoint = some data["endpoint"].str
 
         let exists = guild.id in s.voiceConnections
@@ -838,6 +848,7 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "VOICE_STATE_UPDATE": await s.voiceStateUpdate(data)
     of "CHANNEL_PINS_UPDATE": await s.channelPinsUpdate(data)
     of "GUILD_EMOJIS_UPDATE": await s.guildEmojisUpdate(data)
+    of "GUILD_STICKERS_UPDATE": await s.guildStickersUpdate(data)
     of "PRESENCE_UPDATE": await s.presenceUpdate(data)
     of "MESSAGE_CREATE": await s.messageCreate(data)
     of "MESSAGE_REACTION_ADD": await s.messageReactionAdd data

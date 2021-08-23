@@ -386,10 +386,15 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
         )
 
 proc heartbeat(s: Shard, requested = false) {.async.} =
-    if s.sockClosed: return
+    if s.sockClosed or s.resuming: return
 
+    if not requested: 
+        if not s.hbAck:
+            s.logShard("A zombied connection was detected.")
+            await s.disconnect(should_reconnect = true)
+            return 
+        s.hbAck = false
     s.logShard("Sending heartbeat.")
-    s.hbAck = false
 
     await s.sendSock(opHeartbeat, %* s.sequence, ignore = true)
     s.lastHBTransmit = getTime().toUnixFloat()

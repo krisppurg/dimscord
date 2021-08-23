@@ -1,14 +1,14 @@
-import dimscord, asyncdispatch, strutils, sequtils, options, tables
+import dimscord, asyncdispatch, strutils, options
 const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
 let discord = newDiscordClient(token)
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     var msg = ""
-    let data = i.data.get()
+    let data = i.data.get
     # You
-    if data.customID == "slmColours":
+    if data.custom_id == "slmColours":
         msg = "You selected " & data.values[0]
-    elif data.customID == "btnClick":
+    elif data.custom_id == "btnClick":
         msg = "You clicked the button"
     let response = InteractionResponse(
             kind: irtChannelMessageWithSource,
@@ -24,7 +24,11 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     var row = newActionRow()
     case content.replace("$$", "").toLowerAscii():
         of "button":
-            row &= newButton("click me!", "btnClick",  emoji = Emoji(name: some "🔥"))
+            row &= newButton(
+                label = "click me!",
+                idOrUrl = "btnClick",
+                emoji = Emoji(name: some "🔥")
+            )
         of "menu":
             row &= newSelectMenu("slmColours", @[
                 newMenuOption("Red", "red", emoji = Emoji(name: some "🔥")),
@@ -32,7 +36,11 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
                 newMenuOption("Blue", "blue")
             ])
     if row.len > 0:
-        discard await discord.api.sendMessage(m.channelID, "hello", components = @[row])
+        discard await discord.api.sendMessage(
+            m.channel_id,
+            "hello",
+            components = @[row]
+        )
 
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as: " & $r.user

@@ -196,6 +196,7 @@ atCompeting	dimscord/constants.html#atCompeting	ActivityType.atCompeting
 ActivityType	dimscord/constants.html#ActivityType	constants: ActivityType	
 whIncoming	dimscord/constants.html#whIncoming	WebhookType.whIncoming	
 whFollower	dimscord/constants.html#whFollower	WebhookType.whFollower	
+whApplication	dimscord/constants.html#whApplication	WebhookType.whApplication	
 WebhookType	dimscord/constants.html#WebhookType	constants: WebhookType	
 iebRemoveRole	dimscord/constants.html#iebRemoveRole	IntegrationExpireBehavior.iebRemoveRole	
 iebKick	dimscord/constants.html#iebKick	IntegrationExpireBehavior.iebKick	
@@ -261,10 +262,21 @@ acotRole	dimscord/constants.html#acotRole	ApplicationCommandOptionType.acotRole
 acotMentionable	dimscord/constants.html#acotMentionable	ApplicationCommandOptionType.acotMentionable	
 acotNumber	dimscord/constants.html#acotNumber	ApplicationCommandOptionType.acotNumber	
 ApplicationCommandOptionType	dimscord/constants.html#ApplicationCommandOptionType	constants: ApplicationCommandOptionType	
+atNothing	dimscord/constants.html#atNothing	ApplicationCommandType.atNothing	
+atSlash	dimscord/constants.html#atSlash	ApplicationCommandType.atSlash	
+atUser	dimscord/constants.html#atUser	ApplicationCommandType.atUser	
+atMessage	dimscord/constants.html#atMessage	ApplicationCommandType.atMessage	
+ApplicationCommandType	dimscord/constants.html#ApplicationCommandType	constants: ApplicationCommandType	
+acptRole	dimscord/constants.html#acptRole	ApplicationCommandPermissionType.acptRole	
+acptUser	dimscord/constants.html#acptUser	ApplicationCommandPermissionType.acptUser	
+ApplicationCommandPermissionType	dimscord/constants.html#ApplicationCommandPermissionType	constants: ApplicationCommandPermissionType	
 itPing	dimscord/constants.html#itPing	InteractionType.itPing	
 itApplicationCommand	dimscord/constants.html#itApplicationCommand	InteractionType.itApplicationCommand	
 itMessageComponent	dimscord/constants.html#itMessageComponent	InteractionType.itMessageComponent	
 InteractionType	dimscord/constants.html#InteractionType	constants: InteractionType	
+idtApplicationCommand	dimscord/constants.html#idtApplicationCommand	InteractionDataType.idtApplicationCommand	
+idtComponent	dimscord/constants.html#idtComponent	InteractionDataType.idtComponent	
+InteractionDataType	dimscord/constants.html#InteractionDataType	constants: InteractionDataType	
 irtPong	dimscord/constants.html#irtPong	InteractionResponseType.irtPong	
 irtChannelMessageWithSource	dimscord/constants.html#irtChannelMessageWithSource	InteractionResponseType.irtChannelMessageWithSource	
 irtDeferredChannelMessageWithSource	dimscord/constants.html#irtDeferredChannelMessageWithSource	InteractionResponseType.irtDeferredChannelMessageWithSource	
@@ -360,6 +372,7 @@ endpointReactions	dimscord/constants.html#endpointReactions,string,string,string
 endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	constants: endpointOAuth2Application(): string	
 endpointGlobalCommands	dimscord/constants.html#endpointGlobalCommands,string,string	constants: endpointGlobalCommands(aid: string; cid = &quot;&quot;): string	
 endpointGuildCommands	dimscord/constants.html#endpointGuildCommands,string,string,string	constants: endpointGuildCommands(aid, gid: string; cid = &quot;&quot;): string	
+endpointGuildCommandPermission	dimscord/constants.html#endpointGuildCommandPermission,string,string,string	constants: endpointGuildCommandPermission(aid, gid: string; cid = &quot;&quot;): string	
 endpointInteractionsCallback	dimscord/constants.html#endpointInteractionsCallback,string,string	constants: endpointInteractionsCallback(iid, it: string): string	
 endpointStickers	dimscord/constants.html#endpointStickers,string	constants: endpointStickers(sid: string): string	
 endpointStickerPacks	dimscord/constants.html#endpointStickerPacks	constants: endpointStickerPacks(): string	

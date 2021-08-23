@@ -208,7 +208,8 @@ proc deleteAllMessageReactions*(api: RestApi,
     )
 
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
-        wait = true; content = ""; tts = false;
+        wait = true; thread_id = none string;
+        content = ""; tts = false;
         file = none DiscordFile;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
@@ -220,6 +221,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
     ## - `webhook_token` can be used as interaction token
     
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
+    if thread_id.isSome: url &= "&thread_id=" & thread_id.get
     let payload = %*{
         "content": content,
         "tts": tts
@@ -264,7 +266,9 @@ proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         content = none string;
         embeds = newSeq[Embed]();
-        allowed_mentions = none AllowedMentions) {.async.} =
+        allowed_mentions = none AllowedMentions;
+        attachments = newSeq[Attachment]();
+        components = newSeq[MessageComponent]()) {.async.} =
     ## Modifies the webhook message.
     ## You can actually use this to modify
     ## original interaction or followup message.
@@ -272,13 +276,25 @@ proc editWebhookMessage*(api: RestApi;
     ## - `webhook_id` can also be application_id
     ## - `webhook_token` can also be interaction token.
     ## - `message_id` can be `@original`
+    let payload = %*{
+        "content": %content,
+        "embeds": %embeds,
+        "allowed_mentions": %(%allowed_mentions)
+    }
+    if attachments.len > 0:
+        payload["attachments"] = newJArray()
+        for attachment in attachments:
+            payload["attachments"].add %*attachment        
+
+    if components.len > 0:
+        payload["components"] = newJArray()
+        for component in components:
+            payload["components"].add %%*component
+
     discard await api.request(
-        "PATCH", endpointWebhookMessage(webhook_id, webhook_token, message_id),
-        $(%*{
-            "content": %content,
-            "embeds": %embeds,
-            "allowed_mentions": %(%allowed_mentions)
-        })
+        "PATCH",
+        endpointWebhookMessage(webhook_id, webhook_token, message_id),
+        $payload
     )
 
 proc deleteWebhookMessage*(api: RestApi;

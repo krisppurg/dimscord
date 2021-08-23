@@ -240,11 +240,11 @@ type
         privacy_level*: PrivacyLevel
         discoverable_disabled*: bool
     ThreadMetadata* = object
-        archived*: bool
+        archived*, locked*: bool
         archiver_id*: Option[string]
         auto_archive_duration*: int
         archive_timestamp*: string
-        locked*: Option[bool]
+        invitable*: Option[bool]
     ThreadMember* = object
         ## - `id` The thread id the member is in.
         id*, user_id*: Option[string]
@@ -278,7 +278,7 @@ type
         instance*: bool
     Presence* = ref object
         user*: User
-        when not defined(discordv8) and not defined(discordv9):
+        when not defined(discordv8) and not defined(discordv9): ## when not V8 or V9
             activity*: Option[Activity]
         guild_id*, status*: string
         activities*: seq[Activity]
@@ -352,7 +352,7 @@ type
     Overwrite* = object
         ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string
-        when defined(discordv8) or defined(discordv9):
+        when defined(discordv8) or defined(discordv9): ## when V8 or V9
             kind*: int
         else:
             kind*: string
@@ -420,8 +420,8 @@ type
         ##
         ## if `user` is present and `member` isn't, then that means that the
         ## interaction is in a DM.
-        id*, channel_id*: string
-        guild_id*: Option[string]
+        id*, application_id*: string
+        guild_id*, channel_id*: Option[string]
         kind*: InteractionType
         message*: Option[Message]
         member*: Option[Member]
@@ -431,7 +431,7 @@ type
         version*: int
     ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
-        case interactionType*: InteractionDataType:
+        case interaction_type*: InteractionDataType
         of idtApplicationCommand:
             id*, name*: string
             case kind*: ApplicationCommandType
@@ -523,10 +523,12 @@ type
         user*: User
         reason*: Option[string]
     Webhook* = object
-        id*, channel_id*: string
+        id*: string
         kind*: WebhookType
-        guild_id*, avatar*: Option[string]
-        name*, token*: Option[string]
+        guild_id*, channel_id*, avatar*: Option[string]
+        name*, token*, url*: Option[string]
+        source_guild*: Option[PartialGuild]
+        source_channel*: Option[PartialChannel]
         user*: Option[User]
     Integration* = object
         id*, name*, kind*: string
@@ -583,7 +585,7 @@ type
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*: Option[string]
         id*, role_name*: Option[string]
-        when defined(discordv8) or defined(discordv9):
+        when defined(discordv8) or defined(discordv9): ## when V8 or V9
             kind*: Option[int]
         else:
             kind*: Option[string] 
@@ -602,16 +604,17 @@ type
         of alcNil:
             nil
     AuditLogEntry* = ref object
-        target_id*, reason*: Option[string]
+        id*: string
+        user_id*, target_id*, reason*: Option[string]
         before*, after*: Table[string, AuditLogChangeValue]
         opts*: Option[AuditLogOptions]
-        user_id*, id*: string
         action_type*: AuditLogEntryType
     AuditLog* = object
         webhooks*: seq[Webhook]
         users*: seq[User]
         audit_log_entries*: seq[AuditLogEntry]
         integrations*: seq[Integration]
+        threads*: seq[GuildChannel]
     GuildWidgetJson* = object
         id*, name*: string
         instant_invite*: string
@@ -712,6 +715,8 @@ type
                 i: StageInstance, o: Option[StageInstance]) {.async.}
         stage_instance_delete*: proc (s: Shard, g: Guild,
                 i: StageInstance, exists: bool) {.async.}
+        guild_stickers_update*: proc (s: Shard, g: Guild,
+                stickers: seq[Sticker]) {.async.}
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

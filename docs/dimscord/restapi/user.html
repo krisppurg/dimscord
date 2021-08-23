@@ -130,8 +130,9 @@ function main() {
   </ul>
   <ul class="simple nested-toc-section">registerApplicationCommand
       <li><a class="reference" href="#registerApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"
-    title="registerApplicationCommand(api: RestApi; application_id: string; guild_id = &quot;&quot;;
-                           name, description: string;
+    title="registerApplicationCommand(api: RestApi; application_id: string;
+                           name, description: string; kind = atSlash;
+                           guild_id = &quot;&quot;; default_permission = true;
                            options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]">registerApplicationCommand,<wbr>RestApi,<wbr>string,<wbr>string,<wbr>string,<wbr>string,<wbr>seq[ApplicationCommandOption]</a></li>
 
@@ -178,7 +179,8 @@ function main() {
   <ul class="simple nested-toc-section">editApplicationCommand
       <li><a class="reference" href="#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"
     title="editApplicationCommand(api: RestApi; application_id, command_id: string;
-                       guild_id = &quot;&quot;; name, description: string;
+                       guild_id, name, description: string = &quot;&quot;;
+                       default_permission = true;
                        options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]">editApplicationCommand,<wbr>RestApi,<wbr>string,<wbr>string,<wbr>string,<wbr>string,<wbr>string,<wbr>seq[ApplicationCommandOption]</a></li>
 
@@ -452,7 +454,8 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="registerApplicationCommand,RestApi,string,string,string,string,seq[ApplicationCommandOption]"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#registerApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"><span class="Identifier">registerApplicationCommand</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                                <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                                <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">kind</span> <span class="Other">=</span> <span class="Identifier">atSlash</span><span class="Other">;</span>
+                                <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">default_permission</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                                 <span class="Identifier">options</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#ApplicationCommandOption"><span class="Identifier">ApplicationCommandOption</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <a href="../objects.html#ApplicationCommand"><span class="Identifier">ApplicationCommand</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
@@ -465,9 +468,9 @@ Create a global or guild only slash command.<ul class="simple"><li><tt class="do
 <p><strong>NOTE:</strong> Creating a command with the same name as an existing command for your application will overwrite the old command.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L126"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L129"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L129" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getApplicationCommands,RestApi,string,string"></a>
@@ -478,9 +481,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash commands for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L155"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L165"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L155" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getApplicationCommand,RestApi,string,string,string"></a>
@@ -492,9 +495,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L168"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L178"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L168" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L178" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bulkOverwriteApplicationCommands,RestApi,string,seq[ApplicationCommand],string"></a>
@@ -509,28 +512,30 @@ Overwrites existing commands slash command that were registered in guild or appl
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L180"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L192"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L180" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L192" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="editApplicationCommand,RestApi,string,string,string,string,string,seq[ApplicationCommandOption]"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D"><span class="Identifier">editApplicationCommand</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">command_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                            <span class="Identifier">guild_id</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                            <span class="Identifier">guild_id</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                            <span class="Identifier">default_permission</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                             <span class="Identifier">options</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#ApplicationCommandOption"><span class="Identifier">ApplicationCommandOption</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <a href="../objects.html#ApplicationCommand"><span class="Identifier">ApplicationCommand</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Modify slash command for a specific application.<ul class="simple"><li><tt class="docutils literal"><span class="pre">guild_id</span></tt> - Optional</li>
-<li><tt class="docutils literal"><span class="pre">name</span></tt> - Character length (3 - 32)</li>
-<li><tt class="docutils literal"><span class="pre">descripton</span></tt> - Character length (1 - 100)</li>
+<li><tt class="docutils literal"><span class="pre">name</span></tt> - Optional Character length (3 - 32)</li>
+<li><tt class="docutils literal"><span class="pre">descripton</span></tt> - Optional Character length (1 - 100)</li>
+<li><tt class="docutils literal"><span class="pre">default_permission</span></tt> - Optional</li>
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L200"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L213"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L213" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteApplicationCommand,RestApi,string,string,string"></a>
@@ -542,9 +547,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete slash command for a specific application, <tt class="docutils literal"><span class="pre">guild_id</span></tt> is optional.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L225"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L241"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L241" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createInteractionResponse,RestApi,string,string,InteractionResponse"></a>
@@ -557,9 +562,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Create an interaction response. <tt class="docutils literal"><span class="pre">response.kind</span></tt> is required.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L237"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L253"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L237" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L253" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -572,7 +577,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-15 17:13:23 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-23 13:50:45 UTC</small>
       </div>
     </div>
   </div>

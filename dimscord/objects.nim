@@ -311,12 +311,22 @@ proc newWebhook*(data: JsonNode): Webhook =
     result = Webhook(
         id: data["id"].str,
         kind: WebhookType data["type"].getInt,
-        channel_id: data["channel_id"].str)
+    )
 
     if "user" in data:
         result.user = some newUser(data["user"])
+    if "source_guild" in data:
+        result.source_guild = some data["source_guild"].to(PartialGuild)
+    if "source_channel" in data:
+        result.source_channel = some PartialChannel(
+            id: data["source_channel"]["id"].str,
+            kind: ChannelType data["source_channel"]["type"].getInt,
+            name: data["source_channel"]["name"].str
+        )
 
-    data.keyCheckOptStr(result, guild_id, token, name, avatar)
+    data.keyCheckOptStr(result, channel_id, guild_id,
+        token, name, avatar, url
+    )
 
 proc newGuildBan*(data: JsonNode): GuildBan =
     result = GuildBan(user: newUser(data["user"]))
@@ -582,10 +592,8 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
 
     result.mention_users = data{"mentions"}.getElems.map(newUser)
     result.attachments = data{"attachments"}.getElems.map(newAttachment)
-    result.embeds = data{"embeds"}.getElems.map(
-        proc (x: JsonNode): Embed =
-            x.to(Embed)
-    )
+    result.embeds = data{"embeds"}.getElems.mapIt(it.to(Embed))
+
     if "type" in data and data["type"].kind != JNull:
         result.kind = MessageType data["type"].getInt
     if "flags" in data and data["flags"].kind != JNull:
@@ -650,7 +658,7 @@ proc newMessage*(data: JsonNode): Message =
         attachments: data{"attachments"}.getElems.map newAttachment,
         mention_roles: data{"mention_roles"}.getElems.mapIt(it.str),
         mention_users: data{"mentions"}.getElems.map newUser,
-        embeds:data{"embeds"}.getElems.map(proc(e:JsonNode):Embed=e.to(Embed)),
+        embeds:data{"embeds"}.getElems.mapIt(it.to(Embed)),
         reactions: initTable[string, Reaction]()
     )
     data.keyCheckOptStr(result, edited_timestamp,
@@ -713,10 +721,7 @@ proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     of JArray:
         if key in ["$add", "$remove"]:
             result = AuditLogChangeValue(kind: alcRoles)
-            result.roles = data.elems.map(
-                proc (x: JsonNode): tuple[id, name: string] =
-                    x.to(tuple[id, name: string])
-            )
+            result.roles = data.elems.mapIt(it.to(tuple[id, name: string]))
         elif "permission_overwrites" in key:
             result = AuditLogChangeValue(kind: alcOverwrites)
             result.overwrites = data.elems.map(newOverwrite)
@@ -725,13 +730,12 @@ proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
 
 proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
     result = AuditLogEntry(
+        id: data["id"].str,
         before: initTable[string, AuditLogChangeValue](),
         after: initTable[string, AuditLogChangeValue](),
-        user_id: data["user_id"].str,
-        id: data["id"].str,
         action_type: AuditLogEntryType data["action_type"].getInt
     )
-    data.keyCheckOptStr(result, target_id, reason)
+    data.keyCheckOptStr(result, user_id, target_id, reason)
 
     if "options" in data:
         result.opts = some data.to(AuditLogOptions)
@@ -768,12 +772,13 @@ proc newIntegration*(data: JsonNode): Integration =
 
 proc newAuditLog*(data: JsonNode): AuditLog =
     AuditLog(
-        webhooks: data["webhooks"].elems.map(newWebhook),
-        users: data["users"].elems.map(newUser),
-        audit_log_entries: data["audit_log_entries"].elems.map(
+        webhooks: data{"webhooks"}.getElems.map(newWebhook),
+        users: data{"users"}.getElems.map(newUser),
+        audit_log_entries: data{"audit_log_entries"}.getElems.map(
             newAuditLogEntry),
         integrations: data{"integrations"}.getElems.map(
-            newIntegration)
+            newIntegration),
+        threads: data{"threads"}.getElems.map(newGuildChannel)
     )
 
 proc newGuild*(data: JsonNode): Guild =
@@ -935,42 +940,41 @@ proc newApplicationCommandInteractionData*(
             kind: ApplicationCommandType data{"type"}.getInt
         )
         case result.kind:
-            of atSlash:
-                result.options = initTable[string, ApplicationCommandInteractionDataOption]()
-                for option in data{"options"}.getElems:
-                    result.options[option["name"].str] =
-                        newApplicationCommandInteractionDataOption(option)
-            of atUser, atMessage:
-                result.target_id = data["target_id"].str
-                # Set the resolution kind to be the same as the interaction
-                # data kind, saves the user needing to user options when it
-                # isn't necessary
-                var resolution = ApplicationCommandResolution(kind: result.kind)
-                let resolvedJson = data["resolved"]
-                if result.kind == atUser:
-                    # Get users
-                    for id, jsonData in resolvedJson{"users"}:
-                        resolution.users[id] = newUser(jsonData)
-                    # Get members
-                    for id, jsonData in resolvedJson{"members"}:
-                        resolution.members[id] = newMember(jsonData)
-                else: # result.kind will equal atMessage
-                    # Get messages
-                    for id, jsonData in resolvedJson{"messages"}:
-                        resolution.messages[id] = newMessage(jsonData)
-                result.resolved = resolution
-            else:
-                discard
+        of atSlash:
+            result.options=initTable[string,ApplicationCommandInteractionDataOption]()
+            for option in data{"options"}.getElems:
+                result.options[option["name"].str] =
+                    newApplicationCommandInteractionDataOption(option)
+        of atUser, atMessage:
+            result.target_id = data["target_id"].str
+            # Set the resolution kind to be the same as the interaction
+            # data kind, saves the user needing to user options when it
+            # isn't necessary
+            var resolution = ApplicationCommandResolution(kind: result.kind)
+            let resolvedJson = data["resolved"]
+            if result.kind == atUser:
+                # Get users
+                for id, jsonData in resolvedJson{"users"}:
+                    resolution.users[id] = newUser(jsonData)
+                # Get members
+                for id, jsonData in resolvedJson{"members"}:
+                    resolution.members[id] = newMember(jsonData)
+            else: # result.kind will equal atMessage
+                # Get messages
+                for id, jsonData in resolvedJson{"messages"}:
+                    resolution.messages[id] = newMessage(jsonData)
+            result.resolved = resolution
+        else:
+            discard
 
 proc newInteraction*(data: JsonNode): Interaction =
     result = Interaction(
         id: data["id"].str,
         kind: InteractionType data["type"].getInt,
-        channel_id: data["channel_id"].str,
         token: data["token"].str,
         version: data["version"].getInt
     )
-    data.keyCheckOptStr(result, guild_id)
+    data.keyCheckOptStr(result, channel_id, guild_id)
 
     if "member" in data and data["member"].kind != JNull:
         result.member = some data["member"].newMember
@@ -1039,32 +1043,37 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         ))
     result["default_permission"] = %a.default_permission
 
-proc newApplicationCommandPermission*(data: JsonNode): ApplicationCommandPermission =
+proc newApplicationCommandPermission*(
+    data: JsonNode
+): ApplicationCommandPermission =
     result = ApplicationCommandPermission(
         id: data["id"].str,
-        kind: ApplicationCommandPermissionType data["type"].getInt(),
-        permission: data["permission"].getBool(true)
+        kind: ApplicationCommandPermissionType data["type"].getInt,
+        permission: data["permission"].getBool true
     )
 
-proc newGuildApplicationCommandPermissions*(data: JsonNode): GuildApplicationCommandPermissions =
+proc newGuildApplicationCommandPermissions*(
+    data: JsonNode
+): GuildApplicationCommandPermissions =
     result = GuildApplicationCommandPermissions(
         id: data["id"].str,
         application_id: data["application_id"].str,
         guild_id: data["guild_id"].str
     )
-    result.permissions = data["permissions"].getElems.map newApplicationCommandPermission
+    result.permissions = data{"permissions"}.getElems.map(
+        newApplicationCommandPermission
+    )
 
 proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
     result = ApplicationCommand(
         id: data["id"].str,
-        kind: ApplicationCommandType data["type"].getInt(),
+        kind: ApplicationCommandType data["type"].getInt,
         application_id: data["application_id"].str,
         name: data["name"].str,
         description: data["description"].str,
         options: data{"options"}.getElems.map newApplicationCommandOption,
-        default_permission: data["default_permission"].getBool(true)
+        default_permission: data{"default_permission"}.getBool true
     )
-
 
 proc toPartial(emoji: Emoji): JsonNode =
     ## Creates a partial emoji from an Emoji object
@@ -1087,7 +1096,7 @@ proc `%`(option: SelectMenuOption): JsonNode =
 proc `%`*(permission: ApplicationCommandPermission): JsonNode =
     result = %* {
         "id": %permission.id,
-        "type": %ord(permission.kind),
+        "type": %ord permission.kind,
         "permission": %permission.permission
     }
 
@@ -1100,15 +1109,15 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             for child in comp.components:
                 result["components"] &= %%* child
         of Button:
-            result["custom_id"] = %comp.custom_id.get
-            result["label"] = %comp.label
-            result["style"] = %comp.style.ord
+            result["custom_id"] =   %comp.custom_id.get
+            result["label"] =       %comp.label
+            result["style"] =       %comp.style.ord
             if comp.emoji.isSome:
-                result["emoji"] = comp.emoji.get.toPartial
-            result["url"] = %comp.url
+                result["emoji"] =   comp.emoji.get.toPartial
+            result["url"] =         %comp.url
         of SelectMenu:
-            result["custom_id"] = %comp.custom_id.get
-            result["options"] = %comp.options
+            result["custom_id"] =   %comp.custom_id.get
+            result["options"] =     %comp.options
             result["placeholder"] = %comp.placeholder
-            result["min_values"] = %comp.minValues
-            result["max_values"] = %comp.maxValues
+            result["min_values"] =  %comp.minValues
+            result["max_values"] =  %comp.maxValues

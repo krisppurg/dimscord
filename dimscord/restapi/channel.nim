@@ -67,6 +67,10 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             permission_overwrites = none seq[Overwrite];
             reason = ""): Future[GuildChannel] {.async.} =
     ## Creates a channel.
+    assert name.len in 1..100
+    if topic.isSome:
+        assert topic.get.len in 0..1024
+
     let payload = %*{"name": name, "type": kind}
 
     payload.loadOpt(position, topic, nsfw, rate_limit_per_user,
@@ -75,7 +79,8 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
     result = (await api.request(
         "POST",
         endpointGuildChannels(guild_id),
-        $payload
+        $payload,
+        audit_reason = reason
     )).newGuildChannel
 
 proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
@@ -161,8 +166,9 @@ proc getChannelInvites*(api: RestApi,
         endpointChannelInvites(channel_id)
     )).elems.map(newInvite)
 
-proc getChannel*(api: RestApi,
-        channel_id: string): Future[(Option[GuildChannel], Option[DMChannel])] {.async.} =
+proc getChannel*(api: RestApi;
+        channel_id: string
+): Future[(Option[GuildChannel], Option[DMChannel])] {.async.} =
     ## Gets channel by ID.
     ## 
     ## Another thing to keep in mind is that it returns a tuple of each
@@ -258,18 +264,29 @@ proc editWebhook*(api: RestApi, webhook_id: string;
 proc startThreadWithoutMessage*(api: RestApi,
     channel_id, name: string;
     auto_archive_duration: range[60..10080];
+    kind = none ChannelType; invitable = none bool;
     reason = ""
 ): Future[GuildChannel] {.async.} =
     ## Starts private thread.
     ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
     assert name.len in 1..100
+    let payload = %*{
+        "name": name,
+        "auto_archive_duration": auto_archive_duration
+    }
+
+    if kind.isSome:
+        assert(
+            int(kind.get) in 10..12,
+            "Please choose a valid thread channel type."
+        )
+        payload["type"] = %(int kind.get)
+    payload.loadOpt(invitable)
+
     result = (await api.request(
         "POST",
         endpointChannelThreads(channel_id),
-        $(%*{
-            "name": name,
-            "auto_archive_duration": auto_archive_duration
-        }),
+        $payload,
         audit_reason = reason
     )).newGuildChannel
 
@@ -321,7 +338,7 @@ proc createStageInstance*(api: RestApi; channel_id, topic: string;
         "POST",
         endpointStageInstances(),
         $payload,
-        reason
+        audit_reason = reason
     )).newStageInstance
 
 proc getStageInstance*(api: RestApi;
@@ -344,7 +361,7 @@ proc editStageInstance*(api: RestApi; channel_id, topic: string;
         "POST",
         endpointStageInstances(channel_id),
         $payload,
-        reason
+        audit_reason = reason
     )).newStageInstance
 
 proc deleteStageInstance*(api: RestApi;

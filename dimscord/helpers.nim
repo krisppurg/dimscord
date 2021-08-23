@@ -339,15 +339,23 @@ proc newMenuOption*(label: string, value: string,
         default: some default
     )
 
-proc newSelectMenu*(customID: string, options: seq[SelectmenuOption], placeholder = "",
-                    minValues, maxValues = 1, disabled = false): MessageComponent =
+proc newSelectMenu*(custom_id: string; options: seq[SelectmenuOption];
+        placeholder = ""; minValues, maxValues = 1;
+        disabled = false
+): MessageComponent =
     ## Creates a new select menu.
     ## Options can be an empty seq but you MUST add options before adding it
     ## to the option row.
     ## min and max values is if you want users to be able to select multiple
     ## options
-    doAssert minValues in 0..25, "minValues must be between 0 and 25 (inclusive)"
-    doAssert maxValues in 1..25, "maxValues must be between 1 and 25 (inclusive)"
+    doAssert(
+        minValues in 0..25,
+        "minValues must be between 0 and 25 (inclusive)"
+    )
+    doAssert(
+        maxValues in 1..25,
+        "maxValues must be between 1 and 25 (inclusive)"
+    )
     result = MessageComponent(
         kind: SelectMenu,
         customID: some customID,
@@ -359,11 +367,17 @@ proc newSelectMenu*(customID: string, options: seq[SelectmenuOption], placeholde
 
 proc add*(component: var MessageComponent, item: MessageComponent) =
     ## Add another component onto an ActionRow
-    assert component.kind == ActionRow, "Can only add components onto an ActionRow"
+    assert(
+        component.kind == ActionRow,
+        "Can only add components onto an ActionRow."
+    )
     component.components &= item
     checkActionRow component
 
 proc add*(component: var MessageComponent, item: SelectMenuOption) =
     ## Add another menu option onto the select menu
-    assert component.kind == SelectMenu, "Can only add menu options to a SelectMenu"
+    assert(
+        component.kind == SelectMenu,
+        "Can only add menu options to a SelectMenu."
+    )
     component.options &= item

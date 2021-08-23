@@ -1,12 +1,11 @@
-import dimscord, asyncdispatch, strutils, sequtils, options
+import dimscord, asyncdispatch, strutils, options
 import tables
 const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
 let discord = newDiscordClient(token)
 
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
-    let applicationID = (await discord.api.getCurrentApplication()).id
     discard await discord.api.bulkOverwriteApplicationCommands(
-        applicationID,
+        s.user.id,
         @[
             ApplicationCommand( # Just say who they high fived
                 name: "High Five",
@@ -17,11 +16,11 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
                 kind: atMessage
             )
         ],
-        guildID = "479193574341214208"
+        guild_id = "479193574341214208"
     )
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
-    let data = i.data.get()
+    let data = i.data.get
     var msg = ""
     if data.kind == atUser:
         for user in data.resolved.users.values: # Loop will only happen one

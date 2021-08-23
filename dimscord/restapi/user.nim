@@ -185,8 +185,10 @@ proc getApplicationCommand*(
             endpointGlobalCommands(application_id, command_id)),
     )).newApplicationCommand
 
-proc bulkOverwriteApplicationCommands*(
-        api: RestApi, application_id: string; commands: seq[ApplicationCommand], guild_id = ""
+proc bulkOverwriteApplicationCommands*(api: RestApi;
+        application_id: string;
+        commands: seq[ApplicationCommand];
+        guild_id = ""
 ): Future[seq[ApplicationCommand]] {.async.} =
     ## Overwrites existing commands slash command that were registered in guild or application.
     ## This means that only the commands you send in this request will be available globally or in a specific guild

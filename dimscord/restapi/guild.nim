@@ -40,7 +40,7 @@ proc editGuild*(api: RestApi, guild_id: string;
     system_channel_id, rules_channel_id = none string;
     preferred_locale, public_updates_channel_id = none string;
     verification_level, default_message_notifications = none int;
-    system_channel_flags = none int,
+    system_channel_flags = none int;
     explicit_content_filter, afk_timeout = none int;
     features: seq[string] = @[];
     reason = ""
@@ -86,7 +86,7 @@ proc createGuild*(api: RestApi, name, region = none string;
         icon, afk_channel_id, system_channel_id = none string;
         verification_level, default_message_notifications = none int;
         afk_timeout, explicit_content_filter = none int;
-        roles = none seq[Role];
+        system_channel_flags = none int; roles = none seq[Role];
         channels = none seq[Channel]): Future[Guild] {.async.} =
     ## Create a guild.
     ## Please read these notes:
@@ -104,7 +104,9 @@ proc createGuild*(api: RestApi, name, region = none string;
 
     payload.loadNullableOptInt(verification_level,
         default_message_notifications,
-        explicit_content_filter, afk_timeout)
+        explicit_content_filter, afk_timeout,
+        system_channel_flags
+    )
 
     payload.loadNullableOptStr(icon, region, afk_channel_id, system_channel_id)
 
@@ -595,19 +597,25 @@ proc editGuildApplicationCommandPermissions*(
 ): Future[GuildApplicationCommandPermissions] {.async.} =
     ## Edits command permissions for a specific command for your application in a guild.
     ## You can only add up to 10 permission overwrites for a command
-    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
-    let payload = %* {
-        "permissions": %*permissions
-    }
-    result = (await api.request("PUT", endpoint, pl = $payload)).newGuildApplicationCommandPermissions()
+    let endpoint = endpointGuildCommandPermission(
+        application_id, guild_id, command_id
+    )
+    let payload = %* {"permissions": %*permissions}
+    result = (await api.request(
+        "PUT",
+        endpoint,
+        pl = $payload
+    )).newGuildApplicationCommandPermissions
 
 proc getGuildApplicationCommandPermissions*(
     api: RestApi, application_id, guild_id, command_id: string
     ): Future[GuildApplicationCommandPermissions] {.async.} =
     ## Fetches command permissions for a specific command for your application in a guild
-    let endpoint = endpointGuildCommandPermission(application_id, guild_id, command_id)
+    let endpoint = endpointGuildCommandPermission(
+        application_id, guild_id, command_id
+    )
     result = (await api.request("GET", endpoint))
-        .newGuildApplicationCommandPermissions()
+        .newGuildApplicationCommandPermissions
 
 proc bulkEditApplicationCommandPermissions*(
     api: RestApi, application_id, guild_id: string,
@@ -617,9 +625,11 @@ proc bulkEditApplicationCommandPermissions*(
     ## You can only add up to 10 permission overwrites for a command.
     let endpoint = endpointGuildCommandPermission(application_id, guild_id)
     let payload = %*permissions
-    result = (await api.request("PUT", endpoint, pl = $payload)).getElems().map newGuildApplicationCommandPermissions
-
-
+    result = (await api.request(
+        "PUT",
+        endpoint,
+        pl = $payload
+    )).getElems.map newGuildApplicationCommandPermissions
 
 proc getGuildStickers*(
     api: RestApi, guild_id: string
@@ -644,7 +654,7 @@ proc createGuildSticker*(api: RestApi, guild_id: string;
     description, reason = ""
 ): Future[Sticker] {.async.} =
     ## Create a guild sticker. Max `file` size 500KB.
-    assert file.len <= (500 * 1000)
+    assert file.len <= (500 * 1000), "Max file size 500KB"
     assert name.len in 2..30 and tags.len in 2..200
     if description != "":
         assert description.len in 2..100

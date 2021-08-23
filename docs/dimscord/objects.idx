@@ -57,10 +57,13 @@ TeamMember	dimscord/objects.html#TeamMember	objects: TeamMember
 Team	dimscord/objects.html#Team	objects: Team	
 Application	dimscord/objects.html#Application	objects: Application	
 ApplicationCommand	dimscord/objects.html#ApplicationCommand	objects: ApplicationCommand	
+GuildApplicationCommandPermissions	dimscord/objects.html#GuildApplicationCommandPermissions	objects: GuildApplicationCommandPermissions	
+ApplicationCommandPermission	dimscord/objects.html#ApplicationCommandPermission	objects: ApplicationCommandPermission	
 ApplicationCommandOption	dimscord/objects.html#ApplicationCommandOption	objects: ApplicationCommandOption	
 ApplicationCommandOptionChoice	dimscord/objects.html#ApplicationCommandOptionChoice	objects: ApplicationCommandOptionChoice	
 Interaction	dimscord/objects.html#Interaction	objects: Interaction	
 ApplicationCommandInteractionData	dimscord/objects.html#ApplicationCommandInteractionData	objects: ApplicationCommandInteractionData	
+ApplicationCommandResolution	dimscord/objects.html#ApplicationCommandResolution	objects: ApplicationCommandResolution	
 ApplicationCommandInteractionDataOption	dimscord/objects.html#ApplicationCommandInteractionDataOption	objects: ApplicationCommandInteractionDataOption	
 InteractionResponse	dimscord/objects.html#InteractionResponse	objects: InteractionResponse	
 InteractionApplicationCommandCallbackData	dimscord/objects.html#InteractionApplicationCommandCallbackData	objects: InteractionApplicationCommandCallbackData	
@@ -130,5 +133,8 @@ newInteraction	dimscord/objects.html#newInteraction,JsonNode	objects: newInterac
 newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	objects: newApplicationCommandOption(data: JsonNode): ApplicationCommandOption	
 `%%*`	dimscord/objects.html#%%*,ApplicationCommandOption	objects: `%%*`(a: ApplicationCommandOption): JsonNode	
 `%%*`	dimscord/objects.html#%%*,ApplicationCommand	objects: `%%*`(a: ApplicationCommand): JsonNode	
+newApplicationCommandPermission	dimscord/objects.html#newApplicationCommandPermission,JsonNode	objects: newApplicationCommandPermission(data: JsonNode): ApplicationCommandPermission	
+newGuildApplicationCommandPermissions	dimscord/objects.html#newGuildApplicationCommandPermissions,JsonNode	objects: newGuildApplicationCommandPermissions(data: JsonNode): GuildApplicationCommandPermissions	
 newApplicationCommand	dimscord/objects.html#newApplicationCommand,JsonNode	objects: newApplicationCommand(data: JsonNode): ApplicationCommand	
+`%`	dimscord/objects.html#%,ApplicationCommandPermission	objects: `%`(permission: ApplicationCommandPermission): JsonNode	
 `%%*`	dimscord/objects.html#%%*,MessageComponent	objects: `%%*`(comp: MessageComponent): JsonNode	

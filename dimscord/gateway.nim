@@ -257,7 +257,11 @@ proc voiceStateUpdate*(s: Shard,
     })
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
-    s.logShard("Received event: " & event) # please do not enable dimscordDebug while you are on a large guild.
+    when defined(dimscordDebugNoSubscriptionLogs):
+      if event notin @["PRESENCE_UPDATE", "TYPING_START"]:
+            s.logShard("Received event: " & event)
+    else:
+        s.logShard("Received event: " & event) # please do not enable dimscordDebug while you are on a large guild.
 
     case event:
     of "READY":

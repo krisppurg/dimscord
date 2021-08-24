@@ -62,8 +62,10 @@
 ## Definable options
 ## ==============
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
+## - `-d:dimscordDebugNoSubscriptionLogs` No debugging PRESENCE_UPDATE|TYPING_START when `guild_subscriptions` is on. 
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
-## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer function consider defining it.
+## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer functional consider defining it.
+## - `-d:discordv9` Discord API v9 is used for threads.
 ## - `-d:dimscordVoice` Enables the voice module. Requires libsodium
 
 import dimscord/[

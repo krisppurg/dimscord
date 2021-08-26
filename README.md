@@ -57,11 +57,11 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         # Sends a message with embed.
         discard await discord.api.sendMessage(
             m.channel_id,
-            embed = some Embed(
+            embeds = some @[Embed(
                 title: some "Hello there!", 
                 description: some "This is description",
                 color: some 0x7789ec
-            )
+            )]
         )
 
 # Connect to Discord and run the bot.

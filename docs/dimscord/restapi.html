@@ -903,8 +903,13 @@ function main() {
   <div id="tocRoot"></div>
   
   <p class="module-desc"><p>Interaction with the Discord API:</p>
-<p>Quick note: for executing webhooks, this can also apply to interactions, I'd recommend reading: <a class="reference external" href="https://discord.com/developers/docs/interactions/slash-commands">https://discord.com/developers/docs/interactions/slash-commands</a></p>
-<p>Endpoint aliases start here: <a class="reference external" href="https://discord.com/developers/docs/interactions/slash-commands#edit-original-interaction-response">https://discord.com/developers/docs/interactions/slash-commands#edit-original-interaction-response</a></p>
+<p>Quick note: for executing webhooks, this can also apply to interactions, I'd recommend reading: <a class="reference external" href="https://discord.com/developers/docs/interactions/application-commands">https://discord.com/developers/docs/interactions/application-commands</a></p>
+<p>Endpoint aliases start here:</p>
+<dl class="docutils"><dt><a class="reference external" href="https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response">Edit Original Interaction Response</a></dt>
+<dd>-&gt; editWebhookMessage</dd>
+<dt><a class="reference external" href="https://discord.com/developers/docs/interactions/receiving-and-responding#delete-original-interaction-response">Delete Original Interaction Response</a></dt>
+<dd>-&gt; deleteWebhookMessage</dd>
+</dl>
 </p>
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -2756,7 +2761,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-23 13:50:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-26 19:58:29 UTC</small>
       </div>
     </div>
   </div>

@@ -150,13 +150,13 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
         proc (x: ApplicationCommandOption): JsonNode =
             %%*x
     ))
+    var endpoint = endpointGlobalCommands(application_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id)
 
     result = (await api.request(
         "POST",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id)
-        else:
-            endpointGlobalCommands(application_id)),
+        endpoint,
         $payload
     )).newApplicationCommand
 
@@ -164,12 +164,12 @@ proc getApplicationCommands*(
         api: RestApi, application_id: string; guild_id = ""
 ): Future[seq[ApplicationCommand]] {.async.} =
     ## Get slash commands for a specific application, `guild_id` is optional.
+    var endpoint = endpointGlobalCommands(application_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id)
     result = (await api.request(
         "GET",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id)
-        else:
-            endpointGlobalCommands(application_id)),
+        endpoint
     )).elems.map(newApplicationCommand)
 
 proc getApplicationCommand*(
@@ -177,12 +177,13 @@ proc getApplicationCommand*(
         command_id: string
 ): Future[ApplicationCommand] {.async.} =
     ## Get slash command for a specific application, `guild_id` is optional.
+    var endpoint = endpointGlobalCommands(application_id, command_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id, command_id)
+
     result = (await api.request(
         "GET",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id, command_id)
-        else:
-            endpointGlobalCommands(application_id, command_id)),
+        endpoint
     )).newApplicationCommand
 
 proc bulkOverwriteApplicationCommands*(api: RestApi;
@@ -197,12 +198,13 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
         proc (a: ApplicationCommand): JsonNode =
             %%* a
     ))
+    var endpoint = endpointGlobalCommands(application_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id)
+
     result = (await api.request(
         "PUT",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id)
-        else:
-            endpointGlobalCommands(application_id)),
+        endpoint,
         $payload
     )).elems.map(newApplicationCommand)
 
@@ -218,6 +220,9 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
     ## - `descripton` - Optional Character length (1 - 100)
     ## - `default_permission` - Optional
     var payload = %*{"default_permission": default_permission}
+    var endpoint = endpointGlobalCommands(application_id, command_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id, command_id)
     if name != "":
         assert name.len in 3..32
         payload["name"] = %name
@@ -229,10 +234,7 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
     if options.len > 0: payload["options"] = %(options.map(`%%*`))
     result = (await api.request(
         "PATCH",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id, command_id)
-        else:
-            endpointGlobalCommands(application_id, command_id)),
+        endpoint,
         $payload
     )).newApplicationCommand
 
@@ -240,12 +242,12 @@ proc deleteApplicationCommand*(
         api: RestApi, application_id, command_id: string;
         guild_id = "") {.async.} =
     ## Delete slash command for a specific application, `guild_id` is optional.
+    var endpoint = endpointGlobalCommands(application_id, command_id)
+    if guild_id != "":
+        endpoint = endpointGuildCommands(application_id, guild_id, command_id)
     discard await api.request(
         "DELETE",
-        (if guild_id != "":
-            endpointGuildCommands(application_id, guild_id, command_id)
-        else:
-            endpointGlobalCommands(application_id, command_id))
+        endpoint
     )
 
 proc createInteractionResponse*(api: RestApi,

@@ -540,7 +540,7 @@ proc endpointChannelUsersThreadsArchived*(cid, typ: string): string =
 proc endpointChannelThreadsMembers*(cid: string; uid = ""): string =
     result = endpointChannels(cid) & "/thread-members"
     if uid != "":
-        result = "/" & uid
+        result = result & "/" & uid
 
 proc endpointChannelMessagesCrosspost*(cid, mid: string): string =
     result = endpointChannelMessages(cid, mid) & "/crosspost"

@@ -301,6 +301,7 @@ type
         idtApplicationCommand
         idtComponent
     InteractionResponseType* = enum
+        irtInvalid =                          0
         irtPong =                             1
         irtChannelMessageWithSource =         4
         irtDeferredChannelMessageWithSource = 5

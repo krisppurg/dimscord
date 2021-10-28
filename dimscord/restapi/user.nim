@@ -255,9 +255,26 @@ proc createInteractionResponse*(api: RestApi,
         response: InteractionResponse) {.async.} =
     ## Create an interaction response.
     ## `response.kind` is required.
-    let data = %response.data
-    if response.data.isSome:
-        data["flags"] = %int response.data.get.flags
+    var data = newJObject()
+    case response.kind:
+    of irtPong, irtChannelMessageWithSource, irtDeferredChannelMessageWithSource,
+        irtDeferredUpdateMessage, irtUpdateMessage:
+        data = %response.data
+        if response.data.isSome:
+            data["flags"] = %int response.data.get.flags
+    of irtAutoCompleteResult:
+        let choices = %response.choices.map(
+            proc (x: ApplicationCommandOptionChoice): JsonNode =
+                result = %*{"name": x.name}
+                if x.value[0].isSome:
+                    result["value"] = %x.value[0]
+                if x.value[1].isSome:
+                    result["value"] = %x.value[1]
+        )
+        data["choices"] = %*choices
+    of irtInvalid:
+        raise newException(ValueError, "Invalid interaction respons type")
+
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),

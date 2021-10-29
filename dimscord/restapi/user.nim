@@ -257,8 +257,11 @@ proc createInteractionResponse*(api: RestApi,
     ## `response.kind` is required.
     var data = newJObject()
     case response.kind:
-    of irtPong, irtChannelMessageWithSource, irtDeferredChannelMessageWithSource,
-        irtDeferredUpdateMessage, irtUpdateMessage:
+    of irtPong,
+       irtChannelMessageWithSource,
+       irtDeferredChannelMessageWithSource,
+       irtDeferredUpdateMessage,
+       irtUpdateMessage:
         data = %response.data
         if response.data.isSome:
             data["flags"] = %int response.data.get.flags

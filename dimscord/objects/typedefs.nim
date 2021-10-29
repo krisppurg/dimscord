@@ -473,8 +473,11 @@ type
         focused*: Option[bool] ## Will be true if this is the value the user is typing during auto complete
     InteractionResponse* = object
         case kind*: InteractionResponseType
-        of irtPong, irtChannelMessageWithSource, irtDeferredChannelMessageWithSource,
-                irtDeferredUpdateMessage, irtUpdateMessage:
+        of irtPong,
+           irtChannelMessageWithSource,
+           irtDeferredChannelMessageWithSource,
+           irtDeferredUpdateMessage,
+           irtUpdateMessage:
             data*: Option[InteractionApplicationCommandCallbackData]
         of irtAutoCompleteResult:
             choices*: seq[ApplicationCommandOptionChoice]

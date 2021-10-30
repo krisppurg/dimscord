@@ -296,15 +296,18 @@ type
         itPing =               1
         itApplicationCommand = 2
         itMessageComponent =   3
+        itAutoComplete =       4
     InteractionDataType* = enum
         idtApplicationCommand
         idtComponent
     InteractionResponseType* = enum
+        irtInvalid =                          0
         irtPong =                             1
         irtChannelMessageWithSource =         4
         irtDeferredChannelMessageWithSource = 5
         irtDeferredUpdateMessage =            6
         irtUpdateMessage =                    7
+        irtAutoCompleteResult =               8
     InviteTargetType* = enum
         ittStream =              1
         ittEmbeddedApplication = 2

@@ -910,6 +910,8 @@ proc newApplicationCommandInteractionDataOption(
         of acotRole:
             result.role_id    = value.getStr
         else: discard
+        if "focused" in data:
+          result.focused = some data["focused"].getBool()
     else:
         # Convert the array of sub options into a key value table
         result.options = toTable data{"options"}
@@ -1006,7 +1008,8 @@ proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
 proc `%%*`*(a: ApplicationCommandOption): JsonNode =
     result = %*{"type": int a.kind, "name": a.name,
                 "description": a.description,
-                "required": %(a.required.get false)
+                "required": %(a.required.get false),
+                "autocomplete": %a.autocomplete
     }
 
     if a.choices.len > 0:

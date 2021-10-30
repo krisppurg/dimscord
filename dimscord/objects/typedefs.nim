@@ -408,7 +408,7 @@ type
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string
-        required*: Option[bool]
+        required*, autocomplete*: Option[bool]
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
@@ -470,9 +470,18 @@ type
             options*: Table[string, ApplicationCommandInteractionDataOption]
         of acotNumber: fval*: float
         of acotMentionable: mention_id*: string
+        focused*: Option[bool] ## Will be true if this is the value the user is typing during auto complete
     InteractionResponse* = object
-        kind*: InteractionResponseType
-        data*: Option[InteractionApplicationCommandCallbackData]
+        case kind*: InteractionResponseType
+        of irtPong,
+           irtChannelMessageWithSource,
+           irtDeferredChannelMessageWithSource,
+           irtDeferredUpdateMessage,
+           irtUpdateMessage:
+            data*: Option[InteractionApplicationCommandCallbackData]
+        of irtAutoCompleteResult:
+            choices*: seq[ApplicationCommandOptionChoice]
+        of irtInvalid: discard
     InteractionApplicationCommandCallbackData* = object
         tts*: Option[bool]
         content*: string

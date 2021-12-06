@@ -68,7 +68,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none(int);
-        embeds = newSeq[Embed]()): Future[Message] {.async.} =
+        embeds = newSeq[Embed](),
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000
     let payload = %*{
@@ -79,6 +80,11 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
+
+    if components.len > 0:
+        payload["components"] = newJArray()
+        for component in components:
+            payload["components"] &= %%*component
 
     result = (await api.request(
         "PATCH",

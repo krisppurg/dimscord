@@ -92,25 +92,6 @@ proc crypto_secretbox_easy(key, msg, nonce: string): string =
     # doAssert crypto_secretbox_open_easy(key, nonce & cipherText) == msg
 
 
-proc reset(v: VoiceClient) {.used.} =
-    v.resuming = false
-
-    v.hbAck = false
-    v.hbSent = false
-    v.ready = false
-
-    v.ip = ""
-    v.secretKey = ""
-    if v.encryptMode == Lite:
-        v.nonce = 0
-    v.sequence = 0
-    v.time = 0
-    v.port = -1
-
-    v.heartbeating = false
-    v.retry_info = (ms: 1000, attempts: 0)
-    v.lastHBTransmit = 0
-    v.lastHBReceived = 0
 
 proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code from: https://github.com/niv/websocket.nim/blame/master/websocket/shared.nim#L230
     var data = data
@@ -129,7 +110,6 @@ proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
         reason: closeData.reason
     ))
     v.stop = true
-    v.reset()
 
     result = true
 
@@ -182,8 +162,8 @@ proc selectProtocol*(v: VoiceClient) {.async.} =
     await v.sendSock(SelectProtocol, %*{
         "protocol": "udp",
         "data": {
-            "address": v.ip,
-            "port": v.port,
+            "address": v.srcIP,
+            "port": v.srcPort,
             "mode": $v.encryptMode
         }
     })
@@ -244,6 +224,24 @@ proc reconnect*(v: VoiceClient) {.async.} =
         await v.reconnect()
         return
 
+# Conversions from here https://stackoverflow.com/a/2182184
+proc toBigEndian(num: uint16): uint16 {.inline.} =
+    when cpuEndian == bigEndian:
+        result = num
+    else:
+        result = (num shr 8) or (num shl 8)
+
+proc toBigEndian(num: uint32): uint32 {.inline.} =
+    when cpuEndian == bigEndian:
+        result = num
+    else:
+        template shrAnd(places, a: uint32): uint32 = ((num shr places) and a)
+        template shlAnd(places, a: uint32): uint32 = ((num shl places) and a)
+        result = shrAnd(24, 0xff) or
+                 shlAnd(8, 0xff0000) or
+                 shrAnd(8, 0xf00) or
+                 shlAnd(24, uint32 0xff000000)
+
 
 proc disconnect*(v: VoiceClient) {.async.} =
     ## Disconnects a voice client.
@@ -252,7 +250,6 @@ proc disconnect*(v: VoiceClient) {.async.} =
     log "Voice Client disconnecting..."
 
     v.stop = true
-    v.reset()
 
     if v.connection != nil:
         v.connection.close()
@@ -291,13 +288,34 @@ proc setupHeartbeatInterval(v: VoiceClient) {.async.} =
         await v.heartbeat()
         await sleepAsync v.interval
 
+proc sendUDPPacket(v: VoiceClient, packet: string) {.async.} =
+    await v.udp.sendTo(v.dstIP, Port(v.dstPort), packet)
+
+proc recvUDPPacket(v: VoiceClient, size: int): Future[string] {.async.} =
+    # echo await v.udp.recvFrom(result, size, v.dstIP, Port(v.dstPort))
+    result = v.udp.recvFrom(size).await().data
+proc sendDiscovery(v: VoiceClient) {.async.} =
+    ## Sends ip/port discovery packet to discord
+    var packet: string
+    packet.addUint32(toBigEndian uint32(v.ssrc))
+    packet.add chr(0).repeat(66)
+    await v.sendUDPPacket(packet)
+
+proc recvDiscovery(v: VoiceClient) {.async.} =
+    ## Recvs external ip/port from discord
+    let packet = await v.recvUDPPacket(70)
+    v.srcIP = packet[4..^3].replace($chr(0), "")
+    v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
+    echo v.srcIP, " ", v.srcPort
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 
     var shouldReconnect = true
     while not v.sockClosed:
         try:
+            log "reciviing packet"
             packet = await v.connection.receivePacket()
+            log "got"
         except:
             let exceptn = getCurrentExceptionMsg()
             log "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
@@ -323,6 +341,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             await v.voice_events.on_disconnect(v)
             break
         log $VoiceOp(data["op"].num)
+
         case VoiceOp(data["op"].num)
         of Hello:
             log "Received 'HELLO' from the voice gateway."
@@ -340,26 +359,30 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
 
             v.hbAck = true
         of Ready:
-            v.ip = data["d"]["ip"].str
-            v.port = data["d"]["port"].getInt
+            echo data["d"].pretty()
+            v.dstIP = data["d"]["ip"].str
+            v.dstPort = data["d"]["port"].getInt
             v.ssrc = uint32 data["d"]["ssrc"].getInt
             v.udp = newAsyncSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-            log fmt"Connecting from {v.ip} and {v.port}"
+            log fmt"Connecting to {v.dstIP} and {v.dstPort}"
+            await v.sendDiscovery()
+            await v.recvDiscovery()
             v.ready = true
             await v.selectProtocol()
         of Resumed:
             v.resuming = false
         of SessionDescription:
             log "Got session description"
+            v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
             v.secret_key = data["d"]["secret_key"].elems.mapIt(chr(it.getInt)).join("")
             await v.voice_events.on_ready(v)
         else: discard
+    log "here"
     if not v.reconnectable: return
 
     if packet[0] == Close:
         v.shouldReconnect = v.handleDisconnect(packet[1])
     v.stop = true
-    v.reset()
 
     if shouldReconnect:
         await v.reconnect()
@@ -389,6 +412,7 @@ proc startSession*(v: VoiceClient) {.async.} =
         v.stop = true
         raise newException(Exception, getCurrentExceptionMsg())
     try:
+        log "handlong socket"
         await v.handleSocketMessage()
     except:
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
@@ -419,23 +443,6 @@ proc pause*(v: VoiceClient) {.async.} =
     if v.playing:
         v.playing = false
 
-# Conversions from here https://stackoverflow.com/a/2182184
-proc toBigEndian(num: uint16): uint16 {.inline.} =
-    when cpuEndian == bigEndian:
-        result = num
-    else:
-        result = (num shr 8) or (num shl 8)
-
-proc toBigEndian(num: uint32): uint32 {.inline.} =
-    when cpuEndian == bigEndian:
-        result = num
-    else:
-        template shrAnd(places, a: uint32): uint32 = ((num shr places) and a)
-        template shlAnd(places, a: uint32): uint32 = ((num shl places) and a)
-        result = shrAnd(24, 0xff) or
-                 shlAnd(8, 0xff0000) or
-                 shrAnd(8, 0xf00) or
-                 shlAnd(24, uint32 0xff000000)
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet
@@ -444,14 +451,14 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     header.addUint8(0x78)
     header.addUint16(toBigEndian uint16 v.sequence)
     header.addUint32(toBigEndian uint32 v.time)
-    header.addUint32(toBigEndian uint32 v.ssrc)
+    header.addUint32(toBigEndian uint32(v.ssrc))
     let nonce = v.makeNonce(header)
-    echo "Sending ", data.len, " bytes of data"
+    # echo "Sending ", data.len, " bytes of data"
 
     var packet = header & crypto_secretbox_easy(v.secret_key, data, nonce)
     if v.encryptMode != Normal:
         packet &= nonce
-    await v.udp.sendTo(v.ip, Port(v.port), packet)
+    await v.sendUDPPacket(packet)
 
 proc incrementPacketHeaders(v: VoiceClient) =
     # Don't know if this is needed or other libraries just implemented it
@@ -464,7 +471,7 @@ proc incrementPacketHeaders(v: VoiceClient) =
         v.time += 960
     else:
         v.time = 0
-
+import std/streams
 proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinished code
     let
         args = @[
@@ -486,32 +493,33 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
     var
         chunked = ""
     let encoder = createEncoder(48000, 2, 960, Voip)
-    for data in chunkedStdout("ffmpeg", args, 1920 * 2):
+    let file = newFileStream(input, fmRead)
+    while not file.atEnd:
+    # for data in chunkedStdout("ffmpeg", args, 1920 * 2):
         # chunked.add chunk
         # if chunked.len >= 1500:
         #     for c in chunked:
         #         data.add c
         #     data = data[0..(if data.high >= 1500: 1500 else: data.high)]
 
+        let data = file.readStr(1920 * 2).toPCMBytes(encoder)
+        # if data == "": continue
+        await sendAudioPacket(v, $encoder.encode(data).cstring)
         incrementPacketHeaders v
-        if data == "": continue
-
-        await sendAudioPacket(v, $encoder.encode(data.toPCMBytes(encoder)).cstring)
-        await sleepAsync 100
+        await sleepAsync 20
     # Send 5 silent frames to clear buffer
     for i in 1..5:
         incrementPacketHeaders v
         echo "Sound of silence"
         await v.sendAudioPacket(silencePacket)
 
-    await v.sendSock(Speaking, %*{"speaking": false})
 
 proc playFFmpeg*(v: VoiceClient, input: string) {.async.} =
     ## Play audio through ffmpeg, input can be a url or a path.
     await v.sendSpeaking(true)
     log "Sending audio"
     await v.sendAudio(input)
-    await v.sendSpeaking(true)
+    await v.sendSpeaking(false)
 
 # proc latency*(v: VoiceClient) {.async.} =
 #     ## Get latency of the voice client.

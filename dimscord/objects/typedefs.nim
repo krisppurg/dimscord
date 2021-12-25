@@ -47,8 +47,9 @@ type
     VoiceClient* = ref object
         shard*: Shard
         voice_events*: VoiceEvents
-        endpoint*, ip*, token*: string
-        port*: int
+        endpoint*, token*: string
+        srcIP*, dstIP*: string
+        srcPort*, dstPort*: int # src is our computer, dst is discord servers
         session_id*, guild_id*, channel_id*: string
         connection*: WebSocket
         hbAck*, hbSent*, stop*: bool

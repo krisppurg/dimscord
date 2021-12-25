@@ -7,6 +7,7 @@ import libsodium/sodium, libsodium/sodium_sizes
 import osproc, asyncnet
 import flatty/binny, random
 import std/strformat
+import opussum
 randomize()
 
 type
@@ -436,7 +437,8 @@ proc toBigEndian(num: uint32): uint32 {.inline.} =
                  shrAnd(8, 0xf00) or
                  shlAnd(24, uint32 0xff000000)
 
-proc sendAudioPacket(v: VoiceClient, data: string) {.async.} =
+proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
+    ## Sends opus encoded packet
     var header = ""
     header.addUint8(0x80)
     header.addUint8(0x78)
@@ -475,7 +477,7 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
             "-f",
             "s16le",
             "-acodec",
-            "libopus",
+            "pcm_s16le",
             "-loglevel",
             "quiet",
             "-nostdin",
@@ -483,8 +485,8 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
         ]
     var
         chunked = ""
-
-    for data in chunkedStdout("ffmpeg", args, dataSize):
+    let encoder = createEncoder(48000, 2, 960, Voip)
+    for data in chunkedStdout("ffmpeg", args, 1920 * 2):
         # chunked.add chunk
         # if chunked.len >= 1500:
         #     for c in chunked:
@@ -493,8 +495,9 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
 
         incrementPacketHeaders v
         if data == "": continue
-        await sendAudioPacket(v, data)
-        await sleepAsync 3000
+
+        await sendAudioPacket(v, $encoder.encode(data.toPCMBytes(encoder)).cstring)
+        await sleepAsync 100
     # Send 5 silent frames to clear buffer
     for i in 1..5:
         incrementPacketHeaders v

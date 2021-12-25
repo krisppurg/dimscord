@@ -9,6 +9,7 @@ license       = "MIT"
 
 requires "nim >= 1.2.0", "zippy >= 0.2.1", "ws <= 0.4.0", "regex >= 0.15.0", "libsodium <= 0.6.0", "flatty >= 0.1.2"
 requires "asynctools >= 0.1.1"
+requires "https://github.com/ire4ever1190/opussum >= 0.3.0"
 
 task genDoc, "Generates the documentation for dimscord":
     rmDir("docs") # Clean old doc folder

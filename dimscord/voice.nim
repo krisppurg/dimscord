@@ -41,15 +41,17 @@ template culen(target: string): untyped =
 
 proc crypto_secretbox_easy(
     c: ptr cuchar,
-    m: ptr cuchar,
+    m: cstring,
     mlen: culonglong,
-    n: ptr cuchar,
-    k: ptr cuchar,
+    n: cstring,
+    k: cstring,
 ):cint {.sodium_import.}
 
 const
     nonceLen = 24
     dataSize = 1920 * 2
+    idealLength = 20 # How long one voice packet should ideally be
+
 
 const silencePacket = block:
     var packet: string
@@ -58,6 +60,11 @@ const silencePacket = block:
     packet.addInt(0xFE)
     packet
 
+proc logVoice(msg: string) =
+    when defined(dimscordDebug):
+        echo fmt"[Voice]: {msg}"
+proc logVoice(msg: string, extra: any) =
+    logVoice(msg & "\n" & $extra)
 
 proc makeNonce(v: VoiceClient, header: string): string =
     case v.encryptMode
@@ -77,19 +84,26 @@ proc makeNonce(v: VoiceClient, header: string): string =
 
 proc crypto_secretbox_easy(key, msg, nonce: string): string =
     assert key.len == crypto_secretbox_KEYBYTES()
-    # result = newString msg.len + nonceLen
-    let cipherText = newString msg.len + nonceLen
-    let
-        c_ciphertext = cpt cipherText
-        cmsg = cpt msg
-        mlen = culen msg
-        ckey = cpt key
-        cnonce = cpt nonce
-    let rc = crypto_secretbox_easy(c_ciphertext, cmsg, mlen, cnonce, ckey)
+    let length = crypto_secretbox_MACBYTES() + msg.len
+    result = newString length
+    var cipherText = cast[ptr UncheckedArray[cuchar]](createShared(cuchar, length))
+    defer: freeShared cipherText
+
+    let rc = crypto_secretbox_easy(
+        cast[ptr cuchar](cipherText),
+        msg.cstring,
+        msg.len.culonglong,
+        nonce.cstring,
+        key.cstring
+    )
     if rc != 0:
         raise newException(SodiumError, "return code: $#" % $rc)
-    result = cipherText
-    # doAssert crypto_secretbox_open_easy(key, nonce & cipherText) == msg
+    for i in 0..<length:
+        result[i] = cast[char](cipherText[i])
+    echo result.len
+    echo msg.len
+    echo
+    doAssert crypto_secretbox_open_easy(key, nonce & result) == msg
 
 
 
@@ -105,7 +119,7 @@ proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code f
 proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
     let closeData = extractCloseData(msg)
 
-    log("Socket suspended", (
+    logVoice("Socket suspended", (
         code: closeData.code,
         reason: closeData.reason
     ))
@@ -116,10 +130,10 @@ proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
     echo closeData.code
     if closeData.code in [4004, 4006, 4012, 4014]:
         result = false
-        log("Fatal error: " & closeData.reason)
+        logVoice("Fatal error: " & closeData.reason)
 
 proc sendSock(v: VoiceClient, opcode: VoiceOp, data: JsonNode) {.async.} =
-    log "Sending OP: " & $opcode
+    logVoice "Sending OP: " & $opcode
     assert v.connection != nil, "Connection needs to be open first"
     await v.connection.send($(%*{
         "op": opcode.ord,
@@ -134,7 +148,7 @@ proc resume*(v: VoiceClient) {.async.} =
 
     # v.resuming = true
 
-    log "Attempting to resume\n" &
+    logVoice "Attempting to resume\n" &
         "  server_id: " & v.guild_id & "\n" &
         "  session_id: " & v.session_id
 
@@ -147,7 +161,7 @@ proc resume*(v: VoiceClient) {.async.} =
 proc identify(v: VoiceClient) {.async.} =
     if v.sockClosed and not v.resuming: return
 
-    log "Sending identify."
+    logVoice "Sending identify."
 
     await v.sendSock(Identify, %*{
         "server_id": v.guild_id,
@@ -185,11 +199,11 @@ proc reconnect*(v: VoiceClient) {.async.} =
     if v.retry_info.attempts > 3:
         if not v.networkError:
             v.networkError = true
-            log "A network error has been detected."
+            logVoice "A network error has been detected."
 
     let prefix = if url.startsWith("gateway"): "ws://" & url else: url
 
-    log "Connecting to " & $prefix
+    logVoice "Connecting to " & $prefix
 
     try:
         let future = newWebSocket(prefix)
@@ -198,7 +212,7 @@ proc reconnect*(v: VoiceClient) {.async.} =
         v.stop = false
 
         if (await withTimeout(future, 25000)) == false:
-            log "Websocket timed out.\n\n  Retrying connection..."
+            logVoice "Websocket timed out.\n\n  Retrying connection..."
 
             await v.reconnect()
             return
@@ -210,11 +224,11 @@ proc reconnect*(v: VoiceClient) {.async.} =
         v.retry_info.ms = max(v.retry_info.ms - 5000, 1000)
 
         if v.networkError:
-            log "Connection established after network error."
+            logVoice "Connection established after network error."
             v.retry_info = (ms: 1000, attempts: 0)
             v.networkError = false
     except:
-        log "Error occurred: \n" & getCurrentExceptionMsg()
+        logVoice "Error occurred: \n" & getCurrentExceptionMsg()
 
         log("Failed to connect, reconnecting in " & $v.retry_info.ms & "ms", (
             attempt: v.retry_info.attempts
@@ -247,7 +261,7 @@ proc disconnect*(v: VoiceClient) {.async.} =
     ## Disconnects a voice client.
     if v.sockClosed: return
 
-    log "Voice Client disconnecting..."
+    logVoice "Voice Client disconnecting..."
 
     v.stop = true
 
@@ -255,18 +269,18 @@ proc disconnect*(v: VoiceClient) {.async.} =
         v.connection.close()
 
 
-    log "Shard reconnecting after disconnect..."
+    logVoice "Shard reconnecting after disconnect..."
     await v.reconnect()
 
 proc heartbeat(v: VoiceClient) {.async.} =
     if v.sockClosed: return
 
     # if not v.hbAck and v.session_id != "":
-    #     log "A zombied connection has been detected"
+    #     logVoice "A zombied connection has been detected"
     #     await v.disconnect()
     #     return
 
-    log "Sending heartbeat."
+    logVoice "Sending heartbeat."
     v.hbAck = false
 
     await v.sendSock(Heartbeat,
@@ -307,24 +321,23 @@ proc recvDiscovery(v: VoiceClient) {.async.} =
     v.srcIP = packet[4..^3].replace($chr(0), "")
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
     echo v.srcIP, " ", v.srcPort
+    echo (packet[^2].ord shl 8) or (packet[^1].ord)
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 
     var shouldReconnect = true
     while not v.sockClosed:
         try:
-            log "reciviing packet"
             packet = await v.connection.receivePacket()
-            log "got"
         except:
             let exceptn = getCurrentExceptionMsg()
-            log "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
+            logVoice "Error occurred in websocket ::\n" & getCurrentExceptionMsg()
 
             v.stop = true
             v.heartbeating = false
 
             if exceptn.startsWith("The semaphore timeout period has expired."):
-                log "A network error has been detected."
+                logVoice "A network error has been detected."
 
                 v.networkError = true
                 break
@@ -336,15 +349,15 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         try:
             data = parseJson(packet[1])
         except:
-            log "An error occurred while parsing data: " & packet[1]
+            logVoice "An error occurred while parsing data: " & packet[1]
             await v.disconnect()
             await v.voice_events.on_disconnect(v)
             break
-        log $VoiceOp(data["op"].num)
+        logVoice $VoiceOp(data["op"].num)
 
         case VoiceOp(data["op"].num)
         of Hello:
-            log "Received 'HELLO' from the voice gateway."
+            logVoice "Received 'HELLO' from the voice gateway."
             v.interval = int data["d"]["heartbeat_interval"].getFloat
 
             await v.identify()
@@ -355,7 +368,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         of HeartbeatAck:
             v.lastHBReceived = getTime().toUnixFloat()
             v.hbSent = false
-            log "Heartbeat Acknowledged by Discord."
+            logVoice "Heartbeat Acknowledged by Discord."
 
             v.hbAck = true
         of Ready:
@@ -364,7 +377,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             v.dstPort = data["d"]["port"].getInt
             v.ssrc = uint32 data["d"]["ssrc"].getInt
             v.udp = newAsyncSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-            log fmt"Connecting to {v.dstIP} and {v.dstPort}"
+            logVoice fmt"Connecting to {v.dstIP} and {v.dstPort}"
             await v.sendDiscovery()
             await v.recvDiscovery()
             v.ready = true
@@ -372,12 +385,11 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         of Resumed:
             v.resuming = false
         of SessionDescription:
-            log "Got session description"
+            logVoice "Got session description"
             v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
             v.secret_key = data["d"]["secret_key"].elems.mapIt(chr(it.getInt)).join("")
             await v.voice_events.on_ready(v)
         else: discard
-    log "here"
     if not v.reconnectable: return
 
     if packet[0] == Close:
@@ -394,25 +406,25 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
 
 proc startSession*(v: VoiceClient) {.async.} =
     ## Start a discord voice session.
-    log "Connecting to voice gateway"
+    logVoice "Connecting to voice gateway"
 
     try:
         v.endpoint = v.endpoint.replace(":443", "")
         let future = newWebSocket(v.endpoint)
 
         if (await withTimeout(future, 25000)) == false:
-            log "Websocket timed out.\n\n  Retrying connection..."
+            logVoice "Websocket timed out.\n\n  Retrying connection..."
             await v.startSession()
             return
         v.connection = await future
         v.hbAck = true
 
-        log "Socket opened."
+        logVoice "Socket opened."
     except:
         v.stop = true
         raise newException(Exception, getCurrentExceptionMsg())
     try:
-        log "handlong socket"
+        logVoice "handlong socket"
         await v.handleSocketMessage()
     except:
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
@@ -487,26 +499,19 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
             "pcm_s16le",
             "-loglevel",
             "quiet",
-            "-nostdin",
             "pipe:1"
         ]
     var
         chunked = ""
     let encoder = createEncoder(48000, 2, 960, Voip)
-    let file = newFileStream(input, fmRead)
+    let file = newStringStream(input.readFile())
     while not file.atEnd:
-    # for data in chunkedStdout("ffmpeg", args, 1920 * 2):
-        # chunked.add chunk
-        # if chunked.len >= 1500:
-        #     for c in chunked:
-        #         data.add c
-        #     data = data[0..(if data.high >= 1500: 1500 else: data.high)]
-
         let data = file.readStr(1920 * 2).toPCMBytes(encoder)
-        # if data == "": continue
-        await sendAudioPacket(v, $encoder.encode(data).cstring)
+        let encoded = encoder.encode(data)
+        await sendAudioPacket(v, $encoded.cstring)
         incrementPacketHeaders v
-        await sleepAsync 20
+        await sleepAsync idealLength
+    echo "done"
     # Send 5 silent frames to clear buffer
     for i in 1..5:
         incrementPacketHeaders v
@@ -517,7 +522,7 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
 proc playFFmpeg*(v: VoiceClient, input: string) {.async.} =
     ## Play audio through ffmpeg, input can be a url or a path.
     await v.sendSpeaking(true)
-    log "Sending audio"
+    logVoice "Sending audio"
     await v.sendAudio(input)
     await v.sendSpeaking(false)
 

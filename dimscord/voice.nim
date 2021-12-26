@@ -498,12 +498,14 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
             "quiet",
             "pipe:1"
         ]
-    var
-        chunked = ""
+    let pid = startProcess("ffmpeg", args = args, options = {poUsePath})
+    let outStream = pid.outputStream
+    let errStream = pid.errorStream
     let encoder = createEncoder(48000, 2, 960, Voip)
-    let file = newStringStream(input.readFile())
-    while not file.atEnd:
-        let data = file.readStr(1920 * 2).toPCMBytes(encoder)
+    # let file = newStringStream(input.readFile())
+
+    while pid.running:
+        let data = outStream.readStr(1920 * 2).toPCMBytes(encoder)
         let encoded = encoder.encode(data)
         await sendAudioPacket(v, $encoded.cstring)
         incrementPacketHeaders v

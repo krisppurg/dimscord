@@ -100,9 +100,6 @@ proc crypto_secretbox_easy(key, msg, nonce: string): string =
         raise newException(SodiumError, "return code: $#" % $rc)
     for i in 0..<length:
         result[i] = cast[char](cipherText[i])
-    echo result.len
-    echo msg.len
-    echo
     doAssert crypto_secretbox_open_easy(key, nonce & result) == msg
 
 

@@ -50,7 +50,7 @@ proc crypto_secretbox_easy(
 const
     nonceLen = 24
     dataSize = 1920 * 2
-    idealLength = 20 # How long one voice packet should ideally be
+    idealLength = 20 # How long one voice packet should ideally be in milliseconds
 
 
 const silencePacket = block:
@@ -63,10 +63,12 @@ const silencePacket = block:
 proc logVoice(msg: string) =
     when defined(dimscordDebug):
         echo fmt"[Voice]: {msg}"
+
 proc logVoice(msg: string, extra: any) =
     logVoice(msg & "\n" & $extra)
 
 proc makeNonce(v: VoiceClient, header: string): string =
+    ## Generate a nonce for an audio packet header
     case v.encryptMode
     of Normal:
         # The nonce bytes are the RTP header
@@ -98,10 +100,9 @@ proc crypto_secretbox_easy(key, msg, nonce: string): string =
     )
     if rc != 0:
         raise newException(SodiumError, "return code: $#" % $rc)
+    # Copy data from cipher text to result
     for i in 0..<length:
         result[i] = cast[char](cipherText[i])
-    doAssert crypto_secretbox_open_easy(key, nonce & result) == msg
-
 
 
 proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code from: https://github.com/niv/websocket.nim/blame/master/websocket/shared.nim#L230
@@ -168,8 +169,8 @@ proc identify(v: VoiceClient) {.async.} =
     })
 
 proc selectProtocol*(v: VoiceClient) {.async.} =
+    ## Tell discord our external IP/port and encryption mode
     if v.sockClosed: return
-
     await v.sendSock(SelectProtocol, %*{
         "protocol": "udp",
         "data": {
@@ -267,6 +268,7 @@ proc disconnect*(v: VoiceClient) {.async.} =
 
 
     logVoice "Shard reconnecting after disconnect..."
+    # TODO: Don't reconnect if not meant too e.g. if was kicked from a call
     await v.reconnect()
 
 proc heartbeat(v: VoiceClient) {.async.} =
@@ -300,13 +302,16 @@ proc setupHeartbeatInterval(v: VoiceClient) {.async.} =
         await sleepAsync v.interval
 
 proc sendUDPPacket(v: VoiceClient, packet: string) {.async.} =
+    ## Sends a UDP packet to the discord servers
     await v.udp.sendTo(v.dstIP, Port(v.dstPort), packet)
 
 proc recvUDPPacket(v: VoiceClient, size: int): Future[string] {.async.} =
-    # echo await v.udp.recvFrom(result, size, v.dstIP, Port(v.dstPort))
+    ## Recvs a UDP packet from anyone (Could be security issue? couldn't get other proc to work though)
     result = v.udp.recvFrom(size).await().data
+
 proc sendDiscovery(v: VoiceClient) {.async.} =
-    ## Sends ip/port discovery packet to discord
+    ## Sends ip/port discovery packet to discord.
+    ## After calling this, call recvDiscovery to make `v` set its external IP
     var packet: string
     packet.addUint32(toBigEndian uint32(v.ssrc))
     packet.add chr(0).repeat(66)
@@ -319,6 +324,8 @@ proc recvDiscovery(v: VoiceClient) {.async.} =
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
     echo v.srcIP, " ", v.srcPort
     echo (packet[^2].ord shl 8) or (packet[^1].ord)
+
+
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 
@@ -427,27 +434,6 @@ proc startSession*(v: VoiceClient) {.async.} =
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
         raise newException(Exception, getCurrentExceptionMsg())
 
-# proc playFile*(v: VoiceClient) {.async.} =
-#     ## Play an audio file.
-#     discard
-
-# proc openYTDLStream*(v: VoiceClient)
-
-iterator chunkedStdout(cmd: string,
-        args: openArray[string], size: int): string = # credit to haxscramper
-    var buf: string = " ".repeat(size + 20)
-    echo cmd & " " & args.join(" ")
-    let pid = startProcess(cmd, args = args, options = {poUsePath})
-    let outStream = pid.outputStream
-    let errStream = pid.errorStream
-    while pid.running:
-        # if not errStream.atEnd:
-        #     echo "got error"
-        #     echo errStream.readALl()
-        let d = readDataStr(outStream, buf, 0 ..< size)
-        yield buf[0 .. d - 1]
-
-
 proc pause*(v: VoiceClient) {.async.} =
     if v.playing:
         v.playing = false
@@ -480,8 +466,12 @@ proc incrementPacketHeaders(v: VoiceClient) =
         v.time += 960
     else:
         v.time = 0
+
 import std/streams
-proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinished code
+proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
+    ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
+    ## Requires ffmpeg be installed.
+    await v.sendSpeaking(true)
     let
         args = @[
             "-i",
@@ -502,8 +492,9 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
     let outStream = pid.outputStream
     let errStream = pid.errorStream
     let encoder = createEncoder(48000, 2, 960, Voip)
-    # let file = newStringStream(input.readFile())
-
+    encoder.performCTL(setBitrate, 16000)
+    # TODO: Add way to pause playing
+    # TODO: Add timing like discordrb
     while pid.running:
         let data = outStream.readStr(1920 * 2).toPCMBytes(encoder)
         let encoded = encoder.encode(data)
@@ -513,16 +504,9 @@ proc sendAudio(v: VoiceClient, input: string) {.async.} = # uncomplete/unfinishe
     echo "done"
     # Send 5 silent frames to clear buffer
     for i in 1..5:
-        incrementPacketHeaders v
         echo "Sound of silence"
         await v.sendAudioPacket(silencePacket)
-
-
-proc playFFmpeg*(v: VoiceClient, input: string) {.async.} =
-    ## Play audio through ffmpeg, input can be a url or a path.
-    await v.sendSpeaking(true)
-    logVoice "Sending audio"
-    await v.sendAudio(input)
+        incrementPacketHeaders v
     await v.sendSpeaking(false)
 
 # proc latency*(v: VoiceClient) {.async.} =

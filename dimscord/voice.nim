@@ -33,12 +33,6 @@ else:
 
 {.pragma: sodium_import, importc, dynlib: libsodium_fn.}
 
-template cpt(target: string): untyped =
-    cast[ptr cuchar](cstring(target))
-
-template culen(target: string): untyped =
-    culonglong(target.len)
-
 proc crypto_secretbox_easy(
     c: ptr cuchar,
     m: cstring,

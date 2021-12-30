@@ -518,12 +518,11 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
             diff = (now - startTime).inMilliseconds
         sleepTime = int(idealLength - diff)
         await sleepAsync sleepTime
-    echo "done"
     # Send 5 silent frames to clear buffer
     for i in 1..5:
-        echo "Sound of silence"
         await v.sendAudioPacket(silencePacket)
         incrementPacketHeaders v
+        await sleepAsync 20
     await v.sendSpeaking(false)
 
 # proc latency*(v: VoiceClient) {.async.} =

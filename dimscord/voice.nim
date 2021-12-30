@@ -451,8 +451,7 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     await v.sendUDPPacket(packet)
 
 proc incrementPacketHeaders(v: VoiceClient) =
-    # Don't know if this is needed or other libraries just implemented it
-    # because there language cant handle overflows, guess I'll never know
+    # Increment headers, make sure to loop back around
     if v.sequence + 10 < uint16.high:
         v.sequence += 1
     else:
@@ -509,6 +508,7 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
             data = outStream.readStr(960 * 2 * 2).toPCMData(encoder)
             startTime = getMonoTime()
             encoded = encoder.encode(data)
+
         let encodingTime = getMonoTime() # Allow us to track time to encode
         await sendAudioPacket(v, $encoded)
         incrementPacketHeaders v
@@ -522,7 +522,7 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
     for i in 1..5:
         await v.sendAudioPacket(silencePacket)
         incrementPacketHeaders v
-        await sleepAsync 20
+        await sleepAsync idealLength
     await v.sendSpeaking(false)
 
 # proc latency*(v: VoiceClient) {.async.} =

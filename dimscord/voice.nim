@@ -1,13 +1,14 @@
 ## Currently handling the discord voice gateway (WIP)
 ## Playing audio will be added later.
 import asyncdispatch, ws, asyncnet
-import objects, json, times, constants
+import objects, json, constants
 import strutils, nativesockets, streams, sequtils
 import libsodium/sodium, libsodium/sodium_sizes
 import osproc, asyncnet
 import flatty/binny, random
 import std/strformat
 import opussum
+import std/[monotimes, times]
 randomize()
 
 type
@@ -467,19 +468,32 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
     ## Requires ffmpeg be installed.
     await v.sendSpeaking(true)
     let
+        # args = @[
+        #     "-i",
+        #     $input,
+        #     "-ac",
+        #     "2",
+        #     "-ar",
+        #     "48k",
+        #     "-f",
+        #     "s16le",
+        #     "-acodec",
+        #     "pcm_s16le",
+        #     "-loglevel",
+        #     "quiet",
+        #     "pipe:1"
+        # ]
         args = @[
             "-i",
-            $input,
-            "-ac",
-            "2",
-            "-ar",
-            "48k",
+            input,
+            "-loglevel",
+            $0,
             "-f",
             "s16le",
-            "-acodec",
-            "pcm_s16le",
-            "-loglevel",
-            "quiet",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
             "pipe:1"
         ]
     let pid = startProcess("ffmpeg", args = args, options = {poUsePath})
@@ -488,13 +502,22 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
     let encoder = createEncoder(48000, 2, 960, Voip)
     encoder.performCTL(setBitrate, 16000)
     # TODO: Add way to pause playing
-    # TODO: Add timing like discordrb
     while pid.running:
-        let data = outStream.readStr(1920 * 2).toPCMBytes(encoder)
-        let encoded = encoder.encode(data)
-        await sendAudioPacket(v, $encoded.cstring)
+        var sleepTime = idealLength
+        let
+            # Read two channels worth of bytes for PCM (2 bytes needed to make int16)
+            data = outStream.readStr(960 * 2 * 2).toPCMData(encoder)
+            startTime = getMonoTime()
+            encoded = encoder.encode(data)
+        let encodingTime = getMonoTime() # Allow us to track time to encode
+        await sendAudioPacket(v, $encoded)
         incrementPacketHeaders v
-        await sleepAsync idealLength
+        # Do all these calcs do anything?
+        let
+            now = getMonoTime()
+            diff = (now - startTime).inMilliseconds
+        sleepTime = int(idealLength - diff)
+        await sleepAsync sleepTime
     echo "done"
     # Send 5 silent frames to clear buffer
     for i in 1..5:

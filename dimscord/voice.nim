@@ -9,6 +9,8 @@ import flatty/binny, random
 import std/strformat
 import opussum
 import std/[monotimes, times]
+import std/streams
+
 randomize()
 
 type
@@ -44,7 +46,7 @@ proc crypto_secretbox_easy(
 
 const
     nonceLen = 24
-    dataSize = 1920 * 2
+    dataSize = 960 * 2 * 2 # Frame size is 960 16 bit integers and we need 2 channels worth
     idealLength = 20 # How long one voice packet should ideally be in milliseconds
 
 
@@ -175,11 +177,13 @@ proc selectProtocol*(v: VoiceClient) {.async.} =
         }
     })
 
-proc sendSpeaking*(v: VoiceClient, speaking: bool) {.async.} =
+proc sendSpeaking*(v: VoiceClient, speaking: bool | set[VoiceSpeakingFlags]) {.async.} =
     if v.sockClosed: return
+
     await v.sendSock(Speaking, %* {
-        "speaking": 5,
-        "delay": 0
+        "speaking": cast[int](speaking),
+        "delay": 0,
+        "ssrc": v.ssrc
     })
 
 proc reconnect*(v: VoiceClient) {.async.} =
@@ -371,16 +375,17 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
 
             v.hbAck = true
         of Ready:
-            echo data["d"].pretty()
             v.dstIP = data["d"]["ip"].str
             v.dstPort = data["d"]["port"].getInt
             v.ssrc = uint32 data["d"]["ssrc"].getInt
             v.udp = newAsyncSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
             logVoice fmt"Connecting to {v.dstIP} and {v.dstPort}"
+            # We need to get our IP
             await v.sendDiscovery()
             await v.recvDiscovery()
             v.ready = true
             await v.selectProtocol()
+
         of Resumed:
             v.resuming = false
         of SessionDescription:
@@ -420,7 +425,7 @@ proc startSession*(v: VoiceClient) {.async.} =
 
         logVoice "Socket opened."
     except:
-        v.stop = true
+        v.stopped = true
         raise newException(Exception, getCurrentExceptionMsg())
     try:
         logVoice "handlong socket"
@@ -430,9 +435,16 @@ proc startSession*(v: VoiceClient) {.async.} =
         raise newException(Exception, getCurrentExceptionMsg())
 
 proc pause*(v: VoiceClient) {.async.} =
-    if v.playing:
-        v.playing = false
+  ## Pause the current audio
+  v.paused = true
 
+proc unpause*(v: VoiceClient) =
+  ## Continue playing audio
+  v.paused = false
+
+proc stop*(v: VoiceClient) =
+  ## Stop the current audio
+  v.stopped = true
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet
@@ -461,32 +473,79 @@ proc incrementPacketHeaders(v: VoiceClient) =
     else:
         v.time = 0
 
-import std/streams
-proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
-    ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
-    ## Requires ffmpeg be installed.
-    await v.sendSpeaking(true)
+proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {.async.} =
+  ## Plays audio data that comes from a stream or process.
+  ## Audio **must** be 2 channel, 48k sample rate, PCM encoded byte stream.
+  ## Make sure to use sendSpeaking_ before sending any audio
+  ##
+  ## * **waitForData**: How many milliseconds to allow for data to start coming through
+  await v.sendSpeaking(true)
+
+  when input is Stream:
+    let stream = input
+    let atEnd = proc (): bool = stream.atEnd
+  else:
+    let stream = input.outputStream
+    let atEnd = proc (): bool = not input.running
+
+  var slept = 0
+  while stream.atEnd and slept < waitForData:
+    await sleepAsync 1000
+    slept += 1000
+    echo "Sleeping"
+
+  doAssert stream != nil, "Stream is not open"
+  let encoder = createEncoder(48000, 2, 960, Voip)
+  while not atEnd() and not v.stopped:
+    var sleepTime = idealLength
+    var data = newStringOfCap(dataSize)
+    let startTime = getMonoTime()
+
+    while v.paused:
+      await sleepAsync 1000
+
+    # Try and read needed data
+    var attempts = 3
+    while data.len != dataSize and attempts > 0:
+      data &= stream.readStr(dataSize - data.len)
+      dec attempts
+      await sleepAsync 5
+
+    if attempts == 0:
+      logVoice "Couldn't read needed amount of data in time"
+      return
+
     let
-        # args = @[
-        #     "-i",
-        #     $input,
-        #     "-ac",
-        #     "2",
-        #     "-ar",
-        #     "48k",
-        #     "-f",
-        #     "s16le",
-        #     "-acodec",
-        #     "pcm_s16le",
-        #     "-loglevel",
-        #     "quiet",
-        #     "pipe:1"
-        # ]
+      encoded = encoder.encode(data.toPCMData(encoder))
+
+    let encodingTime = getMonoTime() # Allow us to track time to encode
+    await sendAudioPacket(v, $encoded)
+    incrementPacketHeaders v
+
+    # Sleep so each packet will be sent 20 ms apart
+    let
+      now = getMonoTime()
+      diff = (now - startTime).inMilliseconds
+    sleepTime = int(idealLength - diff)
+    await sleepAsync sleepTime
+
+  v.stopped = false
+  # Send 5 silent frames to clear buffer
+  for i in 1..5:
+    await v.sendAudioPacket(silencePacket)
+    incrementPacketHeaders v
+    await sleepAsync idealLength
+  await v.sendSpeaking(false)
+
+proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
+    ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
+    ## Requires `ffmpeg` be installed.
+    let
         args = @[
             "-i",
-            input,
+            path,
             "-loglevel",
-            $0,
+            "0",
             "-f",
             "s16le",
             "-ar",
@@ -495,36 +554,21 @@ proc playFFMPEG*(v: VoiceClient, input: string) {.async.} =
             "2",
             "pipe:1"
         ]
-    let pid = startProcess("ffmpeg", args = args, options = {poUsePath})
-    let outStream = pid.outputStream
-    let errStream = pid.errorStream
-    let encoder = createEncoder(48000, 2, 960, Voip)
-    encoder.performCTL(setBitrate, 16000)
-    # TODO: Add way to pause playing
-    while pid.running:
-        var sleepTime = idealLength
-        let
-            # Read two channels worth of bytes for PCM (2 bytes needed to make int16)
-            data = outStream.readStr(960 * 2 * 2).toPCMData(encoder)
-            startTime = getMonoTime()
-            encoded = encoder.encode(data)
+    let pid = startProcess("ffmpeg", args = args, options = {poUsePath, poEchoCmd})
+    defer: pid.close()
+    await v.play(pid)
 
-        let encodingTime = getMonoTime() # Allow us to track time to encode
-        await sendAudioPacket(v, $encoded)
-        incrementPacketHeaders v
-        # Do all these calcs do anything?
-        let
-            now = getMonoTime()
-            diff = (now - startTime).inMilliseconds
-        sleepTime = int(idealLength - diff)
-        await sleepAsync sleepTime
-    # Send 5 silent frames to clear buffer
-    for i in 1..5:
-        await v.sendAudioPacket(silencePacket)
-        incrementPacketHeaders v
-        await sleepAsync idealLength
-    await v.sendSpeaking(false)
-
-# proc latency*(v: VoiceClient) {.async.} =
-#     ## Get latency of the voice client.
-#     discard
+proc playYTDL*(v: VoiceClient, url: string) {.async.} =
+  ## Plays a youtube link using yt-dlp.
+  ## Requires `yt-dlp` to be installed
+  let args = @[
+    "-f",
+    "bestaudio", # We want best audio
+    "--get-url", # We only the url which will be passed to ffmpeg
+    url
+  ]
+  echo "geting url"
+  let url = execProcess("yt-dlp", args = args, options = {poStdErrToStdOut, poUsePath, poEchoCmd})
+  echo "url ", url
+  echo "scope"
+  await v.playFFMPEG(url)

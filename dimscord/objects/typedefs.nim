@@ -63,12 +63,13 @@ type
         secret_key*: string
 
         ssrc*: uint32
-        playing*, stopped*, reconnectable*: bool
+        paused*, stopped*, reconnectable*: bool
         udp*: AsyncSocket
         case encryptMode*: VoiceEncryptionMode
-        of Lite: ## Lites nonce is just an increasing number
+        of Lite: # Lites nonce is just an increasing number
             nonce*: uint32
         else: discard
+
     VoiceEvents* = ref object
         on_dispatch*: proc (v: VoiceClient,
                             d: JsonNode, event: string) {.async.}

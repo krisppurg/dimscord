@@ -44,9 +44,14 @@ type
         permManageEmojis
         permUseSlashCommands
         permRequestToSpeak
-        permManageThreads =   34
+        permManageEvents
+        permManageThreads
         permUsePublicThreads
         permUsePrivateThreads
+        permUseExternalStickers
+        permSendMessagesInThreads
+        permStartEmbeddedActivities
+        permModerateMembers
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
@@ -62,7 +67,8 @@ type
         giGuildMessageTyping,
         giDirectMessages,
         giDirectMessageReactions,
-        giDirectMessageTyping
+        giDirectMessageTyping,
+        giGuildScheduledEvents = 16
     AuditLogChangeType* = enum
         alcString,
         alcInt,
@@ -76,7 +82,10 @@ type
         afSpectate,
         afJoinRequest,
         afSync,
-        afPlay
+        afPlay,
+        afPartyPrivacyFriends,
+        afPartyPrivacyVoiceChannel,
+        afEmbeded
     VoiceSpeakingFlags* = enum
         vsfMicrophone,
         vsfSoundshare,
@@ -85,7 +94,7 @@ type
         mfCrossposted,
         mfIsCrosspost,
         mfSupressEmbeds,
-        mfSourceMessageDeleted
+        mfSourceMessageDeleted,
         mfUrgent,
         mfHasThread,
         mfEphemeral,
@@ -107,11 +116,13 @@ type
         ufBugHunterLevel2 =      14,
         ufVerifiedBot =          16,
         ufEarlyVerifiedBotDeveloper,
-        ufDiscordCertifiedModerator
+        ufDiscordCertifiedModerator,
+        ufBotHttpInteractions
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
         scfSupressPremiumSubscriptions,
         scfSupressGuildReminderNotifications
+        scfJoinNotificationReplies
     ApplicationFlags* = enum
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
@@ -141,6 +152,7 @@ const
     cdnDiscoverySplashes* =  cdnBase & "discovery-splashes/"
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAppIcons* =           cdnBase & "app-icons/"
+    cdnRoleIcons* =          cdnBase & "role-icons/"
 
 type
     MessageType* = enum
@@ -166,6 +178,7 @@ type
         mtApplicationCommand =                      20
         mtThreadStarterMessage =                    21
         mtGuildInviteReminder =                     22
+        mtContextMenuCommand =                      23
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
@@ -200,9 +213,9 @@ type
         vlHigh =     3
         vlVeryHigh = 4
     GuildNSFWLevel* = enum
-        gnlDefault = 0
-        gnlExplicit = 1
-        gnlSafe = 2
+        gnlDefault =       0
+        gnlExplicit =      1
+        gnlSafe =          2
         gnlAgeRestricted = 3
     PremiumTier* = enum
         ptNone =  0
@@ -224,47 +237,53 @@ type
         iebRemoveRole = 0
         iebKick =       1
     AuditLogEntryType* = enum
-        aleGuildUpdate =            1
-        aleChannelCreate =          10
-        aleChannelUpdate =          11
-        aleChannelDelete =          12
-        aleChannelOverwriteCreate = 13
-        aleChannelOverwriteUpdate = 14
-        aleChannelOverwriteDelete = 15
-        aleMemberKick =             20
-        aleMemberPrune =            21
-        aleMemberBanAdd =           22
-        aleMemberBanRemove =        23
-        aleMemberUpdate =           24
-        aleMemberRoleUpdate =       25
-        aleMemberMove =             26
-        aleMemberDisconnect =       27
-        aleBotAdd =                 28
-        aleRoleCreate =             30
-        aleRoleUpdate =             31
-        aleRoleDelete =             32
-        aleInviteCreate =           40
-        aleInviteUpdate =           41
-        aleInviteDelete =           42
-        aleWebhookCreate =          50
-        aleWebhookUpdate =          51
-        aleWebhookDelete =          52
-        aleEmojiCreate =            60
-        aleEmojiUpdate =            61
-        aleEmojiDelete =            62
-        aleMessageDelete =          72
-        aleMessageBulkDelete =      73
-        aleMessagePin =             74
-        aleMessageUnpin =           75
-        aleIntegrationCreate =      80
-        aleIntegrationUpdate =      81
-        aleIntegrationDelete =      82
-        aleStageInstanceCreate =    83
-        aleStageInstanceUpdate =    84
-        aleStageInstanceDelete =    85
-        aleStickerCreate =          90
-        aleStickerUpdate =          91
-        aleStickerDelete =          92
+        aleGuildUpdate =               1
+        aleChannelCreate =             10
+        aleChannelUpdate =             11
+        aleChannelDelete =             12
+        aleChannelOverwriteCreate =    13
+        aleChannelOverwriteUpdate =    14
+        aleChannelOverwriteDelete =    15
+        aleMemberKick =                20
+        aleMemberPrune =               21
+        aleMemberBanAdd =              22
+        aleMemberBanRemove =           23
+        aleMemberUpdate =              24
+        aleMemberRoleUpdate =          25
+        aleMemberMove =                26
+        aleMemberDisconnect =          27
+        aleBotAdd =                    28
+        aleRoleCreate =                30
+        aleRoleUpdate =                31
+        aleRoleDelete =                32
+        aleInviteCreate =              40
+        aleInviteUpdate =              41
+        aleInviteDelete =              42
+        aleWebhookCreate =             50
+        aleWebhookUpdate =             51
+        aleWebhookDelete =             52
+        aleEmojiCreate =               60
+        aleEmojiUpdate =               61
+        aleEmojiDelete =               62
+        aleMessageDelete =             72
+        aleMessageBulkDelete =         73
+        aleMessagePin =                74
+        aleMessageUnpin =              75
+        aleIntegrationCreate =         80
+        aleIntegrationUpdate =         81
+        aleIntegrationDelete =         82
+        aleStageInstanceCreate =       83
+        aleStageInstanceUpdate =       84
+        aleStageInstanceDelete =       85
+        aleStickerCreate =             90
+        aleStickerUpdate =             91
+        aleStickerDelete =             92
+        aleGuildScheduledEventCreate = 100
+        aleGuildScheduledEventUpdate = 101
+        aleGuildScheduledEventDelete = 102
+        aleThreadCreate =              110
+        aleThreadUpdate =              111
+        aleThreadDelete =              112
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
@@ -332,6 +351,17 @@ type
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
+    GuildScheduledEventPrivacyLevel* = enum
+        splGuildOnly = 2
+    GuildScheduledEventStatus* = enum
+        esScheduled = 1
+        esActive =    2
+        esCompleted = 3
+        esCanceled =  4
+    EntityType* = enum
+        etStageInstance = 1
+        etVoice =         2
+        etExternal =      3
 
 const
     ## This flag is used for Slash Command interaction callback.
@@ -445,6 +475,18 @@ proc endpointGuildAuditLogs*(gid: string): string =
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
+
+proc endpointGuildMemberAvatar*(gid, uid: string): string =
+    result = endpointGuilds(uid) & "/users/" & uid & "/avatars/member_avatar.png"
+
+proc endpointRoleIcon*(rid: string): string =
+    result = cdnRoleIcons & "/" & rid & "/" & "role_icon.png"
+
+proc endpointGuildScheduledEvents*(gid: string; eid = ""): string =
+    result = endpointGuilds(gid)&"/scheduled-events"&(if eid!="":"/"&eid else:"")
+
+proc endpointGuildScheduledEventUsers*(gid, eid: string): string =
+    result = endpointGuildScheduledEvents(gid, eid) & "/users"
 
 proc endpointGuildMembersSearch*(gid: string): string =
     result = endpointGuildMembers(gid) & "/search"
@@ -590,7 +632,7 @@ proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
         result &= "/" & cid
 
 proc endpointGuildCommandPermission*(aid, gid: string; cid = ""): string =
-    endpointGuildCommands(aid, gid, cid) & "/permissions"
+    result = endpointGuildCommands(aid, gid, cid) & "/permissions"
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"

@@ -1,6 +1,6 @@
 import httpclient, mimetypes, asyncdispatch, options
 import ../objects, ../constants
-import tables, os, json, sequtils
+import tables, os, json, sequtils, jsony
 import uri, ../helpers, requester
 
 proc sendMessage*(api: RestApi, channel_id: string;
@@ -9,8 +9,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
-        message_reference = none MessageReference,
-        components = newSeq[MessageComponent](),
+        message_reference = none MessageReference;
+        components = newSeq[MessageComponent]();
         sticker_ids = newSeq[string]()): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
@@ -21,7 +21,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "tts": tts,
     }
     if message_reference.isSome:
-        payload["message_reference"] = %*{"fail_if_not_exists": true}
+        payload["message_reference"] = %*{
+          "fail_if_not_exists": message_reference.get.fail_if_not_exists.get true
+        }
 
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
     if embeds.len > 0: payload["embeds"] = %embeds
@@ -38,7 +40,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
         for file in files:
             var contenttype = ""
             if file.name == "":
-                raise newException(Exception, "File name needs to be provided.")
+                raise newException(Exception,
+                    "File name needs to be provided."
+                )
 
             let fil = splitFile(file.name)
 
@@ -67,7 +71,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
     )).newMessage
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
-        content = ""; tts = false; flags = none(int);
+        content = ""; tts = false; flags = none int;
         embeds = newSeq[Embed](),
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
@@ -137,7 +141,7 @@ proc getChannelMessage*(api: RestApi, channel_id,
 proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         message_ids: seq[string]; reason = "") {.async.} =
     ## Bulk deletes messages.
-    assert message_ids.len >= 100
+    assert message_ids.len in 1..100
     discard await api.request(
         "POST",
         endpointBulkDeleteMessages(channel_id),
@@ -216,16 +220,17 @@ proc deleteAllMessageReactions*(api: RestApi,
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         wait = true; thread_id = none string;
         content = ""; tts = false;
-        file = none DiscordFile;
+        files = newSeq[DiscordFile]();
+        attachments = newSeq[Attachment]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
-        username, avatar_url = none string,
+        username, avatar_url = none string;
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Executes a webhook or create a followup message.
     ## If `wait` is `false` make sure to `discard await` it.
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
-    
+    assert embeds.len in 0..10
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
     let payload = %*{
@@ -243,38 +248,44 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         for component in components:
             payload["components"].add %%*component
 
-    if file.isSome:
+    if attachments.len > 0:
+        payload["attachments"] = newJArray()
+        for attachment in attachments:
+            payload["attachments"].add %attachment 
+
+    if files.len > 0:
         var mpd = newMultipartData()
-        var contenttype = ""
-        let fileOpt = get file
-        if fileOpt.name == "":
-            raise newException(Exception, "File name needs to be provided.")
+        for file in files:
+            var contenttype = ""
+            if file.name == "":
+                raise newException(Exception, "File name needs to be provided.")
 
-        let fil = splitFile(fileOpt.name)
+            let fil = splitFile(file.name)
 
-        if fil.ext != "":
-            let ext = fil.ext[1..high(fil.ext)]
-            contenttype = newMimetypes().getMimetype(ext)
+            if fil.ext != "":
+                let ext = fil.ext[1..high(fil.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
 
-        if fileOpt.body == "":
-            fileOpt.body = readFile(fileOpt.name)
+            if file.body == "":
+                file.body = readFile(file.name)
 
-        mpd.add(fil.name, fileOpt.body, fileOpt.name,
-            contenttype, useStream = false)
+            mpd.add(fil.name, file.body, file.name,
+                contenttype, useStream = false)
 
-        mpd.add("payload_json", $payload, contentType = "application/json")
+            mpd.add("payload_json", $payload, contentType = "application/json")
 
-        return (await api.request("POST", url, $payload, mp = mpd)).newMessage
+        return (await api.request("POST", url, $payload, mp=mpd)).newMessage
 
     result = (await api.request("POST", url, $payload)).newMessage
 
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
-        content = none string;
+        content, thread_id = none string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         attachments = newSeq[Attachment]();
-        components = newSeq[MessageComponent]()) {.async.} =
+        files = newSeq[DiscordFile]();
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Modifies the webhook message.
     ## You can actually use this to modify
     ## original interaction or followup message.
@@ -282,6 +293,10 @@ proc editWebhookMessage*(api: RestApi;
     ## - `webhook_id` can also be application_id
     ## - `webhook_token` can also be interaction token.
     ## - `message_id` can be `@original`
+    assert embeds.len in 0..10
+    var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
+    if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
+
     let payload = %*{
         "content": %content,
         "embeds": %embeds,
@@ -290,48 +305,69 @@ proc editWebhookMessage*(api: RestApi;
     if attachments.len > 0:
         payload["attachments"] = newJArray()
         for attachment in attachments:
-            payload["attachments"].add %*attachment        
+            payload["attachments"].add %*attachment
 
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
 
-    discard await api.request(
-        "PATCH",
-        endpointWebhookMessage(webhook_id, webhook_token, message_id),
-        $payload
-    )
+    if files.len > 0:
+        var mpd = newMultipartData()
+        for file in files:
+            var contenttype = ""
+            if file.name == "":
+                raise newException(Exception, "File name needs to be provided.")
+
+            let fil = splitFile(file.name)
+
+            if fil.ext != "":
+                let ext = fil.ext[1..high(fil.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if file.body == "":
+                file.body = readFile(file.name)
+
+            mpd.add(fil.name, file.body, file.name,
+                contenttype, useStream = false)
+
+            mpd.add("payload_json", $payload, contentType = "application/json")
+
+        return (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
+
+    result = (await api.request("PATCH", endpoint, $payload)).newMessage
+
+proc getWebhookMessage*(api: RestApi;
+        webhook_id, webhook_token, message_id: string;
+        thread_id = none string) {.async.} =
+    ## Get webhook message.
+    var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
+    if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
+    discard await api.request("GET", endpoint)
 
 proc deleteWebhookMessage*(api: RestApi;
-        webhook_id, webhook_token, message_id: string) {.async.} =
-    ## Modifies the webhook message.
-    ## You can actually use this to delete
-    ## original interaction or followup message.
-    ##
-    ## - `webhook_id` can also be application_id
-    ## - `webhook_token` can also be interaction token.
-    discard await api.request("DELETE",
-        endpointWebhookMessage(webhook_id, webhook_token, message_id)
-    )
+        webhook_id, webhook_token, message_id: string;
+        thread_id = none string) {.async.} =
+    ## Delete webhook message.
+    var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
+    if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
+    discard await api.request("DELETE", endpoint)
 
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true): Future[Message] {.async.} =
+        wait = true; thread_id = none string): Future[Message] {.async.} =
     ## Executes a slack webhook.
     ## If `wait` is `false` make sure to `discard await` it.
-    result = (await api.request(
-        "POST",
-        endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
-    )).newMessage
+    var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
+    if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
+    result = (await api.request("POST", ep)).newMessage
 
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true): Future[Message] {.async.} =
+        wait = true; thread_id = none string): Future[Message] {.async.} =
     ## Executes a github webhook.
     ## If `wait` is `false` make sure to `discard await` it.
-    result = (await api.request(
-        "POST",
-        endpointWebhookTokenGithub(webhook_id, token) & "?wait=" & $wait
-    )).newMessage
+    var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
+    if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
+    result = (await api.request("POST", ep)).newMessage
 
 proc getSticker*(api: RestApi, sticker_id: string): Future[Sticker] {.async.} =
     result = (await api.request("GET", endpointStickers(sticker_id))).newSticker
@@ -350,9 +386,7 @@ proc getThreadMembers*(api: RestApi;
     result = (await api.request(
         "GET",
         endpointChannelThreadsMembers(channel_id)
-    )).getElems.map(proc (x: JsonNode): ThreadMember =
-        x.to(ThreadMember)
-    )
+    )).getElems.mapIt(($it).fromJson(ThreadMember))
 
 proc removeThreadMember*(api: RestApi;
         channel_id, user_id: string;

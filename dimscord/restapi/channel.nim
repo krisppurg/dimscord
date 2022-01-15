@@ -1,4 +1,4 @@
-import asyncdispatch, json, options
+import asyncdispatch, json, options, jsony
 import ../objects, ../constants, ../helpers
 import tables, sequtils
 import uri, macros, requester
@@ -314,14 +314,11 @@ proc listArchivedThreads*(api: RestApi;
 
     let data = await api.request("GET", url)
 
-    result = (
-        threads: data["threads"].elems.map(newGuildChannel),
-        members: data["threads"].elems.map(
-            proc (x: JsonNode): ThreadMember =
-                x.to(ThreadMember)
-        ),
-        has_more: data["has_more"].bval
-    )
+    result = ($data).fromJson(tuple[
+        threads: seq[GuildChannel],
+        members: seq[ThreadMember],
+        has_more: bool
+    ])
 
 proc createStageInstance*(api: RestApi; channel_id, topic: string;
     privacy_level = int plGuildOnly; reason = ""

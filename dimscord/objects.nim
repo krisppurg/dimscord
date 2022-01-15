@@ -8,7 +8,8 @@
 ## Some may not be optional, but they can be assumable or always present.
 
 import options, json, tables, constants
-import sequtils, strutils, asyncdispatch
+import sequtils, strutils, jsony
+import asyncdispatch
 include objects/typedefs, objects/macros
 
 proc newShard*(id: int, client: DiscordClient): Shard =
@@ -141,19 +142,397 @@ proc newDiscordClient*(token: string;
             thread_members_update: proc (s: Shard, e: ThreadMembersUpdate) {.async.} = discard
         ))
 
-proc newGuildPreview*(data: JsonNode): GuildPreview =
-    result = GuildPreview(
-        id: data["id"].str,
-        name: data["name"].str,
-        features: data["features"].elems.mapIt(it.getStr),
-        approximate_member_count: data["approximate_member_count"].getInt,
-        approximate_presence_count: data["approximate_presence_count"].getInt,
-        system_channel_flags: cast[set[SystemChannelFlags]](
-            data{"system_channel_flags"}.getStr("0").parseBiggestInt
+proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[UserFlags]](number)
+
+proc newUser*(data: JsonNode): User =
+    result = ($data).fromJson(User)
+
+proc postHook(p: var Presence) =
+    if p.status == "": p.status = "offline"
+
+    if p.client_status.web == "":
+        p.client_status.web = "offline"
+    if p.client_status.desktop == "":
+        p.client_status.desktop = "offline"
+    if p.client_status.mobile == "":
+        p.client_status.mobile = "offline"
+
+proc parseHook(s: string, i: var int, v: var set[ActivityFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[ActivityFlags]](number)
+
+proc newPresence*(data: JsonNode): Presence =
+    result = ($data).fromJson(Presence)
+
+proc parseHook*(s: string, i: var int, v: var set[PermissionFlags]) =
+    when defined(discordv8) or defined(discordv9):
+        var str: string
+        try:
+            parseHook(s, i, str)
+        except:
+            str = "0"
+        v = cast[set[PermissionFlags]](str.parseBiggestInt)
+    else:
+        var number: BiggestInt
+        parseHook(s, i, number)
+        v = cast[set[PermissionFlags]](number) # incase
+
+proc newRole*(data: JsonNode): Role =
+    result = ($data).fromJson(Role)
+    if "tags" in data and "premium_subscriber" in data["tags"]:
+        result.tags.get.premium_subscriber = some true
+
+proc newHook(m: var Member) =
+    m = Member()
+    m.presence = Presence(
+        status: "offline",
+        clientStatus: (
+            web: "offline",
+            desktop: "offline",
+            mobile: "offline"
         )
     )
-    data.keyCheckOptStr(result, icon, banner, splash, emojis,
-        preferred_locale, discovery_splash, description)
+
+proc postHook(m: var Member) =
+    m.presence.user = m.user
+
+proc newMember*(data: JsonNode): Member =
+    result = ($data).fromJson(Member)
+
+proc renameHook(v: var MentionChannel, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var Embed, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(s: var Message, fieldName: var string) =
+    case fieldName:
+    of "type":
+        fieldName = "kind"
+    of "mentions":
+        fieldName = "mention_users"
+    else:
+        discard
+
+proc renameHook(s: var tuple[kind: int, party_id: string];
+    fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(s: var Reaction, fieldName: var string) =
+    if fieldName == "me":
+        fieldName = "reacted"
+
+proc newReaction*(data: JsonNode): Reaction =
+    result = ($data).fromJson(Reaction)
+
+proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[MessageFlags]](number)
+
+proc parseHook(s: string, i: var int, v: var Table[string, tuple[id, name: string, format_type: MessageStickerFormat]]) =
+    var stickers: seq[tuple[
+        id, name: string,
+        format_type: MessageStickerFormat
+    ]]
+    parseHook(s, i, stickers)
+    for s in stickers:
+        v[s.id] = s
+
+proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
+    var reactions: seq[Reaction]
+    parseHook(s, i, reactions)
+    for r in reactions:
+        v[$r.emoji] = r
+
+proc newMessage*(data: JsonNode): Message =
+    result = data.`$`.fromJson(Message)
+
+proc newApplication*(data: JsonNode): Application =
+    result = ($data).fromJson(Application)
+
+proc renameHook(v: var Overwrite, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc newOverwrite*(data: JsonNode): Overwrite =
+    proc parseHook(s: string, i: var int, v: var int or string) =
+        if s.contains("kind"):
+            when defined(discordv8) or defined(discordv9):
+                var str: string
+                parseHook(s, i, str)
+            except:
+                var num: int
+                parseHook(s, i, num)
+    result = ($data).fromJson(Overwrite)
+
+proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
+    var overwrites: seq[Overwrite]
+    parseHook(s, i, overwrites)
+    for o in overwrites:
+        v[o.id] = o
+
+proc renameHook(v: var GuildChannel, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc newGuildChannel*(data: JsonNode): GuildChannel =
+    result = ($data).fromJson(GuildChannel)
+
+proc parseHook(s: string, i: var int, v: var ChannelType) =
+    var number: int
+    parseHook(s, i, number)
+    try:
+        v = ChannelType number
+    except:
+        v = ctGuildText # just by default incase
+
+proc renameHook(v: var PartialChannel, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var Webhook, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var Presence, fieldName: var string) =
+    if fieldName == "game":
+        fieldName = "activity"
+
+proc parseHook(s: string, i: var int, v: var BiggestFloat) =
+    var data: JsonNode
+    parseHook(s, i, data)
+    if data.kind == JInt:
+        v = toBiggestFloat data.num
+    elif data.kind == JInt:
+        v = BiggestFloat data.fnum
+
+proc parseHook(s: string, i: var int;
+        v: var Option[tuple[start, final: BiggestFloat]]) =
+    var table: Table[string, BiggestFloat]
+    parseHook(s, i, table)
+    v = some (
+        start: table.getOrDefault("start", 0),
+        final: table.getOrDefault("end", 0)
+    )
+
+proc renameHook(v: var Activity, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc newActivity*(data: JsonNode): Activity =
+    result = ($data).fromJson(Activity)
+
+proc renameHook(v: var AuditLogEntry, fieldName: var string) =
+    if fieldName == "options":
+        fieldName = "opts"
+
+proc parseHook(s: string, i: var int, v: var Table[string, Role]) =
+    var roles: seq[Role]
+    parseHook(s, i, roles)
+    for role in roles:
+        v[role.id] = role
+
+proc parseHook(s: string, i: var int, v: var Table[string, Sticker]) =
+    var stickers: seq[Sticker]
+    parseHook(s, i, stickers)
+    for sticker in stickers:
+        v[sticker.id] = sticker
+
+proc parseHook(s: string, i: var int, v: var Table[string, StageInstance]) =
+    var stages: seq[StageInstance]
+    parseHook(s, i, stages)
+    for stage in stages:
+        v[stage.id] = stage
+
+proc parseHook(s: string, i: var int, v: var Table[string, GuildScheduledEvent]) =
+    var events: seq[GuildScheduledEvent]
+    parseHook(s, i, events)
+    for event in events:
+        v[event.id] = event
+
+proc parseHook(s: string, i: var int, v: var Table[string, Emoji]) =
+    var emojis: seq[Emoji]
+    parseHook(s, i, emojis)
+    for emoji in emojis:
+        v[emoji.id.get] = emoji
+
+proc `[]=`(obj: ref object, fld: string, val: JsonNode) =
+    for name, field in obj[].fieldPairs:
+        if name == fld:
+            field = ($val).fromJson(typeof(field))
+
+proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
+    case data.kind:
+    of JString:
+        result = AuditLogChangeValue(kind: alcString)
+        result.str = data.str
+    of JInt:
+        result = AuditLogChangeValue(kind: alcInt)
+        result.ival = data.getInt
+    of JBool:
+        result = AuditLogChangeValue(kind: alcBool)
+        result.bval = data.bval
+    of JArray:
+        if key in ["$add", "$remove"]:
+            result = AuditLogChangeValue(kind: alcRoles)
+            result.roles = data.elems.mapIt(
+                it.`$`.fromJson tuple[id, name: string]
+            )
+        elif "permission_overwrites" in key:
+            result = AuditLogChangeValue(kind: alcOverwrites)
+            result.overwrites = ($data).fromJson seq[Overwrite]
+    else:
+        discard
+
+proc parseHook(s: string, i: var int, a: var AuditLogEntry) =
+    var data: JsonNode
+
+    parseHook(s, i, data)
+    a = AuditLogEntry()
+
+    for k, val in data.pairs:
+        case val.kind:
+        of JBool, JInt, JFloat, JString:
+            a[k] = val
+        of JArray:
+            if k == "changes":
+                for c in val.elems:
+                    if "new_value" in c:
+                        a.after[c["key"].str] = newAuditLogChangeValue(
+                            c["new_value"],
+                            c["key"].str
+                        )
+                    if "old_value" in c:
+                        a.before[c["key"].str] = newAuditLogChangeValue(
+                            c["old_value"],
+                            c["key"].str
+                        )
+            else:
+                a[k] = val # incase
+        of JObject:
+            if "opts" in data:
+                a.opts = some ($data["opts"]).fromJson AuditLogOptions
+        else:
+            discard
+
+proc newIntegration*(data: JsonNode): Integration =
+    result = ($data).fromJson(Integration)
+
+proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
+    result = ($data).fromJson(AuditLogEntry)
+
+proc newWebhook*(data: JsonNode): Webhook =
+    result = ($data).fromJson(Webhook)
+
+proc newAuditLog*(data: JsonNode): AuditLog =
+    result = ($data).fromJson(AuditLog)
+
+proc newVoiceState*(data: JsonNode): VoiceState =
+    result = ($data).fromJson(VoiceState)
+
+proc renameHook(v: var Guild, fieldName: var string) =
+    when not defined(discordv9):
+        if fieldName == "region":
+            fieldName = "rtc_region"
+
+proc parseHook(s: string, i: var int, v: var set[SystemChannelFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[SystemChannelFlags]](number)
+
+proc parseHook(s: string, i: var int, g: var Guild) =
+    var data: JsonNode
+    parseHook(s, i, data)
+
+    g = new Guild
+    g.id = data["id"].str # just in case
+
+    for v in data{"members"}.getElems:
+        let member = v.newMember
+        g.members[member.user.id] = member
+
+    for k, val in data.pairs:
+        case val.kind:
+        of JBool, JInt, JFloat, JString, JObject:
+            g[k] = val
+        of JArray:
+            if k == "voice_states":
+                for v in val.getElems:
+                    let state = v.newVoiceState
+
+                    g.members[state.user_id].voice_state = some state
+                    g.voice_states[state.user_id] = state
+            elif k == "threads":
+                for v in val.getElems:
+                    v["guild_id"] = %g.id
+                    g.threads[v["id"].str] = v.newGuildChannel
+            elif k == "channels":
+                for v in val.getElems:
+                    v["guild_id"] = %g.id
+                    g.channels[v["id"].str] = v.newGuildChannel
+            elif k == "presences":
+                for v in val.getElems:
+                    v["guild_id"] = %g.id
+                    let p = v.newPresence
+
+                    if p.user.id in g.members:
+                        g.members[p.user.id].presence = p
+                    g.presences[p.user.id] = p
+            else:
+                if k != "members":
+                    g[k] = val
+        else:
+            discard
+
+proc newGuild*(data: JsonNode): Guild =
+    result = ($data).fromJson(Guild)
+
+proc newGuildBan*(data: JsonNode): GuildBan =
+    result = ($data).fromJson(GuildBan)
+
+proc newDMChannel*(data: JsonNode): DMChannel = # rip dmchannels
+    result = ($data).fromJson(DMChannel)
+
+proc newStageInstance*(data: JsonNode): StageInstance =
+    result = ($data).fromJson(StageInstance)
+
+proc newEmoji*(data: JsonNode): Emoji =
+    result = ($data).fromJson(Emoji)
+
+proc newInvite*(data: JsonNode): Invite =
+    result = ($data).fromJson(Invite)
+
+proc newInviteCreate*(data: JsonNode): InviteCreate =
+    result = ($data).fromJson(InviteCreate)
+
+proc parseHook(s: string, i: var int, v: var tuple[id: string, flags: set[ApplicationFlags]]) =
+    var table: Table[string, JsonNode]
+    parseHook(s, i, table)
+    v.id = table["id"].str
+    v.flags = cast[set[ApplicationFlags]](table["flags"].num)
+
+proc newReady*(data: JsonNode): Ready =
+    result = ($data).fromJson(Ready)
+
+proc newAttachment(data: JsonNode): Attachment =
+    result = ($data).fromJson(Attachment)
+
+proc newTypingStart*(data: JsonNode): TypingStart =
+    result = ($data).fromJson(TypingStart)
+
+proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
+    result = ($data).fromJson(GuildMembersChunk)
+
+proc newGuildPreview*(data: JsonNode): GuildPreview =
+    result = ($data).fromJson(GuildPreview)
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = InviteMetadata(
@@ -163,428 +542,6 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
         max_age: data["max_age"].getInt,
         temporary: data["temporary"].bval,
         created_at: data["created_at"].str
-    )
-
-proc newOverwrite*(data: JsonNode): Overwrite =
-    result.id = data["id"].str
-    when defined(discordv8) or defined(discordv9):
-        result.kind = data["type"].getInt
-        result.allow = cast[set[PermissionFlags]](
-            data["allow"].str.parseBiggestInt
-        )
-        result.deny = cast[set[PermissionFlags]](
-            data["deny"].str.parseBiggestInt
-        )
-    else:
-        result.kind = data["type"].str
-        result.allow = cast[set[PermissionFlags]](data["allow"].getInt)
-        result.deny = cast[set[PermissionFlags]](data["deny"].getInt)
-        result.allow_new = data["allow_new"].str
-        result.deny_new = data["deny_new"].str
-
-proc newRole*(data: JsonNode): Role =
-    result = Role(
-        id: data["id"].str,
-        name: data["name"].str,
-        color: data["color"].getInt,
-        hoist: data["hoist"].bval,
-        position: data["position"].getInt,
-        managed: data["managed"].bval,
-        mentionable: data["mentionable"].bval
-    )
-    if "tags" in data:
-        result.tags = some data["tags"].to(RoleTag)
-    when defined(discordv8) or defined(discordv9):
-        result.permissions = cast[set[PermissionFlags]](
-            data["permissions"].str.parseBiggestInt
-        )
-    else:
-        result.permissions = cast[set[PermissionFlags]](
-            data{"permissions"}.getBiggestInt # incase
-        )
-        result.permissions_new = data["permissions_new"].str
-
-proc newGuildChannel*(data: JsonNode): GuildChannel =
-    result = GuildChannel(
-        id: data["id"].str,
-        name: data["name"].str,
-        kind: ChannelType data["type"].getInt,
-        guild_id: data["guild_id"].str,
-        nsfw: data{"nsfw"}.getBool,
-        last_message_id: data{"last_message_id"}.getStr,
-        messages: initTable[string, Message]()
-    )
-
-    if "permissions" in data and data["permissions"].kind != JNull:
-        result.permissions = cast[set[PermissionFlags]](
-            data["permissions"].str.parseBiggestInt
-        )
-    for ow in data{"permission_overwrites"}.getElems:
-        result.permission_overwrites[ow["id"].str] = newOverwrite(ow)
-
-    data.keyCheckOptStr(result, parent_id)
-    data.keyCheckOptInt(result,
-        position,
-        default_auto_archive_duration,
-        rate_limit_per_user
-    )
-
-    case result.kind:
-    of ctGuildText, ctGuildNews:
-        data.keyCheckOptStr(result, topic)
-    of ctGuildVoice, ctGuildStageVoice:
-        result.bitrate = data["bitrate"].getInt
-        result.user_limit = data["user_limit"].getInt
-        data.keyCheckOptStr(result, rtc_region)
-        data.keyCheckOptInt(result, video_quality_mode)
-    of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
-        if "member" in data and data["member"].kind != JNull:
-            result.member = some data["member"].to ThreadMember
-        result.thread_metadata = data["thread_metadata"].to ThreadMetadata
-
-        data.keyCheckOptInt(result, message_count, member_count)
-    else:
-        discard
-
-proc newUser*(data: JsonNode): User =
-    result = User(
-        id: data["id"].str,
-        username: data{"username"}.getStr,
-        discriminator: data{"discriminator"}.getStr,
-        bot: data{"bot"}.getBool,
-        system: data{"system"}.getBool,
-        public_flags: cast[set[UserFlags]](
-            data{"public_flags"}.getBiggestInt
-        ),
-        flags: cast[set[UserFlags]](
-            data{"flags"}.getBiggestInt
-        )
-    )
-
-    data.keyCheckOptStr(result,
-        avatar, locale)
-    data.keyCheckOptBool(result,
-        mfa_enabled)
-
-proc newTeam(data: JsonNode): Team =
-    result = Team(
-        id: data["id"].str,
-        name: data["name"].str,
-        owner_user_id: data["owner_user_id"].str,
-        members: data["members"].elems.map(
-            proc(x:JsonNode):TeamMember =
-                TeamMember(
-                    membership_state: TeamMembershipState(
-                        x["membership_state"].getInt
-                    ),
-                    permissions: x["permissions"].elems.mapIt(it.getStr),
-                    team_id: x["team_id"].str,
-                    user: x["user"].newUser
-                )
-        )
-    )
-    data.keyCheckOptStr(result, icon)
-
-proc newApplication*(data: JsonNode): Application =
-    result = Application(
-        id: data["id"].str,
-        name: data["name"].str,
-        description: data["description"].str,
-        rpc_origins: data{"rpc_origins"}.getElems.mapIt(it.getStr),
-        bot_public: data{"bot_public"}.getBool,
-        bot_require_code_grant: data{"bot_require_code_grant"}.getBool,
-        owner: data["owner"].newUser,
-        summary: data["summary"].str,
-        verify_key: data["verify_key"].str,
-        flags: cast[set[ApplicationFlags]](
-            data{"flags"}.getBiggestInt
-        )
-    )
-    data.keyCheckOptStr(result, icon,
-        terms_of_service_url, privacy_policy_url,
-        guild_id, primary_sku_id, slug, cover_image)
-
-    if "team" in data and data["team"].kind != JNull:
-        result.team = some data["team"].newTeam
-
-proc newWebhook*(data: JsonNode): Webhook =
-    result = Webhook(
-        id: data["id"].str,
-        kind: WebhookType data["type"].getInt,
-    )
-
-    if "user" in data:
-        result.user = some newUser(data["user"])
-    if "source_guild" in data:
-        result.source_guild = some data["source_guild"].to(PartialGuild)
-    if "source_channel" in data:
-        result.source_channel = some PartialChannel(
-            id: data["source_channel"]["id"].str,
-            kind: ChannelType data["source_channel"]["type"].getInt,
-            name: data["source_channel"]["name"].str
-        )
-
-    data.keyCheckOptStr(result, channel_id, guild_id,
-        token, name, avatar, url
-    )
-
-proc newGuildBan*(data: JsonNode): GuildBan =
-    result = GuildBan(user: newUser(data["user"]))
-
-    data.keyCheckOptStr(result, reason)
-
-proc newDMChannel*(data: JsonNode): DMChannel = # rip dmchannels
-    result = DMChannel(
-        id: data["id"].str,
-        kind: ChannelType data["type"].getInt,
-        messages: initTable[string, Message]()
-    )
-
-    for r in data["recipients"].elems:
-        result.recipients.add(newUser(r))
-
-proc newVoiceState*(data: JsonNode): VoiceState =
-    result = VoiceState(
-        user_id: data["user_id"].str,
-        session_id: data["session_id"].str,
-        deaf: data["deaf"].bval,
-        mute: data["mute"].bval,
-        self_deaf: data["self_deaf"].bval,
-        self_mute: data["self_mute"].bval,
-        suppress: data["suppress"].bval
-    )
-
-    data.keyCheckBool(result, self_stream)
-    data.keyCheckOptStr(result, guild_id, channel_id)
-
-proc newStageInstance*(data: JsonNode): StageInstance =
-    result = StageInstance(
-        id: data["id"].str,
-        guild_id: data["guild_id"].str,
-        channel_id: data["channel_id"].str,
-        topic: data["topic"].str,
-        privacy_level: PrivacyLevel data["privacy_level"].getInt,
-        discoverable_disabled: data["discoverable_disabled"].bval
-    )
-
-proc newEmoji*(data: JsonNode): Emoji =
-    result = Emoji(
-        roles: data{"roles"}.getElems.mapIt(it.str)
-    )
-
-    if "user" in data:
-        result.user = some newUser(data["user"])
-
-    data.keyCheckOptStr(result, id, name)
-    data.keyCheckOptBool(result, require_colons, managed, animated)
-    data.keyCheckOptBool(result, available, managed, animated)
-
-proc newActivity*(data: JsonNode): Activity =
-    result = Activity(
-        name: data["name"].str,
-        kind: ActivityType data["type"].getInt,
-        created_at: data["created_at"].num,
-        flags: cast[set[ActivityFlags]](data{"flags"}.getInt),
-        buttons: data{"buttons"}.getElems.mapIt(
-            it.getStr
-        )
-    )
-
-    data.keyCheckOptStr(result, url, application_id, details, state)
-    data.keyCheckBool(result, instance)
-
-    if "timestamps" in data:
-        result.timestamps = some (
-            start: data["timestamps"]{"start"}.getBiggestInt,
-            final: data["timestamps"]{"end"}.getBiggestInt
-        )
-    if "emoji" in data:
-        result.emoji = some newEmoji(data["emoji"])
-    if "party" in data:
-        result.party = some (
-            id: data["party"]{"id"}.getStr,
-            size: data["party"]{"size"}.getElems.mapIt(it.getInt)
-        )
-    if "assets" in data:
-        result.assets = some GameAssets(
-            small_text: data["assets"]{"small_text"}.getStr,
-            small_image: data["assets"]{"small_image"}.getStr,
-            large_text: data["assets"]{"large_text"}.getStr,
-            large_image: data["assets"]{"large_image"}.getStr
-        )
-    if "secrets" in data:
-        result.secrets = some (
-            join: data["secrets"]{"join"}.getStr,
-            spectate: data["secrets"]{"spectate"}.getStr,
-            match: data["secrets"]{"match"}.getStr
-        )
-
-proc newPresence*(data: JsonNode): Presence =
-    result = Presence(
-        user: newUser(data["user"]),
-        guild_id: data{"guild_id"}.getStr,
-        status: data["status"].str,
-        client_status: (
-            web: "offline",
-            desktop: "offline",
-            mobile: "offline"
-        )
-    )
-
-    for activity in data["activities"].elems:
-        result.activities.add(newActivity(activity))
-    when not defined(discordv8) and not defined(discordv9):
-        if data["game"].kind != JNull:
-            result.activity = some newActivity(data["game"])
-
-    data["client_status"].keyCheckStr(result.client_status,
-        desktop, web, mobile)
-
-proc newMember*(data: JsonNode): Member =
-    result = Member(
-        joined_at: data["joined_at"].str,
-        roles: data["roles"].elems.mapIt(it.str),
-        deaf: data{"deaf"}.getBool(false),
-        mute: data{"mute"}.getBool(false),
-        presence: Presence(
-            status: "offline",
-            client_status: ("offline", "offline", "offline")
-        ),
-        permissions: cast[set[PermissionFlags]](
-            data{"permissions"}.getStr("0").parseBiggestInt
-        )
-    )
-    if "user" in data and data["user"].kind != JNull:
-        result.user = newUser(data["user"])
-
-    data.keyCheckOptStr(result, nick, premium_since)
-    data.keyCheckOptBool(result, pending)
-
-proc newInvite*(data: JsonNode): Invite =
-    result = Invite(
-        code: data["code"].str,
-        channel: PartialChannel(
-            id: data["channel"]["id"].str,
-            kind: ChannelType data["channel"]["type"].getInt,
-            name: data["channel"]["name"].str
-        )
-    )
-
-    if "guild" in data:
-        result.guild = some data["guild"].to(PartialGuild)
-    if "inviter" in data:
-        result.inviter = some data["inviter"].newUser
-    if "target_user" in data:
-        result.target_user = some data["target_user"].newUser
-    if "target_type" in data:
-        result.target_type = some InviteTargetType(
-            data["target_type"].getInt
-        )
-    if "target_application" in data:
-        result.target_application = some data[
-            "target_application"
-        ].newApplication
-
-    if "stage_instance" in data:
-        let x = data["stage_instance"]
-        result.stage_instance = some (
-            members: x{"members"}.getElems.map(newMember),
-            topic: x["topic"].str,
-            participant_count: x["participant_count"].getInt,
-            speaker_count: x["speaker_count"].getInt
-        )
-
-    data.keyCheckOptStr(result,expires_at)
-    data.keyCheckOptInt(result,
-        approximate_presence_count,
-        approximate_member_count
-    )
-
-proc newInviteCreate*(data: JsonNode): InviteCreate =
-    result = InviteCreate(
-        code: data["code"].str,
-        created_at: data["created_at"].str,
-        uses: data["uses"].getInt,
-        max_uses: data["max_uses"].getInt,
-        max_age: data["max_age"].getInt,
-        channel_id: data["channel_id"].str,
-        temporary: data["temporary"].bval
-    )
-
-    if "target_user" in data:
-        result.target_user = some newUser(data["target_user"])
-    if "inviter" in data:
-        result.inviter = some newUser(data["inviter"])
-    if "target_application" in data and data["target_application"].kind!=JNull:
-        result.target_application=some data["target_application"].newApplication
-    if "target_type" in data and data["target_type"].kind != JNull:
-        result.target_type = some InviteTargetType data["target_type"].getInt
-
-    data.keyCheckOptStr(result, guild_id)
-
-proc newReady*(data: JsonNode): Ready =
-    result = Ready(
-        v: data["v"].getInt,
-        user: newUser(data["user"]),
-        session_id: data["session_id"].str,
-        application: (
-            data["application"]["id"].str,
-            cast[set[ApplicationFlags]](
-                data["application"]["flags"].getBiggestInt
-            )
-        )
-    )
-
-    for guild in data{"guilds"}.getElems:
-        result.guilds.add(UnavailableGuild(
-            id: guild["id"].str,
-            unavailable: guild["unavailable"].bval
-        ))
-
-    if "shard" in data:
-        result.shard = some newSeq[int]()
-
-        for s in data["shard"].elems:
-            get(result.shard).add(s.getInt)
-
-proc newAttachment(data: JsonNode): Attachment =
-    result = Attachment(
-        id: data["id"].str,
-        filename: data["filename"].str,
-        size: data["size"].getInt,
-        url: data["url"].str,
-        proxy_url: data["proxy_url"].str,
-    )
-    data.keyCheckOptInt(result, height, width)
-
-proc newTypingStart*(data: JsonNode): TypingStart =
-    result = TypingStart(
-        channel_id: data["channel_id"].str,
-        user_id: data["user_id"].str,
-        timestamp: data["timestamp"].getInt
-    )
-
-    if "member" in data and data["member"].kind != JNull:
-        result.member = some newMember(data["member"])
-
-    data.keyCheckOptStr(result, guild_id)
-
-proc newGuildMembersChunk*(data: JsonNode): GuildMembersChunk =
-    result = GuildMembersChunk(
-        guild_id: data["guild_id"].str,
-        chunk_index: data["chunk_index"].getInt,
-        chunk_count: data["chunk_count"].getInt,
-        members: data["members"].elems.map(newMember),
-        not_found: data{"not_found"}.getElems.mapIt(it.getStr),
-        presences: data{"presences"}.getElems.map(newPresence)
-    )
-    data.keyCheckOptStr(result, nonce)
-
-proc newReaction*(data: JsonNode): Reaction =
-    result = Reaction(
-        count: data["count"].getInt,
-        emoji: newEmoji(data["emoji"]),
-        reacted: data["me"].bval
     )
 
 proc updateMessage*(m: Message, data: JsonNode): Message =
@@ -617,274 +574,13 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         result.application = some data["application"].newApplication
 
 proc newSticker*(data: JsonNode): Sticker =
-    result = Sticker(
-        id: data["id"].str,
-        name: data["name"].str,
-        tags: data["tags"].str,
-        kind: StickerType data["type"].getInt
-    )
-
-    if "user" in data and data["user"].kind != JNull:
-        result.user = some data["user"].newUser
-
-    data.keyCheckOptStr(result, description, guild_id)
-    data.keyCheckOptBool(result, available)
-    data.keyCheckOptInt(result, sort_value)
+    result = ($data).fromJson(Sticker)
 
 proc newStickerPack*(data: JsonNode): StickerPack =
-    result = StickerPack(
-        id: data["id"].str,
-        stickers: data["stickers"].getElems.map(newSticker),
-        name: data["name"].str,
-        sku_id: data["sku_id"].str,
-        description: data["description"].str,
-        banner_asset_id: data["banner_asset_id"].str
-    )
-    data.keyCheckOptStr(result, cover_sticker_id)
-
-proc newMessage*(data: JsonNode): Message =
-    result = Message(
-        id: data["id"].str,
-        channel_id: data["channel_id"].str,
-        content: data["content"].str,
-        timestamp: data["timestamp"].str,
-        tts: data["tts"].bval,
-        mention_everyone: data["mention_everyone"].bval,
-        pinned: data["pinned"].bval,
-        kind: MessageType data["type"].getInt,
-        flags: cast[set[MessageFlags]](
-            data{"flags"}.getBiggestInt
-        ),
-        attachments: data{"attachments"}.getElems.map newAttachment,
-        mention_roles: data{"mention_roles"}.getElems.mapIt(it.str),
-        mention_users: data{"mentions"}.getElems.map newUser,
-        embeds:data{"embeds"}.getElems.mapIt(it.to(Embed)),
-        reactions: initTable[string, Reaction]()
-    )
-    data.keyCheckOptStr(result, edited_timestamp,
-        guild_id, nonce, webhook_id)
-
-    if "author" in data:
-        result.author = data["author"].newUser
-    if "member" in data and data["member"].kind != JNull:
-        result.member = some data["member"].newMember
-    if "referenced_message" in data and data["referenced_message"].kind!=JNull:
-        result.referenced_message = some data["referenced_message"].newMessage
-
-    for chan in data{"mention_channels"}.getElems:
-        result.mention_channels.add(MentionChannel(
-            id: chan["id"].str,
-            guild_id: chan["guild_id"].str,
-            kind: ChannelType chan["type"].getInt,
-            name: chan["name"].str
-        ))
-
-    for s in data{"sticker_items"}.getElems:
-        result.sticker_items[s["id"].str] = (
-            id: s["id"].str,
-            name: s["name"].str,
-            format_type: MessageStickerFormat s["format_type"].getInt
-        )
-
-    for rn in data{"reactions"}.getElems:
-        let r = rn.newReaction
-        result.reactions[$r.emoji] = r
-
-    if "activity" in data:
-        let act = data["activity"]
-        result.activity = some (
-            kind: act["type"].getInt,
-            party_id: act{"party_id"}.getStr
-        )
-
-    if "application" in data:
-        result.application = some data["application"].newApplication
-    if "message_reference" in data:
-        var message_reference = MessageReference()
-        data["message_reference"].keyCheckOptStr(
-            message_reference, channel_id,
-            message_id, guild_id
-        )
-        result.message_reference = some message_reference
-
-proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
-    case data.kind:
-    of JString:
-        result = AuditLogChangeValue(kind: alcString)
-        result.str = data.str
-    of JInt:
-        result = AuditLogChangeValue(kind: alcInt)
-        result.ival = data.getInt
-    of JBool:
-        result = AuditLogChangeValue(kind: alcBool)
-        result.bval = data.bval
-    of JArray:
-        if key in ["$add", "$remove"]:
-            result = AuditLogChangeValue(kind: alcRoles)
-            result.roles = data.elems.mapIt(it.to(tuple[id, name: string]))
-        elif "permission_overwrites" in key:
-            result = AuditLogChangeValue(kind: alcOverwrites)
-            result.overwrites = data.elems.map(newOverwrite)
-    else:
-        discard
-
-proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
-    result = AuditLogEntry(
-        id: data["id"].str,
-        before: initTable[string, AuditLogChangeValue](),
-        after: initTable[string, AuditLogChangeValue](),
-        action_type: AuditLogEntryType data["action_type"].getInt
-    )
-    data.keyCheckOptStr(result, user_id, target_id, reason)
-
-    if "options" in data:
-        result.opts = some data.to(AuditLogOptions)
-
-    for change in data{"changes"}.getElems:
-        if "new_value" in change:
-            result.after[change["key"].str] = newAuditLogChangeValue(
-                change["new_value"],
-                change["key"].str
-            )
-        if "old_value" in change:
-            result.before[change["key"].str] = newAuditLogChangeValue(
-                change["old_value"],
-                change["key"].str
-            )
-
-proc newIntegration*(data: JsonNode): Integration =
-    result = Integration(
-        id: data["id"].str,
-        name: data["name"].str,
-        kind: data["type"].str,
-        enabled: data["enabled"].bval,
-        account: data["account"].to(tuple[id, name: string]))
-    if "expire_behavior" in data and data["expire_behavior"].kind != JNull:
-        result.expire_behavior = some IntegrationExpireBehavior(
-            data["expire_behavior"].getInt
-        )
-    if "user" in data and data["user"].kind != JNull:
-        result.user = some data["user"].newUser
-
-    data.keyCheckOptBool(result, syncing, enable_emoticons, revoked)
-    data.keyCheckOptStr(result, role_id, synced_at)
-    data.keyCheckOptInt(result, expire_grace_period, subscriber_count)
-
-proc newAuditLog*(data: JsonNode): AuditLog =
-    AuditLog(
-        webhooks: data{"webhooks"}.getElems.map(newWebhook),
-        users: data{"users"}.getElems.map(newUser),
-        audit_log_entries: data{"audit_log_entries"}.getElems.map(
-            newAuditLogEntry),
-        integrations: data{"integrations"}.getElems.map(
-            newIntegration),
-        threads: data{"threads"}.getElems.map(newGuildChannel)
-    )
-
-proc newGuild*(data: JsonNode): Guild =
-    result = Guild(
-        id: data["id"].str,
-        name: data["name"].str,
-        nsfw: data["nsfw"].bval,
-        owner: data{"owner"}.getBool, # it is actually possible to
-        owner_id: data["owner_id"].str, # have no owner, just a glitch ;)
-        widget_enabled: data{"widget_enabled"}.getBool,
-        verification_level: VerificationLevel(
-            data["verification_level"].getInt
-        ),
-        explicit_content_filter: ExplicitContentFilter(
-            data["explicit_content_filter"].getInt
-        ),
-        default_message_notifications: MessageNotificationLevel(
-            data["default_message_notifications"].getInt
-        ),
-        system_channel_flags: cast[set[SystemChannelFlags]](
-            data{"system_channel_flags"}.getStr("0").parseBiggestInt
-        ),
-        permissions: cast[set[PermissionFlags]](
-            data{"permissions"}.getStr("0").parseBiggestInt
-        ),
-        roles: initTable[string, Role](),
-        emojis: initTable[string, Emoji](),
-        voice_states: initTable[string, VoiceState](),
-        members: initTable[string, Member](),
-        channels: initTable[string, GuildChannel](),
-        threads: initTable[string, GuildChannel](),
-        stickers: initTable[string, Sticker](),
-        presences: initTable[string, Presence](),
-        mfa_level: MFALevel data["mfa_level"].getInt,
-        nsfw_level: GuildNSFWLevel data["nsfw_level"].getInt,
-        premium_tier: PremiumTier data["premium_tier"].getInt,
-        preferred_locale: data["preferred_locale"].str
-    )
-    when defined(discordv9):
-        if "rtc_region" in data and data["rtc_region"].kind != JNull:
-            result.rtc_region = some data["rtc_region"].str
-    else:
-        if "region" in data and data["region"].kind != JNull:
-            result.rtc_region = some data["region"].str
-
-    for r in data["roles"].elems:
-        result.roles[r["id"].str] = newRole(r)
-    for e in data["emojis"].elems:
-        result.emojis[e["id"].str] = newEmoji(e)
-    if "welcome_screen" in data and data["welcome_screen"].kind != JNull:
-        result.welcome_screen = some data.to(tuple[
-            description: Option[string],
-            welcome_channels: seq[WelcomeChannel]
-        ])
-
-    data.keyCheckOptInt(result, afk_timeout, member_count,
-        premium_subscription_count, max_presences, approximate_member_count,
-        approximate_presence_count, max_video_channel_uses)
-    data.keyCheckOptStr(result, joined_at, icon, icon_hash, splash,
-        afk_channel_id, permissions_new, application_id, system_channel_id,
-        vanity_url_code, discovery_splash, description, banner,
-        widget_channel_id, public_updates_channel_id)
-    data.keyCheckOptBool(result, large, unavailable)
-
-    for m in data{"members"}.getElems:
-        result.members[m["user"]["id"].str] = newMember(m)
-
-    for v in data{"voice_states"}.getElems:
-        let state = newVoiceState(v)
-
-        result.members[v["user_id"].str].voice_state = some state
-        result.voice_states[v["user_id"].str] = state
-
-    for sticker in data{"stickers"}.getElems:
-        result.stickers[sticker["id"].str] = newSticker(sticker)
-
-    for thread in data{"threads"}.getElems:
-        thread["guild_id"] = %result.id
-        result.threads[thread["id"].str] = newGuildChannel(thread)
-
-    for chan in data{"channels"}.getElems:
-        chan["guild_id"] = %result.id
-        result.channels[chan["id"].str] = newGuildChannel(chan)
-
-    for p in data{"presences"}.getElems:
-        let presence = newPresence(p)
-        let uid = presence.user.id
-        presence.guild_id = result.id
-
-        result.members[uid].presence = presence
-        result.presences[uid] = presence
+    result = ($data).fromJson(StickerPack)
 
 proc newGuildTemplate*(data: JsonNode): GuildTemplate =
-    result = GuildTemplate(
-        code: data["code"].str,
-        name: data["name"].str,
-        usage_count: data["usage_count"].getInt,
-        creator_id: data["creator_id"].str,
-        creator: newUser(data["creator"]),
-        created_at: data["created_at"].str,
-        updated_at: data["updated_at"].str,
-        source_guild_id: data["source_guild_id"].str,
-        serialized_source_guild:data["serialized_source_guild"].to PartialGuild
-    )
-    data.keyCheckOptBool(result, is_dirty)
-    data.keyCheckOptStr(result, description)
+    result = ($data).fromJson(GuildTemplate)
 
 proc newApplicationCommandInteractionDataOption(
     data: JsonNode
@@ -910,8 +606,7 @@ proc newApplicationCommandInteractionDataOption(
         of acotRole:
             result.role_id    = value.getStr
         else: discard
-        if "focused" in data:
-          result.focused = some data["focused"].getBool()
+        if "focused" in data: result.focused = some data{"focused"}.getBool
     else:
         # Convert the array of sub options into a key value table
         result.options = toTable data{"options"}
@@ -932,8 +627,7 @@ proc newApplicationCommandInteractionData*(
             custom_id: data["custom_id"].str
         )
         if result.component_type == SelectMenu:
-            result.values = data["values"].getElems()
-                .mapIt(it.str)
+            result.values = data["values"].getElems.mapIt(it.str)
     else:
         result = ApplicationCommandInteractionData(
             interactionType: idtApplicationCommand,
@@ -943,7 +637,6 @@ proc newApplicationCommandInteractionData*(
         )
         case result.kind:
         of atSlash:
-            result.options=initTable[string,ApplicationCommandInteractionDataOption]()
             for option in data{"options"}.getElems:
                 result.options[option["name"].str] =
                     newApplicationCommandInteractionDataOption(option)
@@ -1097,7 +790,7 @@ proc `%`(option: SelectMenuOption): JsonNode =
         result["emoji"] = option.emoji.get.toPartial
 
 proc `%`*(permission: ApplicationCommandPermission): JsonNode =
-    result = %* {
+    result = %*{
         "id": %permission.id,
         "type": %ord permission.kind,
         "permission": %permission.permission

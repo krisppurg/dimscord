@@ -1,16 +1,18 @@
-import asyncdispatch, json, options
+import asyncdispatch, json, options, jsony
 import ../objects, ../constants
 import tables, sequtils, strutils
 import requester
 
 proc getInvite*(api: RestApi, code: string;
-        with_counts, with_expiration, auth = false
+        with_counts, with_expiration = false;
+        guild_scheduled_event_id, auth = false
 ): Future[Invite] {.async.} =
     ## Gets a discord invite, it can be a vanity code.
     ##
     ## - `auth` Whether you should get the invite while authenticated.
     let queryparams = "?with_counts="&($with_counts) &
-        "&with_expiration="&($with_counts)
+        "&with_expiration="&($with_counts) &
+        "&guild_scheduled_event_id="&($guild_scheduled_event_id)
     result = (await api.request(
         "GET",
         endpointInvites(code) & queryparams,
@@ -33,17 +35,23 @@ proc getGuildMembers*(api: RestApi, guild_id: string;
         endpointGuildMembers(guild_id) & "?limit=" & $limit & "&after=" & after
     ))).elems.map(newMember)
 
+proc editCurrentMember*(api: RestApi, guild_id: string;
+        nick = none string; reason = "") {.async.} =
+    ## Modify current member.
+    ## `nick` - some "" to reset nick.
+    let payload = newJObject()
+    payload.loadNullableOptStr(nick)
+    discard await api.request(
+        "PATCH",
+        endpointGuildMembers(guild_id, "@me"),
+        $payload,
+        audit_reason = reason
+    )
+
 proc setGuildNick*(api: RestApi, guild_id: string;
         nick, reason = "") {.async.} =
     ## Sets the current user's guild nickname, defaults to "" if no nick is set.
-    discard await api.request(
-        "PATCH",
-        endpointGuildMembersNick(guild_id, "@me"),
-        $(%*{
-            "nick": nick
-        }),
-        audit_reason = reason
-    )
+    await api.editCurrentMember(guild_id, nick = some nick, reason)
 
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         reason = "") {.async.} =
@@ -83,7 +91,7 @@ proc getCurrentUser*(api: RestApi): Future[User] {.async.} =
 
 proc getGatewayBot*(api: RestApi): Future[GatewayBot] {.async.} =
     ## Get gateway bot with authentication.
-    result = (await api.request("GET", "gateway/bot")).to(GatewayBot)
+    result = (await api.request("GET", "gateway/bot")).`$`.fromJson(GatewayBot)
 
 proc getGateway*(api: RestApi): Future[string] {.async.} =
     ## Get Discord gateway URL.

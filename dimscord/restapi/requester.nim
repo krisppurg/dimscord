@@ -261,7 +261,7 @@ proc request*(api: RestApi, meth, endpoint: string;
             raise newException(RestError, err)
 
 proc `%`*(o: Overwrite): JsonNode =
-    %* {"id": o.id,
+    %*{"id": o.id,
         "type": %o.kind,
         "allow": %cast[int](o.allow),
         "deny": %cast[int](o.deny)}

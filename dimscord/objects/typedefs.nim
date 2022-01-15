@@ -135,16 +135,18 @@ type
         ## The fields for bot and system are false by default
         ## simply because they are assumable.
         id*, username*, discriminator*: string
+        banner*: Option[string]
         bot*, system*: bool
         mfa_enabled*: Option[bool]
-        premium_type*: Option[int]
+        accent_color*, premium_type*: Option[int]
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, locale*: Option[string]
     Member* = ref object
         ## - `permissions` Returned in the interaction object.
         user*: User
-        nick*, premium_since*: Option[string]
+        nick*, premium_since*, avatar*: Option[string]
+        communication_disabled_until*: Option[string]
         joined_at*: string
         roles*: seq[string]
         deaf*, mute*: bool
@@ -154,9 +156,10 @@ type
         voice_state*: Option[VoiceState]
     Attachment* = object
         id*, filename*: string
-        content_type*: Option[string]
+        description*, content_type*: Option[string]
         proxy_url*, url*: string
         height*, width*: Option[int]
+        ephemeral*: Option[bool]
         size*: int
     Reaction* = object
         count*: int
@@ -268,8 +271,8 @@ type
         kind*: ActivityType
         flags*: set[ActivityFlags]
         url*, application_id*, details*, state*: Option[string]
-        created_at*: BiggestInt
-        timestamps*: Option[tuple[start, final: BiggestInt]]
+        created_at*: BiggestFloat
+        timestamps*: Option[tuple[start, final: BiggestFloat]]
         emoji*: Option[Emoji]
         party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[GameAssets]
@@ -284,7 +287,7 @@ type
         activities*: seq[Activity]
         client_status*: tuple[web, desktop, mobile: string]
     WelcomeChannel* = object
-        channel_id*, description: string
+        channel_id*, description*: string
         emoji_id*, emoji_name*: Option[string]
     Guild* = ref object
         id*, name*, owner_id*: string
@@ -297,7 +300,7 @@ type
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
         system_channel_flags*: set[SystemChannelFlags]
         permissions*: set[PermissionFlags]
-        nsfw*, owner*, widget_enabled*: bool
+        premium_progress_bar_enabled*, nsfw*, owner*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
         max_video_channel_uses*, afk_timeout*, member_count*: Option[int]
         approximate_member_count*, approximate_presence_count*: Option[int]
@@ -321,14 +324,32 @@ type
         presences*: Table[string, Presence]
         stage_instances*: Table[string, StageInstance]
         stickers*: Table[string, Sticker]
+        guild_scheduled_events*: Table[string, GuildScheduledEvent]
     VoiceState* = ref object
         guild_id*, channel_id*: Option[string]
         user_id*, session_id*: string
         deaf*, mute*, suppress*: bool
         self_deaf*, self_mute*, self_stream*: bool
         request_to_speak_timestamp*: Option[string]
+    GuildScheduledEvent* = ref object
+        id*, guild_id*, scheduled_start_time*: string
+        channel_id*, creator_id*, scheduled_end_time*: Option[string]
+        description*, entity_id*: Option[string]
+        privacy_level*: GuildScheduledEventPrivacyLevel
+        status*: GuildScheduledEventStatus
+        entity_type*: EntityType
+        entity_metadata*: EntityMetadata
+        creator*: Option[User]
+        user_count*: Option[int]
+    GuildScheduledEventUser* = object
+        guild_scheduled_event_id*: string
+        user*: User
+        member*: Option[Member]
+    EntityMetadata* = object
+        location*: Option[string]
     Role* = object
         id*, name*, permissions_new*: string
+        icon*, unicode_emoji*: Option[string]
         color*, position*: int
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
@@ -491,7 +512,7 @@ type
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
-        channel*: PartialChannel
+        channel*: Option[PartialChannel]
         target_type*: Option[InviteTargetType]
         target_user*, inviter*: Option[User]
         target_application*: Option[Application]
@@ -502,6 +523,7 @@ type
             topic: string,
             participant_count, speaker_count: int
         ]]
+        guild_scheduled_event*: Option[GuildScheduledEvent]
     InviteMetadata* = object
         code*, created_at*: string
         guild_id*: Option[string]
@@ -624,6 +646,7 @@ type
         audit_log_entries*: seq[AuditLogEntry]
         integrations*: seq[Integration]
         threads*: seq[GuildChannel]
+        guild_scheduled_events*: seq[GuildScheduledEvent]
     GuildWidgetJson* = object
         id*, name*: string
         instant_invite*: string

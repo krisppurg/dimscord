@@ -199,7 +199,8 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
         position = none int; parent_id = none string; lock_permissions = false;
         reason = "") {.async.} =
     ## Edits a guild channel's position.
-    let payload = %*{
+    let payload = newJArray()
+    payload.add %*{
         "id": channel_id,
         "position": %position,
         "parent_id": %parent_id,
@@ -208,7 +209,7 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
     payload.loadNullableOptStr(parent_id)
     discard await api.request(
         "PATCH",
-        endpointGuildChannels(guild_id, channel_id),
+        endpointGuildChannels(guild_id),
         $payload,
         audit_reason = reason
     )

@@ -1,4 +1,4 @@
-import asyncdispatch, json, options
+import asyncdispatch, json, options, jsony
 import ../objects, ../constants, ../helpers
 import tables, sequtils
 import uri, macros, requester
@@ -199,7 +199,8 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
         position = none int; parent_id = none string; lock_permissions = false;
         reason = "") {.async.} =
     ## Edits a guild channel's position.
-    let payload = %*{
+    let payload = newJArray()
+    payload.add %*{
         "id": channel_id,
         "position": %position,
         "parent_id": %parent_id,
@@ -208,7 +209,7 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
     payload.loadNullableOptStr(parent_id)
     discard await api.request(
         "PATCH",
-        endpointGuildChannels(guild_id, channel_id),
+        endpointGuildChannels(guild_id),
         $payload,
         audit_reason = reason
     )
@@ -314,14 +315,11 @@ proc listArchivedThreads*(api: RestApi;
 
     let data = await api.request("GET", url)
 
-    result = (
-        threads: data["threads"].elems.map(newGuildChannel),
-        members: data["threads"].elems.map(
-            proc (x: JsonNode): ThreadMember =
-                x.to(ThreadMember)
-        ),
-        has_more: data["has_more"].bval
-    )
+    result = ($data).fromJson(tuple[
+        threads: seq[GuildChannel],
+        members: seq[ThreadMember],
+        has_more: bool
+    ])
 
 proc createStageInstance*(api: RestApi; channel_id, topic: string;
     privacy_level = int plGuildOnly; reason = ""

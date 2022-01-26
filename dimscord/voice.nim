@@ -268,7 +268,8 @@ proc disconnect*(v: VoiceClient) {.async.} =
 
     logVoice "Shard reconnecting after disconnect..."
     # TODO: Don't reconnect if not meant too e.g. if was kicked from a call
-    await v.reconnect()
+    # TODO: Don't reconnect if explicitly disconnecting
+    #await v.reconnect()
 
 proc heartbeat(v: VoiceClient) {.async.} =
     if v.sockClosed: return
@@ -321,8 +322,6 @@ proc recvDiscovery(v: VoiceClient) {.async.} =
     let packet = await v.recvUDPPacket(70)
     v.srcIP = packet[4..^3].replace($chr(0), "")
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
-    echo v.srcIP, " ", v.srcPort
-    echo (packet[^2].ord shl 8) or (packet[^1].ord)
 
 
 proc handleSocketMessage(v: VoiceClient) {.async.} =
@@ -563,12 +562,9 @@ proc playYTDL*(v: VoiceClient, url: string) {.async.} =
   ## Requires `yt-dlp` to be installed
   let args = @[
     "-f",
-    "bestaudio", # We want best audio
+    "bestaudio", # We want best audio, maybe make this configurable?
     "--get-url", # We only the url which will be passed to ffmpeg
     url
   ]
-  echo "geting url"
-  let url = execProcess("yt-dlp", args = args, options = {poStdErrToStdOut, poUsePath, poEchoCmd})
-  echo "url ", url
-  echo "scope"
+  let url = execProcess("yt-dlp", args = args, options = {poStdErrToStdOut, poUsePath})
   await v.playFFMPEG(url)

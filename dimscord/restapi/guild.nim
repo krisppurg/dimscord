@@ -1,25 +1,24 @@
 import asyncdispatch, json, options
 import ../objects, ../constants, ../helpers
-import sequtils, strutils
+import sequtils, strutils, jsony
 import requester
 
 proc beginGuildPrune*(api: RestApi, guild_id: string;
         days: range[1..30] = 7;
         include_roles: seq[string] = @[];
-        compute_prune_count = true;
-        reason = "") {.async.} =
+        compute_prune_count = true) {.async.} =
     ## Begins a guild prune.
     let payload = %*{
-        "days":days,
-        "compute_prune_count":compute_prune_count,
+        "days": days,
+        "compute_prune_count": compute_prune_count
     }
     if include_roles.len > 0:
         payload["include_roles"] = %include_roles
+
     discard await api.request(
         "POST",
         endpointGuildPrune(guild_id),
-        $(payload),
-        audit_reason = reason
+        $payload
     )
 
 proc getGuildPruneCount*(api: RestApi, guild_id: string,
@@ -43,6 +42,7 @@ proc editGuild*(api: RestApi, guild_id: string;
     system_channel_flags = none int;
     explicit_content_filter, afk_timeout = none int;
     features: seq[string] = @[];
+    premium_progress_bar_enabled = none bool;
     reason = ""
 ): Future[Guild] {.async.} =
     ## Modifies a guild.
@@ -59,7 +59,7 @@ proc editGuild*(api: RestApi, guild_id: string;
         default_message_notifications, icon, explicit_content_filter,
         afk_channel_id, discovery_splash, owner_id, splash, banner,
         system_channel_id, rules_channel_id, public_updates_channel_id,
-        preferred_locale, system_channel_flags)
+        preferred_locale, system_channel_flags, premium_progress_bar_enabled)
 
     payload.loadNullableOptInt(verification_level,
         default_message_notifications,
@@ -162,7 +162,7 @@ proc getGuildAuditLogs*(api: RestApi, guild_id: string;
 
 proc getGuildRoles*(api: RestApi,
         guild_id: string): Future[seq[Role]] {.async.} =
-    ## Gets a guild's roles.
+    ## Gets the guild's roles.
     result = (await api.request(
         "GET",
         endpointGuildRoles(guild_id)
@@ -170,12 +170,15 @@ proc getGuildRoles*(api: RestApi,
 
 proc createGuildRole*(api: RestApi, guild_id: string;
         name = "new role";
+        unicode_emoji, icon = none string;
         hoist, mentionable = false;
         permissions: PermObj;
         color = 0; reason = ""): Future[Role] {.async.} =
     ## Creates a guild role.
     result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
         "name": name,
+        "unicode_emoji": unicode_emoji,
+        "icon": icon,
         "permissions": %(permissions.perms),
         "color": color,
         "hoist": hoist,
@@ -188,6 +191,7 @@ proc deleteGuildRole*(api: RestApi, guild_id, role_id: string) {.async.} =
 
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none string;
+            icon, unicode_emoji = none string;
             permissions = none PermObj; color = none int;
             hoist, mentionable = none bool;
             reason = ""): Future[Role] {.async.} =
@@ -196,7 +200,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
 
     payload.loadOpt(name, color, hoist, mentionable)
 
-    payload.loadNullableOptStr(name)
+    payload.loadNullableOptStr(name, icon, unicode_emoji)
     payload.loadNullableOptInt(color)
 
     if permissions.isSome:
@@ -235,13 +239,17 @@ proc getGuildVanityUrl*(api: RestApi,
     )).to(tuple[code: Option[string], uses: int])
 
 proc editGuildMember*(api: RestApi, guild_id, user_id: string;
-        nick, channel_id = none string;
+        nick, channel_id, communication_disabled_until = none string;
         roles = none seq[string];
-        mute, deaf = none bool; reason = "") {.async.} =
+        mute, deaf = none bool;
+        reason = "") {.async.} =
     ## Modifies a guild member
+    ## Note:
+    ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
     let payload = newJObject()
 
-    payload.loadOpt(nick, roles, mute, deaf, channel_id)
+    payload.loadOpt(nick, roles, mute, deaf,
+        channel_id, communication_disabled_until)
     payload.loadNullableOptStr(channel_id)
 
     discard await api.request(
@@ -467,14 +475,14 @@ proc getGuildVoiceRegions*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildRegions(guild_id)
-    )).elems.mapIt(it.to(VoiceRegion))
+    )).elems.mapIt(($it).fromJson(VoiceRegion))
 
 proc getVoiceRegions*(api: RestApi): Future[seq[VoiceRegion]] {.async.} =
     ## Get voice regions
     result = (await api.request(
         "GET",
         endpointVoiceRegions()
-    )).elems.mapIt(it.to(VoiceRegion))
+    )).elems.mapIt(($it).fromJson(VoiceRegion))
 
 proc createGuildFromTemplate*(api: RestApi;
         code: string): Future[Guild] {.async.} =
@@ -694,7 +702,8 @@ proc editGuildSticker*(api: RestApi, guild_id, sticker_id: string;
     )).newSticker
 
 proc deleteGuildSticker*(
-    api: RestApi, guild_id, sticker_id: string
+    api: RestApi, guild_id, sticker_id: string;
+    reason = ""
 ): Future[Sticker] {.async.} =
     ## Deletes a guild sticker.
     result = (await api.request(
@@ -714,5 +723,119 @@ proc listActiveGuildThreads*(
 
     result = (
         threads: data["threads"].elems.map(newGuildChannel),
-        members: data["members"].elems.mapIt(it.to(ThreadMember))
+        members: data["members"].elems.mapIt(($it).fromJson(ThreadMember))
     )
+
+proc getScheduledEvent*(api: RestApi;
+        guild_id, event_id: string;
+        with_user_count = false): Future[GuildScheduledEvent] {.async.} =
+    ## Get a scheduled event in a guild.
+    result = (await api.request(
+        "GET",
+        endpointGuildScheduledEvents(guild_id, event_id) &
+        "?with_user_count="&($with_user_count)
+    )).`$`.fromJson(GuildScheduledEvent)
+
+proc getScheduledEvents*(api: RestApi;
+        guild_id: string): Future[seq[GuildScheduledEvent]] {.async.} =
+    ## Get all scheduled events in a guild.
+    result = (await api.request(
+        "GET",
+        endpointGuildScheduledEvents(guild_id)
+    )).elems.mapIt(it.`$`.fromJson(GuildScheduledEvent))
+
+proc createScheduledEvent*(api: RestApi; guild_id: string;
+        name, scheduled_start_time: string;
+        channel_id, scheduled_end_time, description = none string;
+        privacy_level: GuildScheduledEventPrivacyLevel;
+        entity_type: EntityType;
+        entity_metadata = none EntityMetadata;
+        reason = ""
+): Future[GuildScheduledEvent] {.async.} =
+    ## Create a scheduled event in a guild.
+    assert name.len in 1..100
+    if description.isSome: assert description.get.len in 1..1000
+    let payload = %*{
+       "name": name,
+       "scheduled_start_time": scheduled_start_time,
+       "entity_type": int entity_type,
+       "privacy_level": int privacy_level
+    }
+    payload.loadOpt(channel_id, scheduled_end_time, description)
+
+    if entity_metadata.isSome:
+        assert get(entity_metadata).location.get.len in 1..100
+        payload["entity_metadata"] = %*{
+            "location": entity_metadata.get.location.get
+        }
+    result = (await api.request(
+        "POST",
+        endpointGuildScheduledEvents(guild_id),
+        $payload,
+        reason
+    )).`$`.fromJson(GuildScheduledEvent)
+
+proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
+        name, scheduled_start_time = none string;
+        channel_id, scheduled_end_time, description = none string;
+        privacy_level = none GuildScheduledEventPrivacyLevel;
+        entity_type = none EntityType;
+        entity_metadata = none EntityMetadata;
+        status = none GuildScheduledEventStatus;
+        reason = ""
+): Future[GuildScheduledEvent] {.async.} =
+    ## Update a scheduled event in a guild.
+    ## Read more: https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event-json-params
+    if name.isSome: assert name.get.len in 1..100
+    if description.isSome: assert description.get.len in 1..1000
+
+    let payload = newJObject()
+    payload.loadNullableOptStr(channel_id)
+    payload.loadOpt(scheduled_end_time, scheduled_start_time,
+        description, entity_type, status, privacy_level)
+
+    if entity_type.isSome and entity_type.get == etExternal:
+        assert channel_id.get == ""
+        assert entity_metadata.isSome and entity_metadata.get.location.isSome
+        assert scheduled_end_time.isSome
+
+    if entity_metadata.isSome:
+        assert get(entity_metadata).location.get.len in 1..100
+        payload["entity_metadata"] = %*{
+            "location": entity_metadata.get.location.get
+        }
+
+    result = (await api.request(
+        "PATCH",
+        endpointGuildScheduledEvents(guild_id, event_id),
+        $payload,
+        reason
+    )).`$`.fromJson(GuildScheduledEvent)
+
+proc deleteScheduledEvent*(api: RestApi,
+        guild_id, event_id: string;
+        reason = "") {.async.} =
+    ## Delete a scheduled event in guild.
+    discard await api.request(
+        "DELETE",
+        endpointGuildScheduledEvents(guild_id, event_id),
+        audit_reason = reason
+    )
+
+proc getScheduledEventUsers*(api: RestApi,
+        guild_id, event_id: string;
+        limit = 100; with_member = false;
+        before, after = ""): Future[seq[GuildScheduledEventUser]] {.async.} =
+    ## Gets the users that were subscribed to the scheduled events in the guild.
+    var endpoint = endpointGuildScheduledEventUsers(guild_id, event_id) &
+        "?limit="&($limit)&"&with_member="&($with_member)
+
+    if before != "":
+        endpoint &= "&before="&before
+    if after != "":
+        endpoint &= "&after="&after
+
+    result = (await api.request(
+        "GET",
+        endpoint
+    )).elems.mapIt(it.`$`.fromJson(GuildScheduledEventUser))

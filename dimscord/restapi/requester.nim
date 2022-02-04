@@ -113,6 +113,7 @@ proc request*(api: RestApi, meth, endpoint: string;
         let
             client = newAsyncHttpClient(libAgent)
             url = restBase & "v" & $api.restVersion & "/" & endpoint
+        defer: client.close()
 
         var resp: AsyncResponse
 

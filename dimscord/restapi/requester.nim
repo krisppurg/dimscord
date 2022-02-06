@@ -113,7 +113,6 @@ proc request*(api: RestApi, meth, endpoint: string;
         let
             client = newAsyncHttpClient(libAgent)
             url = restBase & "v" & $api.restVersion & "/" & endpoint
-        defer: client.close()
 
         var resp: AsyncResponse
 
@@ -246,6 +245,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 await api.handleRoute(false, route)
 
         r.processing = false
+        client.close()
     try:
         r.processing = true
         await doreq()

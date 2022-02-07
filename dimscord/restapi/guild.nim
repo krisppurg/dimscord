@@ -87,7 +87,7 @@ proc createGuild*(api: RestApi, name, region = none string;
         verification_level, default_message_notifications = none int;
         afk_timeout, explicit_content_filter = none int;
         system_channel_flags = none int; roles = none seq[Role];
-        channels = none seq[Channel]): Future[Guild] {.async.} =
+        channels = none seq[objects.Channel]): Future[Guild] {.async.} =
     ## Create a guild.
     ## Please read these notes:
     ## https://discord.com/developers/docs/resources/guild#create-guild

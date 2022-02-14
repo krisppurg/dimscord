@@ -322,7 +322,6 @@ proc recvDiscovery(v: VoiceClient) {.async.} =
     v.srcIP = packet[4..^3].replace($chr(0), "")
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
 
-
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 

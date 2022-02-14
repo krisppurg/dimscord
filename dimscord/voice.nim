@@ -1,5 +1,4 @@
 ## Currently handling the discord voice gateway (WIP)
-## Playing audio will be added later.
 import asyncdispatch, ws, asyncnet
 import objects, json, constants
 import strutils, nativesockets, streams, sequtils
@@ -10,6 +9,7 @@ import std/strformat
 import opussum
 import std/[monotimes, times]
 import std/streams
+import std/os
 
 randomize()
 
@@ -122,7 +122,6 @@ proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
 
     result = true
 
-    echo closeData.code
     if closeData.code in [4004, 4006, 4012, 4014]:
         result = false
         logVoice("Fatal error: " & closeData.reason)
@@ -392,6 +391,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
             v.secret_key = data["d"]["secret_key"].elems.mapIt(chr(it.getInt)).join("")
             await v.voice_events.on_ready(v)
+            echo "finished on ready"
         else: discard
     if not v.reconnectable: return
 
@@ -425,7 +425,8 @@ proc startSession*(v: VoiceClient) {.async.} =
         logVoice "Socket opened."
     except:
         v.stopped = true
-        raise newException(Exception, getCurrentExceptionMsg())
+        raise getCurrentException()
+        # raise newException(Exception, getCurrentExceptionMsg())
     try:
         logVoice "handlong socket"
         await v.handleSocketMessage()
@@ -447,16 +448,21 @@ proc stop*(v: VoiceClient) =
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet
-    var header = ""
+    var header = newStringOfCap(12)
     header.addUint8(0x80)
     header.addUint8(0x78)
     header.addUint16(toBigEndian uint16 v.sequence)
     header.addUint32(toBigEndian uint32 v.time)
     header.addUint32(toBigEndian uint32(v.ssrc))
-    let nonce = v.makeNonce(header)
+    let 
+      nonce = v.makeNonce(header)
+      encrypted = crypto_secretbox_easy(v.secret_key, data, nonce)
     # echo "Sending ", data.len, " bytes of data"
 
-    var packet = header & crypto_secretbox_easy(v.secret_key, data, nonce)
+    var packet = newStringOfCap(header.len + encrypted.len)
+    packet &= header
+    packet &= encrypted
+    
     if v.encryptMode != Normal:
         packet &= nonce
     await v.sendUDPPacket(packet)
@@ -467,7 +473,7 @@ proc incrementPacketHeaders(v: VoiceClient) =
         v.sequence += 1
     else:
         v.sequence = 0
-    if v.time + 9600 < uint32.high:
+    if v.time + 9600 < uint32.high or v.time + 9600 < v.time: # Check for wraparound
         v.time += 960
     else:
         v.time = 0
@@ -487,10 +493,8 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     let stream = input.outputStream
     let atEnd = proc (): bool = not input.running
 
-  var slept = 0
-  while stream.atEnd and slept < waitForData:
+  while stream.atEnd:
     await sleepAsync 1000
-    slept += 1000
     echo "Sleeping"
 
   doAssert stream != nil, "Stream is not open"
@@ -506,7 +510,9 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     # Try and read needed data
     var attempts = 3
     while data.len != dataSize and attempts > 0:
+      let a = getMonoTime()
       data &= stream.readStr(dataSize - data.len)
+      let b = getMonoTime()
       dec attempts
       await sleepAsync 5
 
@@ -514,11 +520,14 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
       logVoice "Couldn't read needed amount of data in time"
       return
 
-    let
-      encoded = encoder.encode(data.toPCMData(encoder))
+    let encoded = encoder.encode(data.toPCMData(encoder))
 
-    let encodingTime = getMonoTime() # Allow us to track time to encode
-    await sendAudioPacket(v, $encoded)
+    # Build the packet
+    var buf = newString(encoded.len)
+    for i in 0 ..< encoded.len:
+      buf[i] = cast[char](encoded[i])
+
+    await sendAudioPacket(v, buf)
     incrementPacketHeaders v
 
     # Sleep so each packet will be sent 20 ms apart
@@ -531,40 +540,45 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
   v.stopped = false
   # Send 5 silent frames to clear buffer
   for i in 1..5:
-    await v.sendAudioPacket(silencePacket)
+    await v.sendAudioPacket silencePacket
     incrementPacketHeaders v
     await sleepAsync idealLength
   await v.sendSpeaking(false)
 
+proc exeExists(exe: string): bool =
+  ## Returns true if `exe` can be found
+  result = findExe(exe) != ""
+
 proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
-    ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
-    ## Requires `ffmpeg` be installed.
-    let
-        args = @[
-            "-i",
-            path,
-            "-loglevel",
-            "0",
-            "-f",
-            "s16le",
-            "-ar",
-            "48000",
-            "-ac",
-            "2",
-            "pipe:1"
-        ]
-    let pid = startProcess("ffmpeg", args = args, options = {poUsePath, poEchoCmd})
-    defer: pid.close()
-    await v.play(pid)
+  ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
+  ## Requires `ffmpeg` be installed.
+  let
+    args = @[
+      "-i",
+      path,
+      "-loglevel",
+      "0",
+      "-f",
+      "s16le",
+      "-ar",
+      "48000",
+      "-ac",
+      "2",
+      "pipe:1"
+    ]
+  if not path.fileExists():
+    raise (ref IOError)(msg: fmt"File {path} does not exists")
+  doAssert exeExists("ffmpeg"), "Cannot find ffmpeg, make sure it is installed"
+  let pid = startProcess("ffmpeg", args = args, options = {poUsePath, poEchoCmd})
+  defer: pid.close()
+  await v.play(pid)
 
 proc playYTDL*(v: VoiceClient, url: string) {.async.} =
   ## Plays a youtube link using yt-dlp.
   ## Requires `yt-dlp` to be installed
-  let args = @[
-    "-f",
-    "bestaudio", # We want best audio, maybe make this configurable?
-    "--get-url", # We only the url which will be passed to ffmpeg
-    url
-  ]
-  let url = execProcess("yt-dlp", args = args, options = {poStdErrToStdOut, poUsePath})
-  await v.playFFMPEG(url)
+  # if not exeExists("yt-dlp"):
+    # raise (ref AssertionError)(msg: "Cannot find yt-dlp, make sure it is installed")
+  let (output, exitCode) = execCmdEx("yt-dlp -f bestaudio --get-url " & url)
+  echo exitCode
+  doAssert exitCode == 0, output
+  await v.playFFMPEG(output)

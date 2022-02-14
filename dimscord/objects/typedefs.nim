@@ -58,7 +58,7 @@ type
         heartbeating*, resuming*, reconnecting*, shouldReconnect*: bool
         networkError*, ready*: bool
         interval*: int
-        sequence*: uint16
+        sequence*: uint32
         time*: uint32
         secret_key*: string
 

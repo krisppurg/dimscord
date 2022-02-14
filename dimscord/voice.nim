@@ -434,16 +434,16 @@ proc startSession*(v: VoiceClient) {.async.} =
         raise newException(Exception, getCurrentExceptionMsg())
 
 proc pause*(v: VoiceClient) {.async.} =
-  ## Pause the current audio
-  v.paused = true
+    ## Pause the current audio
+    v.paused = true
 
 proc unpause*(v: VoiceClient) =
-  ## Continue playing audio
-  v.paused = false
+    ## Continue playing audio
+    v.paused = false
 
 proc stop*(v: VoiceClient) =
-  ## Stop the current audio
-  v.stopped = true
+    ## Stop the current audio
+    v.stopped = true
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet

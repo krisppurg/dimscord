@@ -499,22 +499,29 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
 
     doAssert stream != nil, "Stream is not open"
     let encoder = createEncoder(48000, 2, 960, Voip)
+
+    var count: uint = 0 # Keep track of packets sent 
+    
     while not atEnd() and not v.stopped:
         var sleepTime = idealLength
         var data = newStringOfCap(dataSize)
-        let startTime = getMonoTime()
-
+        let 
+            startTime = getMonoTime()
+            shouldAdjust = (count mod 100) == 0
+            
         while v.paused:
             await sleepAsync 1000
 
         # Try and read needed data
         var attempts = 3
-        while data.len != dataSize and attempts > 0:
-            let a = getMonoTime()
+        while attempts > 0:
             data &= stream.readStr(dataSize - data.len)
-            let b = getMonoTime()
             dec attempts
-            await sleepAsync 5
+            if data.len != dataSize:
+                await sleepAsync 5
+            else:
+                break
+            
 
         if attempts == 0:
             logVoice "Couldn't read needed amount of data in time"
@@ -531,12 +538,15 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
         incrementPacketHeaders v
 
         # Sleep so each packet will be sent 20 ms apart
-        let
-            now = getMonoTime()
-            diff = (now - startTime).inMilliseconds
-        sleepTime = int(idealLength - diff)
-        await sleepAsync sleepTime
-
+        if shouldAdjust:
+          let
+              now = getMonoTime()
+              diff = (now - startTime).inMilliseconds
+          sleepTime = int(idealLength - diff)
+        if sleepTime > 0:
+          await sleepAsync sleepTime
+        else:
+          logVoice("Audio encoding and sending took longer than 20ms, check you don't have network or hardware problems")
     v.stopped = false
     # Send 5 silent frames to clear buffer
     for i in 1..5:

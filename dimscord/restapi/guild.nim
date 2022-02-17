@@ -87,7 +87,7 @@ proc createGuild*(api: RestApi, name, region = none string;
         verification_level, default_message_notifications = none int;
         afk_timeout, explicit_content_filter = none int;
         system_channel_flags = none int; roles = none seq[Role];
-        channels = none seq[Channel]): Future[Guild] {.async.} =
+        channels = none seq[objects.Channel]): Future[Guild] {.async.} =
     ## Create a guild.
     ## Please read these notes:
     ## https://discord.com/developers/docs/resources/guild#create-guild
@@ -747,6 +747,7 @@ proc getScheduledEvents*(api: RestApi;
 proc createScheduledEvent*(api: RestApi; guild_id: string;
         name, scheduled_start_time: string;
         channel_id, scheduled_end_time, description = none string;
+        image = none string;
         privacy_level: GuildScheduledEventPrivacyLevel;
         entity_type: EntityType;
         entity_metadata = none EntityMetadata;
@@ -761,7 +762,7 @@ proc createScheduledEvent*(api: RestApi; guild_id: string;
        "entity_type": int entity_type,
        "privacy_level": int privacy_level
     }
-    payload.loadOpt(channel_id, scheduled_end_time, description)
+    payload.loadOpt(channel_id, scheduled_end_time, description, image)
 
     if entity_metadata.isSome:
         assert get(entity_metadata).location.get.len in 1..100
@@ -776,7 +777,7 @@ proc createScheduledEvent*(api: RestApi; guild_id: string;
     )).`$`.fromJson(GuildScheduledEvent)
 
 proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
-        name, scheduled_start_time = none string;
+        name, scheduled_start_time, image = none string;
         channel_id, scheduled_end_time, description = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;
         entity_type = none EntityType;
@@ -790,7 +791,7 @@ proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
     if description.isSome: assert description.get.len in 1..1000
 
     let payload = newJObject()
-    payload.loadNullableOptStr(channel_id)
+    payload.loadNullableOptStr(channel_id, image)
     payload.loadOpt(scheduled_end_time, scheduled_start_time,
         description, entity_type, status, privacy_level)
 

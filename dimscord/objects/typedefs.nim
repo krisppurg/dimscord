@@ -79,18 +79,21 @@ type
         author*: Option[EmbedAuthor]
         fields*: Option[seq[EmbedField]]
     EmbedThumbnail* = object
-        url*, proxy_url*: Option[string]
+        url*: string
+        proxy_url*: Option[string]
         height*, width*: Option[int]
     EmbedVideo* = object
         url*, proxy_url*: Option[string]
         height*, width*: Option[int]
     EmbedImage* = object
-        url*, proxy_url*: Option[string]
+        url*: string
+        proxy_url*: Option[string]
         height*, width*: Option[int]
     EmbedProvider* = object
         name*, url*: Option[string]
     EmbedAuthor* = object
-        name*, url*: Option[string]
+        name*: string
+        url*: Option[string]
         icon_url*, proxy_icon_url*: Option[string]
     EmbedFooter* = object
         text*: string
@@ -124,7 +127,9 @@ type
         embeds*: seq[Embed]
         reactions*: Table[string, Reaction]
         activity*: Option[tuple[kind: int, party_id: string]]
+        thread*: Option[GuildChannel]
         application*: Option[Application]
+        interaction*: Option[MessageInteraction]
         message_reference*: Option[MessageReference]
         sticker_items*: Table[string, tuple[
             id, name: string,
@@ -244,7 +249,7 @@ type
         discoverable_disabled*: bool
     ThreadMetadata* = object
         archived*, locked*: bool
-        archiver_id*: Option[string]
+        archiver_id*, create_timestamp*: Option[string]
         auto_archive_duration*: int
         archive_timestamp*: string
         invitable*: Option[bool]
@@ -334,7 +339,7 @@ type
     GuildScheduledEvent* = ref object
         id*, guild_id*, scheduled_start_time*: string
         channel_id*, creator_id*, scheduled_end_time*: Option[string]
-        description*, entity_id*: Option[string]
+        description*, entity_id*, image*: Option[string]
         privacy_level*: GuildScheduledEventPrivacyLevel
         status*: GuildScheduledEventStatus
         entity_type*: EntityType
@@ -413,7 +418,7 @@ type
         icon*, primary_sku_id*, slug*, cover_image*: Option[string]
         flags*: set[ApplicationFlags]
     ApplicationCommand* = object
-        id*, application_id*: string
+        id*, application_id*, version*: string
         guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
@@ -430,11 +435,18 @@ type
         kind*: ApplicationCommandOptionType
         name*, description*: string
         required*, autocomplete*: Option[bool]
+        channel_types*: seq[ChannelType]
+        min_value*, max_value*: (Option[BiggestInt], Option[float])
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
         name*: string
         value*: (Option[string], Option[int])
+    MessageInteraction* = object
+        id*, name*: string
+        kind*: InteractionType
+        user*: User
+        member*: Option[Member]
     Interaction* = object
         ## if `member` is present, then that means the interaction is in guild,
         ## and `user` is therefore not present.
@@ -442,7 +454,7 @@ type
         ## if `user` is present and `member` isn't, then that means that the
         ## interaction is in a DM.
         id*, application_id*: string
-        guild_id*, channel_id*: Option[string]
+        guild_id*, channel_id*, locale*, guild_locale*: Option[string]
         kind*: InteractionType
         message*: Option[Message]
         member*: Option[Member]
@@ -450,7 +462,7 @@ type
         token*: string
         data*: Option[ApplicationCommandInteractionData]
         version*: int
-    ApplicationCommandInteractionData* = ref object
+    ApplicationCommandInteractionData* = ref object ## TODO: fix duplicate case situation.
         ## `options` Table[option_name, obj]
         case interaction_type*: InteractionDataType
         of idtApplicationCommand:
@@ -462,24 +474,37 @@ type
                 target_id*: string
                 resolved*: ApplicationCommandResolution
             of atNothing: discard
-        of idtComponent:
+        of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
             of SelectMenu:
                 values*: seq[string]
             else: discard
             custom_id*: string
+        # of idtModalSubmit:
+            components*: seq[MessageComponent]
+        else: discard
+    ResolvedChannel* = object
+        ## `thread_metadata` and `parent_id` are for Threads.
+        id*, name*: string
+        kind*: ChannelType
+        permissions*: set[PermissionFlags]
+        thread_metadata*: Option[ThreadMetadata]
+        parent_id*: Option[string]
     ApplicationCommandResolution* = object
         case kind*: ApplicationCommandType
         of atUser:
             members*: Table[string, Member]
             users*: Table[string, User]
+            roles*: Table[string, Role]
         of atMessage:
+            channels*: Table[string, ResolvedChannel]
             messages*: Table[string, Message]
+            attachments*: Table[string, Attachment]
         else: discard
 
     ApplicationCommandInteractionDataOption* = object
         name*: string
-        case kind*: ApplicationCommandOptionType
+        case kind*: ApplicationCommandOptionType ## TODO: acotAttachment
         of acotNothing: discard
         of acotBool: bval*: bool
         of acotInt: ival*: BiggestInt
@@ -489,15 +514,14 @@ type
         of acotRole: role_id*: string
         of acotSubCommand, acotSubCommandGroup:
             options*: Table[string, ApplicationCommandInteractionDataOption]
-        of acotNumber: fval*: float
+        of acotNumber: fval*: BiggestFloat
         of acotMentionable: mention_id*: string
+        else: discard # TODO: cover acotAttachment
         focused*: Option[bool] ## Will be true if this is the value the user is typing during auto complete
     InteractionResponse* = object
         case kind*: InteractionResponseType
-        of irtPong,
-           irtChannelMessageWithSource,
-           irtDeferredChannelMessageWithSource,
-           irtDeferredUpdateMessage,
+        of irtPong, irtChannelMessageWithSource,
+           irtDeferredChannelMessageWithSource, irtDeferredUpdateMessage,
            irtUpdateMessage:
             data*: Option[InteractionApplicationCommandCallbackData]
         of irtAutoCompleteResult:
@@ -586,6 +610,7 @@ type
         # same goes with disabled
         custom_id*: Option[string]
         disabled*: Option[bool]
+        placeholder*: Option[string]
         case kind*: MessageComponentType
         of None: discard
         of ActionRow:
@@ -597,9 +622,13 @@ type
             url*: Option[string]
         of SelectMenu:
             options*: seq[SelectMenuOption]
-            placeholder*: Option[string]
-            min_values*: Option[int]
-            max_values*: Option[int]
+            min_values*, max_values*: Option[int]
+        of TextInput:
+            input_style*: TextInputStyle
+            input_label*: string
+            value*: Option[string]
+            required*: Option[bool]
+            min_length*, max_length*: Option[int]
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]

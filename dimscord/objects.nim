@@ -203,6 +203,44 @@ proc postHook(m: var Member) =
 proc newMember*(data: JsonNode): Member =
     result = ($data).fromJson(Member)
 
+proc renameHook(v: var Overwrite, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[MessageFlags]](number)
+
+proc newOverwrite*(data: JsonNode): Overwrite =
+    proc parseHook(s: string, i: var int, v: var int or string) =
+        if s.contains("kind"):
+            when defined(discordv8) or defined(discordv9):
+                var str: string
+                parseHook(s, i, str)
+            except:
+                var num: int
+                parseHook(s, i, num)
+    result = ($data).fromJson(Overwrite)
+
+proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
+    var overwrites: seq[Overwrite]
+    parseHook(s, i, overwrites)
+    for o in overwrites:
+        v[o.id] = o
+
+proc renameHook(v: var GuildChannel, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc parseHook(s: string, i: var int, v: var ChannelType) =
+    var number: int
+    parseHook(s, i, number)
+    try:
+        v = ChannelType number
+    except:
+        v = ctGuildText # just by default incase
+
 proc renameHook(v: var MentionChannel, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
@@ -229,14 +267,6 @@ proc renameHook(s: var Reaction, fieldName: var string) =
     if fieldName == "me":
         fieldName = "reacted"
 
-proc newReaction*(data: JsonNode): Reaction =
-    result = ($data).fromJson(Reaction)
-
-proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[MessageFlags]](number)
-
 proc parseHook(s: string, i: var int, v: var Table[string, tuple[id, name: string, format_type: MessageStickerFormat]]) =
     var stickers: seq[tuple[
         id, name: string,
@@ -255,44 +285,14 @@ proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
 proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
 
-proc newApplication*(data: JsonNode): Application =
-    result = ($data).fromJson(Application)
-
-proc renameHook(v: var Overwrite, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc newOverwrite*(data: JsonNode): Overwrite =
-    proc parseHook(s: string, i: var int, v: var int or string) =
-        if s.contains("kind"):
-            when defined(discordv8) or defined(discordv9):
-                var str: string
-                parseHook(s, i, str)
-            except:
-                var num: int
-                parseHook(s, i, num)
-    result = ($data).fromJson(Overwrite)
-
-proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
-    var overwrites: seq[Overwrite]
-    parseHook(s, i, overwrites)
-    for o in overwrites:
-        v[o.id] = o
-
-proc renameHook(v: var GuildChannel, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = ($data).fromJson(GuildChannel)
 
-proc parseHook(s: string, i: var int, v: var ChannelType) =
-    var number: int
-    parseHook(s, i, number)
-    try:
-        v = ChannelType number
-    except:
-        v = ctGuildText # just by default incase
+proc newReaction*(data: JsonNode): Reaction =
+    result = ($data).fromJson(Reaction)
+
+proc newApplication*(data: JsonNode): Application =
+    result = ($data).fromJson(Application)
 
 proc renameHook(v: var PartialChannel, fieldName: var string) =
     if fieldName == "type":
@@ -622,7 +622,7 @@ proc newApplicationCommandInteractionData*(
 ): ApplicationCommandInteractionData =
     if "component_type" in data:
         result = ApplicationCommandInteractionData(
-            interactionType: idtComponent,
+            interactionType: idtMessageComponent,
             component_type: MessageComponentType data["component_type"].getInt 1,
             custom_id: data["custom_id"].str
         )
@@ -808,12 +808,24 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["custom_id"] =   %comp.custom_id.get
             result["label"] =       %comp.label
             result["style"] =       %comp.style.ord
+            result["url"] =         %comp.url
             if comp.emoji.isSome:
                 result["emoji"] =   comp.emoji.get.toPartial
-            result["url"] =         %comp.url
         of SelectMenu:
             result["custom_id"] =   %comp.custom_id.get
             result["options"] =     %comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] =  %comp.minValues
             result["max_values"] =  %comp.maxValues
+        of TextInput:
+            result["placeholder"] =    %comp.placeholder
+            result["style"] =          %int comp.input_style
+            result["label"] =          %comp.input_label
+            if comp.value.isSome:
+                result["value"] =      %comp.value.get
+            if comp.required.isSome:
+                result["required"] =   %comp.required.get
+            if comp.min_length.isSome:
+                result["min_length"] = %comp.min_length.get
+            if comp.max_length.isSome:
+                result["max_length"] = %comp.max_length.get

@@ -38,11 +38,21 @@ proc defaultAvatarUrl*(u: User): string =
     result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
 
 proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
-    ## Gets a user's avatar url.
+    ## Gets the user's avatar url.
     ## If user does not have an avatar it will return default avatar of the user.
     if u.avatar.isNone:
         return defaultAvatarUrl(u)
-    result = &"{cdnAvatars}{u.id}/{get(u.avatar)}.{fmt}?size={size}"
+    cdnAvatars&u.id&"/"&u.avatar.get"."&fmt&"?size="&($size)
+
+proc guildAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
+    ## Gets a user's avatar url.
+    ## If user does not have an avatar it will return default avatar of the user.
+    if m.user.isNil: return "" # imagine
+
+    if m.avatar.isNone:
+        return avatarUrl(m.user)
+
+    endpointGuilds(g.id)&"/users/"&m.user.id&"/avatars/"&m.avatar.get&"."&fmt
 
 proc iconUrl*(e: Emoji, fmt = "png"; size = 128): string =
     ## Gets an emoji's url.

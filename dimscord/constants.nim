@@ -98,7 +98,8 @@ type
         mfUrgent,
         mfHasThread,
         mfEphemeral,
-        mfLoading
+        mfLoading,
+        mfFailedToMentionSomeRolesInThread
     UserFlags* = enum
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
@@ -303,6 +304,7 @@ type
         acotRole =            8
         acotMentionable =     9 ## Includes Users and Roles
         acotNumber =          10 ## A double
+        acotAttachment =      11
     ApplicationCommandType* = enum
         atNothing  = 0 ## Should never appear
         atSlash    = 1 ## CHAT_INPUT
@@ -316,9 +318,12 @@ type
         itApplicationCommand = 2
         itMessageComponent =   3
         itAutoComplete =       4
+        itModalSubmit =        5
     InteractionDataType* = enum
         idtApplicationCommand
-        idtComponent
+        idtMessageComponent
+        idtAutoComplete
+        idtModalSubmit
     InteractionResponseType* = enum
         irtInvalid =                          0
         irtPong =                             1
@@ -343,11 +348,15 @@ type
         Success =   3
         Danger =    4
         Link =      5
+    TextInputStyle* = enum
+        Short =     1
+        Paragraph = 2
     MessageComponentType* = enum
         None =       0 # This should never happen
         ActionRow =  1
         Button =     2
         SelectMenu = 3
+        TextInput =  4
     StickerType* = enum
         stStandard = 1
         stGuild    = 2

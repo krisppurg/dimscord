@@ -47,7 +47,7 @@ proc crypto_secretbox_easy(
 const
     nonceLen = 24
     dataSize = 960 * 2 * 2 # Frame size is 960 16 bit integers and we need 2 channels worth
-    idealLength = 20 # How long one voice packet should ideally be in milliseconds
+    idealLength = 19 # How long one voice packet should ideally be in milliseconds
 
 
 const silencePacket = block:
@@ -294,7 +294,8 @@ proc setupHeartbeatInterval(v: VoiceClient) {.async.} =
     while not v.sockClosed:
         let hbTime = int((getTime().toUnixFloat() - v.lastHBTransmit) * 1000)
 
-        if hbTime < v.interval - 8000 and v.lastHBTransmit != 0.0:
+        # Anything less than 8 seconds is unacceptable so discard them
+        if hbTime < v.interval - (8 * 1000) and v.lastHBTransmit < 0.2:
             break
 
         await v.heartbeat()
@@ -501,7 +502,6 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     let encoder = createEncoder(48000, 2, 960, Voip)
 
     var count: uint = 0 # Keep track of packets sent 
-    
     while not atEnd() and not v.stopped:
         var sleepTime = idealLength
         var data = newStringOfCap(dataSize)
@@ -547,6 +547,7 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
           await sleepAsync sleepTime
         else:
           logVoice("Audio encoding and sending took longer than 20ms, check you don't have network or hardware problems")
+          
     v.stopped = false
     # Send 5 silent frames to clear buffer
     for i in 1..5:

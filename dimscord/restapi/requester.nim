@@ -245,6 +245,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 await api.handleRoute(false, route)
 
         r.processing = false
+        client.close()
     try:
         r.processing = true
         await doreq()

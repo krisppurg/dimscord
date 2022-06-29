@@ -64,6 +64,8 @@ const silencePacket = block:
 proc logVoice(msg: string) =
     when defined(dimscordDebug):
         echo fmt"[Voice]: {msg}"
+    else:
+        discard
 
 proc logVoice(msg: string, extra: auto) =
     logVoice(msg & "\n" & $extra)
@@ -268,12 +270,6 @@ proc disconnect*(v: VoiceClient) {.async.} =
     if v.connection != nil:
         v.connection.close()
 
-
-    logVoice "Shard reconnecting after disconnect..."
-    # TODO: Don't reconnect if not meant too e.g. if was kicked from a call
-    # TODO: Don't reconnect if explicitly disconnecting
-    #await v.reconnect()
-
 proc heartbeat(v: VoiceClient) {.async.} =
     if v.sockClosed: return
 
@@ -395,7 +391,6 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
             v.secret_key = data["d"]["secret_key"].elems.mapIt(chr(it.getInt)).join("")
             await v.voice_events.on_ready(v)
-            echo "finished on ready"
         else: discard
     if not v.reconnectable: return
 
@@ -430,7 +425,6 @@ proc startSession*(v: VoiceClient) {.async.} =
     except:
         v.stopped = true
         raise getCurrentException()
-        # raise newException(Exception, getCurrentExceptionMsg())
     try:
         logVoice "handlong socket"
         await v.handleSocketMessage()
@@ -461,7 +455,6 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     let 
         nonce = v.makeNonce(header)
         encrypted = crypto_secretbox_easy(v.secret_key, data, nonce)
-    # echo "Sending ", data.len, " bytes of data"
 
     var packet = newStringOfCap(header.len + encrypted.len)
     packet &= header
@@ -499,7 +492,6 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
 
     while stream.atEnd:
         await sleepAsync 1000
-        echo "Sleeping"
 
     doAssert stream != nil, "Stream is not open"
     let encoder = createEncoder(48000, 2, 960, Voip)
@@ -590,9 +582,6 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
 proc playYTDL*(v: VoiceClient, url: string) {.async.} =
     ## Plays a youtube link using yt-dlp.
     ## Requires `yt-dlp` to be installed
-    # if not exeExists("yt-dlp"):
-      # raise (ref AssertionError)(msg: "Cannot find yt-dlp, make sure it is installed")
     let (output, exitCode) = execCmdEx("yt-dlp -f bestaudio --get-url " & url)
-    echo exitCode
-    doAssert exitCode == 0, output
+    doAssert exitCode == 0, "yt-dlp failed:\n" & output
     await v.playFFMPEG(output)

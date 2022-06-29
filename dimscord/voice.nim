@@ -13,6 +13,10 @@ import std/os
 
 randomize()
 
+when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
+  {.warning[HoleEnumConv]: off.}
+
+
 type
     VoiceOp* = enum
         Identify = 0
@@ -37,7 +41,7 @@ else:
 {.pragma: sodium_import, importc, dynlib: libsodium_fn.}
 
 proc crypto_secretbox_easy(
-    c: ptr cuchar,
+    c: ptr uint8,
     m: cstring,
     mlen: culonglong,
     n: cstring,
@@ -61,7 +65,7 @@ proc logVoice(msg: string) =
     when defined(dimscordDebug):
         echo fmt"[Voice]: {msg}"
 
-proc logVoice(msg: string, extra: any) =
+proc logVoice(msg: string, extra: auto) =
     logVoice(msg & "\n" & $extra)
 
 proc makeNonce(v: VoiceClient, header: string): string =
@@ -85,11 +89,11 @@ proc crypto_secretbox_easy(key, msg, nonce: string): string =
     assert key.len == crypto_secretbox_KEYBYTES()
     let length = crypto_secretbox_MACBYTES() + msg.len
     result = newString length
-    var cipherText = cast[ptr UncheckedArray[cuchar]](createShared(cuchar, length))
+    var cipherText = cast[ptr UncheckedArray[uint8]](createShared(uint8, length))
     defer: freeShared cipherText
 
     let rc = crypto_secretbox_easy(
-        cast[ptr cuchar](cipherText),
+        cast[ptr uint8](cipherText),
         msg.cstring,
         msg.len.culonglong,
         nonce.cstring,

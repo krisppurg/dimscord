@@ -133,7 +133,7 @@ proc request*(api: RestApi, meth, endpoint: string;
 
         try:
             if mp == nil:
-                resp = await client.request(url, meth, pl)
+                resp = await client.request(url, parseEnum[HttpMethod](meth), pl)
             else:
                 resp = await client.post(url, pl, mp)
         except:
@@ -245,6 +245,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 await api.handleRoute(false, route)
 
         r.processing = false
+        client.close()
     try:
         r.processing = true
         await doreq()
@@ -259,6 +260,12 @@ proc request*(api: RestApi, meth, endpoint: string;
 
         if fatalErr:
             raise newException(RestError, err)
+
+proc `%`*(t: tuple[channel_id: string, duration_seconds: int]): JsonNode =
+    %*{"channel_id":t.channel_id,"duration_seconds":t.duration_seconds}
+
+proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
+    %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
 
 proc `%`*(o: Overwrite): JsonNode =
     %*{"id": o.id,

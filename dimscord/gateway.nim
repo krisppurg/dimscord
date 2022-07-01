@@ -57,8 +57,12 @@ proc logShard(s: Shard, msg: string) =
     when defined(dimscordDebug):
         echo "[shard: " & $s.id & "]: " & msg
 
+proc sockClosed(s: Shard): bool {.used.} =
+    return s.connection == nil or s.connection.tcpSocket.isClosed or s.stop
+
 proc sendSock(s: Shard, opcode: int, data: JsonNode;
         ignore = false) {.async.} =
+    if s.sockClosed: return # I think I finally solved the segfault issue after a long time.
     if not ignore and s.session_id == "": return
 
     s.logShard("Sending OP: " & $opcode)
@@ -111,9 +115,6 @@ proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
     if closeData.code in [4003, 4004, 4005, 4007, 4010, 4011, 4012, 4013, 4014]:
         result = false
         log("Fatal error: " & closeData.reason)
-
-proc sockClosed(s: Shard): bool {.used.} =
-    return s.connection == nil or s.connection.tcpSocket.isClosed or s.stop
 
 proc updateStatus*(s: Shard, activity = none ActivityStatus;
         status = "online";

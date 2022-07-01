@@ -29,6 +29,17 @@ proc getGuildPruneCount*(api: RestApi, guild_id: string,
         endpointGuildPrune(guild_id) & "?days=" & $days
     ))["pruned"].getInt
 
+proc editGuildMFALevel*(api: RestApi;
+        guild_id: string, level: MFALevel): Future[MFALevel] {.async.} =
+    ## Modify Guild MFA Level, requiring guild ownership.
+    result = MFALevel (await api.request(
+        "POST",
+        endpointGuildMFA(guild_id),
+        $(%*{
+            "level": %level
+        })
+    )).getInt
+
 proc deleteGuild*(api: RestApi, guild_id: string) {.async.} =
     ## Deletes a guild.
     discard await api.request("DELETE", endpointGuilds(guild_id))
@@ -176,12 +187,9 @@ proc createGuildRole*(api: RestApi, guild_id: string;
         color = 0; reason = ""): Future[Role] {.async.} =
     ## Creates a guild role.
     result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
-        "name": name,
-        "unicode_emoji": unicode_emoji,
-        "icon": icon,
-        "permissions": %(permissions.perms),
-        "color": color,
-        "hoist": hoist,
+        "name": name, "unicode_emoji": unicode_emoji,
+        "icon": icon, "permissions": %(permissions.perms),
+        "color": color, "hoist": hoist,
         "mentionable": mentionable
     }), audit_reason = reason)).newRole
 
@@ -287,14 +295,11 @@ proc getGuildBans*(api: RestApi,
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
-    let payload = %*{"delete_message_days": deletemsgdays}
-
     discard await api.request(
-        "PUT",
-        endpointGuildBans(guild_id, user_id),
-        $payload,
-        audit_reason = reason
-    )
+        "PUT", endpointGuildBans(guild_id, user_id),
+        $(%*{
+            "delete_message_days": deletemsgdays
+        }), audit_reason = reason)
 
 proc removeGuildBan*(api: RestApi,
         guild_id, user_id: string; reason = "") {.async.} =
@@ -840,3 +845,98 @@ proc getScheduledEventUsers*(api: RestApi,
         "GET",
         endpoint
     )).elems.mapIt(it.`$`.fromJson(GuildScheduledEventUser))
+
+proc renameHook(v: var ModerationAction, fieldName: var string) = # just putting that here because im cool and lazy
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc getAutoModerationRules*(api: RestApi;
+    guild_id: string
+): Future[seq[AutoModerationRule]] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointGuildAutoModerationRules(guild_id)
+    )).elems.mapIt(it.`$`.fromJson(AutoModerationRule))
+
+proc getAutoModerationRule*(api: RestApi;
+    guild_id, rule_id: string
+): Future[AutoModerationRule] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointGuildAutoModerationRules(guild_id, rule_id)
+    )).`$`.fromJson(AutoModerationRule)
+
+proc deleteAutoModerationRule*(api: RestApi; guild_id,rule_id: string){.async.}=
+    discard await api.request(
+        "DELETE",
+        endpointGuildAutoModerationRules(guild_id, rule_id)
+    )
+
+proc createAutoModerationRule*(api: RestApi;
+    guild_id, name: string; event_type: int;
+    trigger_type: ModerationTriggerType;
+    trigger_metadata = none tuple[
+        keyword_filter: seq[string],
+        presets: seq[int]
+    ];
+    actions: seq[ModerationAction] = @[]; enabled = false;
+    exempt_roles, exempt_channels: seq[string] = @[];
+    reason = ""
+): Future[AutoModerationRule] {.async.} =
+    ## `event_type` is gonna be 1 for SEND_MESSAGE
+    assert exempt_roles.len in 0..20
+    assert exempt_channels.len in 0..50
+
+    let payload = %*{
+        "name": name,
+        "event_type": event_type,
+        "trigger_type": %*trigger_type,
+        "enabled": enabled
+    }
+    payload.loadOpt(trigger_metadata)
+
+    if actions.len > 0:
+        payload["actions"] = %*actions
+        for act in payload["actions"].getElems:
+            act.delete("kind")
+            act["type"] = %act.kind
+
+    if exempt_roles.len > 0: payload["exempt_roles"] = %exempt_roles
+    if exempt_channels.len > 0: payload["exempt_channels"] = %exempt_channels
+
+    result = (await api.request(
+        "POST", endpointGuildAutoModerationRules(guild_id),
+        $payload, audit_reason = reason
+    )).`$`.fromJson(AutoModerationRule)
+
+proc editAutoModerationRule*(api: RestApi,
+    guild_id, rule_id: string; event_type = none int;
+    name = none string; trigger_type = none ModerationTriggerType;
+    trigger_metadata = none tuple[
+        keyword_filter: seq[string],
+        presets: seq[int]
+    ];
+    actions = none seq[ModerationAction]; enabled = none bool;
+    exempt_roles, exempt_channels = none seq[string];
+    reason = ""
+): Future[AutoModerationRule] {.async.} =
+    ## `event_type` is gonna be 1 for SEND_MESSAGE
+    if exempt_roles.isSome: assert exempt_roles.get.len in 0..20
+    if exempt_channels.isSome: assert exempt_channels.get.len in 0..50
+    let payload = newJObject()
+
+    payload.loadOpt(name, enabled, event_type, trigger_type, trigger_metadata)#
+
+    if actions.isSome:
+        payload["actions"] = %*actions.get
+        for act in payload["actions"].getElems:
+            act.delete("kind")
+            act["type"] = %act.kind
+
+    if exempt_roles.isSome: payload["exempt_roles"] = %exempt_roles.get
+    if exempt_channels.isSome: payload["exempt_channels"] = %exempt_channels.get
+
+    result = (await api.request(
+        "PATCH", endpointGuildAutoModerationRules(guild_id, rule_id),
+        $payload, audit_reason = reason
+    )).`$`.fromJson(AutoModerationRule)

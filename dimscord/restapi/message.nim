@@ -408,6 +408,14 @@ proc addThreadMember*(api: RestApi;
         audit_reason = reason
     )
 
+proc getThreadMember*(api: RestApi;
+        channel_id, user_id: string) {.async.} =
+    ## Get a thread member.
+    discard await api.request(
+        "GET",
+        endpointChannelThreadsMembers(channel_id, user_id)
+    )
+
 proc leaveThread*(api: RestApi; channel_id: string) {.async.} =
     ## Leave thread.
     discard await api.request(

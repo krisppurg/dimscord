@@ -137,9 +137,27 @@ proc newDiscordClient*(token: string;
                     c:GuildChannel, o:Option[GuildChannel]){.async.} = discard,
             thread_delete: proc (s: Shard, g: Guild,
                     c: GuildChannel, exists: bool) {.async.} = discard,
-            thread_list_sync: proc (s: Shard, e: ThreadListSync) {.async.} = discard,
-            thread_member_update: proc (s: Shard, g: Guild, t: ThreadMember) {.async.} = discard,
-            thread_members_update: proc (s: Shard, e: ThreadMembersUpdate) {.async.} = discard
+            thread_list_sync: proc (s: Shard,
+                    e: ThreadListSync) {.async.} = discard,
+            thread_member_update: proc (s: Shard, g: Guild,
+                    t: ThreadMember) {.async.} = discard,
+            thread_members_update: proc (s: Shard,
+                    e: ThreadMembersUpdate) {.async.} = discard,
+            guild_scheduled_event_create: proc (
+                    s: Shard, g: Guild,
+                    e: GuildScheduledEvent) {.async.} = discard,
+            guild_scheduled_event_delete: proc (
+                    s: Shard, g: Guild,
+                    e: GuildScheduledEvent) {.async.} = discard,
+            guild_scheduled_event_update: proc (s: Shard,
+                    g: Guild, e: GuildScheduledEvent,
+                    o: Option[GuildScheduledEvent]
+            ) {.async.} = discard,
+            guild_scheduled_event_user_add: proc(
+                    s: Shard, g: Guild,
+                    e: GuildScheduledEvent, u: User) {.async.} = discard,
+            guild_scheduled_event_user_remove: proc(s: Shard, g: Guild,
+                    e: GuildScheduledEvent, u: User) {.async.} = discard,
         ))
 
 proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
@@ -464,21 +482,22 @@ proc parseHook(s: string, i: var int, g: var Guild) =
         of JBool, JInt, JFloat, JString, JObject:
             g[k] = val
         of JArray:
-            if k == "voice_states":
+            case k:
+            of "voice_states":
                 for v in val.getElems:
                     let state = v.newVoiceState
 
                     g.members[state.user_id].voice_state = some state
                     g.voice_states[state.user_id] = state
-            elif k == "threads":
+            of "threads":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
                     g.threads[v["id"].str] = v.newGuildChannel
-            elif k == "channels":
+            of "channels":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
                     g.channels[v["id"].str] = v.newGuildChannel
-            elif k == "presences":
+            of "presences":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
                     let p = v.newPresence

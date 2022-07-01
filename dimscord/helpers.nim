@@ -1,4 +1,4 @@
-## Utilities for every discord object.
+# Utilities for every discord object.
 ## It mostly contains `helper` procedures.
 ## You can use this for getting an avatar url and permission checking without
 ## the hassle for doing complicated bitwise work.
@@ -53,6 +53,22 @@ proc guildAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
         return avatarUrl(m.user)
 
     endpointGuilds(g.id)&"/users/"&m.user.id&"/avatars/"&m.avatar.get&"."&fmt
+
+proc iconUrl*(r: Role, fmt = "png"): string =
+    ## Gets a role's icon url.
+    result = cdnRoleIcons&r.id&"/role_icon."&fmt
+
+proc eventCover*(e: GuildScheduledEvent, fmt = "png"): string =
+    ## Get scheduled event cover
+    result = cdnBase&"guild-events/"&e.id&"/scheduled_event_cover_image."&fmt
+
+proc guildBanner*(g: Guild, fmt = "png"): string =
+    ## Get guild banner url
+    cdnBanners&g.id&"/guild_banner."&fmt
+
+proc memberBanner*(g: Guild, m: Member, fmt = "png"): string =
+    ## Get member banner url
+    endpointGuilds(g.id)&"/users/"&m.user.id&"/banners/member_banner."&fmt
 
 proc iconUrl*(e: Emoji, fmt = "png"; size = 128): string =
     ## Gets an emoji's url.
@@ -217,7 +233,7 @@ proc createBotInvite*(client_id: string, permissions: set[PermissionFlags]={};
     ## Creates an invite link for the bot of the form.
     ## 
     ## Example:
-    ## `https://discord.com/api/oauth2/authorize?client_id=666&scope=bot&permissions=1`
+    ## `https://discord.com/api/oauth2/authorize?client_id=1234&scope=bot&permissions=1`
     ## 
     ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
     result = restBase & "oauth2/authorize?client_id=" & client_id &

@@ -149,6 +149,7 @@ type
         avatar*, locale*: Option[string]
     Member* = ref object
         ## - `permissions` Returned in the interaction object.
+        ## Be aware that Member.user could be nil in some cases.
         user*: User
         nick*, premium_since*, avatar*: Option[string]
         communication_disabled_until*: Option[string]
@@ -185,7 +186,7 @@ type
         id*: string
         name*, tags*: string
         guild_id*, description*: Option[string]
-        pack_id*, format_asset*: Option[string]
+        pack_id*: Option[string]
         format_type*: MessageStickerFormat
         kind*: StickerType
         sort_value*: Option[int]
@@ -247,6 +248,7 @@ type
         channel_id*, topic*: string
         privacy_level*: PrivacyLevel
         discoverable_disabled*: bool
+        guild_scheduled_event_id*: Option[string]
     ThreadMetadata* = object
         archived*, locked*: bool
         archiver_id*, create_timestamp*: Option[string]
@@ -299,7 +301,7 @@ type
         preferred_locale*: string
         rtc_region*, permissions_new*: Option[string]
         icon_hash*, description*, banner*: Option[string]
-        public_updates_channel_id*: Option[string]
+        public_updates_channel_id*, rules_channel_id*: Option[string]
         icon*, splash*, discovery_splash*: Option[string]
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
@@ -362,6 +364,20 @@ type
     RoleTag* = object
         bot_id*, integration_id*: Option[string]
         premium_subscriber*: Option[bool] #no idea what type is supposed to be
+    AutoModerationRule* = object
+        ## trigger_metadata info: https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata
+        ## event_type: https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-event-types
+        ## presets: https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-keyword-preset-types
+        id*, guild_id*, name*, creator_id*: string
+        event_type*: int
+        trigger_type*: ModerationTriggerType
+        trigger_metadata*: tuple[keyword_filter: seq[string], presets: seq[int]]
+        actions*: seq[ModerationAction]
+        enabled*: bool
+        exempt_roles*, exempt_channels*: seq[string]
+    ModerationAction* = object
+        kind*: ModerationActionType
+        metadata*: tuple[channel_id: string, duration_seconds: int]
     GuildTemplate* = object
         code*, name*, creator_id*: string
         description*: Option[string]
@@ -411,12 +427,13 @@ type
         rpc_origins*: seq[string]
         bot_public*, bot_require_code_grant*: bool
         terms_of_service_url*, privacy_policy_url*: Option[string]
-        guild_id*: Option[string]
+        guild_id*, custom_install_url*: Option[string]
         owner*: User
         summary*, verify_key*: string
         team*: Option[Team]
-        icon*, primary_sku_id*, slug*, cover_image*: Option[string]
+        icon*, primary_sku_id*, slug*, tags*, cover_image*: Option[string]
         flags*: set[ApplicationFlags]
+        install_params*: tuple[scopes: seq[string], permissions: string]
     ApplicationCommand* = object
         id*, application_id*, version*: string
         guild_id*: Option[string]
@@ -542,11 +559,11 @@ type
         target_application*: Option[Application]
         approximate_presence_count*, approximate_member_count*: Option[int]
         expires_at*: Option[string]
-        stage_instance*: Option[tuple[
-            members: seq[Member],
-            topic: string,
-            participant_count, speaker_count: int
-        ]]
+        # stage_instance*: Option[tuple[
+        #     members: seq[Member],
+        #     topic: string,
+        #     participant_count, speaker_count: int
+        # ]] deprecated
         guild_scheduled_event*: Option[GuildScheduledEvent]
     InviteMetadata* = object
         code*, created_at*: string
@@ -558,7 +575,7 @@ type
         guild_id*: Option[string]
         uses*, max_uses*, max_age*: int
         channel_id*: string
-        inviter*, target_user*: Option[User]
+        inviter*, taget_user*: Option[User]
         target_type*: Option[InviteTargetType]
         target_application*: Option[Application]
         temporary*: bool
@@ -588,15 +605,17 @@ type
     Integration* = object
         id*, name*, kind*: string
         role_id*, synced_at*: Option[string]
-        enabled*: bool
-        syncing*: Option[bool]
+        enabled*, syncing*: Option[bool]
         enable_emoticons*, revoked*: Option[bool]
         expire_behavior*: Option[IntegrationExpireBehavior]
         expire_grace_period*: Option[int]
         user*: Option[User]
         account*: tuple[id, name: string]
         subscriber_count*: Option[int]
-        application*: Option[Application]
+        application*: Option[tuple[
+            id, name, description: string,
+            icon: Option[string], bot: Option[User]
+        ]]
     SelectMenuOption* = object
         label*: string
         value*: string
@@ -643,8 +662,8 @@ type
     AuditLogOptions* = object
         ## - `kind` ("role" or "member") or (0 or 1)
         delete_member_days*, members_removed*: Option[string]
-        channel_id*, count*: Option[string]
-        id*, role_name*: Option[string]
+        channel_id*, count*, role_name*: Option[string]
+        id*, message_id*, application_id*: Option[string]
         when defined(discordv8) or defined(discordv9): ## when V8 or V9
             kind*: Option[int]
         else:
@@ -676,6 +695,7 @@ type
         integrations*: seq[Integration]
         threads*: seq[GuildChannel]
         guild_scheduled_events*: seq[GuildScheduledEvent]
+        auto_moderation_rules*: seq[AutoModerationRule]
     GuildWidgetJson* = object
         id*, name*: string
         instant_invite*: string
@@ -778,6 +798,13 @@ type
                 i: StageInstance, exists: bool) {.async.}
         guild_stickers_update*: proc (s: Shard, g: Guild,
                 stickers: seq[Sticker]) {.async.}
+        guild_scheduled_event_create*, guild_scheduled_event_delete*: proc (
+                s: Shard, g: Guild, e: GuildScheduledEvent) {.async.}
+        guild_scheduled_event_update*: proc (s: Shard,
+                    g: Guild, e: GuildScheduledEvent, o: Option[GuildScheduledEvent]
+            ) {.async.}
+        guild_scheduled_event_user_add*,guild_scheduled_event_user_remove*: proc(
+                s: Shard, g: Guild, e: GuildScheduledEvent, u: User) {.async.}
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

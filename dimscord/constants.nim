@@ -134,7 +134,10 @@ type
         apfGatewayGuildMembers,
         apfGatewayGuildMembersLimited,
         apfVerificationPendingGuildLimit,
-        apfEmbeded
+        apfEmbeded,
+        apfGatewayMessageContent,
+        apfGatewayMessageContentLimited,
+
 const
     libName* =  "Dimscord"
     libVer* =   "1.3.0"
@@ -154,6 +157,7 @@ const
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAppIcons* =           cdnBase & "app-icons/"
     cdnRoleIcons* =          cdnBase & "role-icons/"
+    cdnBanners* =            cdnBase & "banners/"
 
 type
     MessageType* = enum
@@ -180,6 +184,7 @@ type
         mtThreadStarterMessage =                    21
         mtGuildInviteReminder =                     22
         mtContextMenuCommand =                      23
+        mtAutoModerationAction =                    24
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
@@ -197,6 +202,8 @@ type
         ctGuildPublicThread =  11
         ctGuildPrivateThread = 12
         ctGuildStageVoice =    13
+        ctGuildDirectory =     14
+        ctGuildForum =         15
     MessageNotificationLevel* = enum
         mnlAllMessages =  0
         mnlOnlyMentions = 1
@@ -238,53 +245,58 @@ type
         iebRemoveRole = 0
         iebKick =       1
     AuditLogEntryType* = enum
-        aleGuildUpdate =               1
-        aleChannelCreate =             10
-        aleChannelUpdate =             11
-        aleChannelDelete =             12
-        aleChannelOverwriteCreate =    13
-        aleChannelOverwriteUpdate =    14
-        aleChannelOverwriteDelete =    15
-        aleMemberKick =                20
-        aleMemberPrune =               21
-        aleMemberBanAdd =              22
-        aleMemberBanRemove =           23
-        aleMemberUpdate =              24
-        aleMemberRoleUpdate =          25
-        aleMemberMove =                26
-        aleMemberDisconnect =          27
-        aleBotAdd =                    28
-        aleRoleCreate =                30
-        aleRoleUpdate =                31
-        aleRoleDelete =                32
-        aleInviteCreate =              40
-        aleInviteUpdate =              41
-        aleInviteDelete =              42
-        aleWebhookCreate =             50
-        aleWebhookUpdate =             51
-        aleWebhookDelete =             52
-        aleEmojiCreate =               60
-        aleEmojiUpdate =               61
-        aleEmojiDelete =               62
-        aleMessageDelete =             72
-        aleMessageBulkDelete =         73
-        aleMessagePin =                74
-        aleMessageUnpin =              75
-        aleIntegrationCreate =         80
-        aleIntegrationUpdate =         81
-        aleIntegrationDelete =         82
-        aleStageInstanceCreate =       83
-        aleStageInstanceUpdate =       84
-        aleStageInstanceDelete =       85
-        aleStickerCreate =             90
-        aleStickerUpdate =             91
-        aleStickerDelete =             92
-        aleGuildScheduledEventCreate = 100
-        aleGuildScheduledEventUpdate = 101
-        aleGuildScheduledEventDelete = 102
-        aleThreadCreate =              110
-        aleThreadUpdate =              111
-        aleThreadDelete =              112
+        aleGuildUpdate =                        1
+        aleChannelCreate =                      10
+        aleChannelUpdate =                      11
+        aleChannelDelete =                      12
+        aleChannelOverwriteCreate =             13
+        aleChannelOverwriteUpdate =             14
+        aleChannelOverwriteDelete =             15
+        aleMemberKick =                         20
+        aleMemberPrune =                        21
+        aleMemberBanAdd =                       22
+        aleMemberBanRemove =                    23
+        aleMemberUpdate =                       24
+        aleMemberRoleUpdate =                   25
+        aleMemberMove =                         26
+        aleMemberDisconnect =                   27
+        aleBotAdd =                             28
+        aleRoleCreate =                         30
+        aleRoleUpdate =                         31
+        aleRoleDelete =                         32
+        aleInviteCreate =                       40
+        aleInviteUpdate =                       41
+        aleInviteDelete =                       42
+        aleWebhookCreate =                      50
+        aleWebhookUpdate =                      51
+        aleWebhookDelete =                      52
+        aleEmojiCreate =                        60
+        aleEmojiUpdate =                        61
+        aleEmojiDelete =                        62
+        aleMessageDelete =                      72
+        aleMessageBulkDelete =                  73
+        aleMessagePin =                         74
+        aleMessageUnpin =                       75
+        aleIntegrationCreate =                  80
+        aleIntegrationUpdate =                  81
+        aleIntegrationDelete =                  82
+        aleStageInstanceCreate =                83
+        aleStageInstanceUpdate =                84
+        aleStageInstanceDelete =                85
+        aleStickerCreate =                      90
+        aleStickerUpdate =                      91
+        aleStickerDelete =                      92
+        aleGuildScheduledEventCreate =          100
+        aleGuildScheduledEventUpdate =          101
+        aleGuildScheduledEventDelete =          102
+        aleThreadCreate =                       110
+        aleThreadUpdate =                       111
+        aleThreadDelete =                       112
+        aleApplicationCommandPermissionUpdate = 121
+        aleAutoModerationRuleCreate =           140
+        aleAutoModerationRuleUpdate =           141
+        aleAutoModerationRuleDelete =           142
+        aleAutoModerationBlockMessage =         143
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
@@ -336,7 +348,6 @@ type
         ittStream =              1
         ittEmbeddedApplication = 2
     PrivacyLevel* = enum
-        plPublic =    1
         plGuildOnly = 2
     UserPremiumType* = enum
         uptNone =         0
@@ -371,6 +382,15 @@ type
         etStageInstance = 1
         etVoice =         2
         etExternal =      3
+    ModerationActionType* = enum
+        matBlockMessage =     1
+        matSendAlertMessage = 2
+        matTimeout =          3
+    ModerationTriggerType* = enum
+        mttKeyword =       1
+        mttHarmfulLink =   2
+        mttSpam =          3
+        mttKeywordPreset = 4
 
 const
     ## This flag is used for Slash Command interaction callback.
@@ -479,8 +499,14 @@ proc endpointGuildPreview*(gid: string): string =
 proc endpointGuildRegions*(gid: string): string =
     result = endpointGuilds(gid) & "/regions"
 
+proc endpointGuildMFA*(gid: string): string =
+    result = endpointGuilds(gid) & "/mfa"
+
 proc endpointGuildAuditLogs*(gid: string): string =
     result = endpointGuilds(gid) & "/audit-logs"
+
+proc endpointGuildAutoModerationRules*(gid: string; rid = ""): string =
+    endpointGuilds(gid)&"/auto-moderation/rules"&(if rid!="":"/"&rid else:"")
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")

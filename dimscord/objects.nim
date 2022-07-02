@@ -158,6 +158,14 @@ proc newDiscordClient*(token: string;
                     e: GuildScheduledEvent, u: User) {.async.} = discard,
             guild_scheduled_event_user_remove: proc(s: Shard, g: Guild,
                     e: GuildScheduledEvent, u: User) {.async.} = discard,
+            auto_moderation_rule_create: proc(s:Shard,
+                g: Guild, r: AutoModerationRule) {.async.} = discard,
+            auto_moderation_rule_update: proc(s: Shard,
+                g: Guild, r: AutoModerationRule) {.async.} = discard,
+            auto_moderation_rule_delete: proc(s: Shard,
+                g: Guild, r: AutoModerationRule) {.async.} = discard,
+            auto_moderation_action_execution: proc(s: Shard,
+                g: Guild, e: ModerationActionExecution) {.async.} = discard
         ))
 
 proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =

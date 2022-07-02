@@ -68,7 +68,10 @@ type
         giDirectMessages,
         giDirectMessageReactions,
         giDirectMessageTyping,
-        giGuildScheduledEvents = 16
+        giMessageContent,
+        giGuildScheduledEvents = 16,
+        giAutoModerationConfiguration = 20,
+        giAutoModerationExecution
     AuditLogChangeType* = enum
         alcString,
         alcInt,

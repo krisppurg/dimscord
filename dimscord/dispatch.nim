@@ -652,6 +652,38 @@ proc guildRoleDelete(s: Shard, data: JsonNode) {.async.} =
 
     await s.client.events.guild_role_delete(s, guild, role)
 
+proc renameHook(v: var ModerationAction, fieldName: var string) = # just putting that here because im cool and lazy
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc autoModerationRuleCreate(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    await s.client.events.auto_moderation_rule_create(s,
+        guild, data.`$`.fromJson AutoModerationRule)
+
+proc autoModerationRuleUpdate(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    await s.client.events.auto_moderation_rule_update(s,
+        guild, data.`$`.fromJson AutoModerationRule)
+
+proc autoModerationRuleDelete(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    await s.client.events.auto_moderation_rule_delete(s,
+        guild, data.`$`.fromJson AutoModerationRule)
+
+proc autoModerationActionExecution(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    await s.client.events.auto_moderation_action_execution(s,
+        guild, data.`$`.fromJson ModerationActionExecution)
+
 proc webhooksUpdate(s: Shard, data: JsonNode) {.async.} =
     let
         guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
@@ -715,6 +747,79 @@ proc stageInstanceDelete(s: Shard, data: JsonNode) {.async.} =
         exists = true
 
     await s.client.events.stage_instance_delete(s, guild, stage, exists)
+
+proc guildScheduledEventUserAdd(s: Shard, data: JsonNode) {.async.} =
+    let
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        user = s.cache.users.getOrDefault(
+            data["user_id"].str,
+            User(id: data["user_id"].str)
+        )
+        event = guild.guild_scheduled_events.getOrDefault(
+            data["guild_scheduled_event_id"].str,
+            GuildScheduledEvent(id: data["guild_scheduled_event_id"].str),
+        )
+    await s.client.events.guild_scheduled_event_user_add(s, guild, event, user)
+
+proc guildScheduledEventUserRemove(s: Shard, data: JsonNode) {.async.} =
+    let
+        guild = s.cache.guilds.getOrDefault(
+            data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        user = s.cache.users.getOrDefault(
+            data["user_id"].str,
+            User(id: data["user_id"].str)
+        )
+        event = guild.guild_scheduled_events.getOrDefault(
+            data["guild_scheduled_event_id"].str,
+            GuildScheduledEvent(id: data["guild_scheduled_event_id"].str),
+        )
+    await s.client.events.guild_scheduled_event_user_remove(s, guild, event, user)
+
+proc guildScheduledEventCreate(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(
+        data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+
+    guild.guild_scheduled_events[
+        data["id"].str
+    ] = data.`$`.fromJson(GuildScheduledEvent)
+
+    await s.client.events.guild_scheduled_event_create(s, guild,
+        guild.guild_scheduled_events[data["id"].str]
+    )
+
+proc guildScheduledEventUpdate(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(
+        data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+
+    guild.guild_scheduled_events[
+        data["id"].str
+    ] = data.`$`.fromJson(GuildScheduledEvent)
+
+    await s.client.events.guild_scheduled_event_create(s, guild,
+        guild.guild_scheduled_events[data["id"].str]
+    )
+
+proc guildScheduledEventDelete(s: Shard, data: JsonNode) {.async.} =
+    let guild = s.cache.guilds.getOrDefault(
+        data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+
+    if data["id"].str in guild.guild_scheduled_events:
+        guild.guild_scheduled_events.del(data["id"].str)
+
+    await s.client.events.guild_scheduled_event_delete(s, guild,
+        guild.guild_scheduled_events[data["id"].str]
+    )
 
 proc threadCreate(s: Shard, data: JsonNode) {.async.} =
     let thread = newGuildChannel(data)
@@ -872,5 +977,15 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "STAGE_INSTANCE_CREATE": await s.stageInstanceCreate(data)
     of "STAGE_INSTANCE_UPDATE": await s.stageInstanceUpdate(data)
     of "STAGE_INSTANCE_DELETE": await s.stageInstanceDelete(data)
+    of "GUILD_SCHEDULED_EVENT_USER_ADD": await s.guildScheduledEventUserAdd data
+    of "GUILD_SCHEDULED_EVENT_USER_REMOVE": await s.guildScheduledEventUserRemove data
+    of "GUILD_SCHEDULED_EVENT_CREATE": await s.guildScheduledEventCreate data
+    of "GUILD_SCHEDULED_EVENT_UPDATE": await s.guildScheduledEventUpdate data
+    of "GUILD_SCHEDULED_EVENT_DELETE": await s.guildScheduledEventDelete data
+    of "AUTO_MODERATION_RULE_CREATE": await s.autoModerationRuleCreate data
+    of "AUTO_MODERATION_RULE_UPDATE": await s.autoModerationRuleUpdate data
+    of "AUTO_MODERATION_RULE_DELETE": await s.autoModerationRuleDelete data
+    of "AUTO_MODERATION_ACTION_EXECUTION":
+        await s.autoModerationActionExecution data
     else:
         discard

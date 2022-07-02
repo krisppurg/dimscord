@@ -378,6 +378,12 @@ type
     ModerationAction* = object
         kind*: ModerationActionType
         metadata*: tuple[channel_id: string, duration_seconds: int]
+    ModerationActionExecution* = object
+        guild_id*, rule_id*, user_id*, content*: string
+        channel_id*, message_id*, alert_system_message_id*: Option[string]
+        matched_keyword*, matched_content*: Option[string]
+        action*: ModerationAction
+        rule_trigger_type*: ModerationTriggerType
     GuildTemplate* = object
         code*, name*, creator_id*: string
         description*: Option[string]
@@ -805,6 +811,12 @@ type
             ) {.async.}
         guild_scheduled_event_user_add*,guild_scheduled_event_user_remove*: proc(
                 s: Shard, g: Guild, e: GuildScheduledEvent, u: User) {.async.}
+        auto_moderation_rule_create*,auto_moderation_rule_update*: proc(s:Shard,
+            g: Guild, r: AutoModerationRule) {.async.}
+        auto_moderation_rule_delete*: proc(s: Shard,
+            g: Guild, r: AutoModerationRule) {.async.}
+        auto_moderation_action_execution*: proc(s: Shard,
+            g: Guild, e: ModerationActionExecution) {.async.}
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

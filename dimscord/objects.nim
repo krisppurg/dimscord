@@ -7,6 +7,9 @@
 ##   
 ## Some may not be optional, but they can be assumable or always present.
 
+when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
+  {.warning[HoleEnumConv]: off.}
+
 import options, json, tables, constants
 import sequtils, strutils, jsony
 import asyncdispatch

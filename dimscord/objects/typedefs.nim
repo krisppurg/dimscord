@@ -1,6 +1,7 @@
 import options as optns, json, asyncdispatch
 import tables, ../constants
 from ws import Websocket
+import std/asyncnet
 
 type
     RestError* = object of CatchableError
@@ -38,18 +39,37 @@ type
         heartbeating*, resuming*, reconnecting*: bool
         authenticating*, networkError*, ready*: bool
         interval*: int
+    VoiceEncryptionMode* = enum
+        Normal = "xsalsa20_poly1305"
+        Suffix = "xsalsa20_poly1305_suffix"
+        Lite = "xsalsa20_poly1305_lite"
+
     VoiceClient* = ref object
         shard*: Shard
         voice_events*: VoiceEvents
         endpoint*, token*: string
+        srcIP*, dstIP*: string
+        srcPort*, dstPort*: int # src is our computer, dst is discord servers
         session_id*, guild_id*, channel_id*: string
         connection*: WebSocket
         hbAck*, hbSent*, stop*: bool
         lastHBTransmit*, lastHBReceived*: float
         retry_info*: tuple[ms, attempts: int]
-        heartbeating*, resuming*, reconnecting*: bool
+        heartbeating*, resuming*, reconnecting*, shouldReconnect*: bool
         networkError*, ready*: bool
         interval*: int
+        sequence*: uint32
+        time*: uint32
+        secret_key*: string
+
+        ssrc*: uint32
+        paused*, stopped*, reconnectable*: bool
+        udp*: AsyncSocket
+        case encryptMode*: VoiceEncryptionMode
+        of Lite: # Lites nonce is just an increasing number
+            nonce*: uint32
+        else: discard
+
     VoiceEvents* = ref object
         on_dispatch*: proc (v: VoiceClient,
                             d: JsonNode, event: string) {.async.}

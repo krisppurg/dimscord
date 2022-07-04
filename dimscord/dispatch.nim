@@ -652,7 +652,7 @@ proc guildRoleDelete(s: Shard, data: JsonNode) {.async.} =
 
     await s.client.events.guild_role_delete(s, guild, role)
 
-proc renameHook(v: var ModerationAction, fieldName: var string) = # just putting that here because im cool and lazy
+proc renameHook(v: var ModerationAction, fieldName: var string) {.used.} =
     if fieldName == "type":
         fieldName = "kind"
 
@@ -857,7 +857,6 @@ proc threadDelete(s: Shard, data: JsonNode) {.async.} =
                 id: data["id"].str,
                 guild_id: data["guild_id"].str,
                 parent_id: some data["parent_id"].str,
-                kind: ChannelType data["type"].getInt
             )
         )
         guild = s.cache.guilds.getOrDefault(
@@ -865,6 +864,10 @@ proc threadDelete(s: Shard, data: JsonNode) {.async.} =
             Guild(id: data["guild_id"].str)
         )
     var exists = false
+    if data["type"].getInt <= int ChannelType.high:
+        thread.kind = ChannelType data["type"].getInt
+    else:
+        thread.kind = ctGuildText
 
     if thread.id in s.cache.guildChannels:
         s.cache.guildChannels.del(thread.id)

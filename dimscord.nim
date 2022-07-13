@@ -48,6 +48,7 @@
 ##
 ##   For further details about `voice` click `dimscord/voice`.
 ## 
+##    The default api version for discord api is v10, for both restapi and gateway.
 ## Modules required
 ## ===================
 ## Sometimes you would need some modules in order to use in procedures,
@@ -64,9 +65,8 @@
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
 ## - `-d:dimscordDebugNoSubscriptionLogs` No debugging PRESENCE_UPDATE|TYPING_START when `guild_subscriptions` is on. 
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
-## - `-d:discordv8` Discord API v8 if v6 or v7 is no longer functional consider defining it.
 ## - `-d:discordv9` Discord API v9 is used for threads.
-## - `-d:dimscordVoice` Enables the voice module. Requires libsodium
+## - `-d:dimscordVoice` Enables the voice module. Requires libsodium and libopus
 
 import dimscord/[
     gateway, restapi, constants,

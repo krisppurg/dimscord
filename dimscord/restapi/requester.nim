@@ -98,7 +98,7 @@ proc request*(api: RestApi, meth, endpoint: string;
 
     let r = api.endpoints[route]
     while r.processing:
-        poll()
+        await sleepAsync 0
 
     proc doreq() {.async.} =
         if invalid_requests >= 1500:
@@ -186,7 +186,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                     error = fin & "You are being rate-limited."
                     var retry: int 
 
-                    when defined(discordv8) or defined(discordv9):
+                    if api.restVersion >= 8:
                         retry = data["retry_after"].getInt * 1000
                     else:
                         retry = int(data["retry_after"].getFloat(1.25) * 1000)

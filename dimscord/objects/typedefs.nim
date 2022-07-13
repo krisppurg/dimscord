@@ -43,33 +43,27 @@ type
         Normal = "xsalsa20_poly1305"
         Suffix = "xsalsa20_poly1305_suffix"
         Lite = "xsalsa20_poly1305_lite"
-
     VoiceClient* = ref object
         shard*: Shard
         voice_events*: VoiceEvents
-        endpoint*, token*: string
-        srcIP*, dstIP*: string
-        srcPort*, dstPort*: int # src is our computer, dst is discord servers
+        endpoint*, token*, secret_key*: string
         session_id*, guild_id*, channel_id*: string
         connection*: WebSocket
-        hbAck*, hbSent*, stop*: bool
+        udp*: AsyncSocket
         lastHBTransmit*, lastHBReceived*: float
         retry_info*: tuple[ms, attempts: int]
-        heartbeating*, resuming*, reconnecting*, shouldReconnect*: bool
+        hbAck*, hbSent*, stop*: bool
+        heartbeating*, resuming*, reconnecting*: bool
         networkError*, ready*: bool
-        interval*: int
-        sequence*: uint32
-        time*: uint32
-        secret_key*: string
-
-        ssrc*: uint32
         paused*, stopped*, reconnectable*: bool
-        udp*: AsyncSocket
+        interval*: int
+        sequence*, time*, ssrc*: uint32
+        srcIP*, dstIP*: string
+        srcPort*, dstPort*: int # src is our computer, dst is discord servers
         case encryptMode*: VoiceEncryptionMode
         of Lite: # Lites nonce is just an increasing number
             nonce*: uint32
         else: discard
-
     VoiceEvents* = ref object
         on_dispatch*: proc (v: VoiceClient,
                             d: JsonNode, event: string) {.async.}
@@ -308,8 +302,6 @@ type
         instance*: bool
     Presence* = ref object
         user*: User
-        when not defined(discordv8) and not defined(discordv9): ## when not V8 or V9
-            activity*: Option[Activity]
         guild_id*, status*: string
         activities*: seq[Activity]
         client_status*: tuple[web, desktop, mobile: string]
@@ -420,11 +412,7 @@ type
     Overwrite* = object
         ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string
-        when defined(discordv8) or defined(discordv9): ## when V8 or V9
-            kind*: int
-        else:
-            kind*: string
-            allow_new*, deny_new*: string
+        kind*: int #.
         allow*, deny*: set[PermissionFlags]
     PermObj* = object
         allowed*, denied*: set[PermissionFlags]
@@ -465,7 +453,10 @@ type
         guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
+        name_localizations*, description_localizations*: Option[string]
         default_permission*: bool
+        default_member_permissions*: Option[PermissionFlags]
+        dm_permission*: Option[bool]
         options*: seq[ApplicationCommandOption]
     GuildApplicationCommandPermissions* = object
         id*, application_id*, guild_id*: string
@@ -477,13 +468,16 @@ type
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string
+        name_localizations*, description_localizations*: string
         required*, autocomplete*: Option[bool]
         channel_types*: seq[ChannelType]
         min_value*, max_value*: (Option[BiggestInt], Option[float])
+        min_length*, max_length*: Option[int]
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
         name*: string
+        name_localizations*: Table[string, string]
         value*: (Option[string], Option[int])
     MessageInteraction* = object
         id*, name*: string
@@ -690,10 +684,7 @@ type
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*, role_name*: Option[string]
         id*, message_id*, application_id*: Option[string]
-        when defined(discordv8) or defined(discordv9): ## when V8 or V9
-            kind*: Option[int]
-        else:
-            kind*: Option[string] 
+        kind*: Option[string] #.
     AuditLogChangeValue* = object
         case kind*: AuditLogChangeType
         of alcString:

@@ -130,9 +130,11 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
 
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         name, description: string;
+        name_localizations,description_localizations=none Table[string,string];
         kind = atSlash;
         guild_id = "";
-        default_permission = true;
+        default_permission, dm_permission = true;
+        default_member_permissions = none PermissionFlags;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Create a global or guild only slash command.
@@ -147,17 +149,22 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     assert name.len >= 3 and name.len <= 32
     var payload = %*{"name": name,
                      "default_permission": default_permission,
+                     "dm_permission": dm_permission,
                      "type": ord kind}
+
+    if default_member_permissions.isSome:
+        payload["default_member_permissions"] = %(
+            cast[int](default_member_permissions.get)
+        )
+
+    payload.loadOpt(name_localizations, description_localizations)
     if kind notin {atUser, atMessage}:
         assert description.len >= 1 and description.len <= 100
         payload["description"] = %description
     else:
         assert description == "", "Context menu commands cannot have description"
 
-    if options.len > 0: payload["options"] = %(options.map(
-        proc (x: ApplicationCommandOption): JsonNode =
-            %%*x
-    ))
+    if options.len > 0: payload["options"] = %options.mapIt(%%*it)
     var endpoint = endpointGlobalCommands(application_id)
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id)
@@ -169,15 +176,17 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     )).newApplicationCommand
 
 proc getApplicationCommands*(
-        api: RestApi, application_id: string; guild_id = ""
+        api: RestApi, application_id: string; guild_id = "";
+        with_localizations = false
 ): Future[seq[ApplicationCommand]] {.async.} =
     ## Get slash commands for a specific application, `guild_id` is optional.
     var endpoint = endpointGlobalCommands(application_id)
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id)
-    result = (await api.request(
-        "GET",
-        endpoint
+    result = (await api.request("GET",
+        endpoint, $(%*{
+            "with_localizations": with_localizations
+        })
     )).elems.map(newApplicationCommand)
 
 proc getApplicationCommand*(
@@ -202,10 +211,7 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
     ## Overwrites existing commands slash command that were registered in guild or application.
     ## This means that only the commands you send in this request will be available globally or in a specific guild
     ## - `guild_id` is optional.
-    let payload = %(commands.map(
-        proc (a: ApplicationCommand): JsonNode =
-            %%* a
-    ))
+    let payload = %(commands.map(`%%*`))
     var endpoint = endpointGlobalCommands(application_id)
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id)
@@ -216,9 +222,11 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
         $payload
     )).elems.map(newApplicationCommand)
 
-proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
-        guild_id, name, description: string = "";
+proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
+        guild_id, name, description = "";
+        name_localizations,description_localizations = none Table[string,string];
         default_permission = true;
+        default_member_permissions = none PermissionFlags;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Modify slash command for a specific application.
@@ -229,17 +237,24 @@ proc editApplicationCommand*(api: RestApi, application_id, command_id: string;
     ## - `default_permission` - Optional
     var payload = %*{"default_permission": default_permission}
     var endpoint = endpointGlobalCommands(application_id, command_id)
+
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id, command_id)
     if name != "":
         assert name.len in 3..32
         payload["name"] = %name
-
     if description != "":
         assert description.len in 1..100
         payload["description"] = %description
-
     if options.len > 0: payload["options"] = %(options.map(`%%*`))
+
+    payload.loadOpt(name_localizations, description_localizations)
+
+    if default_member_permissions.isSome:
+        payload["default_member_permissions"] = %(
+            cast[int](default_member_permissions.get)
+        )
+
     result = (await api.request(
         "PATCH",
         endpoint,

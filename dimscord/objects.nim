@@ -12,7 +12,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
 
 import options, json, tables, constants
 import sequtils, strutils, jsony
-import asyncdispatch
+import asyncdispatch, std/with
 include objects/typedefs, objects/macros
 
 proc newShard*(id: int, client: DiscordClient): Shard =
@@ -30,21 +30,16 @@ proc newShard*(id: int, client: DiscordClient): Shard =
 
 proc newDiscordClient*(token: string;
         rest_mode = false;
-        restVersion = 6): DiscordClient =
+        restVersion = 10): DiscordClient =
     ## Creates a Discord Client.
     var auth_token = token
-    if not token.startsWith("Bot "):
+    if not token.startsWith("Bot ") and not token.startsWith("Bearer "):
         auth_token = "Bot " & token
     
     var apiVersion = restVersion
-    when defined(discordv8) and not defined(discordv9):
-        apiVersion = 8
-    when defined(discordv9) and not defined(discordv8): 
+    when defined(discordv9):
         apiVersion = 9
-    when defined(discordv8) and defined(discordv9):
-        raise newException(Exception,
-            "Both v8 and v9 are defined, please define either one of them only."
-        )
+
     result = DiscordClient(
         token: auth_token,
         api: RestApi(
@@ -198,17 +193,12 @@ proc newPresence*(data: JsonNode): Presence =
     result = ($data).fromJson(Presence)
 
 proc parseHook*(s: string, i: var int, v: var set[PermissionFlags]) =
-    when defined(discordv8) or defined(discordv9):
-        var str: string
-        try:
-            parseHook(s, i, str)
-        except:
-            str = "0"
-        v = cast[set[PermissionFlags]](str.parseBiggestInt)
-    else:
-        var number: BiggestInt
-        parseHook(s, i, number)
-        v = cast[set[PermissionFlags]](number) # incase
+    var str: string
+    try:
+        parseHook(s, i, str)
+    except:
+        str = "0"
+    v = cast[set[PermissionFlags]](str.parseBiggestInt)
 
 proc newRole*(data: JsonNode): Role =
     result = ($data).fromJson(Role)
@@ -244,12 +234,8 @@ proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
 proc newOverwrite*(data: JsonNode): Overwrite =
     proc parseHook(s: string, i: var int, v: var int or string) =
         if s.contains("kind"):
-            when defined(discordv8) or defined(discordv9):
-                var str: string
-                parseHook(s, i, str)
-            except:
-                var num: int
-                parseHook(s, i, num)
+            var str: string
+            parseHook(s, i, str)
     result = ($data).fromJson(Overwrite)
 
 proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
@@ -331,7 +317,7 @@ proc renameHook(v: var Webhook, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
 
-proc renameHook(v: var Presence, fieldName: var string) =
+proc renameHook(v: var Presence, fieldName: var string) {.used.} =
     if fieldName == "game":
         fieldName = "activity"
 
@@ -344,7 +330,7 @@ proc parseHook(s: string, i: var int, v: var BiggestFloat) =
         v = BiggestFloat data.fnum
 
 proc parseHook(s: string, i: var int;
-        v: var Option[tuple[start, final: BiggestFloat]]) =
+        v: var Option[tuple[start, final: BiggestFloat]]) {.used.} =
     var table: Table[string, BiggestFloat]
     parseHook(s, i, table)
     v = some (
@@ -352,24 +338,24 @@ proc parseHook(s: string, i: var int;
         final: table.getOrDefault("end", 0)
     )
 
-proc renameHook(v: var Activity, fieldName: var string) =
+proc renameHook(v: var Activity, fieldName: var string) {.used.} =
     if fieldName == "type":
         fieldName = "kind"
 
 proc newActivity*(data: JsonNode): Activity =
     result = ($data).fromJson(Activity)
 
-proc renameHook(v: var AuditLogEntry, fieldName: var string) =
+proc renameHook(v: var AuditLogEntry, fieldName: var string) {.used.} =
     if fieldName == "options":
         fieldName = "opts"
 
-proc parseHook(s: string, i: var int, v: var Table[string, Role]) =
+proc parseHook(s: string, i: var int, v: var Table[string, Role]) {.used.} =
     var roles: seq[Role]
     parseHook(s, i, roles)
     for role in roles:
         v[role.id] = role
 
-proc parseHook(s: string, i: var int, v: var Table[string, Sticker]) =
+proc parseHook(s: string, i: var int, v: var Table[string, Sticker]) {.used.} =
     var stickers: seq[Sticker]
     parseHook(s, i, stickers)
     for sticker in stickers:
@@ -455,7 +441,7 @@ proc parseHook(s: string, i: var int, a: var AuditLogEntry) =
 proc newIntegration*(data: JsonNode): Integration =
     result = ($data).fromJson(Integration)
 
-proc newAuditLogEntry(data: JsonNode): AuditLogEntry =
+proc newAuditLogEntry*(data: JsonNode): AuditLogEntry =
     result = ($data).fromJson(AuditLogEntry)
 
 proc newWebhook*(data: JsonNode): Webhook =
@@ -467,10 +453,9 @@ proc newAuditLog*(data: JsonNode): AuditLog =
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = ($data).fromJson(VoiceState)
 
-proc renameHook(v: var Guild, fieldName: var string) =
-    when not defined(discordv9):
-        if fieldName == "region":
-            fieldName = "rtc_region"
+proc renameHook(v: var Guild, fieldName: var string) {.used.} =
+    if fieldName == "region":
+        fieldName = "rtc_region"
 
 proc parseHook(s: string, i: var int, v: var set[SystemChannelFlags]) =
     var number: BiggestInt
@@ -543,7 +528,10 @@ proc newInvite*(data: JsonNode): Invite =
 proc newInviteCreate*(data: JsonNode): InviteCreate =
     result = ($data).fromJson(InviteCreate)
 
-proc parseHook(s: string, i: var int, v: var tuple[id: string, flags: set[ApplicationFlags]]) =
+proc parseHook(s: string;
+    i: var int;
+    v: var tuple[id: string, flags: set[ApplicationFlags]]
+) =
     var table: Table[string, JsonNode]
     parseHook(s, i, table)
     v.id = table["id"].str
@@ -565,33 +553,30 @@ proc newGuildPreview*(data: JsonNode): GuildPreview =
     result = ($data).fromJson(GuildPreview)
 
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
-    result = InviteMetadata(
-        code: data["code"].str,
-        uses: data["uses"].getInt,
-        max_uses: data["max_uses"].getInt,
-        max_age: data["max_age"].getInt,
-        temporary: data["temporary"].bval,
-        created_at: data["created_at"].str
-    )
+    result = data.`$`.fromJson(InviteMetadata)
 
 proc updateMessage*(m: Message, data: JsonNode): Message =
+    # TODO: update this proc with new message fields.
     result = m
 
-    result.mention_users = data{"mentions"}.getElems.map(newUser)
-    result.attachments = data{"attachments"}.getElems.map(newAttachment)
-    result.embeds = data{"embeds"}.getElems.mapIt(it.to(Embed))
+    with result:
+        mention_users = data{"mentions"}.getElems.map(newUser)
+        attachments = data{"attachments"}.getElems.map(newAttachment)
+        embeds = data{"embeds"}.getElems.mapIt(it.`$`.fromJson(Embed))
+    if result.referenced_message.isSome or "referenced_message" in data:
+        result.referenced_message = some data["referenced_message"].newMessage
+
+    with data:
+        keyCheckStr(result, content, timestamp)
+        keyCheckOptStr(result, edited_timestamp, guild_id)
+        keyCheckBool(result, mention_everyone, pinned, tts)
 
     if "type" in data and data["type"].kind != JNull:
         result.kind = MessageType data["type"].getInt
     if "flags" in data and data["flags"].kind != JNull:
         result.flags = cast[set[MessageFlags]](data["flags"].getInt)
-
-    data.keyCheckStr(result, content, timestamp)
-    data.keyCheckOptStr(result, edited_timestamp, guild_id)
-    data.keyCheckBool(result, mention_everyone, pinned, tts)
-
     if "author" in data:
-        result.author = newUser(data["author"])
+        result.author = data["author"].newUser
     if "activity" in data:
         let activity = data["activity"]
 
@@ -599,7 +584,6 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
             kind: activity["type"].getInt,
             party_id: activity{"party_id"}.getStr
         )
-
     if "application" in data:
         result.application = some data["application"].newApplication
 
@@ -692,7 +676,7 @@ proc newApplicationCommandInteractionData*(
         else:
             discard
 
-proc newInteraction*(data: JsonNode): Interaction =
+proc newInteraction*(data: JsonNode): Interaction = # TODO: update this to support jsony
     result = Interaction(
         id: data["id"].str,
         kind: InteractionType data["type"].getInt,
@@ -710,7 +694,7 @@ proc newInteraction*(data: JsonNode): Interaction =
     if "data" in data and data["data"].kind != JNull: # nice
         result.data = some newApplicationCommandInteractionData(data["data"])
 
-proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
+proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption = # TODO: update his to support jsony.
     result = ApplicationCommandOption(
         kind: ApplicationCommandOptionType data["type"].getInt,
         name: data["name"].str,
@@ -751,7 +735,7 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 return %%*x # avoid conflicts with json
         )
 
-proc `%%*`*(a: ApplicationCommand): JsonNode =
+proc `%%*`*(a: ApplicationCommand): JsonNode = # TODO: Remove this to support jsony.
     assert a.name.len in 3..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api
@@ -769,7 +753,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         ))
     result["default_permission"] = %a.default_permission
 
-proc newApplicationCommandPermission*(
+proc newApplicationCommandPermission*( # TODO: remove this to support jsony.
     data: JsonNode
 ): ApplicationCommandPermission =
     result = ApplicationCommandPermission(
@@ -786,11 +770,9 @@ proc newGuildApplicationCommandPermissions*(
         application_id: data["application_id"].str,
         guild_id: data["guild_id"].str
     )
-    result.permissions = data{"permissions"}.getElems.map(
-        newApplicationCommandPermission
-    )
+    result.permissions = data{"permissions"}.getElems.map(newApplicationCommandPermission)
 
-proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
+proc newApplicationCommand*(data: JsonNode): ApplicationCommand = # TODO: cleanup proc
     result = ApplicationCommand(
         id: data["id"].str,
         kind: ApplicationCommandType data["type"].getInt,

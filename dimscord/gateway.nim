@@ -77,7 +77,7 @@ proc sendSock(s: Shard, opcode: int, data: JsonNode;
     }))
 
     if not (await withTimeout(fut, 20000)):
-        s.logShard("Payload was taking longer to send. Retrying in 5000ms...")
+        s.logShard("Payload OP " & $opcode & " was taking longer to send. Retrying in 5000ms...")
         await sleepAsync 5000
         await s.sendSock(opcode, data, ignore)
         return
@@ -120,7 +120,7 @@ proc updateStatus*(s: Shard, activity = none ActivityStatus;
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
-    if s.sockClosed and not s.ready: return
+    if s.sockClosed or not s.ready: return
     let payload = %*{
         "since": 0,
         "afk": afk,
@@ -179,9 +179,9 @@ proc identify(s: Shard) {.async, used.} =
     let payload = %*{
         "token": s.client.token,
         "properties": %*{
-            "$os": system.hostOS,
-            "$browser": libName,
-            "$device": libName
+            "os": system.hostOS,
+            "browser": libName,
+            "device": libName
         },
         "compress": defined(discordCompress),
         "guild_subscriptions": s.client.guildSubscriptions
@@ -292,8 +292,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
 
         s.logShard("Successfuly resumed.")
     else:
-        await s.client.events.on_dispatch(s, event, data)
-        await s.handleEventDispatch(event, data)
+        asyncCheck s.client.events.on_dispatch(s, event, data)
+        asyncCheck s.handleEventDispatch(event, data)
 
 proc reconnect(s: Shard) {.async.} =
     if (s.reconnecting or not s.stop) and not reconnectable: return
@@ -387,7 +387,7 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
     else:
         raise newException(
             Exception,
-            "Shard was disconnected from the gateway."
+            "Shard(s) disconnected."
         )
 
 proc heartbeat(s: Shard, requested = false) {.async.} =
@@ -584,14 +584,15 @@ proc startSession*(discord: DiscordClient,
             gateway_intents: set[GatewayIntent] = {};
             large_message_threshold, large_threshold = 50;
             max_message_size = 5_000_000;
-            gateway_version = 6;
+            gateway_version = 10;
             max_shards = none int; shard_id = 0;
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
     ## 
     ## - `gateway_intents` Allows you to subscribe to pre-defined events.
-    ##   If you are using v8, this defaults to `{giGuilds, giGuildMessages, giDirectMessages}`.
+    ##    **NOTE:** When not specified this will default to:
+    ##    `giGuilds, giGuildMessages, giDirectMessages, giGuildVoiceStates, giMessageContent`
     ## 
     ## - `large_threshold` The number that would be considered a large guild (50-250).
     ## - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
@@ -606,23 +607,18 @@ proc startSession*(discord: DiscordClient,
 
     discord.autoreconnect = autoreconnect
 
-    discord.intents = when defined(discordv8) or defined(discordv9):
-        if gateway_intents.len == 0:
-            {giGuilds, giGuildMessages, giDirectMessages}
-        else:
-            gateway_intents
-    else:
-        if gateway_intents.len == 0:
-            {}
-        else:
-            gateway_intents
+    discord.intents = gateway_intents
+    if gateway_intents.len == 0:
+        discord.intents = {giGuilds, giGuildMessages,
+                           giDirectMessages, giGuildVoiceStates,
+                           giMessageContent}
 
     discord.largeThreshold = large_threshold
     discord.guildSubscriptions = guild_subscriptions
     discord.max_shards = max_shards.get(-1)
     discord.gatewayVersion = gateway_version
-    when defined(discordv8):
-        discord.gatewayVersion = 8
+    # when defined(discordv8):
+    #     discord.gatewayVersion = 8
     when defined(discordv9):
         discord.gatewayVersion = 9
 

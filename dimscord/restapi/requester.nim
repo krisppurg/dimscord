@@ -168,7 +168,8 @@ proc request*(api: RestApi, meth, endpoint: string;
                         data = (await body).parseJson
                 case status:
                 of Http400:
-                    error = fin & "Bad request."
+                    error = fin & "Bad request.\n"
+                    error &= data.pretty()
                 of Http401:
                     error = fin & "Invalid authorization."
                     invalid_requests += 1

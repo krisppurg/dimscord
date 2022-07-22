@@ -145,7 +145,7 @@ proc request*(api: RestApi, meth, endpoint: string;
         let
             retry_header = resp.headers.getOrDefault(
                 "X-RateLimit-Reset-After",
-                @["1.000"].HttpHeaderValues).parseFloat
+                @["0.250"].HttpHeaderValues).parseFloat
             status = resp.code
             fin = "[" & $status.int & "] "
 
@@ -169,7 +169,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 case status:
                 of Http400:
                     error = fin & "Bad request.\n"
-                    error &= data.pretty()
+                    if not data.isNil: error &= data.pretty()
                 of Http401:
                     error = fin & "Invalid authorization."
                     invalid_requests += 1
@@ -190,7 +190,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                     if api.restVersion >= 8:
                         retry = data["retry_after"].getInt * 1000
                     else:
-                        retry = int(data["retry_after"].getFloat(1.25) * 1000)
+                        retry = int(data{"retry_after"}.getFloat(1.25) * 1000)
 
                     await sleepAsync retry
 
@@ -198,7 +198,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 else:
                     error = fin & "Unknown error"
 
-                if "code" in data and "message" in data:
+                if ("code" in data and "message" in data) and not data.isNil:
                     error &= "\n\n - " & data.discordErrors()
 
             if status.is5xx:

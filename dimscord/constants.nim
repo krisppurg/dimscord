@@ -347,6 +347,7 @@ type
         irtDeferredUpdateMessage =            6
         irtUpdateMessage =                    7
         irtAutoCompleteResult =               8
+        irtModal =                            9
     InviteTargetType* = enum
         ittStream =              1
         ittEmbeddedApplication = 2

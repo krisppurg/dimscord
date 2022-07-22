@@ -5,14 +5,15 @@ import requester
 
 proc getInvite*(api: RestApi, code: string;
         with_counts, with_expiration = false;
-        guild_scheduled_event_id, auth = false
+        auth = false; guild_scheduled_event_id = none string;
 ): Future[Invite] {.async.} =
     ## Gets a discord invite, it can be a vanity code.
     ##
     ## - `auth` Whether you should get the invite while authenticated.
-    let queryparams = "?with_counts="&($with_counts) &
-        "&with_expiration="&($with_counts) &
-        "&guild_scheduled_event_id="&($guild_scheduled_event_id)
+    var queryparams = "?with_counts="&($with_counts) &
+        "&with_expiration="&($with_counts)
+    if guild_scheduled_event_id.isSome:
+        queryparams&="&guild_scheduled_event_id="&($guild_scheduled_event_id.get)
     result = (await api.request(
         "GET",
         endpointInvites(code) & queryparams,
@@ -183,10 +184,9 @@ proc getApplicationCommands*(
     var endpoint = endpointGlobalCommands(application_id)
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id)
+
     result = (await api.request("GET",
-        endpoint, $(%*{
-            "with_localizations": with_localizations
-        })
+        endpoint&"?with_localizations="&($with_localizations)
     )).elems.map(newApplicationCommand)
 
 proc getApplicationCommand*(
@@ -273,6 +273,9 @@ proc deleteApplicationCommand*(
         endpoint
     )
 
+proc `%`(o: set[UserFlags]): JsonNode =
+    %cast[int](o)
+
 proc createInteractionResponse*(api: RestApi,
         interaction_id, interaction_token: string;
         response: InteractionResponse) {.async.} =
@@ -285,9 +288,10 @@ proc createInteractionResponse*(api: RestApi,
        irtDeferredChannelMessageWithSource,
        irtDeferredUpdateMessage,
        irtUpdateMessage:
-        data = %response.data
         if response.data.isSome:
-            data["flags"] = %int response.data.get.flags
+            data = %*(response.data.get)
+            if response.data.get.flags!=0:
+                data["flags"] = %response.data.get.flags
     of irtAutoCompleteResult:
         let choices = %response.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =
@@ -300,6 +304,8 @@ proc createInteractionResponse*(api: RestApi,
         data["choices"] = %*choices
     of irtInvalid:
         raise newException(ValueError, "Invalid interaction respons type")
+    else:
+        discard # irtModal
 
     discard await api.request(
         "POST",

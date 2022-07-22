@@ -1,1 +1,2 @@
-handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,string,JsonNode	dispatch: handleEventDispatch(s: Shard; event: string; data: JsonNode): owned(Future[void])	
+fullSet	dimscord/dispatch.html#fullSet,typedesc[T]	dispatch: fullSet[T](U: typedesc[T]): set[T]	
+handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,string,JsonNode	dispatch: handleEventDispatch(s: Shard; event: string; data: JsonNode): owned(\n    Future[void])	

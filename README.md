@@ -1,5 +1,5 @@
 # <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
-A Discord Bot & REST Library for Nim. [Discord API Channel](https://discord.gg/7jgdC9E)
+A Discord Bot & REST Library for Nim. [Discord API Channel](https://discord.gg/7jgdC9E) and [Dimscord Server for help](https://discord.gg/dimscord)
 
 Why Dimscord?
  * It is minimalistic and efficient. 

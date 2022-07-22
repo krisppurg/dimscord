@@ -143,7 +143,7 @@ proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
-    if s.sockClosed and not s.ready: return
+    if s.sockClosed or not s.ready: return
     let payload = %*{
         "since": 0,
         "afk": afk,

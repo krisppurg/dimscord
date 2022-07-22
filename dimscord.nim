@@ -61,7 +61,7 @@
 ## - [json](https://nim-lang.org/docs/json.html) Raw data handling (`on_dispatch`)
 ## 
 ## Definable options
-## ==============
+## ========================================================
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
 ## - `-d:dimscordDebugNoSubscriptionLogs` No debugging PRESENCE_UPDATE|TYPING_START when `guild_subscriptions` is on. 
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.

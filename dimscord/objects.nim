@@ -260,9 +260,9 @@ proc renameHook(v: var MentionChannel, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
 
-proc renameHook(v: var Embed, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
+# proc renameHook(v: var Embed, fieldName: var string) =
+#     if fieldName == "type":
+#         fieldName = "kind"
 
 proc renameHook(s: var Message, fieldName: var string) =
     case fieldName:
@@ -296,6 +296,10 @@ proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
     parseHook(s, i, reactions)
     for r in reactions:
         v[$r.emoji] = r
+
+proc renameHook(s: var MessageInteraction, fieldName: var string) =
+    if fieldName == "type":
+        fieldName = "kind"
 
 proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
@@ -596,6 +600,17 @@ proc newStickerPack*(data: JsonNode): StickerPack =
 proc newGuildTemplate*(data: JsonNode): GuildTemplate =
     result = ($data).fromJson(GuildTemplate)
 
+proc parseHook(s: string, i: var int,v: var (Option[string], Option[int]))=
+    var value: JsonNode
+    parseHook(s, i, value)
+
+    case value.kind:
+    of JString:
+        v = (some value.str, none int)
+    of JInt:
+        v = (none string, some value.getInt)
+    else: discard
+
 proc newApplicationCommandInteractionDataOption(
     data: JsonNode
 ): ApplicationCommandInteractionDataOption =
@@ -619,6 +634,10 @@ proc newApplicationCommandInteractionDataOption(
             result.channel_id = value.getStr
         of acotRole:
             result.role_id    = value.getStr
+        of acotMentionable:
+            result.mention_id = value.getStr
+        of acotAttachment:
+            result.aval       = value.getStr
         else: discard
         if "focused" in data: result.focused = some data{"focused"}.getBool
     else:
@@ -631,86 +650,141 @@ proc newApplicationCommandInteractionDataOption(
             ))
         # Nice trick, ire.
 
-proc newApplicationCommandInteractionData*(
-    data: JsonNode
-): ApplicationCommandInteractionData =
+proc parseHook(s: string, i: var int;
+    v: var Table[string, ApplicationCommandInteractionDataOption]
+) =
+    var data: seq[JsonNode]
+    parseHook(s, i, data)
+    for o in data:
+        v[o["name"].str] = newApplicationCommandInteractionDataOption(o)
+
+proc renameHook(v: var ApplicationCommandInteractionData,
+    fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var ApplicationCommandInteractionDataOption,
+    fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var MessageComponent, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc parseHook(s: string, i: var int, v: var MessageComponentType) =
+    var number: int
+    parseHook(s, i, number)
+    try:
+        v = MessageComponentType number
+    except:
+        v = MessageComponentType 1
+
+proc parseHook(s: string, i: var int, v: var ApplicationCommandType) =
+    var number: int
+    parseHook(s, i, number)
+    try:
+        v = ApplicationCommandType number
+    except:
+        v = atSlash # just by default incase
+
+proc renameHook(v: var ResolvedChannel, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) =
+    var data: JsonNode
+    parseHook(s, n, data)
+
     if "component_type" in data:
-        result = ApplicationCommandInteractionData(
+        a = ApplicationCommandInteractionData(
             interactionType: idtMessageComponent,
             component_type: MessageComponentType data["component_type"].getInt 1,
             custom_id: data["custom_id"].str
         )
-        if result.component_type == SelectMenu:
-            result.values = data["values"].getElems.mapIt(it.str)
+        # if a.component_type == SelectMenu:
+        #     a.values = val["values"].getElems.mapIt(it.str)
+        data.delete("component_type")
     else:
-        result = ApplicationCommandInteractionData(
-            interactionType: idtApplicationCommand,
-            id: data["id"].str,
-            name: data["name"].str,
-            kind: ApplicationCommandType data{"type"}.getInt
-        )
-        case result.kind:
-        of atSlash:
-            for option in data{"options"}.getElems:
-                result.options[option["name"].str] =
-                    newApplicationCommandInteractionDataOption(option)
-        of atUser, atMessage:
-            result.target_id = data["target_id"].str
-            # Set the resolution kind to be the same as the interaction
-            # data kind, saves the user needing to user options when it
-            # isn't necessary
-            var resolution = ApplicationCommandResolution(kind: result.kind)
-            let resolvedJson = data["resolved"]
-            if result.kind == atUser:
-                # Get users
-                for id, jsonData in resolvedJson{"users"}:
-                    resolution.users[id] = newUser(jsonData)
-                # Get members
-                for id, jsonData in resolvedJson{"members"}:
-                    resolution.members[id] = newMember(jsonData)
-            else: # result.kind will equal atMessage
-                # Get messages
-                for id, jsonData in resolvedJson{"messages"}:
-                    resolution.messages[id] = newMessage(jsonData)
-            result.resolved = resolution
+        if "custom_id" in data:
+            a = ApplicationCommandInteractionData(
+                interaction_type: idtModalSubmit,
+                custom_id: data["custom_id"].str
+            )
+        else:
+            a = ApplicationCommandInteractionData(
+                interaction_type: idtApplicationCommand,
+                kind: ($data["type"]).fromJson(ApplicationCommandType)
+            )
+
+            a.resolved=ApplicationCommandResolution(kind: a.kind)
+            if "resolved" in data:
+                for key, values in data["resolved"].getFields.pairs:
+                    case key:
+                    of "users":
+                        for k, v in values.pairs:
+                            a.resolved.users[k] = ($v).fromJson User
+                    of "attachments":
+                        for k, v in values.pairs:
+                            a.resolved.attachments[k] = ($v).fromJson Attachment
+                    else: discard
+
+                    if a.kind == atUser:
+                        case key:
+                        of "members":
+                            for k, v in values.pairs:
+                                a.resolved.members[k] = ($v).fromJson Member
+                        of "roles":
+                            for k, v in values.pairs:
+                                a.resolved.roles[k] = ($v).fromJson Role
+                        else: discard
+
+                    if a.kind == atMessage:
+                        case key:
+                        of "channels":
+                            for k, v in values.pairs:
+                                a.resolved.channels[k] = ($v).fromJson(
+                                    ResolvedChannel
+                                )
+                        of "messages":
+                            for k, v in values.pairs:
+                                a.resolved.messages[k] = ($v).fromJson Message
+                        else: discard
+
+    for k, val in data.pairs:
+        case val.kind:
+        of JBool, JInt, JFloat, JString, JObject, JArray:
+            if k != "resolved": a[k] = val
         else:
             discard
+    if a.interaction_type == idtModalSubmit: a.component_type = TextInput
+
+proc renameHook(v: var Interaction, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var ApplicationCommandPermission, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var ApplicationCommandOption, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc renameHook(v: var ApplicationCommand, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
+
+proc newApplicationCommandInteractionData*(
+    data: JsonNode
+): ApplicationCommandInteractionData =
+    result = data.`$`.fromJson(ApplicationCommandInteractionData)
 
 proc newInteraction*(data: JsonNode): Interaction = # TODO: update this to support jsony
-    result = Interaction(
-        id: data["id"].str,
-        kind: InteractionType data["type"].getInt,
-        token: data["token"].str,
-        version: data["version"].getInt
-    )
-    data.keyCheckOptStr(result, channel_id, guild_id)
-
-    if "member" in data and data["member"].kind != JNull:
-        result.member = some data["member"].newMember
-    if "user" in data and data["user"].kind != JNull:
-        result.user = some data["user"].newUser
-    if "message" in data and data["message"].kind != JNull:
-        result.message = some data["message"].newMessage
-    if "data" in data and data["data"].kind != JNull: # nice
-        result.data = some newApplicationCommandInteractionData(data["data"])
+    result = data.`$`.fromJson(Interaction)
 
 proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption = # TODO: update his to support jsony.
-    result = ApplicationCommandOption(
-        kind: ApplicationCommandOptionType data["type"].getInt,
-        name: data["name"].str,
-        description: data["description"].str,
-        choices: data{"choices"}.getElems.map(
-            proc (x: JsonNode): ApplicationCommandOptionChoice =
-                result = ApplicationCommandOptionChoice(
-                    name: x["name"].str)
-                if x["value"].kind == JInt:
-                    result.value[1] = some x["value"].getInt # this is 
-                if x["value"].kind == JString: # a tuple btw
-                    result.value[0] = some x["value"].str
-        ),
-        options: data{"options"}.getElems.map newApplicationCommandOption
-    )
-    data.keyCheckOptBool(result, required)
+    result = data.`$`.fromJson(ApplicationCommandOption)
 
 proc `%%*`*(a: ApplicationCommandOption): JsonNode =
     result = %*{"type": int a.kind, "name": a.name,
@@ -753,35 +827,18 @@ proc `%%*`*(a: ApplicationCommand): JsonNode = # TODO: Remove this to support js
         ))
     result["default_permission"] = %a.default_permission
 
-proc newApplicationCommandPermission*( # TODO: remove this to support jsony.
+proc newApplicationCommandPermission*(
     data: JsonNode
 ): ApplicationCommandPermission =
-    result = ApplicationCommandPermission(
-        id: data["id"].str,
-        kind: ApplicationCommandPermissionType data["type"].getInt,
-        permission: data["permission"].getBool true
-    )
+    result = data.`$`.fromJson ApplicationCommandPermission
 
 proc newGuildApplicationCommandPermissions*(
     data: JsonNode
 ): GuildApplicationCommandPermissions =
-    result = GuildApplicationCommandPermissions(
-        id: data["id"].str,
-        application_id: data["application_id"].str,
-        guild_id: data["guild_id"].str
-    )
-    result.permissions = data{"permissions"}.getElems.map(newApplicationCommandPermission)
+    result = data.`$`.fromJson GuildApplicationCommandPermissions
 
-proc newApplicationCommand*(data: JsonNode): ApplicationCommand = # TODO: cleanup proc
-    result = ApplicationCommand(
-        id: data["id"].str,
-        kind: ApplicationCommandType data["type"].getInt,
-        application_id: data["application_id"].str,
-        name: data["name"].str,
-        description: data["description"].str,
-        options: data{"options"}.getElems.map newApplicationCommandOption,
-        default_permission: data{"default_permission"}.getBool true
-    )
+proc newApplicationCommand*(data: JsonNode): ApplicationCommand =
+    result = data.`$`.fromJson ApplicationCommand
 
 proc toPartial(emoji: Emoji): JsonNode =
     ## Creates a partial emoji from an Emoji object
@@ -831,8 +888,8 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["max_values"] =  %comp.maxValues
         of TextInput:
             result["placeholder"] =    %comp.placeholder
-            result["style"] =          %int comp.input_style
-            result["label"] =          %comp.input_label
+            result["style"] =          %int comp.input_style.get
+            result["label"] =          %comp.input_label.get
             if comp.value.isSome:
                 result["value"] =      %comp.value.get
             if comp.required.isSome:

@@ -496,6 +496,7 @@ type
         message*: Option[Message]
         member*: Option[Member]
         user*: Option[User]
+        app_permissions*: set[PermissionFlags]
         token*: string
         data*: Option[ApplicationCommandInteractionData]
         version*: int
@@ -504,12 +505,13 @@ type
         case interaction_type*: InteractionDataType
         of idtApplicationCommand:
             id*, name*: string
+            guild_id*: Option[string]
+            resolved*: ApplicationCommandResolution
             case kind*: ApplicationCommandType
             of atSlash:
                 options*: Table[string, ApplicationCommandInteractionDataOption]
             of atUser, atMessage:
                 target_id*: string
-                resolved*: ApplicationCommandResolution
             of atNothing: discard
         of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
@@ -528,15 +530,15 @@ type
         thread_metadata*: Option[ThreadMetadata]
         parent_id*: Option[string]
     ApplicationCommandResolution* = object
+        users*: Table[string, User]
+        attachments*: Table[string, Attachment]
         case kind*: ApplicationCommandType
         of atUser:
             members*: Table[string, Member]
-            users*: Table[string, User]
             roles*: Table[string, Role]
         of atMessage:
             channels*: Table[string, ResolvedChannel]
             messages*: Table[string, Message]
-            attachments*: Table[string, Attachment]
         else: discard
 
     ApplicationCommandInteractionDataOption* = object
@@ -553,7 +555,7 @@ type
             options*: Table[string, ApplicationCommandInteractionDataOption]
         of acotNumber: fval*: BiggestFloat
         of acotMentionable: mention_id*: string
-        else: discard # TODO: cover acotAttachment
+        of acotAttachment: aval*: string
         focused*: Option[bool] ## Will be true if this is the value the user is typing during auto complete
     InteractionResponse* = object
         case kind*: InteractionResponseType
@@ -564,12 +566,23 @@ type
         of irtAutoCompleteResult:
             choices*: seq[ApplicationCommandOptionChoice]
         of irtInvalid: discard
+        of irtModal:
+            custom_id*, title*: string
+            components*: seq[MessageComponent]
     InteractionApplicationCommandCallbackData* = object
         tts*: Option[bool]
         content*: string
         embeds*: seq[Embed]
         allowed_mentions*: AllowedMentions
         flags*: int
+        attachments*: seq[Attachment]
+        components*: seq[MessageComponent]
+    InteractionCallbackDataMessage* = InteractionApplicationCommandCallbackData
+    InteractionCallbackDataAutocomplete* = object
+        choices*: seq[ApplicationCommandOptionChoice]
+    InteractionCallbackDataModal* = object
+        custom_id*, title*: string
+        components*: seq[MessageComponent]
     Invite* = object
         code*: string
         guild*: Option[PartialGuild]
@@ -663,9 +676,8 @@ type
             options*: seq[SelectMenuOption]
             min_values*, max_values*: Option[int]
         of TextInput:
-            input_style*: TextInputStyle
-            input_label*: string
-            value*: Option[string]
+            input_style*: Option[TextInputStyle]
+            input_label*, value*: Option[string]
             required*: Option[bool]
             min_length*, max_length*: Option[int]
     GuildPreview* = object

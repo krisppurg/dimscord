@@ -7,7 +7,7 @@ license       = "MIT"
 
 # Dependencies
 
-requires "nim >= 1.2.0", "zippy >= 0.2.1", "ws <= 0.4.0", "regex >= 0.15.0", "libsodium <= 0.6.0", "flatty >= 0.1.2"
+requires "nim >= 1.2.0", "zippy >= 0.2.1", "ws", "regex >= 0.15.0", "libsodium <= 0.6.0", "flatty >= 0.1.2", "jsony >= 1.1.3"
 requires "opussum >= 0.6.0"
 
 task genDoc, "Generates the documentation for dimscord":

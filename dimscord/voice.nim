@@ -1,20 +1,21 @@
-## Currently handling the discord voice gateway (WIP)
+# Play audio in voice channel via ytdl/ffmpeg.
+## Please note that playing audio is either buggy on windows, but we aren't currently sure exactly why though.
 import asyncdispatch, ws, asyncnet
 import objects, json, constants
 import strutils, nativesockets, streams, sequtils
 import libsodium/sodium, libsodium/sodium_sizes
-import osproc, asyncnet
+import osproc
 import flatty/binny, random
 import std/strformat
 import opussum
 import std/[monotimes, times]
-import std/streams
 import std/os
 
 randomize()
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
   {.warning[HoleEnumConv]: off.}
+  {.warning[CaseTransition]: off.}
 
 
 type
@@ -30,6 +31,7 @@ type
         Hello = 8
         Resumed = 9
         ClientDisconnect = 13
+        Something = 14
 
 when defined(windows):
     const libsodium_fn* = "libsodium.dll"
@@ -49,10 +51,9 @@ proc crypto_secretbox_easy(
 ):cint {.sodium_import.}
 
 const
-    nonceLen = 24
+    # nonceLen = 24 apparently this hasn't been used
     dataSize = 960 * 2 * 2 # Frame size is 960 16 bit integers and we need 2 channels worth
     idealLength = 19 # How long one voice packet should ideally be in milliseconds
-
 
 const silencePacket = block:
     var packet: string
@@ -63,7 +64,7 @@ const silencePacket = block:
 
 proc logVoice(msg: string) =
     when defined(dimscordDebug):
-        echo fmt"[Voice]: {msg}"
+        echo fmt"[voice]: {msg}"
     else:
         discard
 
@@ -107,7 +108,6 @@ proc crypto_secretbox_easy(key, msg, nonce: string): string =
     for i in 0..<length:
         result[i] = cast[char](cipherText[i])
 
-
 proc extractCloseData(data: string): tuple[code: int, reason: string] = # Code from: https://github.com/niv/websocket.nim/blame/master/websocket/shared.nim#L230
     var data = data
     result.code =
@@ -132,21 +132,31 @@ proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
         result = false
         logVoice("Fatal error: " & closeData.reason)
 
+proc sockClosed(v: VoiceClient): bool {.used.} =
+    return v.connection == nil or v.connection.tcpSocket.isClosed or v.stop
+
 proc sendSock(v: VoiceClient, opcode: VoiceOp, data: JsonNode) {.async.} =
-    logVoice "Sending OP: " & $opcode
-    assert v.connection != nil, "Connection needs to be open first"
-    await v.connection.send($(%*{
+    if v.sockClosed: return
+    # assert v.connection != nil, "Connection needs to be open first"
+    logVoice "Sending OP: " & $(int opcode)
+
+    let fut = v.connection.send($(%*{
         "op": opcode.ord,
         "d": data
     }))
 
-proc sockClosed(v: VoiceClient): bool {.used.} =
-    return v.connection == nil or v.connection.tcpSocket.isClosed or v.stop
+    if not (await withTimeout(fut, 20000)):
+        logVoice "Payload was taking longer to send. Retrying in 5000ms..."
+        await sleepAsync 5000
+        await v.sendSock(opcode, data)
+        return
+    else:
+        await fut
 
 proc resume*(v: VoiceClient) {.async.} =
     if v.resuming or v.sockClosed: return
 
-    # v.resuming = true
+    v.resuming = true#might cause issues
 
     logVoice "Attempting to resume\n" &
         "  server_id: " & v.guild_id & "\n" &
@@ -213,7 +223,7 @@ proc reconnect*(v: VoiceClient) {.async.} =
         v.reconnecting = false
         v.stop = false
 
-        if (await withTimeout(future, 25000)) == false:
+        if not (await withTimeout(future, 25000)):
             logVoice "Websocket timed out.\n\n  Retrying connection..."
 
             await v.reconnect()
@@ -224,6 +234,7 @@ proc reconnect*(v: VoiceClient) {.async.} =
 
         v.retry_info.attempts = 0
         v.retry_info.ms = max(v.retry_info.ms - 5000, 1000)
+        v.migrate = false
 
         if v.networkError:
             logVoice "Connection established after network error."
@@ -259,7 +270,7 @@ proc toBigEndian(num: uint32): uint32 {.inline.} =
                  shlAnd(24, uint32 0xff000000)
 
 
-proc disconnect*(v: VoiceClient) {.async.} =
+proc disconnect*(v: VoiceClient, migrate = false) {.async.} =
     ## Disconnects a voice client.
     if v.sockClosed: return
 
@@ -269,6 +280,7 @@ proc disconnect*(v: VoiceClient) {.async.} =
 
     if v.connection != nil:
         v.connection.close()
+    if migrate: v.migrate = true
 
 proc heartbeat(v: VoiceClient) {.async.} =
     if v.sockClosed: return
@@ -354,7 +366,6 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             await v.disconnect()
             await v.voice_events.on_disconnect(v)
             break
-        logVoice $VoiceOp(data["op"].num)
 
         case VoiceOp(data["op"].num)
         of Hello:
@@ -369,7 +380,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         of HeartbeatAck:
             v.lastHBReceived = getTime().toUnixFloat()
             v.hbSent = false
-            logVoice "Heartbeat Acknowledged by Discord."
+            logVoice "Received heartbeat ACK."
 
             v.hbAck = true
         of Ready:
@@ -377,28 +388,31 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             v.dstPort = data["d"]["port"].getInt
             v.ssrc = uint32 data["d"]["ssrc"].getInt
             v.udp = newAsyncSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-            logVoice fmt"Connecting to {v.dstIP} and {v.dstPort}"
+            logVoice(
+                fmt"Successfully identified, connecting to {v.dstIP}:{v.dstPort}"
+            )
             # We need to get our IP
             await v.sendDiscovery()
             await v.recvDiscovery()
             v.ready = true
             await v.selectProtocol()
-
         of Resumed:
             v.resuming = false
+            logVoice "Successfully resumed."
         of SessionDescription:
-            logVoice "Got session description"
+            logVoice "Received session description."
             v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
-            v.secret_key = data["d"]["secret_key"].elems.mapIt(chr(it.getInt)).join("")
-            await v.voice_events.on_ready(v)
+            v.secret_key = data["d"]["secret_key"].elems.mapIt(
+                chr(it.getInt)).join("")
+            asyncCheck v.voice_events.on_ready(v)
         else: discard
-    if not v.reconnectable: return
-
+    # if not v.reconnectable: return
+    # v.
     if packet[0] == Close:
-        v.shouldReconnect = v.handleDisconnect(packet[1])
+        shouldReconnect = v.handleDisconnect(packet[1])
     v.stop = true
 
-    if shouldReconnect:
+    if shouldReconnect or v.migrate:
         await v.reconnect()
         await sleepAsync 2000
 
@@ -414,7 +428,7 @@ proc startSession*(v: VoiceClient) {.async.} =
         v.endpoint = v.endpoint.replace(":443", "")
         let future = newWebSocket(v.endpoint)
 
-        if (await withTimeout(future, 25000)) == false:
+        if not (await withTimeout(future, 25000)):
             logVoice "Websocket timed out.\n\n  Retrying connection..."
             await v.startSession()
             return
@@ -426,7 +440,7 @@ proc startSession*(v: VoiceClient) {.async.} =
         v.stopped = true
         raise getCurrentException()
     try:
-        logVoice "handlong socket"
+        # logVoice "handlong socket" ???
         await v.handleSocketMessage()
     except:
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
@@ -443,6 +457,7 @@ proc unpause*(v: VoiceClient) =
 proc stop*(v: VoiceClient) =
     ## Stop the current audio
     v.stopped = true
+    v.data = ""
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet
@@ -481,7 +496,11 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     ## Make sure to use sendSpeaking_ before sending any audio
     ##
     ## * **waitForData**: How many milliseconds to allow for data to start coming through
+    if v.paused: v.paused = false
+
     await v.sendSpeaking(true)
+    v.speaking = true
+    asyncCheck v.voice_events.on_speaking(v, true)
 
     when input is Stream:
         let stream = input
@@ -499,7 +518,7 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     var count: uint = 0 # Keep track of packets sent 
     while not atEnd() and not v.stopped:
         var sleepTime = idealLength
-        var data = newStringOfCap(dataSize)
+        v.data = newStringOfCap(dataSize)
         let 
             startTime = getMonoTime()
             shouldAdjust = (count mod 100) == 0
@@ -510,46 +529,50 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
         # Try and read needed data
         var attempts = 3
         while attempts > 0:
-            data &= stream.readStr(dataSize - data.len)
+            v.data &= stream.readStr(dataSize - v.data.len)
             dec attempts
-            if data.len != dataSize:
-                await sleepAsync 5
+            if v.data.len != dataSize:
+                await sleepAsync 500
             else:
                 break
-            
 
         if attempts == 0:
             logVoice "Couldn't read needed amount of data in time"
+            # echo input.waitForExit()
             return
 
-        let encoded = encoder.encode(data.toPCMData(encoder))
+        let encoded = encoder.encode(v.data.toPCMData(encoder))
 
         # Build the packet
         var buf = newString(encoded.len)
         for i in 0 ..< encoded.len:
-          buf[i] = cast[char](encoded[i])
+            buf[i] = cast[char](encoded[i])
 
         await sendAudioPacket(v, buf)
         incrementPacketHeaders v
 
         # Sleep so each packet will be sent 20 ms apart
         if shouldAdjust:
-          let
-              now = getMonoTime()
-              diff = (now - startTime).inMilliseconds
-          sleepTime = int(idealLength - diff)
-        if sleepTime > 0:
-          await sleepAsync sleepTime
+            let
+                now = getMonoTime()
+                diff = (now - startTime).inMilliseconds
+            sleepTime = int(idealLength - diff)
+            if sleepTime > 0:
+                await sleepAsync sleepTime
         else:
-          logVoice("Audio encoding and sending took longer than 20ms, check you don't have network or hardware problems")
-          
+            logVoice "Audio encoding/sending took long >20ms. Check for network/hardware issues"
+
     v.stopped = false
+    if not v.paused: v.data = ""
     # Send 5 silent frames to clear buffer
     for i in 1..5:
-      await v.sendAudioPacket silencePacket
-      incrementPacketHeaders v
-      await sleepAsync idealLength
+        await v.sendAudioPacket silencePacket
+        incrementPacketHeaders v
+        await sleepAsync idealLength
+
     await v.sendSpeaking(false)
+    v.speaking = false
+    asyncCheck v.voice_events.on_speaking(v, false)
 
 proc exeExists(exe: string): bool =
     ## Returns true if `exe` can be found
@@ -558,8 +581,7 @@ proc exeExists(exe: string): bool =
 proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
     ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
     ## Requires `ffmpeg` be installed.
-    let
-      args = @[
+    let args = @[
         "-i",
         path,
         "-loglevel",
@@ -571,11 +593,14 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
         "-ac",
         "2",
         "pipe:1"
-      ]
-    if not path.fileExists():
-      raise (ref IOError)(msg: fmt"File {path} does not exists")
+    ]
+
+    if not path.fileExists and not path.startsWith("http"):
+      raise (ref IOError)(msg: fmt"File {path} does not exist")
+
     doAssert exeExists("ffmpeg"), "Cannot find ffmpeg, make sure it is installed"
-    let pid = startProcess("ffmpeg", args = args, options = {poUsePath, poEchoCmd})
+    let pid = startProcess("ffmpeg", args = args, options = {
+        poUsePath, poEchoCmd, poStdErrToStdOut})
     defer: pid.close()
     await v.play(pid)
 

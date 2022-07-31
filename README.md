@@ -69,7 +69,7 @@ waitFor discord.startSession()
 ```
 Please ensure that when you are running your Discord bot you define `-d:ssl` example: `nim c -r -d:ssl main.nim`, you can use `-d:dimscordDebug`, if you want to debug.
 
-If you want to use voice then you can use `-d:dimscordVoice` (This requires libsodium.dll/so to be accessible)
+If you want to use voice then you can use `-d:dimscordVoice` (This requires libsodium, libopus, ffmpeg and optionally yt-dlp)
 
 ## Contributing
 * If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.

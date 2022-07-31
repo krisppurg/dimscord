@@ -8,11 +8,12 @@
 ## Some may not be optional, but they can be assumable or always present.
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-  {.warning[HoleEnumConv]: off.}
+    {.warning[HoleEnumConv]: off.}
+    {.warning[CaseTransition]: off.}
 
-import options, json, tables, constants
+import options
 import sequtils, strutils, jsony
-import asyncdispatch, std/with
+import std/with
 include objects/typedefs, objects/macros
 
 proc newShard*(id: int, client: DiscordClient): Shard =
@@ -118,7 +119,7 @@ proc newDiscordClient*(token: string;
                     o: Option[VoiceState]) {.async.} = discard,
             voice_server_update: proc (s: Shard, g: Guild,
                     token: string,
-                    e: Option[string]) {.async.} = discard,
+                    e: Option[string], initial: bool) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
             on_disconnect: proc (s: Shard) {.async.} = discard,

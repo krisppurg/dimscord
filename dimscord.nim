@@ -16,8 +16,6 @@
 ##   requesting guild members with requestGuildMembers,
 ##   joining/moving/leaving a voice channel with voiceStateUpdate.
 ## 
-##   Please note that if you are compiling with ARC or ORC, use `--deepCopy`.
-## 
 ## - `restapi` Interfaces with Discord's REST API,
 ##   I'd recommend either stopping your bot or at least check your code
 ##   like if the bot has the permissions to do this and that,
@@ -35,16 +33,18 @@
 ##   this file includes permission enums like permAddReactions, permViewAuditLogs,
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ## 
-## - `voice` Allows you to connect to the voice gateway (Sending audio is postponed),
+## - `voice` Allows you to connect to the voice gateway,
 ##    handle voice gateway, etc.
 ##
 ##   For joining/leaving a voice channel, see `gateway`.
 ## 
 ##   **Keep in mind that:**
-##    When you join a channel `Shard.voiceConnections` will store the `guild_id`,
+##    - When you join a channel `Shard.voiceConnections` will store the `guild_id`,
 ##    and the VoiceClient information such as the `endpoint` and `channel_id` for example.
 ##    With `VoiceClient` you can connect to the voice client gateway
 ##    so you can play audio on `on_ready`.
+##    - For some reason, playing audio for windows is buggy as the audio is choppy,
+##    I'd recommend using either linux, mac, etc instead.
 ##
 ##   For further details about `voice` click `dimscord/voice`.
 ## 

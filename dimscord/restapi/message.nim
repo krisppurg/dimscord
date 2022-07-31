@@ -219,26 +219,29 @@ proc deleteAllMessageReactions*(api: RestApi,
 
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         wait = true; thread_id = none string;
-        content = ""; tts = false;
+        content = ""; tts = false; flags = none int;
         files = newSeq[DiscordFile]();
         attachments = newSeq[Attachment]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         username, avatar_url = none string;
-        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+        components = newSeq[MessageComponent]()): Future[Option[Message]] {.async.} =
     ## Executes a webhook or create a followup message.
-    ## If `wait` is `false` make sure to `discard await` it.
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
+    ## - `flags` are only used for interaction responses
     assert embeds.len in 0..10
+
     var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
+    var rawResult: JsonNode
+
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
     let payload = %*{
         "content": content,
         "tts": tts
     }
 
-    payload.loadOpt(username, avatar_url, allowed_mentions)
+    payload.loadOpt(username, avatar_url, allowed_mentions, flags)
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
@@ -274,9 +277,43 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
             mpd.add("payload_json", $payload, contentType = "application/json")
 
-        return (await api.request("POST", url, $payload, mp=mpd)).newMessage
+        rawResult = (await api.request("POST", url, $payload, mp=mpd))
 
-    result = (await api.request("POST", url, $payload)).newMessage
+        if wait:
+            return some rawResult.newMessage
+        else:
+            return none Message
+
+    rawResult = (await api.request("POST", url, $payload))
+
+    if wait:
+        result = some rawResult.newMessage
+    else:
+        result = none Message
+
+proc createFollowupMessage*(api: RestApi,
+        application_id, interaction_token: string;
+        content = ""; tts = false;
+        files = newSeq[DiscordFile]();
+        attachments = newSeq[Attachment]();
+        embeds = newSeq[Embed]();
+        allowed_mentions = none AllowedMentions;
+        components = newSeq[MessageComponent]();
+        flags = none int): Future[Message] {.async.} =
+    ## Create a followup message.
+    ## - `flags` can set the followup message as ephemeral.
+    result = get(await api.executeWebhook(
+        application_id, interaction_token,
+        content = content,
+        tts = tts,
+        files = files,
+        embeds = embeds,
+        allowed_mentions = allowed_mentions,
+        components = components,
+        attachments = attachments,
+        flags = flags,
+        wait = true
+    ))
 
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
@@ -337,13 +374,44 @@ proc editWebhookMessage*(api: RestApi;
 
     result = (await api.request("PATCH", endpoint, $payload)).newMessage
 
+proc editInteractionResponse*(api: RestApi;
+        application_id, interaction_token, message_id: string;
+        content = none string;
+        embeds = newSeq[Embed]();
+        allowed_mentions = none AllowedMentions;
+        attachments = newSeq[Attachment]();
+        files = newSeq[DiscordFile]();
+        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+    ## Modifies interaction response
+    ## You can actually use this to modify original interaction or followup message.
+    ##
+    ## - `message_id` can be `@original`
+    result = await api.editWebhookMessage(
+        application_id, interaction_token, message_id,
+        content = content,
+        embeds = embeds,
+        allowed_mentions = allowed_mentions,
+        attachments = attachments,
+        files = files,
+        components = components,
+    )
+
 proc getWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
-        thread_id = none string) {.async.} =
+        thread_id = none string): Future[Message] {.async.} =
     ## Get webhook message.
     var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
-    discard await api.request("GET", endpoint)
+    result = (await api.request("GET", endpoint)).newMessage
+
+proc getInteractionResponse*(
+    api: RestApi;
+    application_id, interaction_token, message_id: string
+): Future[Message] {.async.} =
+    ## Get interaction response or follow up message.
+    result = await api.getWebhookMessage(
+        application_id, interaction_token, message_id
+    )
 
 proc deleteWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
@@ -353,21 +421,30 @@ proc deleteWebhookMessage*(api: RestApi;
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
     discard await api.request("DELETE", endpoint)
 
+proc deleteInteractionResponse*(api: RestApi;
+        application_id, interaction_token, message_id: string) {.async.} =
+    ## Delete followup message or interaction response.
+    await api.deleteWebhookMessage(
+        application_id, interaction_token, message_id
+    )
+
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true; thread_id = none string): Future[Message] {.async.} =
+        wait = true; thread_id = none string): Future[Option[Message]] {.async.} =
     ## Executes a slack webhook.
-    ## If `wait` is `false` make sure to `discard await` it.
     var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
+    var rawResult: JsonNode
     if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
-    result = (await api.request("POST", ep)).newMessage
+    rawResult = (await api.request("POST", ep))
+    if wait: return some rawResult.newMessage else: return none Message
 
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true; thread_id = none string): Future[Message] {.async.} =
+        wait = true; thread_id = none string): Future[Option[Message]] {.async.} =
     ## Executes a github webhook.
-    ## If `wait` is `false` make sure to `discard await` it.
     var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
+    var rawResult: JsonNode
     if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
-    result = (await api.request("POST", ep)).newMessage
+    rawResult = (await api.request("POST", ep))
+    if wait: return some rawResult.newMessage else: return none Message
 
 proc getSticker*(api: RestApi, sticker_id: string): Future[Sticker] {.async.} =
     result = (await api.request("GET", endpointStickers(sticker_id))).newSticker

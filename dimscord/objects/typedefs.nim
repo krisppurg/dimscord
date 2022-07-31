@@ -2,6 +2,8 @@ import options as optns, json, asyncdispatch
 import tables, ../constants
 from ws import Websocket
 import std/asyncnet
+# when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
+#     {.warning[DuplicateModule]: off.}
 
 type
     RestError* = object of CatchableError
@@ -54,11 +56,13 @@ type
         retry_info*: tuple[ms, attempts: int]
         hbAck*, hbSent*, stop*: bool
         heartbeating*, resuming*, reconnecting*: bool
-        networkError*, ready*: bool
+        networkError*, ready*, migrate*: bool
         paused*, stopped*, reconnectable*: bool
+        speaking*: bool
         interval*: int
         sequence*, time*, ssrc*: uint32
         srcIP*, dstIP*: string
+        data*: string
         srcPort*, dstPort*: int # src is our computer, dst is discord servers
         case encryptMode*: VoiceEncryptionMode
         of Lite: # Lites nonce is just an increasing number
@@ -805,7 +809,7 @@ type
         voice_state_update*: proc (s: Shard, v: VoiceState,
                 o: Option[VoiceState]) {.async.}
         voice_server_update*: proc (s: Shard, g: Guild,
-                token: string, endpoint: Option[string]) {.async.}
+                token: string, endpoint: Option[string], initial: bool) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
         interaction_create*: proc (s: Shard, i: Interaction) {.async.}
         application_command_create*,application_command_update*: proc (s: Shard,

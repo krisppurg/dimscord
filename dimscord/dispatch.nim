@@ -3,7 +3,11 @@ import options, json, asyncdispatch
 import sequtils, tables, jsony, macros
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-  {.warning[HoleEnumConv]: off.}
+    {.warning[HoleEnumConv]: off.}
+    {.warning[CaseTransition]: off.}
+
+when defined(dimscordVoice):
+    from voice import pause, disconnect
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
@@ -38,15 +42,13 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
     )
     let voiceState = newVoiceState(data)
     var oldVoiceState: Option[VoiceState]
-    echo guild.members.len
     if guild.id in s.cache.guilds and voiceState.user_id in guild.members:
         guild.members[voiceState.user_id].voice_state = some voiceState
 
         if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
-            when declared(deepCopy):
-                oldVoiceState = some(
-                    deepCopy guild.voice_states[voiceState.user_id]
-                )
+            oldVoiceState = some(
+                move guild.voice_states[voiceState.user_id]
+            )
             guild.voice_states[voiceState.user_id] = voiceState
 
     if voiceState.user_id == s.user.id:
@@ -124,8 +126,7 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
         let guild = s.cache.guilds[presence.guild_id]
 
         if presence.user.id in guild.presences:
-            when declared(deepCopy):
-                oldPresence = some deepCopy guild.presences[presence.user.id]
+            oldPresence = some move guild.presences[presence.user.id]
 
         let member = guild.members.getOrDefault(presence.user.id, Member(
             user: User(
@@ -359,16 +360,14 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         let chan = s.cache.guildChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            when declared(deepCopy):
-                oldMessage = some deepCopy chan.messages[msg.id]
+            oldMessage = some move chan.messages[msg.id]
             msg = chan.messages[msg.id]
             exists = true
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            when declared(deepCopy):
-                oldMessage = some deepCopy chan.messages[msg.id]
+            oldMessage = some move chan.messages[msg.id]
             msg = chan.messages[msg.id]
             exists = true
 
@@ -440,8 +439,7 @@ proc channelUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldChan: Option[GuildChannel]
 
     if gchan.id in s.cache.guildChannels:
-        when declared(deepCopy):
-            oldChan = some deepCopy guild.channels[gchan.id]
+        oldChan = some move guild.channels[gchan.id]
         guild.channels[gchan.id] = gchan
         s.cache.guildChannels[gchan.id] = gchan
 
@@ -517,8 +515,7 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldMember: Option[Member]
 
     if member.user.id in guild.members:
-        when declared(deepCopy):
-            oldMember = some deepCopy guild.members[member.user.id]
+        oldMember = some move guild.members[member.user.id]
 
         guild.members[member.user.id] = member
 
@@ -578,28 +575,27 @@ proc guildUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldGuild: Option[Guild]
 
     if guild.id in s.cache.guilds:
-        when declared(deepCopy):
-            oldGuild = some deepCopy s.cache.guilds[guild.id]
+        oldGuild = some move s.cache.guilds[guild.id]
 
-            guild.emojis = oldGuild.get.emojis
-            guild.roles = oldGuild.get.roles
-            guild.channels = oldGuild.get.channels
-            guild.members = oldGuild.get.members
-            guild.presences = oldGuild.get.presences
-            guild.voice_states = oldGuild.get.voice_states
-            guild.guild_scheduled_events = oldGuild.get.guild_scheduled_events
-            guild.stickers = oldGuild.get.stickers
-            guild.threads = oldGuild.get.threads
-            guild.stage_instances = oldGuild.get.stage_instances
-            guild.permissions = oldGuild.get.permissions
+        guild.emojis = oldGuild.get.emojis
+        guild.roles = oldGuild.get.roles
+        guild.channels = oldGuild.get.channels
+        guild.members = oldGuild.get.members
+        guild.presences = oldGuild.get.presences
+        guild.voice_states = oldGuild.get.voice_states
+        guild.guild_scheduled_events = oldGuild.get.guild_scheduled_events
+        guild.stickers = oldGuild.get.stickers
+        guild.threads = oldGuild.get.threads
+        guild.stage_instances = oldGuild.get.stage_instances
+        guild.permissions = oldGuild.get.permissions
 
-            guild.large = oldGuild.get.large
-            guild.joined_at = oldGuild.get.joined_at
-            guild.unavailable = oldGuild.get.unavailable
-            guild.afk_timeout = oldGuild.get.afk_timeout
-            guild.member_count = oldGuild.get.member_count
-            if "owner_id" notin data or data{"owner_id"}.kind == JNull:
-                guild.owner_id = oldGuild.get.owner_id
+        guild.large = oldGuild.get.large
+        guild.joined_at = oldGuild.get.joined_at
+        guild.unavailable = oldGuild.get.unavailable
+        guild.afk_timeout = oldGuild.get.afk_timeout
+        guild.member_count = oldGuild.get.member_count
+        if "owner_id" notin data or data{"owner_id"}.kind == JNull:
+            guild.owner_id = oldGuild.get.owner_id
 
         s.cache.guilds[guild.id] = guild
 
@@ -654,8 +650,7 @@ proc guildRoleUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldRole: Option[Role]
 
     if guild.id in s.cache.guilds:
-        when declared(deepCopy):
-            oldRole = some deepCopy guild.roles[role.id]
+        oldRole = some move guild.roles[role.id]
 
         guild.roles[role.id] = role
 
@@ -747,8 +742,7 @@ proc stageInstanceUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldStage: Option[StageInstance]
 
     if stage.id in guild.stage_instances:
-        when declared(deepCopy):
-            oldStage = some deepCopy guild.stage_instances[stage.id]
+        oldStage = some move guild.stage_instances[stage.id]
         guild.stage_instances[stage.id] = stage
 
     asyncCheck s.client.events.stage_instance_update(s, guild, stage, oldStage)
@@ -862,8 +856,7 @@ proc threadUpdate(s: Shard, data: JsonNode) {.async.} =
     var oldThread: Option[GuildChannel]
 
     if thread.id in s.cache.guildChannels:
-        when declared(deepCopy):
-            oldThread = some deepCopy s.cache.guildChannels[thread.id]
+        oldThread = some move s.cache.guildChannels[thread.id]
         s.cache.guildChannels[thread.id] = thread
         guild.threads[thread.id] = thread
 
@@ -917,19 +910,30 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     )
 
     var endpoint: Option[string]
+    var initial = true
 
     if "endpoint" in data and data["endpoint"].kind != JNull:
         endpoint = some data["endpoint"].str
-
         let exists = guild.id in s.voiceConnections
 
-        if exists and s.voiceConnections[guild.id].endpoint == "":
-            let v = s.voiceConnections[guild.id]
-            v.endpoint = "wss://" & endpoint.get & "/?v=4"
-            v.token = data["token"].str
+        if exists:
+            let vc = s.voiceConnections[guild.id]
+            when defined(dimscordVoice):
+                if vc.speaking: initial = false
+
+            if endpoint.get != vc.endpoint:
+                if vc.endpoint != "": initial = false
+                when defined(dimscordVoice):
+                    if vc.speaking:
+                        await vc.pause()
+                        await vc.disconnect(true)
+
+                let v = s.voiceConnections[guild.id]
+                v.endpoint = "wss://" & endpoint.get & "/?v=4"
+                v.token = data["token"].str
 
     asyncCheck s.client.events.voice_server_update(s, guild,
-        data["token"].str, endpoint)
+        data["token"].str, endpoint, initial)
 
 proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     case event:

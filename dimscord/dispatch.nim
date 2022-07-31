@@ -360,18 +360,22 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         let chan = s.cache.guildChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            oldMessage = some move chan.messages[msg.id]
             msg = chan.messages[msg.id]
+            oldMessage = some move chan.messages[msg.id]
             exists = true
+
+        msg = msg.updateMessage(data)
+        if msg.id in chan.messages: chan.messages[msg.id] = msg
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            oldMessage = some move chan.messages[msg.id]
             msg = chan.messages[msg.id]
+            oldMessage = some move chan.messages[msg.id]
             exists = true
 
-    msg = msg.updateMessage(data)
+        msg = msg.updateMessage(data)
+        if msg.id in chan.messages: chan.messages[msg.id] = msg
 
     asyncCheck s.client.events.message_update(s, msg, oldMessage, exists)
 

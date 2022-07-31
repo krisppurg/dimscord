@@ -244,7 +244,7 @@ proc getGuildVanityUrl*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildVanity(guild_id)
-    )).to(tuple[code: Option[string], uses: int])
+    )).`$`.fromJson(tuple[code: Option[string], uses: int])
 
 proc editGuildMember*(api: RestApi, guild_id, user_id: string;
         nick, channel_id, communication_disabled_until = none string;
@@ -365,7 +365,7 @@ proc getGuildWidget*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildWidget(guild_id)
-    )).to(GuildWidgetJson)
+    )).`$`.fromJson(GuildWidgetJson)
 
 proc editGuildWidget*(api: RestApi, guild_id: string,
         enabled = none bool;
@@ -382,7 +382,7 @@ proc editGuildWidget*(api: RestApi, guild_id: string,
         "PATCH",
         endpointGuildWidget(guild_id),
         $payload
-    )).to(tuple[enabled: bool, channel_id: Option[string]])
+    )).`$`.fromJson(tuple[enabled: bool, channel_id: Option[string]])
 
 proc getGuildPreview*(api: RestApi,
         guild_id: string): Future[GuildPreview] {.async.} =
@@ -578,7 +578,7 @@ proc editGuildWelcomeScreen*(api: RestApi, guild_id: string;
     return (await api.request(
         "PATCH", endpointGuildWelcomeScreen(guild_id),
         $payload
-    )).to(tuple[
+    )).`$`.fromJson(tuple[
             description: Option[string],
             welcome_channels: seq[WelcomeChannel]
         ])
@@ -591,7 +591,7 @@ proc getGuildWelcomeScreen*(
         ]] {.async.} =
     result = (await api.request(
         "GET", endpointGuildWelcomeScreen(guild_id)
-    )).to(tuple[
+    )).`$`.fromjson(tuple[
             description: Option[string],
             welcome_channels: seq[WelcomeChannel]
         ])
@@ -846,7 +846,7 @@ proc getScheduledEventUsers*(api: RestApi,
         endpoint
     )).elems.mapIt(it.`$`.fromJson(GuildScheduledEventUser))
 
-proc renameHook(v: var ModerationAction, fieldName: var string) = # just putting that here because im cool and lazy
+proc renameHook(v: var ModerationAction, fieldName: var string) {.used.} = # just putting that here because im cool and lazy
     if fieldName == "type":
         fieldName = "kind"
 

@@ -781,10 +781,10 @@ proc newApplicationCommandInteractionData*(
 ): ApplicationCommandInteractionData =
     result = data.`$`.fromJson(ApplicationCommandInteractionData)
 
-proc newInteraction*(data: JsonNode): Interaction = # TODO: update this to support jsony
+proc newInteraction*(data: JsonNode): Interaction =
     result = data.`$`.fromJson(Interaction)
 
-proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption = # TODO: update his to support jsony.
+proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =
     result = data.`$`.fromJson(ApplicationCommandOption)
 
 proc `%%*`*(a: ApplicationCommandOption): JsonNode =
@@ -810,7 +810,7 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 return %%*x # avoid conflicts with json
         )
 
-proc `%%*`*(a: ApplicationCommand): JsonNode = # TODO: Remove this to support jsony.
+proc `%%*`*(a: ApplicationCommand): JsonNode =
     assert a.name.len in 3..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api

@@ -304,14 +304,97 @@ proc createInteractionResponse*(api: RestApi,
         data["choices"] = %*choices
     of irtInvalid:
         raise newException(ValueError, "Invalid interaction respons type")
-    else:
-        discard # irtModal
+    of irtModal:
+        data["custom_id"] = %*response.custom_id
+        data["title"] = %*response.title
+
+        if response.components.len > 0:
+            data["components"] = newJArray()
+            for component in response.components:
+                data["components"] &= %%*component
 
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),
         $(%*{
             "type": int response.kind,
+            "data": %data
+        })
+    )
+
+proc interactionResponseMessage*(api: RestApi,
+        interaction_id, interaction_token: string;
+        kind: InteractionResponseType,
+        response: InteractionCallbackDataMessage) {.async.} =
+    ## Create an interaction response.
+    ## `response.kind` is required.
+    var data = newJObject()
+    case kind:
+    of irtPong,
+       irtChannelMessageWithSource,
+       irtDeferredChannelMessageWithSource,
+       irtDeferredUpdateMessage,
+       irtUpdateMessage:
+        data = %*(response)
+        if response.flags!=0:
+            data["flags"] = %response.flags
+    else:
+        raise newException(ValueError,
+            "Invalid reponse kind for a message-based interaction response"
+        )
+
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int kind,
+            "data": %data
+        })
+    )
+
+proc interactionResponseAutocomplete*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionCallbackDataAutocomplete) {.async.} =
+    ## Create an interaction response which is an autocomplete response.
+    var data = newJObject()
+    let choices = %response.choices.map(
+        proc (x: ApplicationCommandOptionChoice): JsonNode =
+            result = %*{"name": x.name}
+            if x.value[0].isSome:
+                result["value"] = %x.value[0]
+            if x.value[1].isSome:
+                result["value"] = %x.value[1]
+    )
+    data["choices"] = %*choices
+
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int irtAutoCompleteResult,
+            "data": %data
+        })
+    )
+
+proc interactionResponseModal*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionCallbackDataModal) {.async.} =
+    ## Create an interaction response which is a modal.
+    var data = %*{
+        "custom_id": response.custom_id,
+        "title": response.title,
+    }
+
+    if response.components.len > 0:
+        data["components"] = newJArray()
+        for component in response.components:
+            data["components"] &= %%*component
+
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int irtModal,
             "data": %data
         })
     )

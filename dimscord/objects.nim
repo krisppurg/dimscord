@@ -888,6 +888,7 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["min_values"] =  %comp.minValues
             result["max_values"] =  %comp.maxValues
         of TextInput:
+            result["custom_id"] =   %comp.custom_id.get
             result["placeholder"] =    %comp.placeholder
             result["style"] =          %int comp.input_style.get
             result["label"] =          %comp.input_label.get

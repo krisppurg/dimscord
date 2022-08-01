@@ -240,6 +240,41 @@ window.addEventListener('DOMContentLoaded', main);
     title="getUser(api: RestApi; user_id: string): Future[User]">getUser(api: RestApi; user_id: string): Future[User]</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">interactionResponseAutocomplete
+      <li><a class="reference" href="#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete"
+    title="interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])">interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">interactionResponseMessage
+      <li><a class="reference" href="#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData"
+    title="interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])">interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">interactionResponseModal
+      <li><a class="reference" href="#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal"
+    title="interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])">interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">leaveGuild
       <li><a class="reference" href="#leaveGuild%2CRestApi%2Cstring"
     title="leaveGuild(api: RestApi; guild_id: string): owned(Future[void])">leaveGuild(api: RestApi; guild_id: string): owned(Future[void])</a></li>
@@ -593,6 +628,55 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="interactionResponseAutocomplete,RestApi,string,string,InteractionCallbackDataAutocomplete">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete"><span class="Identifier">interactionResponseAutocomplete</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                                     <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+    <span class="Identifier">response</span><span class="Other">:</span> <a href="../objects.html#InteractionCallbackDataAutocomplete"><span class="Identifier">InteractionCallbackDataAutocomplete</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response which is an autocomplete response.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L357"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L357" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="interactionResponseMessage,RestApi,string,string,InteractionResponseType,InteractionApplicationCommandCallbackData">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData"><span class="Identifier">interactionResponseMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                                <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                                <span class="Identifier">kind</span><span class="Other">:</span> <a href="../constants.html#InteractionResponseType"><span class="Identifier">InteractionResponseType</span></a><span class="Other">;</span>
+                                <span class="Identifier">response</span><span class="Other">:</span> <a href="../objects.html#InteractionCallbackDataMessage"><span class="Identifier">InteractionCallbackDataMessage</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response. <tt class="docutils literal"><span class="pre"><span class="Identifier">response</span><span class="Operator">.</span><span class="Identifier">kind</span></span></tt> is required.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L328"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L328" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="interactionResponseModal,RestApi,string,string,InteractionCallbackDataModal">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal"><span class="Identifier">interactionResponseModal</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                              <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                              <span class="Identifier">response</span><span class="Other">:</span> <a href="../objects.html#InteractionCallbackDataModal"><span class="Identifier">InteractionCallbackDataModal</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response which is a modal.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L381"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L381" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="leaveGuild,RestApi,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#leaveGuild%2CRestApi%2Cstring"><span class="Identifier">leaveGuild</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="../objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">guild_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
@@ -671,7 +755,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-07-22 12:12:41 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-01 16:24:40 UTC</small>
       </div>
     </div>
   </div>

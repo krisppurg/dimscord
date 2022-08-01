@@ -847,6 +847,22 @@ window.addEventListener('DOMContentLoaded', main);
                     target_user_id, target_application_id = none string;
                     target_user_type = none int; reason = &quot;&quot;): Future[Invite]</a></li>
           </ul></dd>
+<dt><a name="createFollowupMessage" href="#createFollowupMessage"><span>createFollowupMessage:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files = newSeq[DiscordFile]();
+                      attachments = newSeq[Attachment]();
+                      embeds = newSeq[Embed]();
+                      allowed_mentions = none AllowedMentions;
+                      components = newSeq[MessageComponent](); flags = none int): Future[
+    Message]" href="dimscord/restapi.html#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files = newSeq[DiscordFile]();
+                      attachments = newSeq[Attachment]();
+                      embeds = newSeq[Embed]();
+                      allowed_mentions = none AllowedMentions;
+                      components = newSeq[MessageComponent](); flags = none int): Future[
+    Message]</a></li>
+          </ul></dd>
 <dt><a name="createGroupDm" href="#createGroupDm"><span>createGroupDm:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: createGroupDm(api: RestApi; access_tokens: seq[string];
@@ -1107,6 +1123,14 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="restapi: deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]" href="dimscord/restapi.html#deleteGuildTemplate%2CRestApi%2Cstring%2Cstring">restapi: deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]</a></li>
           </ul></dd>
+<dt><a name="deleteInteractionResponse" href="#deleteInteractionResponse"><span>deleteInteractionResponse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: deleteInteractionResponse(api: RestApi;
+                          application_id, interaction_token, message_id: string): owned(
+    Future[void])" href="dimscord/restapi.html#deleteInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteInteractionResponse(api: RestApi;
+                          application_id, interaction_token, message_id: string): owned(
+    Future[void])</a></li>
+          </ul></dd>
 <dt><a name="deleteInvite" href="#deleteInvite"><span>deleteInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])" href="dimscord/restapi.html#deleteInvite%2CRestApi%2Cstring%2Cstring">restapi: deleteInvite(api: RestApi; code: string; reason = &quot;&quot;): owned(Future[void])</a></li>
@@ -1159,7 +1183,7 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])" href="dimscord/gateway.html#disconnect%2CShard">gateway: disconnect(s: Shard; should_reconnect = true): owned(Future[void])</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="voice: disconnect(v: VoiceClient): owned(Future[void])" href="dimscord/voice.html#disconnect%2CVoiceClient">voice: disconnect(v: VoiceClient): owned(Future[void])</a></li>
+          data-doc-search-tag="voice: disconnect(v: VoiceClient; migrate = false): owned(Future[void])" href="dimscord/voice.html#disconnect%2CVoiceClient">voice: disconnect(v: VoiceClient; migrate = false): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="DiscordClient" href="#DiscordClient"><span>DiscordClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1392,6 +1416,22 @@ window.addEventListener('DOMContentLoaded', main);
     tuple[enabled: bool, channel_id: Option[string]]]" href="dimscord/restapi.html#editGuildWidget%2CRestApi%2Cstring%2Cstring">restapi: editGuildWidget(api: RestApi; guild_id: string; enabled = none bool;
                 channel_id = none string; reason = &quot;&quot;): Future[
     tuple[enabled: bool, channel_id: Option[string]]]</a></li>
+          </ul></dd>
+<dt><a name="editInteractionResponse" href="#editInteractionResponse"><span>editInteractionResponse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: editInteractionResponse(api: RestApi;
+                        application_id, interaction_token, message_id: string;
+                        content = none string; embeds = newSeq[Embed]();
+                        allowed_mentions = none AllowedMentions;
+                        attachments = newSeq[Attachment]();
+                        files = newSeq[DiscordFile]();
+                        components = newSeq[MessageComponent]()): Future[Message]" href="dimscord/restapi.html#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editInteractionResponse(api: RestApi;
+                        application_id, interaction_token, message_id: string;
+                        content = none string; embeds = newSeq[Embed]();
+                        allowed_mentions = none AllowedMentions;
+                        attachments = newSeq[Attachment]();
+                        files = newSeq[DiscordFile]();
+                        components = newSeq[MessageComponent]()): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editMessage" href="#editMessage"><span>editMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1810,30 +1850,30 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="executeGithubWebhook" href="#executeGithubWebhook"><span>executeGithubWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                     thread_id = none string): Future[Message]" href="dimscord/restapi.html#executeGithubWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                     thread_id = none string): Future[Message]</a></li>
+                     thread_id = none string): Future[Option[Message]]" href="dimscord/restapi.html#executeGithubWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
+                     thread_id = none string): Future[Option[Message]]</a></li>
           </ul></dd>
 <dt><a name="executeSlackWebhook" href="#executeSlackWebhook"><span>executeSlackWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                    thread_id = none string): Future[Message]" href="dimscord/restapi.html#executeSlackWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                    thread_id = none string): Future[Message]</a></li>
+                    thread_id = none string): Future[Option[Message]]" href="dimscord/restapi.html#executeSlackWebhook%2CRestApi%2Cstring%2Cstring">restapi: executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
+                    thread_id = none string): Future[Option[Message]]</a></li>
           </ul></dd>
 <dt><a name="executeWebhook" href="#executeWebhook"><span>executeWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                thread_id = none string; content = &quot;&quot;; tts = false;
-               files = newSeq[DiscordFile]();
+               flags = none int; files = newSeq[DiscordFile]();
                attachments = newSeq[Attachment](); embeds = newSeq[Embed]();
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string;
-               components = newSeq[MessageComponent]()): Future[Message]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+               components = newSeq[MessageComponent]()): Future[Option[Message]]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                thread_id = none string; content = &quot;&quot;; tts = false;
-               files = newSeq[DiscordFile]();
+               flags = none int; files = newSeq[DiscordFile]();
                attachments = newSeq[Attachment](); embeds = newSeq[Embed]();
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string;
-               components = newSeq[MessageComponent]()): Future[Message]</a></li>
+               components = newSeq[MessageComponent]()): Future[Option[Message]]</a></li>
           </ul></dd>
 <dt><a name="ExplicitContentFilter" href="#ExplicitContentFilter"><span>ExplicitContentFilter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2063,6 +2103,14 @@ window.addEventListener('DOMContentLoaded', main);
           <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]" href="dimscord/restapi.html#getGuildWidget%2CRestApi%2Cstring">restapi: getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]</a></li>
           </ul></dd>
+<dt><a name="getInteractionResponse" href="#getInteractionResponse"><span>getInteractionResponse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getInteractionResponse(api: RestApi;
+                       application_id, interaction_token, message_id: string): Future[
+    Message]" href="dimscord/restapi.html#getInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: getInteractionResponse(api: RestApi;
+                       application_id, interaction_token, message_id: string): Future[
+    Message]</a></li>
+          </ul></dd>
 <dt><a name="getInvite" href="#getInvite"><span>getInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getInvite(api: RestApi; code: string; with_counts, with_expiration = false;
@@ -2140,8 +2188,8 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="getWebhookMessage" href="#getWebhookMessage"><span>getWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                  thread_id = none string): owned(Future[void])" href="dimscord/restapi.html#getWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                  thread_id = none string): owned(Future[void])</a></li>
+                  thread_id = none string): Future[Message]" href="dimscord/restapi.html#getWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                  thread_id = none string): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="giAutoModerationConfiguration" href="#giAutoModerationConfiguration"><span>giAutoModerationConfiguration:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2384,6 +2432,64 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="InteractionResponse" href="#InteractionResponse"><span>InteractionResponse:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: InteractionResponse" href="dimscord/objects.html#InteractionResponse">objects: InteractionResponse</a></li>
+          </ul></dd>
+<dt><a name="interactionResponseAutocomplete" href="#interactionResponseAutocomplete"><span>interactionResponseAutocomplete:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])" href="dimscord/restapi.html#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete">restapi: interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])" href="dimscord/restapi/user.html#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete">user: interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])</a></li>
+          </ul></dd>
+<dt><a name="interactionResponseMessage" href="#interactionResponseMessage"><span>interactionResponseMessage:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])" href="dimscord/restapi.html#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData">restapi: interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])" href="dimscord/restapi/user.html#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData">user: interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])</a></li>
+          </ul></dd>
+<dt><a name="interactionResponseModal" href="#interactionResponseModal"><span>interactionResponseModal:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])" href="dimscord/restapi.html#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal">restapi: interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])" href="dimscord/restapi/user.html#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal">user: interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])</a></li>
           </ul></dd>
 <dt><a name="InteractionResponseType" href="#InteractionResponseType"><span>InteractionResponseType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3537,6 +3643,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="TextInputStyle.Short" href="dimscord/constants.html#Short">TextInputStyle.Short</a></li>
           </ul></dd>
+<dt><a name="Something" href="#Something"><span>Something:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="VoiceOp.Something" href="dimscord/voice.html#Something">VoiceOp.Something</a></li>
+          </ul></dd>
 <dt><a name="Speaking" href="#Speaking"><span>Speaking:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="VoiceOp.Speaking" href="dimscord/voice.html#Speaking">VoiceOp.Speaking</a></li>
@@ -3910,7 +4020,7 @@ window.addEventListener('DOMContentLoaded', main);
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-07-22 12:13:01 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-01 16:25:04 UTC</small>
       </div>
     </div>
   </div>

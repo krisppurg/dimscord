@@ -210,6 +210,23 @@ window.addEventListener('DOMContentLoaded', main);
                     target_user_type = none int; reason = &quot;&quot;): Future[Invite]</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">createFollowupMessage
+      <li><a class="reference" href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring"
+    title="createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files = newSeq[DiscordFile]();
+                      attachments = newSeq[Attachment]();
+                      embeds = newSeq[Embed]();
+                      allowed_mentions = none AllowedMentions;
+                      components = newSeq[MessageComponent](); flags = none int): Future[
+    Message]">createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files = newSeq[DiscordFile]();
+                      attachments = newSeq[Attachment]();
+                      embeds = newSeq[Embed]();
+                      allowed_mentions = none AllowedMentions;
+                      components = newSeq[MessageComponent](); flags = none int): Future[
+    Message]</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">createGroupDm
       <li><a class="reference" href="#createGroupDm%2CRestApi%2Cseq%5Bstring%5D%2CTable%5Bstring%2Cstring%5D"
     title="createGroupDm(api: RestApi; access_tokens: seq[string];
@@ -419,6 +436,15 @@ window.addEventListener('DOMContentLoaded', main);
   <ul class="simple nested-toc-section">deleteGuildTemplate
       <li><a class="reference" href="#deleteGuildTemplate%2CRestApi%2Cstring%2Cstring"
     title="deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]">deleteGuildTemplate(api: RestApi; guild_id, code: string): Future[GuildTemplate]</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">deleteInteractionResponse
+      <li><a class="reference" href="#deleteInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"
+    title="deleteInteractionResponse(api: RestApi;
+                          application_id, interaction_token, message_id: string): owned(
+    Future[void])">deleteInteractionResponse(api: RestApi;
+                          application_id, interaction_token, message_id: string): owned(
+    Future[void])</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">deleteInvite
@@ -684,6 +710,23 @@ window.addEventListener('DOMContentLoaded', main);
     tuple[enabled: bool, channel_id: Option[string]]]</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">editInteractionResponse
+      <li><a class="reference" href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"
+    title="editInteractionResponse(api: RestApi;
+                        application_id, interaction_token, message_id: string;
+                        content = none string; embeds = newSeq[Embed]();
+                        allowed_mentions = none AllowedMentions;
+                        attachments = newSeq[Attachment]();
+                        files = newSeq[DiscordFile]();
+                        components = newSeq[MessageComponent]()): Future[Message]">editInteractionResponse(api: RestApi;
+                        application_id, interaction_token, message_id: string;
+                        content = none string; embeds = newSeq[Embed]();
+                        allowed_mentions = none AllowedMentions;
+                        attachments = newSeq[Attachment]();
+                        files = newSeq[DiscordFile]();
+                        components = newSeq[MessageComponent]()): Future[Message]</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">editMessage
       <li><a class="reference" href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
@@ -755,32 +798,32 @@ window.addEventListener('DOMContentLoaded', main);
   <ul class="simple nested-toc-section">executeGithubWebhook
       <li><a class="reference" href="#executeGithubWebhook%2CRestApi%2Cstring%2Cstring"
     title="executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                     thread_id = none string): Future[Message]">executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                     thread_id = none string): Future[Message]</a></li>
+                     thread_id = none string): Future[Option[Message]]">executeGithubWebhook(api: RestApi; webhook_id, token: string; wait = true;
+                     thread_id = none string): Future[Option[Message]]</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">executeSlackWebhook
       <li><a class="reference" href="#executeSlackWebhook%2CRestApi%2Cstring%2Cstring"
     title="executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                    thread_id = none string): Future[Message]">executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
-                    thread_id = none string): Future[Message]</a></li>
+                    thread_id = none string): Future[Option[Message]]">executeSlackWebhook(api: RestApi; webhook_id, token: string; wait = true;
+                    thread_id = none string): Future[Option[Message]]</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">executeWebhook
       <li><a class="reference" href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                thread_id = none string; content = &quot;&quot;; tts = false;
-               files = newSeq[DiscordFile]();
+               flags = none int; files = newSeq[DiscordFile]();
                attachments = newSeq[Attachment](); embeds = newSeq[Embed]();
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string;
-               components = newSeq[MessageComponent]()): Future[Message]">executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+               components = newSeq[MessageComponent]()): Future[Option[Message]]">executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                thread_id = none string; content = &quot;&quot;; tts = false;
-               files = newSeq[DiscordFile]();
+               flags = none int; files = newSeq[DiscordFile]();
                attachments = newSeq[Attachment](); embeds = newSeq[Embed]();
                allowed_mentions = none AllowedMentions;
                username, avatar_url = none string;
-               components = newSeq[MessageComponent]()): Future[Message]</a></li>
+               components = newSeq[MessageComponent]()): Future[Option[Message]]</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getApplicationCommand
@@ -998,6 +1041,15 @@ window.addEventListener('DOMContentLoaded', main);
     title="getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]">getGuildWidget(api: RestApi; guild_id: string): Future[GuildWidgetJson]</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">getInteractionResponse
+      <li><a class="reference" href="#getInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"
+    title="getInteractionResponse(api: RestApi;
+                       application_id, interaction_token, message_id: string): Future[
+    Message]">getInteractionResponse(api: RestApi;
+                       application_id, interaction_token, message_id: string): Future[
+    Message]</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">getInvite
       <li><a class="reference" href="#getInvite%2CRestApi%2Cstring"
     title="getInvite(api: RestApi; code: string; with_counts, with_expiration = false;
@@ -1082,8 +1134,43 @@ window.addEventListener('DOMContentLoaded', main);
   <ul class="simple nested-toc-section">getWebhookMessage
       <li><a class="reference" href="#getWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring"
     title="getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                  thread_id = none string): owned(Future[void])">getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                  thread_id = none string): owned(Future[void])</a></li>
+                  thread_id = none string): Future[Message]">getWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                  thread_id = none string): Future[Message]</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">interactionResponseAutocomplete
+      <li><a class="reference" href="#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete"
+    title="interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])">interactionResponseAutocomplete(api: RestApi;
+                                interaction_id, interaction_token: string;
+                                response: InteractionCallbackDataAutocomplete): owned(
+    Future[void])</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">interactionResponseMessage
+      <li><a class="reference" href="#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData"
+    title="interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])">interactionResponseMessage(api: RestApi;
+                           interaction_id, interaction_token: string;
+                           kind: InteractionResponseType;
+                           response: InteractionCallbackDataMessage): owned(
+    Future[void])</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">interactionResponseModal
+      <li><a class="reference" href="#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal"
+    title="interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])">interactionResponseModal(api: RestApi;
+                         interaction_id, interaction_token: string;
+                         response: InteractionCallbackDataModal): owned(
+    Future[void])</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">joinThread
@@ -1333,9 +1420,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Adds a thread member.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L403"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L480"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L403" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L480" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1439,6 +1526,30 @@ Creates an instant invite.
 href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/channel.nim#L124"
 class="link-seesrc" target="_blank">Source</a>
 &nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/channel.nim#L124" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="createFollowupMessage,RestApi,string,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">createFollowupMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                           <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                           <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+                           <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                           <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                           <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                           <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
+                           <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                           <span class="Identifier">flags</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create a followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">flags</span></span></tt> can set the followup message as ephemeral.</li>
+</ul>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L302"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L302" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1850,6 +1961,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="deleteInteractionResponse,RestApi,string,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">deleteInteractionResponse</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">,</span>
+    <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Delete followup message or interaction response.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L425"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L425" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="deleteInvite,RestApi,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#deleteInvite%2CRestApi%2Cstring%2Cstring"><span class="Identifier">deleteInvite</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">reason</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
@@ -1960,9 +2085,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete webhook message.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L350"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L418"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L350" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L418" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2291,6 +2416,27 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="editInteractionResponse,RestApi,string,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">editInteractionResponse</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">,</span>
+    <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                             <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
+                             <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                             <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                             <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+               <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Modifies interaction response You can actually use this to modify original interaction or followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">message_id</span></span></tt> can be <tt class="docutils literal"><span class="pre"><span class="Operator">@</span><span class="Identifier">original</span></span></tt></li>
+</ul>
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L384"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L384" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="editMessage,RestApi,string,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">editMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
                  <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">flags</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
@@ -2394,57 +2540,59 @@ Modifies the webhook message. You can actually use this to modify original inter
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L288"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L325"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L288" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L325" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="executeGithubWebhook,RestApi,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#executeGithubWebhook%2CRestApi%2Cstring%2Cstring"><span class="Identifier">executeGithubWebhook</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">wait</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
-                          <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+                          <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Executes a github webhook. If <tt class="docutils literal"><span class="pre"><span class="Identifier">wait</span></span></tt> is <tt class="docutils literal"><span class="pre"><span class="Identifier">false</span></span></tt> make sure to <tt class="docutils literal"><span class="pre"><span class="Keyword">discard</span> <span class="Identifier">await</span></span></tt> it.
+Executes a github webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L365"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L441"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L365" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L441" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="executeSlackWebhook,RestApi,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#executeSlackWebhook%2CRestApi%2Cstring%2Cstring"><span class="Identifier">executeSlackWebhook</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">wait</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
-                         <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+                         <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Executes a slack webhook. If <tt class="docutils literal"><span class="pre"><span class="Identifier">wait</span></span></tt> is <tt class="docutils literal"><span class="pre"><span class="Identifier">false</span></span></tt> make sure to <tt class="docutils literal"><span class="pre"><span class="Keyword">discard</span> <span class="Identifier">await</span></span></tt> it.
+Executes a slack webhook.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L357"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L432"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L357" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L432" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="executeWebhook,RestApi,string,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">executeWebhook</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                     <span class="Identifier">wait</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                    <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                    <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">flags</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span>
+                    <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                     <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                     <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                     <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
                     <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">avatar_url</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
-                    <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+                    <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Executes a webhook or create a followup message. If <tt class="docutils literal"><span class="pre"><span class="Identifier">wait</span></span></tt> is <tt class="docutils literal"><span class="pre"><span class="Identifier">false</span></span></tt> make sure to <tt class="docutils literal"><span class="pre"><span class="Keyword">discard</span> <span class="Identifier">await</span></span></tt> it.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">webhook_id</span></span></tt> can be used as application id</li>
+Executes a webhook or create a followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">webhook_id</span></span></tt> can be used as application id</li>
 <li><tt class="docutils literal"><span class="pre"><span class="Identifier">webhook_token</span></span></tt> can be used as interaction token</li>
+<li><tt class="docutils literal"><span class="pre"><span class="Identifier">flags</span></span></tt> are only used for interaction responses</li>
 </ul>
 
 &nbsp;&nbsp;<a
@@ -2987,6 +3135,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="getInteractionResponse,RestApi,string,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#getInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">getInteractionResponse</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">,</span>
+    <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Get interaction response or follow up message.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L410"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L410" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="getInvite,RestApi,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#getInvite%2CRestApi%2Cstring"><span class="Identifier">getInvite</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">with_counts</span><span class="Other">,</span> <span class="Identifier">with_expiration</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
                <span class="Identifier">auth</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">guild_scheduled_event_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
@@ -3027,9 +3189,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L375"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L452"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L375" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L452" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3099,9 +3261,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L372"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L449"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L372" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L449" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3113,9 +3275,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get a thread member.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L412"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L489"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L412" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L489" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3127,9 +3289,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 List thread members. Note: This endpoint requires the <tt class="docutils literal"><span class="pre"><span class="Identifier">GUILD_MEMBERS</span></span></tt> Privileged Intent if not enabled on your application.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L382"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L459"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L382" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L459" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3178,16 +3340,65 @@ class="link-seesrc" target="_blank">Source</a>
 <div id="getWebhookMessage,RestApi,string,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#getWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring"><span class="Identifier">getWebhookMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
                        <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                       <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                       <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 Get webhook message.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L342"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L401"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L342" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L401" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="interactionResponseAutocomplete,RestApi,string,string,InteractionCallbackDataAutocomplete">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseAutocomplete%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataAutocomplete"><span class="Identifier">interactionResponseAutocomplete</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                                     <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+    <span class="Identifier">response</span><span class="Other">:</span> <a href="objects.html#InteractionCallbackDataAutocomplete"><span class="Identifier">InteractionCallbackDataAutocomplete</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response which is an autocomplete response.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L357"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L357" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="interactionResponseMessage,RestApi,string,string,InteractionResponseType,InteractionApplicationCommandCallbackData">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseMessage%2CRestApi%2Cstring%2Cstring%2CInteractionResponseType%2CInteractionApplicationCommandCallbackData"><span class="Identifier">interactionResponseMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                                <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                                <span class="Identifier">kind</span><span class="Other">:</span> <a href="constants.html#InteractionResponseType"><span class="Identifier">InteractionResponseType</span></a><span class="Other">;</span>
+                                <span class="Identifier">response</span><span class="Other">:</span> <a href="objects.html#InteractionCallbackDataMessage"><span class="Identifier">InteractionCallbackDataMessage</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response. <tt class="docutils literal"><span class="pre"><span class="Identifier">response</span><span class="Operator">.</span><span class="Identifier">kind</span></span></tt> is required.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L328"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L328" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="interactionResponseModal,RestApi,string,string,InteractionCallbackDataModal">
+<dt><pre><span class="Keyword">proc</span> <a href="#interactionResponseModal%2CRestApi%2Cstring%2Cstring%2CInteractionCallbackDataModal"><span class="Identifier">interactionResponseModal</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+                              <span class="Identifier">interaction_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                              <span class="Identifier">response</span><span class="Other">:</span> <a href="objects.html#InteractionCallbackDataModal"><span class="Identifier">InteractionCallbackDataModal</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Create an interaction response which is a modal.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L381"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L381" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3199,9 +3410,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Join thread.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L426"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L503"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L426" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L503" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3227,9 +3438,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Leave thread.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L419"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L496"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L419" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L496" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3343,9 +3554,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Remove thread member.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L393"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L470"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L393" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L470" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3410,9 +3621,9 @@ Starts a public thread.<ul class="simple"><li><tt class="docutils literal"><span
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L437"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L514"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L437" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L514" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -3487,7 +3698,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-07-22 12:12:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-01 16:25:02 UTC</small>
       </div>
     </div>
   </div>

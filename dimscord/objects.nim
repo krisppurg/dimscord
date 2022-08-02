@@ -261,9 +261,13 @@ proc renameHook(v: var MentionChannel, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
 
-# proc renameHook(v: var Embed, fieldName: var string) =
-#     if fieldName == "type":
-#         fieldName = "kind"
+proc parseHook(s: string; i: var int; v: var set[ApplicationFlags]) {.used.} =
+    var bint: BiggestInt
+    try:
+        parseHook(s, i, bint)
+    except:
+        bint = 0
+    v = cast[set[ApplicationFlags]](bint)
 
 proc renameHook(s: var Message, fieldName: var string) =
     case fieldName:
@@ -310,14 +314,6 @@ proc newGuildChannel*(data: JsonNode): GuildChannel =
 
 proc newReaction*(data: JsonNode): Reaction =
     result = ($data).fromJson(Reaction)
-
-proc parseHook(s: string; i: var int; v: var set[ApplicationFlags]) {.used.} =
-    var bint: BiggestInt
-    try:
-        parseHook(s, i, bint)
-    except:
-        bint = 0
-    v = cast[set[ApplicationFlags]](bint)
 
 proc newApplication*(data: JsonNode): Application =
     result = ($data).fromJson(Application)

@@ -45,11 +45,14 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
     if guild.id in s.cache.guilds and voiceState.user_id in guild.members:
         guild.members[voiceState.user_id].voice_state = some voiceState
 
-        if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
+    if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
+        if voiceState.channel_id.isSome:
             oldVoiceState = some(
                 move guild.voice_states[voiceState.user_id]
             )
             guild.voice_states[voiceState.user_id] = voiceState
+        else:
+            guild.voice_states.del voiceState.user_id
 
     if voiceState.user_id == s.user.id:
         if voiceState.channel_id.isNone:

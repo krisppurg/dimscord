@@ -8,7 +8,7 @@ import osproc
 import flatty/binny, random
 import opussum
 import std/[monotimes, times]
-import std/[os, math, strformat]
+import std/[os, strformat]
 randomize()
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
@@ -590,36 +590,34 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         elapsed = (counts*20)/1000
 
         # Sleep so each packet will be sent 20 ms apart
-        when defined(windows): # funfact: this took me over a week to almost fix this
-            let
-                now = float64(getMonoTime().ticks.int/1_000_000_000)
+        # funfact: this took me over a week to almost fix this
+        let
+            now = float64(getMonoTime().ticks.int/1_000_000_000)
 
-                delay = max(0.0, 0.02'f64 + float64(
-                        (v.start + (0.02'f64 * v.loops.float64)) - now
-                    )
+            delay = max(0.0, 0.02'f64 + float64(
+                    (v.start + (0.02'f64 * v.loops.float64)) - now
                 )
+            )
 
-            var offset = rand(0.5..1.0) + v.sleep_offset
-            if v.offset_override:
-                if v.adjust_range != 0.0..0.0: v.adjust_range = 10.0..20.0
-                if elapsed in v.adjust_range: # at this part is where the interruptions may occur
-                    if elapsed >= v.adjust_range.b-1: # reset the time, so that diff would start from 0
-                        counts = 0
-                        start = float64(getMonoTime().ticks.int / 1_000_000_000)
-                        if v.adjust_offset==0:
-                            offset = rand(7.2..8.0)
-                        else:
-                            offset = v.adjust_offset
-            else:
-                if v.sleep_offset == 0.0:
+        var offset = rand(0.5..1.0) + v.sleep_offset
+        if v.offset_override:
+            if v.adjust_range != 0.0..0.0: v.adjust_range = 10.0..20.0
+            if elapsed in v.adjust_range: # at this part is where the interruptions may occur
+                if elapsed >= v.adjust_range.b-1: # reset the time, so that diff would start from 0
+                    counts = 0
+                    start = float64(getMonoTime().ticks.int / 1_000_000_000)
                     if v.adjust_offset==0:
                         offset = rand(7.2..8.0)
                     else:
                         offset = v.adjust_offset
-
-            await sleepAsync float(delay * 1000) + offset
         else:
-            await sleepAsync idealLength
+            if v.sleep_offset == 0.0:
+                if v.adjust_offset==0:
+                    offset = rand(7.2..8.0)
+                else:
+                    offset = v.adjust_offset
+
+        await sleepAsync float(delay * 1000) + offset
 
     v.stopped = false
     if not v.paused: v.data = ""

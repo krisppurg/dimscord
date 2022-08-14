@@ -565,19 +565,23 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = data.`$`.fromJson(InviteMetadata)
 
 proc updateMessage*(m: Message, data: JsonNode): Message =
-    # TODO: update this proc with new message fields.
     result = m
 
     with result:
         mention_users = data{"mentions"}.getElems.map(newUser)
         attachments = data{"attachments"}.getElems.map(newAttachment)
         embeds = data{"embeds"}.getElems.mapIt(it.`$`.fromJson(Embed))
-    if result.referenced_message.isSome or "referenced_message" in data:
+    if result.referenced_message.isSome and "referenced_message" in data:
         result.referenced_message = some data["referenced_message"].newMessage
+    if result.messageReference.isSome:
+        if "message_reference"in data and data["message_reference"].kind!=JNull:
+            result.message_reference = some ($data{"message_reference"}).fromJson(
+                MessageReference
+            )
 
     with data:
         keyCheckStr(result, content, timestamp)
-        keyCheckOptStr(result, edited_timestamp, guild_id)
+        keyCheckOptStr(result, edited_timestamp, guild_id, nonce)
         keyCheckBool(result, mention_everyone, pinned, tts)
 
     if "type" in data and data["type"].kind != JNull:

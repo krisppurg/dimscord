@@ -34,7 +34,7 @@
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ## 
 ## - `voice` Allows you to connect to the voice gateway,
-##    handle voice gateway, etc.
+##    play audio in voice channel, etc.
 ##
 ##   For joining/leaving a voice channel, see `gateway`.
 ## 
@@ -43,8 +43,8 @@
 ##    and the VoiceClient information such as the `endpoint` and `channel_id` for example.
 ##    With `VoiceClient` you can connect to the voice client gateway
 ##    so you can play audio on `on_ready`.
-##    - For some reason, playing audio for windows is buggy as the audio is choppy,
-##    I'd recommend using either linux, mac, etc instead.
+##    - Playing audio for windows may be buggy, if the problem persists I'd recommend using either 
+##      linux, mac, etc instead.
 ##
 ##   For further details about `voice` click `dimscord/voice`.
 ## 
@@ -65,7 +65,7 @@
 ## - `-d:dimscordDebug` For debugging rest, gateway and voice.
 ## - `-d:dimscordDebugNoSubscriptionLogs` No debugging PRESENCE_UPDATE|TYPING_START when `guild_subscriptions` is on. 
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
-## - `-d:discordv9` Discord API v9 is used for threads.
+## - `-d:discordv9` Discord API v9 is used for threads (as in discord's channel type).
 ## - `-d:dimscordVoice` Enables the voice module. Requires libsodium and libopus
 
 import dimscord/[

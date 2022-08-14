@@ -46,6 +46,11 @@ type
         Suffix = "xsalsa20_poly1305_suffix"
         Lite = "xsalsa20_poly1305_lite"
     VoiceClient* = ref object
+        ## Representing VoiceClient object
+        ## You can also change the values of the fields 
+        ##
+        ## For example: `v.sleep_offset = 0.96`
+        ## But this may cause some effects.
         shard*: Shard
         voice_events*: VoiceEvents
         endpoint*, token*, secret_key*: string
@@ -55,14 +60,18 @@ type
         lastHBTransmit*, lastHBReceived*: float
         retry_info*: tuple[ms, attempts: int]
         hbAck*, hbSent*, stop*: bool
+        gateway_ready*: bool
         heartbeating*, resuming*, reconnecting*: bool
         networkError*, ready*, migrate*: bool
         paused*, stopped*, reconnectable*: bool
-        speaking*: bool
-        interval*: int
+        speaking*, offset_override*: bool
+        adjust_range*: HSlice[float64, float64]
+        adjust_offset*: float64
+        start*, sleep_offset*: float64
+        interval*, loops*, sent*: int
         sequence*, time*, ssrc*: uint32
-        srcIP*, dstIP*: string
         data*: string
+        srcIP*, dstIP*: string
         srcPort*, dstPort*: int # src is our computer, dst is discord servers
         case encryptMode*: VoiceEncryptionMode
         of Lite: # Lites nonce is just an increasing number
@@ -504,7 +513,7 @@ type
         token*: string
         data*: Option[ApplicationCommandInteractionData]
         version*: int
-    ApplicationCommandInteractionData* = ref object ## TODO: fix duplicate case situation.
+    ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
         case interaction_type*: InteractionDataType
         of idtApplicationCommand:
@@ -547,7 +556,7 @@ type
 
     ApplicationCommandInteractionDataOption* = object
         name*: string
-        case kind*: ApplicationCommandOptionType ## TODO: acotAttachment
+        case kind*: ApplicationCommandOptionType
         of acotNothing: discard
         of acotBool: bval*: bool
         of acotInt: ival*: BiggestInt

@@ -1,22 +1,19 @@
-# Play audio in voice channel via ytdl/ffmpeg.
-## Please note that playing audio is either buggy on windows, but we aren't currently sure exactly why though.
+## Play audio in voice channel via ytdl/ffmpeg.
+## Please note that playing audio may be buggy, please do let us know and we'll try to fix.
 import asyncdispatch, ws, asyncnet
-import objects, json, constants
+import objects, json, constants, options
 import strutils, nativesockets, streams, sequtils
 import libsodium/sodium, libsodium/sodium_sizes
 import osproc
 import flatty/binny, random
-import std/strformat
 import opussum
 import std/[monotimes, times]
-import std/os
-
+import std/[os, math, strformat]
 randomize()
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
   {.warning[HoleEnumConv]: off.}
   {.warning[CaseTransition]: off.}
-
 
 type
     VoiceOp* = enum
@@ -43,17 +40,15 @@ else:
 {.pragma: sodium_import, importc, dynlib: libsodium_fn.}
 
 proc crypto_secretbox_easy(
-    c: ptr uint8,
-    m: cstring,
+    c: ptr uint8, m: cstring,
     mlen: culonglong,
-    n: cstring,
-    k: cstring,
-):cint {.sodium_import.}
+    n: cstring, k: cstring,
+): cint {.sodium_import.}
 
 const
     # nonceLen = 24 apparently this hasn't been used
     dataSize = 960 * 2 * 2 # Frame size is 960 16 bit integers and we need 2 channels worth
-    idealLength = 19 # How long one voice packet should ideally be in milliseconds
+    idealLength = 20 # How long one voice packet should ideally be in milliseconds
 
 const silencePacket = block:
     var packet: string
@@ -69,7 +64,8 @@ proc logVoice(msg: string) =
         discard
 
 proc logVoice(msg: string, extra: auto) =
-    logVoice(msg & "\n" & $extra)
+    when defined(dimscordDebug):
+        logVoice(msg & "\n  ->  " & $extra)
 
 proc makeNonce(v: VoiceClient, header: string): string =
     ## Generate a nonce for an audio packet header
@@ -130,6 +126,14 @@ proc handleDisconnect(v: VoiceClient, msg: string): bool {.used.} =
 
     if closeData.code in [4004, 4006, 4012, 4014]:
         result = false
+        if not v.migrate:
+            v.stopped = true
+            v.time = 0
+            v.sequence = 0
+            v.paused = false
+            v.sent = 0
+        v.start = 0.0
+        v.loops = 0
         logVoice("Fatal error: " & closeData.reason)
 
 proc sockClosed(v: VoiceClient): bool {.used.} =
@@ -153,7 +157,7 @@ proc sendSock(v: VoiceClient, opcode: VoiceOp, data: JsonNode) {.async.} =
     else:
         await fut
 
-proc resume*(v: VoiceClient) {.async.} =
+proc resumeConnection(v: VoiceClient) {.async, used.} =# To be continued...
     if v.resuming or v.sockClosed: return
 
     v.resuming = true#might cause issues
@@ -182,7 +186,7 @@ proc identify(v: VoiceClient) {.async.} =
 
 proc selectProtocol*(v: VoiceClient) {.async.} =
     ## Tell discord our external IP/port and encryption mode
-    if v.sockClosed: return
+    if v.sockClosed or not v.gateway_ready: return
     await v.sendSock(SelectProtocol, %*{
         "protocol": "udp",
         "data": {
@@ -192,8 +196,9 @@ proc selectProtocol*(v: VoiceClient) {.async.} =
         }
     })
 
-proc sendSpeaking*(v: VoiceClient, speaking: bool | set[VoiceSpeakingFlags]) {.async.} =
-    if v.sockClosed: return
+proc sendSpeaking*(v: VoiceClient;
+        speaking: bool | set[VoiceSpeakingFlags]) {.async.} =
+    if v.sockClosed or not v.gateway_ready: return
 
     await v.sendSock(Speaking, %* {
         "speaking": cast[int](speaking),
@@ -234,7 +239,7 @@ proc reconnect*(v: VoiceClient) {.async.} =
 
         v.retry_info.attempts = 0
         v.retry_info.ms = max(v.retry_info.ms - 5000, 1000)
-        v.migrate = false
+        # if not v.migrate: v.start = 0.0
 
         if v.networkError:
             logVoice "Connection established after network error."
@@ -274,16 +279,15 @@ proc disconnect*(v: VoiceClient, migrate = false) {.async.} =
     ## Disconnects a voice client.
     if v.sockClosed: return
 
-    logVoice "Voice Client disconnecting..."
-
     v.stop = true
 
     if v.connection != nil:
+        logVoice "Voice Client disconnecting..."
         v.connection.close()
     if migrate: v.migrate = true
 
 proc heartbeat(v: VoiceClient) {.async.} =
-    if v.sockClosed: return
+    if v.sockClosed or not v.gateway_ready: return
 
     # if not v.hbAck and v.session_id != "":
     #     logVoice "A zombied connection has been detected"
@@ -315,7 +319,12 @@ proc setupHeartbeatInterval(v: VoiceClient) {.async.} =
 
 proc sendUDPPacket(v: VoiceClient, packet: string) {.async.} =
     ## Sends a UDP packet to the discord servers
-    await v.udp.sendTo(v.dstIP, Port(v.dstPort), packet)
+    try:
+        await v.udp.sendTo(v.dstIP, Port(v.dstPort), packet)
+    except:
+        logVoice(fmt(
+            "Error, packet has been dropped\n  sequence:{v.sequence} time:{v.time}"
+        ))
 
 proc recvUDPPacket(v: VoiceClient, size: int): Future[string] {.async.} =
     ## Recvs a UDP packet from anyone (Could be security issue? couldn't get other proc to work though)
@@ -348,6 +357,8 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
 
             v.stop = true
             v.heartbeating = false
+            v.gateway_ready = false
+            v.ready = false
 
             if exceptn.startsWith("The semaphore timeout period has expired."):
                 logVoice "A network error has been detected."
@@ -364,11 +375,13 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
         except:
             logVoice "An error occurred while parsing data: " & packet[1]
             await v.disconnect()
-            await v.voice_events.on_disconnect(v)
+            v.gateway_ready = false
+            v.ready = false
+            asyncCheck v.voice_events.on_disconnect(v)
             break
 
         case VoiceOp(data["op"].num)
-        of Hello:
+        of Hello: # TODO: resume (after v1.4.0)
             logVoice "Received 'HELLO' from the voice gateway."
             v.interval = int data["d"]["heartbeat_interval"].getFloat
 
@@ -384,6 +397,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
 
             v.hbAck = true
         of Ready:
+            v.gateway_ready = true
             v.dstIP = data["d"]["ip"].str
             v.dstPort = data["d"]["port"].getInt
             v.ssrc = uint32 data["d"]["ssrc"].getInt
@@ -394,20 +408,28 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             # We need to get our IP
             await v.sendDiscovery()
             await v.recvDiscovery()
-            v.ready = true
             await v.selectProtocol()
         of Resumed:
             v.resuming = false
             logVoice "Successfully resumed."
         of SessionDescription:
             logVoice "Received session description."
-            v.encryptMode = parseEnum[VoiceEncryptionMode](data["d"]["mode"].getStr())
+            v.encryptMode = parseEnum[VoiceEncryptionMode](
+                data["d"]["mode"].getStr)
             v.secret_key = data["d"]["secret_key"].elems.mapIt(
                 chr(it.getInt)).join("")
+            v.ready = true
+            if v.migrate:
+                v.migrate = false
+                if v.paused:
+                    v.paused = false
+
+                    v.speaking = true # we should speak as we resume
+                    await v.sendSpeaking(true)
+                    asyncCheck v.voice_events.on_speaking(v, true)
+
             asyncCheck v.voice_events.on_ready(v)
         else: discard
-    # if not v.reconnectable: return
-    # v.
     if packet[0] == Close:
         shouldReconnect = v.handleDisconnect(packet[1])
     v.stop = true
@@ -446,18 +468,27 @@ proc startSession*(v: VoiceClient) {.async.} =
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
         raise newException(Exception, getCurrentExceptionMsg())
 
-proc pause*(v: VoiceClient) {.async.} =
+proc pause*(v: VoiceClient) =
     ## Pause the current audio
     v.paused = true
 
-proc unpause*(v: VoiceClient) =
+proc resume*(v: VoiceClient) =
     ## Continue playing audio
+    v.paused = false
+
+proc unpause*(v: VoiceClient) =
+    ## (Alias) same as resume
     v.paused = false
 
 proc stop*(v: VoiceClient) =
     ## Stop the current audio
     v.stopped = true
     v.data = ""
+
+proc elapsed*(v: VoiceClient): float =
+    ## Shows the elapsed time
+    ## Note: this may be inaccurate.
+    (v.sent*20)/1000
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     ## Sends opus encoded packet
@@ -490,13 +521,13 @@ proc incrementPacketHeaders(v: VoiceClient) =
     else:
         v.time = 0
 
-proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {.async.} =
+proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     ## Plays audio data that comes from a stream or process.
     ## Audio **must** be 2 channel, 48k sample rate, PCM encoded byte stream.
-    ## Make sure to use sendSpeaking_ before sending any audio
-    ##
-    ## * **waitForData**: How many milliseconds to allow for data to start coming through
+    ## Make sure to use sendSpeaking before sending any audio
+    ## Note: if you are playing voice on windows there **might** be some interuptions.
     if v.paused: v.paused = false
+    v.stopped = false
 
     await v.sendSpeaking(true)
     v.speaking = true
@@ -515,16 +546,19 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
     doAssert stream != nil, "Stream is not open"
     let encoder = createEncoder(48000, 2, 960, Voip)
 
-    var count: uint = 0 # Keep track of packets sent 
+    var
+        start:   float64
+        counts:  float64
+        elapsed: float64
     while not atEnd() and not v.stopped:
-        var sleepTime = idealLength
-        v.data = newStringOfCap(dataSize)
-        let 
-            startTime = getMonoTime()
-            shouldAdjust = (count mod 100) == 0
-            
         while v.paused:
-            await sleepAsync 1000
+            await sleepAsync 1
+
+        if v.loops == 0 or v.start == 0.0:
+            v.start = float64(getMonoTime().ticks.int / 1_000_000_000)
+            start = v.start
+
+        v.data = newStringOfCap(dataSize)
 
         # Try and read needed data
         var attempts = 3
@@ -532,14 +566,17 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
             v.data &= stream.readStr(dataSize - v.data.len)
             dec attempts
             if v.data.len != dataSize:
-                await sleepAsync 500
+                await sleepAsync 500 # reading data may take a little bit long so sleep for 500ms
             else:
                 break
 
         if attempts == 0:
-            logVoice "Couldn't read needed amount of data in time"
-            # echo input.waitForExit()
+            logVoice("Couldn't read needed amount of data in time\n  Data size: " & $v.data.len)
             return
+
+        v.sent += 1
+        v.loops += 1
+        counts += 1
 
         let encoded = encoder.encode(v.data.toPCMData(encoder))
 
@@ -550,20 +587,49 @@ proc play*(v: VoiceClient, input: Stream | Process, waitForData: int = 100000) {
 
         await sendAudioPacket(v, buf)
         incrementPacketHeaders v
+        elapsed = (counts*20)/1000
 
         # Sleep so each packet will be sent 20 ms apart
-        if shouldAdjust:
+        when defined(windows): # funfact: this took me over a week to almost fix this
             let
-                now = getMonoTime()
-                diff = (now - startTime).inMilliseconds
-            sleepTime = int(idealLength - diff)
-            if sleepTime > 0:
-                await sleepAsync sleepTime
+                now = float64(getMonoTime().ticks.int/1_000_000_000)
+
+                delay = max(0.0, 0.02'f64 + float64(
+                        (v.start + (0.02'f64 * v.loops.float64)) - now
+                    )
+                )
+
+            var offset = rand(0.5..1.0) + v.sleep_offset
+            if v.offset_override:
+                if v.adjust_range != 0.0..0.0: v.adjust_range = 10.0..20.0
+                if elapsed in v.adjust_range: # at this part is where the interruptions may occur
+                    if elapsed >= v.adjust_range.b-1: # reset the time, so that diff would start from 0
+                        counts = 0
+                        start = float64(getMonoTime().ticks.int / 1_000_000_000)
+                        if v.adjust_offset==0:
+                            offset = rand(7.2..8.0)
+                        else:
+                            offset = v.adjust_offset
+            else:
+                if v.sleep_offset == 0.0:
+                    if v.adjust_offset==0:
+                        offset = rand(7.2..8.0)
+                    else:
+                        offset = v.adjust_offset
+
+            await sleepAsync float(delay * 1000) + offset
         else:
-            logVoice "Audio encoding/sending took long >20ms. Check for network/hardware issues"
+            await sleepAsync idealLength
 
     v.stopped = false
     if not v.paused: v.data = ""
+    v.paused = false
+    # not 100% sure if this might cause issues, but i'll leave it commented
+    # v.loops = 0
+    # v.start = 0.0
+    v.sent = 0
+    v.time = 0
+    v.sequence = 0
     # Send 5 silent frames to clear buffer
     for i in 1..5:
         await v.sendAudioPacket silencePacket
@@ -600,13 +666,17 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
 
     doAssert exeExists("ffmpeg"), "Cannot find ffmpeg, make sure it is installed"
     let pid = startProcess("ffmpeg", args = args, options = {
-        poUsePath, poEchoCmd, poStdErrToStdOut})
+        poUsePath, poEchoCmd, poStdErrToStdOut, poDaemon})
     defer: pid.close()
     await v.play(pid)
 
-proc playYTDL*(v: VoiceClient, url: string) {.async.} =
-    ## Plays a youtube link using yt-dlp.
-    ## Requires `yt-dlp` to be installed
-    let (output, exitCode) = execCmdEx("yt-dlp -f bestaudio --get-url " & url)
-    doAssert exitCode == 0, "yt-dlp failed:\n" & output
-    await v.playFFMPEG(output)
+proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
+    ## Plays a youtube link using youtube-dl by default
+    ## Requires `youtube-dl` to be installed, if you want to use yt-dlp, then you can specify it.
+    doAssert exeExists(command), "You need to install " & command
+
+    let output = execProcess(
+        command, args = ["--get-url", url], options = {poUsePath, poStdErrToStdOut}
+    )
+    # doAssert exitCode == 0, "An error occurred:\n" & output
+    await v.playFFMPEG(output.split("\n")[1])

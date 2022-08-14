@@ -42,7 +42,7 @@ proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
     ## If user does not have an avatar it will return default avatar of the user.
     if u.avatar.isNone:
         return defaultAvatarUrl(u)
-    cdnAvatars&u.id&"/"&u.avatar.get"."&fmt&"?size="&($size)
+    cdnAvatars&u.id&"/"&u.avatar.get&"."&fmt&"?size="&($size)
 
 proc guildAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
     ## Gets a user's avatar url.

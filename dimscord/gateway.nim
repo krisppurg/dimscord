@@ -254,7 +254,9 @@ proc voiceStateUpdate*(s: Shard,
 
     await s.sendSock(opVoiceStateUpdate, %*{
         "guild_id": guild_id,
-        "channel_id": channel_id
+        "channel_id": channel_id,
+        "self_mute": self_mute,
+        "self_deaf": self_deaf,
     })
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =

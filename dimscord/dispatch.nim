@@ -66,7 +66,7 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
                         on_ready: proc (v: VoiceClient){.async.} = discard,
                         on_disconnect: proc (v: VoiceClient){.async.} = discard
                     ),
-                    reconnectable: true
+                    reconnectable: true,
                 )
             let v = s.voiceConnections[guild.id]
             v.guild_id = guild.id
@@ -929,7 +929,7 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
                 if vc.endpoint != "": initial = false
                 when defined(dimscordVoice):
                     if vc.speaking:
-                        await vc.pause()
+                        vc.pause()
                         await vc.disconnect(true)
 
                 let v = s.voiceConnections[guild.id]

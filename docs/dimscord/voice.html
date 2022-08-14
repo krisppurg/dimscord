@@ -131,16 +131,19 @@ window.addEventListener('DOMContentLoaded', main);
     title="disconnect(v: VoiceClient; migrate = false): owned(Future[void])">disconnect(v: VoiceClient; migrate = false): owned(Future[void])</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">elapsed
+      <li><a class="reference" href="#elapsed%2CVoiceClient"
+    title="elapsed(v: VoiceClient): float">elapsed(v: VoiceClient): float</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">pause
       <li><a class="reference" href="#pause%2CVoiceClient"
-    title="pause(v: VoiceClient): owned(Future[void])">pause(v: VoiceClient): owned(Future[void])</a></li>
+    title="pause(v: VoiceClient)">pause(v: VoiceClient)</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">play
-      <li><a class="reference" href="#play%2CVoiceClient%2C%2Cint"
-    title="play(v: VoiceClient; input: Stream | Process; waitForData: int = 100000): owned(
-    Future[void])">play(v: VoiceClient; input: Stream | Process; waitForData: int = 100000): owned(
-    Future[void])</a></li>
+      <li><a class="reference" href="#play%2CVoiceClient%2C"
+    title="play(v: VoiceClient; input: Stream | Process): owned(Future[void])">play(v: VoiceClient; input: Stream | Process): owned(Future[void])</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">playFFMPEG
@@ -149,8 +152,10 @@ window.addEventListener('DOMContentLoaded', main);
 
   </ul>
   <ul class="simple nested-toc-section">playYTDL
-      <li><a class="reference" href="#playYTDL%2CVoiceClient%2Cstring"
-    title="playYTDL(v: VoiceClient; url: string): owned(Future[void])">playYTDL(v: VoiceClient; url: string): owned(Future[void])</a></li>
+      <li><a class="reference" href="#playYTDL%2CVoiceClient%2Cstring%2Cstring"
+    title="playYTDL(v: VoiceClient; url: string; command = &quot;youtube-dl&quot;): owned(
+    Future[void])">playYTDL(v: VoiceClient; url: string; command = &quot;youtube-dl&quot;): owned(
+    Future[void])</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">reconnect
@@ -160,7 +165,7 @@ window.addEventListener('DOMContentLoaded', main);
   </ul>
   <ul class="simple nested-toc-section">resume
       <li><a class="reference" href="#resume%2CVoiceClient"
-    title="resume(v: VoiceClient): owned(Future[void])">resume(v: VoiceClient): owned(Future[void])</a></li>
+    title="resume(v: VoiceClient)">resume(v: VoiceClient)</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">selectProtocol
@@ -210,7 +215,7 @@ class="link-seesrc" target="_blank">Source</a>
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
-  <p class="module-desc">Please note that playing audio is either buggy on windows, but we aren't currently sure exactly why though.</p>
+  <p class="module-desc">Play audio in voice channel via ytdl/ffmpeg. Please note that playing audio may be buggy, please do let us know and we'll try to fix.</p>
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
 <dl class="item">
@@ -228,9 +233,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L22"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L19"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L22" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L19" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -245,9 +250,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L37"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L34"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L37" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L34" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -264,37 +269,45 @@ class="link-seesrc" target="_blank">Source</a>
 
 Disconnects a voice client.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L273"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L277"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L273" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L277" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="elapsed,VoiceClient">
+<dt><pre><span class="Keyword">proc</span> <a href="#elapsed%2CVoiceClient"><span class="Identifier">elapsed</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">float</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Shows the elapsed time Note: this may be inaccurate.
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L487"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L487" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="pause,VoiceClient">
-<dt><pre><span class="Keyword">proc</span> <a href="#pause%2CVoiceClient"><span class="Identifier">pause</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#pause%2CVoiceClient"><span class="Identifier">pause</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 Pause the current audio
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L449"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L470"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L449" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L470" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
-<div id="play,VoiceClient,,int">
-<dt><pre><span class="Keyword">proc</span> <a href="#play%2CVoiceClient%2C%2Cint"><span class="Identifier">play</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">input</span><span class="Other">:</span> <span class="Identifier">Stream</span> <span class="Operator">|</span> <span class="Identifier">Process</span><span class="Other">;</span> <span class="Identifier">waitForData</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">100000</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
-    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span></pre></dt>
+<div id="play,VoiceClient,">
+<dt><pre><span class="Keyword">proc</span> <a href="#play%2CVoiceClient%2C"><span class="Identifier">play</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">input</span><span class="Other">:</span> <span class="Identifier">Stream</span> <span class="Operator">|</span> <span class="Identifier">Process</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span></pre></dt>
 <dd>
 
-Plays audio data that comes from a stream or process. Audio <strong>must</strong> be 2 channel, 48k sample rate, PCM encoded byte stream. Make sure to use <a class="reference internal" href="#sendSpeaking">sendSpeaking</a> before sending any audio<ul class="simple"><li><strong>waitForData</strong>: How many milliseconds to allow for data to start coming through</li>
-</ul>
-
+Plays audio data that comes from a stream or process. Audio <strong>must</strong> be 2 channel, 48k sample rate, PCM encoded byte stream. Make sure to use sendSpeaking before sending any audio Note: if you are playing voice on windows there <strong>might</strong> be some interuptions.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L493"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L523"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L493" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L523" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -307,24 +320,23 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports). Requires <tt class="docutils literal"><span class="pre"><span class="Identifier">ffmpeg</span></span></tt> be installed.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L581"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L646"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L581" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L646" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
-<div id="playYTDL,VoiceClient,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#playYTDL%2CVoiceClient%2Cstring"><span class="Identifier">playYTDL</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
-                                <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
-                                <span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<div id="playYTDL,VoiceClient,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#playYTDL%2CVoiceClient%2Cstring%2Cstring"><span class="Identifier">playYTDL</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="StringLit">&quot;youtube-dl&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+    <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Plays a youtube link using yt-dlp. Requires <tt class="docutils literal"><span class="pre"><span class="Identifier">yt</span><span class="Operator">-</span><span class="Identifier">dlp</span></span></tt> to be installed
+Plays a youtube link using youtube-dl by default Requires <tt class="docutils literal"><span class="pre"><span class="Identifier">youtube</span><span class="Operator">-</span><span class="Identifier">dl</span></span></tt> to be installed, if you want to use yt-dlp, then you can specify it.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L607"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L672"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L607" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L672" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -335,22 +347,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L204"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L208"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L204" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L208" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="resume,VoiceClient">
-<dt><pre><span class="Keyword">proc</span> <a href="#resume%2CVoiceClient"><span class="Identifier">resume</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span><span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#resume%2CVoiceClient"><span class="Identifier">resume</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-
+Continue playing audio
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L156"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L474"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L474" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -361,9 +372,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Tell discord our external IP/port and encryption mode
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L183"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L186"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L183" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L186" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -374,9 +385,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sends opus encoded packet
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L462"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L492"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L462" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L492" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -387,9 +398,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L195"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L199"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L195" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L199" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -400,9 +411,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Start a discord voice session.
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L423"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L444"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L423" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L444" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -412,9 +423,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Stop the current audio
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L457"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L482"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L457" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L482" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -422,11 +433,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">proc</span> <a href="#unpause%2CVoiceClient"><span class="Identifier">unpause</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Continue playing audio
+(Alias) same as resume
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L453"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L478"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L453" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L478" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -440,7 +451,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-01 16:24:46 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-14 11:53:34 UTC</small>
       </div>
     </div>
   </div>

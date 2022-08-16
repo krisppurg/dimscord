@@ -44,7 +44,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 
 when defined(noCaching): # Turn off caching when you define noCaching `-d:noCaching`
     waitFor discord.startSession(
-        gateway_intents = {giGuildMessages, giGuilds},
+        gateway_intents = {giGuildMessages, giGuilds, giMessageContent},
         cache_users = false,
         cache_guilds = false,
         cache_guild_channels = false,
@@ -52,5 +52,5 @@ when defined(noCaching): # Turn off caching when you define noCaching `-d:noCach
     )
 else:
     waitFor discord.startSession(
-        gateway_intents = {giGuildMessages, giGuilds}
+        gateway_intents = {giGuildMessages, giGuilds, giMessageContent}
     )

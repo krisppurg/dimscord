@@ -10,13 +10,14 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
         msg = "You selected " & data.values[0]
     elif data.custom_id == "btnClick":
         msg = "You clicked the button"
-    let response = InteractionResponse(
-            kind: irtChannelMessageWithSource,
-            data: some InteractionApplicationCommandCallbackData(
-                content: msg
-            )
+
+    await discord.api.interactionResponseMessage(
+        i.id, i.token,
+        kind = irtChannelMessageWithSource,
+        response = InteractionCallbackDataMessage(
+            content: msg
         )
-    await discord.api.createInteractionResponse(i.id, i.token, response)
+    )
 
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let content = m.content

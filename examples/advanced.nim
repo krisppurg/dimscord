@@ -89,5 +89,5 @@ proc messageDelete(s: Shard, m: Message, exists: bool) {.event(discord).} =
 
 # Connect to Discord and run the bot.
 waitFor discord.startSession(
-    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers}
+    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent}
 )

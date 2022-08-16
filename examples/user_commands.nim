@@ -30,13 +30,13 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     elif data.kind == atMessage:
         for message in data.resolved.messages.values: # Same here
                 msg &= message.content & "\n"
-    let response = InteractionResponse(
-        kind: irtChannelMessageWithSource,
-        data: some InteractionApplicationCommandCallbackData(
+
+    await discord.api.interactionResponseMessage(i.id, i.token,
+        kind = irtChannelMessageWithSource,
+        response = InteractionCallbackDataMessage(
             content: msg
         )
     )
-    await discord.api.createInteractionResponse(i.id, i.token, response)
 
 # Connect to Discord and run the bot.
 waitFor discord.startSession()

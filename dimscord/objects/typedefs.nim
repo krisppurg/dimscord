@@ -31,6 +31,7 @@ type
         id*, sequence*: int
         client*: DiscordClient
         user*: User
+        resumeGatewayUrl*: string
         gatewayUrl*, session_id*: string
         cache*: CacheTable
         voiceConnections*: Table[string, VoiceClient]
@@ -238,7 +239,7 @@ type
         v*: int
         user*: User
         guilds*: seq[UnavailableGuild]
-        session_id*: string
+        resume_gateway_url*, session_id*: string
         shard*: Option[seq[int]]
         application*: tuple[id: string, flags: set[ApplicationFlags]]
     DMChannel* = ref object

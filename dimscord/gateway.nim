@@ -269,6 +269,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
     case event:
     of "READY":
         s.session_id = data["session_id"].str
+        s.resumeGatewayUrl = data["resume_gateway_url"].str
         s.authenticating = false
         s.user = newUser(data["user"])
         s.ready = true
@@ -286,7 +287,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
 
         s.logShard("Successfully identified.")
 
-        await s.client.events.on_ready(s, newReady(data))
+        asyncCheck s.client.events.on_ready(s, newReady(data))
     of "RESUMED":
         s.resuming = false
         s.authenticating = false
@@ -302,38 +303,18 @@ proc reconnect(s: Shard) {.async.} =
     s.reconnecting = true
     s.retry_info.attempts += 1
 
-    var url = s.gatewayUrl
+    var url = s.resumeGatewayUrl
+    if not url.endsWith("/"): url &= "/"
 
     if s.retry_info.attempts > 3:
         if not s.networkError:
             s.networkError = true
-            s.logShard("A network error has been detected.")
+            s.logShard("A potential network error has been detected.")
 
-        try:
-            url = await s.client.api.getGateway()
-            s.gatewayUrl = url
-        except:
-            s.logShard("Error occurred:: \n" & getCurrentExceptionMsg())
-            s.reconnecting = false
-
-            s.retry_info.ms = min(
-                s.retry_info.ms + max(rand(6000), 3000), 30000)
-
-            s.logShard(&"Reconnecting in {s.retry_info.ms}ms", (
-                attempt: s.retry_info.attempts
-            ))
-
-            await sleepAsync s.retry_info.ms
-            await s.reconnect()
-            return
-
-    let prefix = if url.startsWith("gateway"): "ws://" & url else: url
-
-    s.logShard("Connecting to " & $prefix & "/?v=" & $s.client.gatewayVersion)
+    s.logShard("Connecting to " & url & "?v=" & $s.client.gatewayVersion)
 
     try:
-        let future = newWebSocket(prefix &
-            "/?v=" & $s.client.gatewayVersion)
+        let future = newWebSocket(url & "?v=" & $s.client.gatewayVersion)
 
         s.reconnecting = false
         s.stop = false
@@ -614,6 +595,8 @@ proc startSession*(discord: DiscordClient,
         discord.intents = {giGuilds, giGuildMessages,
                            giDirectMessages, giGuildVoiceStates,
                            giMessageContent}
+    if giMessageContent notin discord.intents:
+        log("Warning: giMessageContent not specified this might cause issues.")
 
     discord.largeThreshold = large_threshold
     discord.guildSubscriptions = guild_subscriptions

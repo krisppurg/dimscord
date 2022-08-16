@@ -166,10 +166,13 @@ proc request*(api: RestApi, meth, endpoint: string;
                             "Body took too long to parse.")
                     else:
                         data = (await body).parseJson
+                let detailederr = "code" in data and "message" in data
+
                 case status:
                 of Http400:
                     error = fin & "Bad request.\n"
-                    if not data.isNil: error &= data.pretty()
+                    if not data.isNil and not detailederr:#dont want duplicates
+                        error &= data.pretty()
                 of Http401:
                     error = fin & "Invalid authorization."
                     invalid_requests += 1
@@ -198,7 +201,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 else:
                     error = fin & "Unknown error"
 
-                if ("code" in data and "message" in data) and not data.isNil:
+                if detailederr and not data.isNil:
                     error &= "\n\n - " & data.discordErrors()
 
             if status.is5xx:

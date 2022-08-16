@@ -336,12 +336,16 @@ proc reconnect(s: Shard) {.async.} =
             s.retry_info = (ms: 1000, attempts: 0)
             s.networkError = false
     except:
-        s.logShard("Error occurred: \n" & getCurrentExceptionMsg())
+        s.logShard("Error occurred:: \n" & getCurrentExceptionMsg())
+        s.reconnecting = false
 
-        s.logShard(&"Failed to connect, reconnecting in {s.retry_info.ms}ms", (
+        s.retry_info.ms = min(
+            s.retry_info.ms + max(rand(6000), 3000), 30000)
+
+        s.logShard(&"Reconnecting in {s.retry_info.ms}ms", (
             attempt: s.retry_info.attempts
         ))
-        s.reconnecting = false
+
         await sleepAsync s.retry_info.ms
         await s.reconnect()
         return
@@ -350,7 +354,7 @@ proc reconnect(s: Shard) {.async.} =
         await s.identify()
     else:
         await s.resume()
-
+ 
 proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
     ## Disconnects a shard.
     if s.sockClosed: return

@@ -96,7 +96,7 @@ type
     MessageFlags* = enum
         mfCrossposted,
         mfIsCrosspost,
-        mfSupressEmbeds,
+        mfSuppressEmbeds,
         mfSourceMessageDeleted,
         mfUrgent,
         mfHasThread,
@@ -140,6 +140,9 @@ type
         apfEmbeded,
         apfGatewayMessageContent,
         apfGatewayMessageContentLimited,
+    ChannelFlags* = enum
+        cfNone,
+        cfPinned = 1
 
 const
     libName* =  "Dimscord"
@@ -192,7 +195,7 @@ type
         matJoin =        1
         matSpectate =    2
         matListen =      3
-        matJoinRequest = 4
+        matJoinRequest = 5 # nice skip
     ChannelType* = enum
         ctGuildText =          0
         ctDirect =             1
@@ -326,8 +329,9 @@ type
         atUser         ## USER
         atMessage      ## MESSAGE
     ApplicationCommandPermissionType* = enum
-        acptRole = 1
-        acptUser = 2
+        acptRole =    1
+        acptUser =    2
+        acptChannel = 3
     InteractionType* = enum
         itPing =               1
         itApplicationCommand = 2
@@ -396,9 +400,6 @@ type
         mttSpam =          3
         mttKeywordPreset = 4
 
-const
-    ## This flag is used for Slash Command interaction callback.
-    callbackDataFlagEphemeral* = 1 shl 6
 const
     permAllText* = {permCreateInstantInvite,
         permManageChannels,
@@ -484,6 +485,9 @@ proc endpointVoiceRegions*(): string =
 
 proc endpointUserGuilds*(gid: string): string =
     result = endpointUsers("@me") & "/guilds/" & gid
+
+proc endpointUserGuildMember*(gid: string): string =
+    result = endpointUserGuilds(gid) & "/member"
 
 proc endpointChannels*(cid = ""): string =
     result = "channels"&(if cid != "": "/" & cid else: "")

@@ -1,6 +1,6 @@
-import asyncdispatch, json, options, jsony
+import asyncdispatch, json, options, jsony, httpclient
 import ../objects, ../constants
-import tables, sequtils, strutils
+import tables, sequtils, strutils, os, mimetypes
 import requester
 
 proc getInvite*(api: RestApi, code: string;
@@ -80,6 +80,14 @@ proc leaveGuild*(api: RestApi, guild_id: string) {.async.} =
     ## Leaves a guild.
     discard await api.request("DELETE", endpointUserGuilds(guild_id))
 
+proc getCurrentGuildMember*(api: RestApi;
+        guild_id: string): Future[Member] {.async.} =
+    ## Get guild member as the current user aka you.
+    result = (await api.request(
+        "GET",
+        endpointUserGuildMember(guild_id)
+    )).newMember
+
 proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     ## Create user dm.
     result = (await api.request("POST", endpointUserChannels(), $(%*{
@@ -132,9 +140,7 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         name, description: string;
         name_localizations,description_localizations=none Table[string,string];
-        kind = atSlash;
-        guild_id = "";
-        default_permission, dm_permission = true;
+        kind = atSlash; guild_id = ""; dm_permission = true;
         default_member_permissions = none PermissionFlags;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
@@ -149,13 +155,12 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## overwrite the old command.
     assert name.len >= 3 and name.len <= 32
     var payload = %*{"name": name,
-                     "default_permission": default_permission,
                      "dm_permission": dm_permission,
                      "type": ord kind}
 
     if default_member_permissions.isSome:
         payload["default_member_permissions"] = %(
-            cast[int](default_member_permissions.get)
+            $cast[int](default_member_permissions.get)
         )
 
     payload.loadOpt(name_localizations, description_localizations)
@@ -225,7 +230,6 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
 proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         guild_id, name, description = "";
         name_localizations,description_localizations = none Table[string,string];
-        default_permission = true;
         default_member_permissions = none PermissionFlags;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
@@ -234,8 +238,7 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
     ## - `guild_id` - Optional
     ## - `name` - Optional Character length (3 - 32)
     ## - `descripton` - Optional Character length (1 - 100)
-    ## - `default_permission` - Optional
-    var payload = %*{"default_permission": default_permission}
+    var payload = %*{}
     var endpoint = endpointGlobalCommands(application_id, command_id)
 
     if guild_id != "":
@@ -252,7 +255,7 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
 
     if default_member_permissions.isSome:
         payload["default_member_permissions"] = %(
-            cast[int](default_member_permissions.get)
+            $cast[int](default_member_permissions.get)
         )
 
     result = (await api.request(
@@ -290,7 +293,7 @@ proc createInteractionResponse*(api: RestApi,
        irtUpdateMessage:
         if response.data.isSome:
             data = %*(response.data.get)
-            if response.data.get.flags!=0:
+            if response.data.get.flags.len!=0:
                 data["flags"] = %response.data.get.flags
     of irtAutoCompleteResult:
         let choices = %response.choices.map(
@@ -336,13 +339,54 @@ proc interactionResponseMessage*(api: RestApi,
        irtDeferredUpdateMessage,
        irtUpdateMessage:
         data = %*(response)
-        if response.flags!=0:
+        if response.flags.len!=0:
             data["flags"] = %response.flags
     else:
         raise newException(ValueError,
             "Invalid reponse kind for a message-based interaction response"
         )
 
+    if response.attachments.len > 0:
+        var mpd = newMultipartData()
+        data["attachments"] = %[]
+        for i, a in response.attachments:
+            data["attachments"].add %a
+            var
+                contenttype = ""
+                body = a.file
+                name = "files[" & $i & "]"
+
+            if a.filename == "":
+                raise newException(
+                    Exception,
+                    "Attachment name needs to be provided."
+                )
+
+            let att = splitFile(a.filename)
+
+            if att.ext != "":
+                let ext = att.ext[1..high(att.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if body == "":
+                body = readFile(a.filename)
+
+            mpd.add(name, body, a.filename,
+                contenttype, useStream = false)
+
+        let pl = %*{
+            "type": int kind,
+            "data": %data
+        }
+
+        mpd.add("payload_json", $pl, contentType = "application/json")
+        discard await api.request(
+            "POST",
+            endpointInteractionsCallback(interaction_id, interaction_token),
+            $pl,
+            mp = mpd
+        )
+        return 
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),

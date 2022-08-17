@@ -146,6 +146,7 @@ type
         tts*, mention_everyone*, pinned*: bool
         kind*: MessageType
         flags*: set[MessageFlags]
+        position*: Option[int]
         author*: User
         member*: Option[Member]
         mention_users*: seq[User]
@@ -189,9 +190,12 @@ type
         presence*: Presence
         voice_state*: Option[VoiceState]
     Attachment* = object
+        ## `file` is used for sending/editing attachments.
+        ## `file` is like `body` in DiscordFile, but for attachments.
         id*, filename*: string
         description*, content_type*: Option[string]
         proxy_url*, url*: string
+        file*: string
         height*, width*: Option[int]
         ephemeral*: Option[bool]
         size*: int
@@ -267,8 +271,10 @@ type
             bitrate*, user_limit*: int
         of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
             message_count*, member_count*: Option[int]
+            total_message_sent*: Option[int]
             thread_metadata*: ThreadMetadata
             member*: Option[ThreadMember]
+            flags*: set[ChannelFlags]
         else:
             discard
     StageInstance* = object
@@ -584,11 +590,13 @@ type
             custom_id*, title*: string
             components*: seq[MessageComponent]
     InteractionApplicationCommandCallbackData* = object
+        ## if you are setting message flags, there are limited amount.
+        ## e.g. `mfEphemeral` and `mfSuppressEmbeds`.
         tts*: Option[bool]
         content*: string
         embeds*: seq[Embed]
         allowed_mentions*: AllowedMentions
-        flags*: int
+        flags*: set[MessageFlags]
         attachments*: seq[Attachment]
         components*: seq[MessageComponent]
     InteractionCallbackDataMessage* = InteractionApplicationCommandCallbackData

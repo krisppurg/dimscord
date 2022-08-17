@@ -277,8 +277,11 @@ proc `%`*(o: Overwrite): JsonNode =
         "allow": %cast[int](o.allow),
         "deny": %cast[int](o.deny)}
 
-proc `%`*(flags: set[PermissionFlags]): JsonNode =
+proc `%`*(flags: set[MessageFlags]): JsonNode =
     %cast[int](flags)
+
+proc `%`*(flags: set[PermissionFlags]): JsonNode =
+    %($cast[int](flags))
 
 macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()

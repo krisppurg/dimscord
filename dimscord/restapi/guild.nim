@@ -188,7 +188,7 @@ proc createGuildRole*(api: RestApi, guild_id: string;
     ## Creates a guild role.
     result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
         "name": name, "unicode_emoji": unicode_emoji,
-        "icon": icon, "permissions": %(permissions.perms),
+        "icon": icon, "permissions": %($permissions.perms),
         "color": color, "hoist": hoist,
         "mentionable": mentionable
     }), audit_reason = reason)).newRole
@@ -212,7 +212,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     payload.loadNullableOptInt(color)
 
     if permissions.isSome:
-        payload["permissions"] = %(perms(get permissions))
+        payload["permissions"] = %($perms(get permissions))
 
     result = (await api.request(
         "PATCH",

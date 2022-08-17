@@ -8,6 +8,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         nonce: Option[string] or Option[int] = none(int);
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed]();
+        attachments = newSeq[Attachment]();
         allowed_mentions = none AllowedMentions;
         message_reference = none MessageReference;
         components = newSeq[MessageComponent]();
@@ -22,7 +23,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
     }
     if message_reference.isSome:
         payload["message_reference"] = %*{
-          "fail_if_not_exists": message_reference.get.fail_if_not_exists.get true
+          "fail_if_not_exists":message_reference.get.fail_if_not_exists.get true
         }
 
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
@@ -35,8 +36,10 @@ proc sendMessage*(api: RestApi, channel_id: string;
         for component in components:
             payload["components"].add %%*component
 
+    var mpd: MultipartData
+
     if files.len > 0:
-        var mpd = newMultipartData()
+        mpd = newMultipartData()
         for file in files:
             var contenttype = ""
             if file.name == "":
@@ -57,22 +60,46 @@ proc sendMessage*(api: RestApi, channel_id: string;
                 contenttype, useStream = false)
 
         mpd.add("payload_json", $payload, contentType = "application/json")
-        return (await api.request(
-            "POST",
-            endpointChannelMessages(channel_id),
-            $payload,
-            mp = mpd
-        )).newMessage
+
+    if attachments.len > 0:
+        mpd = newMultipartData()
+        payload["attachments"] = %[]
+        for i, a in attachments:
+            payload["attachments"].add %a
+            var
+                contenttype = ""
+                body = a.file
+                name = "files[" & $i & "]"
+
+            if a.filename == "":
+                raise newException(
+                    Exception,
+                    "Attachment name needs to be provided."
+                )
+
+            let att = splitFile(a.filename)
+
+            if att.ext != "":
+                let ext = att.ext[1..high(att.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if body == "":
+                body = readFile(a.filename)
+            mpd.add(name, body, a.filename,
+                contenttype, useStream = false)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
 
     result = (await api.request(
         "POST",
         endpointChannelMessages(channel_id),
-        $payload
+        pl = $payload,
+        mp = mpd
     )).newMessage
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none int;
-        embeds = newSeq[Embed](),
+        embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000
@@ -81,6 +108,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         "tts": tts,
         "flags": %flags
     }
+    var mpd: MultipartData
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
@@ -89,6 +117,34 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         payload["components"] = newJArray()
         for component in components:
             payload["components"] &= %%*component
+    if attachments.len > 0:
+        mpd = newMultipartData()
+        payload["attachments"] = %[]
+        for i, a in attachments:
+            payload["attachments"].add %a
+            var
+                contenttype = ""
+                body = a.file
+                name = "files[" & $i & "]"
+
+            if a.filename == "":
+                raise newException(
+                    Exception,
+                    "Attachment name needs to be provided."
+                )
+
+            let att = splitFile(a.filename)
+
+            if att.ext != "":
+                let ext = att.ext[1..high(att.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if body == "":
+                body = readFile(a.filename)
+            mpd.add(name, body, a.filename,
+                contenttype, useStream = false)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
 
     result = (await api.request(
         "PATCH",
@@ -225,17 +281,21 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         username, avatar_url = none string;
-        components = newSeq[MessageComponent]()): Future[Option[Message]] {.async.} =
+        components = newSeq[MessageComponent]()
+): Future[Option[Message]] {.async.} =
     ## Executes a webhook or create a followup message.
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
     ## - `flags` are only used for interaction responses
     assert embeds.len in 0..10
 
-    var url = endpointWebhookToken(webhook_id, webhook_token) & "?wait=" & $wait
-    var rawResult: JsonNode
+    var
+        url = endpointWebhookToken(webhook_id,webhook_token) & "?wait=" & $wait
+        rawResult: JsonNode
+        mpd: MultipartData
 
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
+
     let payload = %*{
         "content": content,
         "tts": tts
@@ -243,8 +303,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     payload.loadOpt(username, avatar_url, allowed_mentions, flags)
 
-    if embeds.len > 0:
-        payload["embeds"] = %embeds
+    if embeds.len > 0: payload["embeds"] = %embeds
 
     if components.len > 0:
         payload["components"] = newJArray()
@@ -252,12 +311,36 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
             payload["components"].add %%*component
 
     if attachments.len > 0:
-        payload["attachments"] = newJArray()
-        for attachment in attachments:
-            payload["attachments"].add %attachment 
+        mpd = newMultipartData()
+        payload["attachments"] = %[]
+        for i, a in attachments:
+            payload["attachments"].add %a
+            var
+                contenttype = ""
+                body = a.file
+                name = "files[" & $i & "]"
+
+            if a.filename == "":
+                raise newException(
+                    Exception,
+                    "Attachment name needs to be provided."
+                )
+
+            let att = splitFile(a.filename)
+
+            if att.ext != "":
+                let ext = att.ext[1..high(att.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if body == "":
+                body = readFile(a.filename)
+            mpd.add(name, body, a.filename,
+                contenttype, useStream = false)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
 
     if files.len > 0:
-        var mpd = newMultipartData()
+        mpd = newMultipartData()
         for file in files:
             var contenttype = ""
             if file.name == "":
@@ -277,14 +360,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
             mpd.add("payload_json", $payload, contentType = "application/json")
 
-        rawResult = (await api.request("POST", url, $payload, mp=mpd))
-
-        if wait:
-            return some rawResult.newMessage
-        else:
-            return none Message
-
-    rawResult = (await api.request("POST", url, $payload))
+    rawResult = (await api.request("POST", url, $payload, mp = mpd))
 
     if wait:
         result = some rawResult.newMessage
@@ -339,10 +415,7 @@ proc editWebhookMessage*(api: RestApi;
         "embeds": %embeds,
         "allowed_mentions": %(%allowed_mentions)
     }
-    if attachments.len > 0:
-        payload["attachments"] = newJArray()
-        for attachment in attachments:
-            payload["attachments"].add %*attachment
+    var mpd: MultipartData
 
     if components.len > 0:
         payload["components"] = newJArray()
@@ -350,7 +423,7 @@ proc editWebhookMessage*(api: RestApi;
             payload["components"].add %%*component
 
     if files.len > 0:
-        var mpd = newMultipartData()
+        mpd = newMultipartData()
         for file in files:
             var contenttype = ""
             if file.name == "":
@@ -370,9 +443,37 @@ proc editWebhookMessage*(api: RestApi;
 
             mpd.add("payload_json", $payload, contentType = "application/json")
 
-        return (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
+    if attachments.len > 0:
+        mpd = newMultipartData()
+        payload["attachments"] = %[]
 
-    result = (await api.request("PATCH", endpoint, $payload)).newMessage
+        for i, a in attachments:
+            payload["attachments"].add %a
+            var
+                contenttype = ""
+                body = a.file
+                name = "files[" & $i & "]"
+
+            if a.filename == "":
+                raise newException(
+                    Exception,
+                    "Attachment name needs to be provided."
+                )
+
+            let att = splitFile(a.filename)
+
+            if att.ext != "":
+                let ext = att.ext[1..high(att.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if body == "":
+                body = readFile(a.filename)
+            mpd.add(name, body, a.filename,
+                contenttype, useStream = false)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
+
+    result = (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
 
 proc editInteractionResponse*(api: RestApi;
         application_id, interaction_token, message_id: string;
@@ -429,7 +530,7 @@ proc deleteInteractionResponse*(api: RestApi;
     )
 
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true; thread_id = none string): Future[Option[Message]] {.async.} =
+        wait = true;thread_id = none string): Future[Option[Message]] {.async.} =
     ## Executes a slack webhook.
     var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
     var rawResult: JsonNode
@@ -438,7 +539,7 @@ proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
     if wait: return some rawResult.newMessage else: return none Message
 
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
-        wait = true; thread_id = none string): Future[Option[Message]] {.async.} =
+        wait = true;thread_id = none string): Future[Option[Message]] {.async.} =
     ## Executes a github webhook.
     var ep = endpointWebhookTokenSlack(webhook_id, token) & "?wait=" & $wait
     var rawResult: JsonNode

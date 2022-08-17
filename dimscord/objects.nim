@@ -16,6 +16,15 @@ import sequtils, strutils, jsony
 import std/with
 include objects/typedefs, objects/macros
 
+macro enumElementsAsSet(enm: typed): untyped =
+    result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
+
+func fullSet*[T](U: typedesc[T]): set[T] {.inline.} =
+    when T is Ordinal:
+        {T.low..T.high}
+    else: # Hole filled enum
+        enumElementsAsSet(T)
+
 proc newShard*(id: int, client: DiscordClient): Shard =
     result = Shard(
         id: id,
@@ -252,9 +261,9 @@ proc renameHook(v: var GuildChannel, fieldName: var string) =
 proc parseHook(s: string, i: var int, v: var ChannelType) =
     var number: int
     parseHook(s, i, number)
-    try:
+    if ChannelType(number) in fullSet(ChannelType):
         v = ChannelType number
-    except:
+    else:
         v = ctGuildText # just by default incase
 
 proc renameHook(v: var MentionChannel, fieldName: var string) =
@@ -308,6 +317,14 @@ proc renameHook(s: var MessageInteraction, fieldName: var string) =
 
 proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
+
+proc parseHook(s: string; i: var int; v: var set[ChannelFlags]) {.used.} =
+    var bint: BiggestInt
+    try:
+        parseHook(s, i, bint)
+    except:
+        bint = 0
+    v = cast[set[ChannelFlags]](bint)
 
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = ($data).fromJson(GuildChannel)
@@ -585,7 +602,11 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         keyCheckBool(result, mention_everyone, pinned, tts)
 
     if "type" in data and data["type"].kind != JNull:
-        result.kind = MessageType data["type"].getInt
+        if MessageType(data["type"].getInt) in fullSet(MessageType):
+            result.kind = MessageType data["type"].getInt
+        else:
+            result.kind = mtDefault
+
     if "flags" in data and data["flags"].kind != JNull:
         result.flags = cast[set[MessageFlags]](data["flags"].getInt)
     if "author" in data:

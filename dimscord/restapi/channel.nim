@@ -99,16 +99,16 @@ proc editGuildChannelPermissions*(api: RestApi,
     ## - `kind` Must be "role" or "member", or 0 or 1 if v8.
     let payload = newJObject()
 
-    when kind is int and not (defined(discordv8) or defined(discordv9)):
+    when kind is int:
         payload["type"] = %(if kind == 0: "role" else: "member") 
 
-    when kind is string and (defined(discordv8) or defined(discordv9)):
+    when kind is string:
         payload["type"] = %(if kind == "role": 0 else: 1)
 
     if perms.allowed.len > 0:
-        payload["allow"] = %(cast[int](perms.allowed))
+        payload["allow"] = %($cast[int](perms.allowed))
     if perms.denied.len > 0:
-        payload["deny"] = %(cast[int](perms.denied))
+        payload["deny"] = %($cast[int](perms.denied))
 
     discard await api.request(
         "PUT",
@@ -119,20 +119,22 @@ proc editGuildChannelPermissions*(api: RestApi,
 
 proc createChannelInvite*(api: RestApi, channel_id: string;
         max_age = 86400; max_uses = 0;
-        temp, unique = false; target_user = none string;
+        temporary, unique = false; target_user = none string;
         target_user_id, target_application_id = none string;
-        target_user_type = none int; reason = ""): Future[Invite] {.async.} =
-    ## Creates an instant invite.
+        target_type = none InviteTargetType;
+        reason = ""): Future[Invite] {.async.} =
+    ## Creates an instant channel invite.
     let payload = %*{
         "max_age": max_age,
         "max_uses": max_uses,
-        "temp": temp,
+        "temporary": temporary,
         "unique": unique
     }
-    payload.loadOpt(
-        target_user, target_user_type,
-        target_user_id, target_application_id
-    )
+    if target_type.isSome:
+        payload["target_type"] = %int target_type.get
+
+    payload.loadOpt(target_user,
+        target_user_id, target_application_id)
 
     result = (await api.request(
         "POST",

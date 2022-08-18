@@ -83,7 +83,7 @@ vsfPriority	dimscord/constants.html#vsfPriority	VoiceSpeakingFlags.vsfPriority
 VoiceSpeakingFlags	dimscord/constants.html#VoiceSpeakingFlags	constants: VoiceSpeakingFlags	
 mfCrossposted	dimscord/constants.html#mfCrossposted	MessageFlags.mfCrossposted	
 mfIsCrosspost	dimscord/constants.html#mfIsCrosspost	MessageFlags.mfIsCrosspost	
-mfSupressEmbeds	dimscord/constants.html#mfSupressEmbeds	MessageFlags.mfSupressEmbeds	
+mfSuppressEmbeds	dimscord/constants.html#mfSuppressEmbeds	MessageFlags.mfSuppressEmbeds	
 mfSourceMessageDeleted	dimscord/constants.html#mfSourceMessageDeleted	MessageFlags.mfSourceMessageDeleted	
 mfUrgent	dimscord/constants.html#mfUrgent	MessageFlags.mfUrgent	
 mfHasThread	dimscord/constants.html#mfHasThread	MessageFlags.mfHasThread	
@@ -122,6 +122,9 @@ apfEmbeded	dimscord/constants.html#apfEmbeded	ApplicationFlags.apfEmbeded
 apfGatewayMessageContent	dimscord/constants.html#apfGatewayMessageContent	ApplicationFlags.apfGatewayMessageContent	
 apfGatewayMessageContentLimited	dimscord/constants.html#apfGatewayMessageContentLimited	ApplicationFlags.apfGatewayMessageContentLimited	
 ApplicationFlags	dimscord/constants.html#ApplicationFlags	constants: ApplicationFlags	
+cfNone	dimscord/constants.html#cfNone	ChannelFlags.cfNone	
+cfPinned	dimscord/constants.html#cfPinned	ChannelFlags.cfPinned	
+ChannelFlags	dimscord/constants.html#ChannelFlags	constants: ChannelFlags	
 libName	dimscord/constants.html#libName	constants: libName	
 libVer	dimscord/constants.html#libVer	constants: libVer	
 libAgent	dimscord/constants.html#libAgent	constants: libAgent	
@@ -304,6 +307,7 @@ atMessage	dimscord/constants.html#atMessage	ApplicationCommandType.atMessage
 ApplicationCommandType	dimscord/constants.html#ApplicationCommandType	constants: ApplicationCommandType	
 acptRole	dimscord/constants.html#acptRole	ApplicationCommandPermissionType.acptRole	
 acptUser	dimscord/constants.html#acptUser	ApplicationCommandPermissionType.acptUser	
+acptChannel	dimscord/constants.html#acptChannel	ApplicationCommandPermissionType.acptChannel	
 ApplicationCommandPermissionType	dimscord/constants.html#ApplicationCommandPermissionType	constants: ApplicationCommandPermissionType	
 itPing	dimscord/constants.html#itPing	InteractionType.itPing	
 itApplicationCommand	dimscord/constants.html#itApplicationCommand	InteractionType.itApplicationCommand	
@@ -372,7 +376,6 @@ mttHarmfulLink	dimscord/constants.html#mttHarmfulLink	ModerationTriggerType.mttH
 mttSpam	dimscord/constants.html#mttSpam	ModerationTriggerType.mttSpam	
 mttKeywordPreset	dimscord/constants.html#mttKeywordPreset	ModerationTriggerType.mttKeywordPreset	
 ModerationTriggerType	dimscord/constants.html#ModerationTriggerType	constants: ModerationTriggerType	
-callbackDataFlagEphemeral	dimscord/constants.html#callbackDataFlagEphemeral	constants: callbackDataFlagEphemeral	
 permAllText	dimscord/constants.html#permAllText	constants: permAllText	
 permAllVoice	dimscord/constants.html#permAllVoice	constants: permAllVoice	
 permAllStage	dimscord/constants.html#permAllStage	constants: permAllStage	
@@ -385,6 +388,7 @@ endpointUsers	dimscord/constants.html#endpointUsers,string	constants: endpointUs
 endpointUserChannels	dimscord/constants.html#endpointUserChannels	constants: endpointUserChannels(): string	
 endpointVoiceRegions	dimscord/constants.html#endpointVoiceRegions	constants: endpointVoiceRegions(): string	
 endpointUserGuilds	dimscord/constants.html#endpointUserGuilds,string	constants: endpointUserGuilds(gid: string): string	
+endpointUserGuildMember	dimscord/constants.html#endpointUserGuildMember,string	constants: endpointUserGuildMember(gid: string): string	
 endpointChannels	dimscord/constants.html#endpointChannels,string	constants: endpointChannels(cid = &quot;&quot;): string	
 endpointStageInstances	dimscord/constants.html#endpointStageInstances,string	constants: endpointStageInstances(cid = &quot;&quot;): string	
 endpointGuilds	dimscord/constants.html#endpointGuilds,string	constants: endpointGuilds(gid = &quot;&quot;): string	

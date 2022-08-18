@@ -111,6 +111,7 @@ keyCheckBool	dimscord/objects.html#keyCheckBool.m,typed,typed,varargs[untyped]	o
 keyCheckOptStr	dimscord/objects.html#keyCheckOptStr.m,typed,typed,varargs[untyped]	objects: keyCheckOptStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 keyCheckStr	dimscord/objects.html#keyCheckStr.m,typed,typed,varargs[untyped]	objects: keyCheckStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped	
 optionIf	dimscord/objects.html#optionIf.m,typed	objects: optionIf(check: typed): untyped	
+fullSet	dimscord/objects.html#fullSet,typedesc[T]	objects: fullSet[T](U: typedesc[T]): set[T]	
 newShard	dimscord/objects.html#newShard,int,DiscordClient	objects: newShard(id: int; client: DiscordClient): Shard	
 newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	objects: newDiscordClient(token: string; rest_mode = false; restVersion = 10): DiscordClient	
 parseHook	dimscord/objects.html#parseHook,string,int,set[UserFlags]	objects: parseHook(s: string; i: var int; v: var set[UserFlags])	

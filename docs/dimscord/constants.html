@@ -117,7 +117,7 @@ window.addEventListener('DOMContentLoaded', main);
   acotAttachment = 11">ApplicationCommandOptionType</a></li>
   <li><a class="reference" href="#ApplicationCommandPermissionType"
     title="ApplicationCommandPermissionType = enum
-  acptRole = 1, acptUser = 2">ApplicationCommandPermissionType</a></li>
+  acptRole = 1, acptUser = 2, acptChannel = 3">ApplicationCommandPermissionType</a></li>
   <li><a class="reference" href="#ApplicationCommandType"
     title="ApplicationCommandType = enum
   atNothing = 0,            ## Should never appear
@@ -159,6 +159,9 @@ window.addEventListener('DOMContentLoaded', main);
   <li><a class="reference" href="#ButtonStyle"
     title="ButtonStyle = enum
   Primary = 1, Secondary = 2, Success = 3, Danger = 4, Link = 5">ButtonStyle</a></li>
+  <li><a class="reference" href="#ChannelFlags"
+    title="ChannelFlags = enum
+  cfNone, cfPinned = 1">ChannelFlags</a></li>
   <li><a class="reference" href="#ChannelType"
     title="ChannelType = enum
   ctGuildText = 0, ctDirect = 1, ctGuildVoice = 2, ctGroupDM = 3,
@@ -208,13 +211,13 @@ window.addEventListener('DOMContentLoaded', main);
   ittStream = 1, ittEmbeddedApplication = 2">InviteTargetType</a></li>
   <li><a class="reference" href="#MessageActivityType"
     title="MessageActivityType = enum
-  matJoin = 1, matSpectate = 2, matListen = 3, matJoinRequest = 4">MessageActivityType</a></li>
+  matJoin = 1, matSpectate = 2, matListen = 3, matJoinRequest = 5">MessageActivityType</a></li>
   <li><a class="reference" href="#MessageComponentType"
     title="MessageComponentType = enum
   None = 0, ActionRow = 1, Button = 2, SelectMenu = 3, TextInput = 4">MessageComponentType</a></li>
   <li><a class="reference" href="#MessageFlags"
     title="MessageFlags = enum
-  mfCrossposted, mfIsCrosspost, mfSupressEmbeds, mfSourceMessageDeleted,
+  mfCrossposted, mfIsCrosspost, mfSuppressEmbeds, mfSourceMessageDeleted,
   mfUrgent, mfHasThread, mfEphemeral, mfLoading,
   mfFailedToMentionSomeRolesInThread">MessageFlags</a></li>
   <li><a class="reference" href="#MessageNotificationLevel"
@@ -303,9 +306,7 @@ window.addEventListener('DOMContentLoaded', main);
 <li>
   <a class="reference reference-toplevel" href="#10" id="60">Consts</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#callbackDataFlagEphemeral"
-    title="callbackDataFlagEphemeral = 64">callbackDataFlagEphemeral</a></li>
-  <li><a class="reference" href="#cdnAppAssets"
+      <li><a class="reference" href="#cdnAppAssets"
     title="cdnAppAssets = &quot;https://cdn.discordapp.com/app-assets/&quot;">cdnAppAssets</a></li>
   <li><a class="reference" href="#cdnAppIcons"
     title="cdnAppIcons = &quot;https://cdn.discordapp.com/app-icons/&quot;">cdnAppIcons</a></li>
@@ -670,6 +671,11 @@ window.addEventListener('DOMContentLoaded', main);
     title="endpointUserChannels(): string">endpointUserChannels(): string</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">endpointUserGuildMember
+      <li><a class="reference" href="#endpointUserGuildMember%2Cstring"
+    title="endpointUserGuildMember(gid: string): string">endpointUserGuildMember(gid: string): string</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">endpointUserGuilds
       <li><a class="reference" href="#endpointUserGuilds%2Cstring"
     title="endpointUserGuilds(gid: string): string">endpointUserGuilds(gid: string): string</a></li>
@@ -758,9 +764,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L236"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L239"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L239" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -774,22 +780,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L310"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L313"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L313" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="ApplicationCommandPermissionType">
 <dt><pre><a href="constants.html#ApplicationCommandPermissionType"><span class="Identifier">ApplicationCommandPermissionType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">acptRole</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">acptUser</span> <span class="Other">=</span> <span class="DecNumber">2</span></pre></dt>
+  <span class="Identifier">acptRole</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">acptUser</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">acptChannel</span> <span class="Other">=</span> <span class="DecNumber">3</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L328"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L331"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L328" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L331" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -803,9 +809,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L323"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L326"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L323" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L326" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -868,9 +874,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L250"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L253"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L250" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L253" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -881,9 +887,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L360"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L364"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L360" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L364" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="ChannelFlags">
+<dt><pre><a href="constants.html#ChannelFlags"><span class="Identifier">ChannelFlags</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">cfNone</span><span class="Other">,</span> <span class="Identifier">cfPinned</span> <span class="Other">=</span> <span class="DecNumber">1</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L143"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L143" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -897,9 +916,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L196"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L199"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L196" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L199" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -910,9 +929,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L385"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L389"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L385" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L389" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -923,9 +942,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L213"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L216"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L213" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -954,9 +973,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L226"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L229"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L226" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L229" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -967,9 +986,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L378"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L382"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L378" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L382" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -980,9 +999,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L380"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L384"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L380" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L384" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -993,9 +1012,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L247"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L250"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L247" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L250" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1006,9 +1025,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L337"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L341"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L337" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L341" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1021,9 +1040,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L342"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L346"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L342" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L346" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1035,9 +1054,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L331"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L335"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L331" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L335" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1048,22 +1067,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L351"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L355"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L351" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L355" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="MessageActivityType">
 <dt><pre><a href="constants.html#MessageActivityType"><span class="Identifier">MessageActivityType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">matJoin</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">matSpectate</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">matListen</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span> <span class="Identifier">matJoinRequest</span> <span class="Other">=</span> <span class="DecNumber">4</span></pre></dt>
+  <span class="Identifier">matJoin</span> <span class="Other">=</span> <span class="DecNumber">1</span><span class="Other">,</span> <span class="Identifier">matSpectate</span> <span class="Other">=</span> <span class="DecNumber">2</span><span class="Other">,</span> <span class="Identifier">matListen</span> <span class="Other">=</span> <span class="DecNumber">3</span><span class="Other">,</span> <span class="Identifier">matJoinRequest</span> <span class="Other">=</span> <span class="DecNumber">5</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L191"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L194"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L191" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1074,15 +1093,15 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L369"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L373"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L369" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L373" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="MessageFlags">
 <dt><pre><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">mfCrossposted</span><span class="Other">,</span> <span class="Identifier">mfIsCrosspost</span><span class="Other">,</span> <span class="Identifier">mfSupressEmbeds</span><span class="Other">,</span> <span class="Identifier">mfSourceMessageDeleted</span><span class="Other">,</span>
+  <span class="Identifier">mfCrossposted</span><span class="Other">,</span> <span class="Identifier">mfIsCrosspost</span><span class="Other">,</span> <span class="Identifier">mfSuppressEmbeds</span><span class="Other">,</span> <span class="Identifier">mfSourceMessageDeleted</span><span class="Other">,</span>
   <span class="Identifier">mfUrgent</span><span class="Other">,</span> <span class="Identifier">mfHasThread</span><span class="Other">,</span> <span class="Identifier">mfEphemeral</span><span class="Other">,</span> <span class="Identifier">mfLoading</span><span class="Other">,</span>
   <span class="Identifier">mfFailedToMentionSomeRolesInThread</span></pre></dt>
 <dd>
@@ -1102,9 +1121,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L210"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L213"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L210" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L213" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1115,9 +1134,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L306"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L309"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L306" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L309" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1138,9 +1157,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L166"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L169"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L166" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L169" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1151,9 +1170,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L217"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L220"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L217" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1164,9 +1183,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L389"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L393"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L389" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L393" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1177,9 +1196,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L393"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L397"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L393" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L397" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1217,9 +1236,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L231"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L234"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L231" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L234" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1230,9 +1249,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L354"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L358"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L354" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L358" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1243,9 +1262,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L375"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L379"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L375" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L379" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1270,9 +1289,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L303"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L306"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L303" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L306" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1283,9 +1302,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L366"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L370"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L366" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L370" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1316,9 +1335,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L356"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L360"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L356" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L360" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1329,9 +1348,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L220"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L223"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L223" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1355,9 +1374,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L243"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L243" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1366,32 +1385,8 @@ class="link-seesrc" target="_blank">Source</a>
 <div class="section" id="10">
 <h1><a class="toc-backref" href="#10">Consts</a></h1>
 <dl class="item">
-<div id="callbackDataFlagEphemeral">
-<dt><pre><a href="constants.html#callbackDataFlagEphemeral"><span class="Identifier">callbackDataFlagEphemeral</span></a> <span class="Other">=</span> <span class="DecNumber">64</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L401"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L401" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
 <div id="cdnAppAssets">
 <dt><pre><a href="constants.html#cdnAppAssets"><span class="Identifier">cdnAppAssets</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/app-assets/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L158"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L158" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnAppIcons">
-<dt><pre><a href="constants.html#cdnAppIcons"><span class="Identifier">cdnAppIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/app-icons/&quot;</span></pre></dt>
 <dd>
 
 
@@ -1402,128 +1397,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="cdnAppIcons">
+<dt><pre><a href="constants.html#cdnAppIcons"><span class="Identifier">cdnAppIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/app-icons/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L164"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="cdnAttachments">
 <dt><pre><a href="constants.html#cdnAttachments"><span class="Identifier">cdnAttachments</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/attachments/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L152"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L152" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnAvatars">
-<dt><pre><a href="constants.html#cdnAvatars"><span class="Identifier">cdnAvatars</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/avatars/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L153"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnBanners">
-<dt><pre><a href="constants.html#cdnBanners"><span class="Identifier">cdnBanners</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/banners/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L163"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnBase">
-<dt><pre><a href="constants.html#cdnBase"><span class="Identifier">cdnBase</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L149"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L149" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnChannelIcons">
-<dt><pre><a href="constants.html#cdnChannelIcons"><span class="Identifier">cdnChannelIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/channel-icons/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L156"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnCustomEmojis">
-<dt><pre><a href="constants.html#cdnCustomEmojis"><span class="Identifier">cdnCustomEmojis</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/emojis/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L151"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L151" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnDefaultUserAvatars">
-<dt><pre><a href="constants.html#cdnDefaultUserAvatars"><span class="Identifier">cdnDefaultUserAvatars</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/embed/avatars/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L160"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnDiscoverySplashes">
-<dt><pre><a href="constants.html#cdnDiscoverySplashes"><span class="Identifier">cdnDiscoverySplashes</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/discovery-splashes/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L159"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L159" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnIcons">
-<dt><pre><a href="constants.html#cdnIcons"><span class="Identifier">cdnIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/icons/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L154"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L154" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnRoleIcons">
-<dt><pre><a href="constants.html#cdnRoleIcons"><span class="Identifier">cdnRoleIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/role-icons/&quot;</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L162"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L162" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="cdnSplashes">
-<dt><pre><a href="constants.html#cdnSplashes"><span class="Identifier">cdnSplashes</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/splashes/&quot;</span></pre></dt>
 <dd>
 
 
@@ -1534,8 +1421,92 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
-<div id="cdnTeamIcons">
-<dt><pre><a href="constants.html#cdnTeamIcons"><span class="Identifier">cdnTeamIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/team-icons/&quot;</span></pre></dt>
+<div id="cdnAvatars">
+<dt><pre><a href="constants.html#cdnAvatars"><span class="Identifier">cdnAvatars</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/avatars/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L156"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnBanners">
+<dt><pre><a href="constants.html#cdnBanners"><span class="Identifier">cdnBanners</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/banners/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L166"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L166" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnBase">
+<dt><pre><a href="constants.html#cdnBase"><span class="Identifier">cdnBase</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L152"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L152" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnChannelIcons">
+<dt><pre><a href="constants.html#cdnChannelIcons"><span class="Identifier">cdnChannelIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/channel-icons/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L159"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L159" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnCustomEmojis">
+<dt><pre><a href="constants.html#cdnCustomEmojis"><span class="Identifier">cdnCustomEmojis</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/emojis/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L154"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L154" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnDefaultUserAvatars">
+<dt><pre><a href="constants.html#cdnDefaultUserAvatars"><span class="Identifier">cdnDefaultUserAvatars</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/embed/avatars/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L163"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnDiscoverySplashes">
+<dt><pre><a href="constants.html#cdnDiscoverySplashes"><span class="Identifier">cdnDiscoverySplashes</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/discovery-splashes/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L162"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L162" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnIcons">
+<dt><pre><a href="constants.html#cdnIcons"><span class="Identifier">cdnIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/icons/&quot;</span></pre></dt>
 <dd>
 
 
@@ -1546,15 +1517,51 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="cdnRoleIcons">
+<dt><pre><a href="constants.html#cdnRoleIcons"><span class="Identifier">cdnRoleIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/role-icons/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L165"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnSplashes">
+<dt><pre><a href="constants.html#cdnSplashes"><span class="Identifier">cdnSplashes</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/splashes/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L158"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L158" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="cdnTeamIcons">
+<dt><pre><a href="constants.html#cdnTeamIcons"><span class="Identifier">cdnTeamIcons</span></a> <span class="Other">=</span> <span class="StringLit">&quot;https://cdn.discordapp.com/team-icons/&quot;</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L160"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="libAgent">
 <dt><pre><a href="constants.html#libAgent"><span class="Identifier">libAgent</span></a> <span class="Other">=</span> <span class="StringLit">&quot;DiscordBot (https://github.com/krisppurg/dimscord, v1.4.0)&quot;</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L147"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L150"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L147" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L150" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1564,9 +1571,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L145"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L148"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L145" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1576,9 +1583,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L146"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L149"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L146" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L149" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1589,9 +1596,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L443"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L444"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L443" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L444" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1606,9 +1613,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L442"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L443"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L442" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L443" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1620,9 +1627,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L433"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L434"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L433" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L434" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1638,9 +1645,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L403"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L404"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L403" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L404" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1654,9 +1661,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L421"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L422"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L421" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L422" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1666,9 +1673,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L150"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L153"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L150" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1683,9 +1690,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L467"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L468"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L467" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L468" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1695,9 +1702,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L641"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L645"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L641" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L645" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1707,40 +1714,14 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L632"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L636"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L632" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L636" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="endpointChannelMessages,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessages%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessages</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mid</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L602"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L602" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="endpointChannelMessagesCrosspost,string,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessagesCrosspost%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessagesCrosspost</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L629"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L629" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="endpointChannelMessagesThreads,string,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessagesThreads%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessagesThreads</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
@@ -1752,15 +1733,41 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 </div>
+<div id="endpointChannelMessagesCrosspost,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessagesCrosspost%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessagesCrosspost</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L633"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L633" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="endpointChannelMessagesThreads,string,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelMessagesThreads%2Cstring%2Cstring"><span class="Identifier">endpointChannelMessagesThreads</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">mid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L610"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L610" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="endpointChannelOverwrites,string,string">
 <dt><pre><span class="Keyword">proc</span> <a href="#endpointChannelOverwrites%2Cstring%2Cstring"><span class="Identifier">endpointChannelOverwrites</span></a><span class="Other">(</span><span class="Identifier">cid</span><span class="Other">,</span> <span class="Identifier">oid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L575"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L579"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L575" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L579" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1770,9 +1777,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L635"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L639"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L635" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L639" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1782,9 +1789,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L647"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L651"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L647" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L651" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1794,9 +1801,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L488"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L492"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L488" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L492" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1806,9 +1813,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L609"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L613"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L609" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L613" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1819,9 +1826,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L618"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L622"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L618" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L622" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1832,9 +1839,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L624"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L628"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L624" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L628" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1845,9 +1852,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L621"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L625"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L621" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L625" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1857,9 +1864,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L581"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L585"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L581" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L585" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1870,9 +1877,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L665"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L669"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L665" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L669" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1882,9 +1889,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L652"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L656"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L652" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L656" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1894,9 +1901,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L509"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L513"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L509" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L513" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1907,9 +1914,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L512"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L516"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L512" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L516" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1919,9 +1926,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L638"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L642"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L638" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L642" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1931,9 +1938,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L572"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L576"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L572" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L576" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1944,9 +1951,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L673"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L677"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L673" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L677" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1957,9 +1964,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L668"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L672"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L668" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L672" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1969,9 +1976,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L554"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L558"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L554" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L558" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1982,9 +1989,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L539"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L543"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L539" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L543" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1995,9 +2002,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L548"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L552"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L548" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L552" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2007,9 +2014,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L566"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L570"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L566" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L570" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2019,9 +2026,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L518"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L522"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L518" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L522" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2031,9 +2038,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L515"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L519"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L515" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L519" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2044,9 +2051,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L533"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L537"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L533" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L537" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2057,9 +2064,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L536"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L540"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L536" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L540" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2069,9 +2076,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L530"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L534"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L534" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2081,9 +2088,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L506"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L510"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L506" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L510" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2093,9 +2100,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L500"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L504"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L500" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L504" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2105,9 +2112,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L560"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L564"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L560" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L564" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2117,9 +2124,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L503"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L507"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L503" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L507" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2129,9 +2136,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L557"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L561"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L557" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L561" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2141,9 +2148,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L494"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L498"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L494" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L498" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2154,9 +2161,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L524"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L528"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L524" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L528" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2167,9 +2174,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L527"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L531"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L527" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L531" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2179,9 +2186,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L497"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L501"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L497" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L501" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2191,9 +2198,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L584"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L588"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L584" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2203,9 +2210,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L612"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L616"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L612" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L616" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2215,9 +2222,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L615"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L619"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L615" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L619" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2227,9 +2234,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L569"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L573"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L569" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L573" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2240,9 +2247,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L542"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L546"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L542" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L546" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2252,9 +2259,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L587"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L591"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L587" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L591" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2264,9 +2271,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L545"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L549"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L545" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L549" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2276,9 +2283,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L551"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L555"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L551" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L555" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2289,9 +2296,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L676"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L680"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L676" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L680" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2301,9 +2308,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L563"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L567"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L563" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L567" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2313,9 +2320,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L662"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L666"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L662" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L666" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2326,9 +2333,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L655"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L659"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L655" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L659" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2338,9 +2345,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L521"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L525"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L521" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L525" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2350,9 +2357,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L491"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L495"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L491" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L495" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2362,9 +2369,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L682"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L686"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L682" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L686" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2374,9 +2381,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L679"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L683"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L679" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L683" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2386,9 +2393,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L644"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L648"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L644" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L648" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2398,9 +2405,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L479"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L480"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L479" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L480" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="endpointUserGuildMember,string">
+<dt><pre><span class="Keyword">proc</span> <a href="#endpointUserGuildMember%2Cstring"><span class="Identifier">endpointUserGuildMember</span></a><span class="Other">(</span><span class="Identifier">gid</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L489"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L489" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2410,9 +2429,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L485"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L486"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L485" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L486" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2422,9 +2441,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L476"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L477"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L476" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L477" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2434,9 +2453,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L482"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L483"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L482" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L483" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2447,9 +2466,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L593"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L597"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L593" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L597" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2459,9 +2478,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L578"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L582"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L578" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L582" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2471,9 +2490,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L590"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L594"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L590" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L594" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2483,9 +2502,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L599"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L603"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L599" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L603" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2495,9 +2514,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L596"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L600"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L596" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L600" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2507,9 +2526,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L463"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L464"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L463" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L464" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2519,9 +2538,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L454"
+href="https://github.com/krisppurg/dimscord/tree/master/dimscord/constants.nim#L455"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L454" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/constants.nim#L455" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2535,7 +2554,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-14 11:53:20 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-18 10:47:24 UTC</small>
       </div>
     </div>
   </div>

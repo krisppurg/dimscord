@@ -622,7 +622,7 @@ proc editGuildApplicationCommandPermissions*(
 
 proc getGuildApplicationCommandPermissions*(
     api: RestApi, application_id, guild_id, command_id: string
-    ): Future[GuildApplicationCommandPermissions] {.async.} =
+): Future[GuildApplicationCommandPermissions] {.async.} =
     ## Fetches command permissions for a specific command for your application in a guild
     let endpoint = endpointGuildCommandPermission(
         application_id, guild_id, command_id
@@ -815,7 +815,7 @@ proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
         "PATCH",
         endpointGuildScheduledEvents(guild_id, event_id),
         $payload,
-        reason
+        audit_reason = reason
     )).`$`.fromJson(GuildScheduledEvent)
 
 proc deleteScheduledEvent*(api: RestApi,
@@ -866,10 +866,14 @@ proc getAutoModerationRule*(api: RestApi;
         endpointGuildAutoModerationRules(guild_id, rule_id)
     )).`$`.fromJson(AutoModerationRule)
 
-proc deleteAutoModerationRule*(api: RestApi; guild_id,rule_id: string){.async.}=
+proc deleteAutoModerationRule*(api: RestApi;
+    guild_id, rule_id: string;
+    reason = ""
+) {.async.} =
     discard await api.request(
         "DELETE",
-        endpointGuildAutoModerationRules(guild_id, rule_id)
+        endpointGuildAutoModerationRules(guild_id, rule_id),
+        audit_reason = reason
     )
 
 proc createAutoModerationRule*(api: RestApi;

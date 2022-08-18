@@ -95,6 +95,8 @@ window.addEventListener('DOMContentLoaded', main);
           <li><a class="reference external"
           data-doc-search-tag="requester: `%`(o: Overwrite): JsonNode" href="dimscord/restapi/requester.html#%25%2COverwrite">requester: `%`(o: Overwrite): JsonNode</a></li>
           <li><a class="reference external"
+          data-doc-search-tag="requester: `%`(flags: set[MessageFlags]): JsonNode" href="dimscord/restapi/requester.html#%25%2Cset%5BMessageFlags%5D">requester: `%`(flags: set[MessageFlags]): JsonNode</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="requester: `%`(flags: set[PermissionFlags]): JsonNode" href="dimscord/restapi/requester.html#%25%2Cset%5BPermissionFlags%5D">requester: `%`(flags: set[PermissionFlags]): JsonNode</a></li>
           <li><a class="reference external"
           data-doc-search-tag="requester: `%`(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode" href="dimscord/restapi/requester.html#%25%2Ctuple%5Bseq%5Bstring%5D%2Cseq%5Bint%5D%5D">requester: `%`(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode</a></li>
@@ -164,6 +166,10 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="acotUser" href="#acotUser"><span>acotUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="ApplicationCommandOptionType.acotUser" href="dimscord/constants.html#acotUser">ApplicationCommandOptionType.acotUser</a></li>
+          </ul></dd>
+<dt><a name="acptChannel" href="#acptChannel"><span>acptChannel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="ApplicationCommandPermissionType.acptChannel" href="dimscord/constants.html#acptChannel">ApplicationCommandPermissionType.acptChannel</a></li>
           </ul></dd>
 <dt><a name="acptRole" href="#acptRole"><span>acptRole:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -727,10 +733,6 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="objects: CacheTablePrefs" href="dimscord/objects.html#CacheTablePrefs">objects: CacheTablePrefs</a></li>
           </ul></dd>
-<dt><a name="callbackDataFlagEphemeral" href="#callbackDataFlagEphemeral"><span>callbackDataFlagEphemeral:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="constants: callbackDataFlagEphemeral" href="dimscord/constants.html#callbackDataFlagEphemeral">constants: callbackDataFlagEphemeral</a></li>
-          </ul></dd>
 <dt><a name="cdnAppAssets" href="#cdnAppAssets"><span>cdnAppAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: cdnAppAssets" href="dimscord/constants.html#cdnAppAssets">constants: cdnAppAssets</a></li>
@@ -787,9 +789,21 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="constants: cdnTeamIcons" href="dimscord/constants.html#cdnTeamIcons">constants: cdnTeamIcons</a></li>
           </ul></dd>
+<dt><a name="cfNone" href="#cfNone"><span>cfNone:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="ChannelFlags.cfNone" href="dimscord/constants.html#cfNone">ChannelFlags.cfNone</a></li>
+          </ul></dd>
+<dt><a name="cfPinned" href="#cfPinned"><span>cfPinned:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="ChannelFlags.cfPinned" href="dimscord/constants.html#cfPinned">ChannelFlags.cfPinned</a></li>
+          </ul></dd>
 <dt><a name="Channel" href="#Channel"><span>Channel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: Channel" href="dimscord/objects.html#Channel">objects: Channel</a></li>
+          </ul></dd>
+<dt><a name="ChannelFlags" href="#ChannelFlags"><span>ChannelFlags:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: ChannelFlags" href="dimscord/constants.html#ChannelFlags">constants: ChannelFlags</a></li>
           </ul></dd>
 <dt><a name="ChannelType" href="#ChannelType"><span>ChannelType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -838,14 +852,16 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="createChannelInvite" href="#createChannelInvite"><span>createChannelInvite:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
-                    max_uses = 0; temp, unique = false;
+                    max_uses = 0; temporary, unique = false;
                     target_user = none string;
                     target_user_id, target_application_id = none string;
-                    target_user_type = none int; reason = &quot;&quot;): Future[Invite]" href="dimscord/restapi.html#createChannelInvite%2CRestApi%2Cstring%2Cint%2Cint%2Cstring">restapi: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
-                    max_uses = 0; temp, unique = false;
+                    target_type = none InviteTargetType; reason = &quot;&quot;): Future[
+    Invite]" href="dimscord/restapi.html#createChannelInvite%2CRestApi%2Cstring%2Cint%2Cint%2Cstring">restapi: createChannelInvite(api: RestApi; channel_id: string; max_age = 86400;
+                    max_uses = 0; temporary, unique = false;
                     target_user = none string;
                     target_user_id, target_application_id = none string;
-                    target_user_type = none int; reason = &quot;&quot;): Future[Invite]</a></li>
+                    target_type = none InviteTargetType; reason = &quot;&quot;): Future[
+    Invite]</a></li>
           </ul></dd>
 <dt><a name="createFollowupMessage" href="#createFollowupMessage"><span>createFollowupMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1071,8 +1087,8 @@ window.addEventListener('DOMContentLoaded', main);
           </ul></dd>
 <dt><a name="deleteAutoModerationRule" href="#deleteAutoModerationRule"><span>deleteAutoModerationRule:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="restapi: deleteAutoModerationRule(api: RestApi; guild_id, rule_id: string): owned(
-    Future[void])" href="dimscord/restapi.html#deleteAutoModerationRule%2CRestApi%2Cstring%2Cstring">restapi: deleteAutoModerationRule(api: RestApi; guild_id, rule_id: string): owned(
+          data-doc-search-tag="restapi: deleteAutoModerationRule(api: RestApi; guild_id, rule_id: string; reason = &quot;&quot;): owned(
+    Future[void])" href="dimscord/restapi.html#deleteAutoModerationRule%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: deleteAutoModerationRule(api: RestApi; guild_id, rule_id: string; reason = &quot;&quot;): owned(
     Future[void])</a></li>
           </ul></dd>
 <dt><a name="deleteChannel" href="#deleteChannel"><span>deleteChannel:</span></a></dt><dd><ul class="simple">
@@ -1214,13 +1230,11 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="restapi: editApplicationCommand(api: RestApi; application_id, command_id: string;
                        guild_id, name, description = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-                       default_permission = true;
                        default_member_permissions = none PermissionFlags;
                        options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]" href="dimscord/restapi.html#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">restapi: editApplicationCommand(api: RestApi; application_id, command_id: string;
                        guild_id, name, description = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-                       default_permission = true;
                        default_member_permissions = none PermissionFlags;
                        options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]</a></li>
@@ -1228,13 +1242,11 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="user: editApplicationCommand(api: RestApi; application_id, command_id: string;
                        guild_id, name, description = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-                       default_permission = true;
                        default_member_permissions = none PermissionFlags;
                        options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]" href="dimscord/restapi/user.html#editApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">user: editApplicationCommand(api: RestApi; application_id, command_id: string;
                        guild_id, name, description = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-                       default_permission = true;
                        default_member_permissions = none PermissionFlags;
                        options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]</a></li>
@@ -1437,8 +1449,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
             tts = false; flags = none int; embeds = newSeq[Embed]();
+            attachments = newSeq[Attachment]();
             components = newSeq[MessageComponent]()): Future[Message]" href="dimscord/restapi.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
             tts = false; flags = none int; embeds = newSeq[Embed]();
+            attachments = newSeq[Attachment]();
             components = newSeq[MessageComponent]()): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editScheduledEvent" href="#editScheduledEvent"><span>editScheduledEvent:</span></a></dt><dd><ul class="simple">
@@ -1767,6 +1781,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="constants: endpointUserChannels(): string" href="dimscord/constants.html#endpointUserChannels">constants: endpointUserChannels(): string</a></li>
           </ul></dd>
+<dt><a name="endpointUserGuildMember" href="#endpointUserGuildMember"><span>endpointUserGuildMember:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: endpointUserGuildMember(gid: string): string" href="dimscord/constants.html#endpointUserGuildMember%2Cstring">constants: endpointUserGuildMember(gid: string): string</a></li>
+          </ul></dd>
 <dt><a name="endpointUserGuilds" href="#endpointUserGuilds"><span>endpointUserGuilds:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: endpointUserGuilds(gid: string): string" href="dimscord/constants.html#endpointUserGuilds%2Cstring">constants: endpointUserGuilds(gid: string): string</a></li>
@@ -1886,6 +1904,8 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="fullSet" href="#fullSet"><span>fullSet:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="dispatch: fullSet[T](U: typedesc[T]): set[T]" href="dimscord/dispatch.html#fullSet%2Ctypedesc%5BT%5D">dispatch: fullSet[T](U: typedesc[T]): set[T]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="objects: fullSet[T](U: typedesc[T]): set[T]" href="dimscord/objects.html#fullSet%2Ctypedesc%5BT%5D">objects: fullSet[T](U: typedesc[T]): set[T]</a></li>
           </ul></dd>
 <dt><a name="GameAssets" href="#GameAssets"><span>GameAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1972,6 +1992,12 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="restapi: getCurrentApplication(api: RestApi): Future[Application]" href="dimscord/restapi.html#getCurrentApplication%2CRestApi">restapi: getCurrentApplication(api: RestApi): Future[Application]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="user: getCurrentApplication(api: RestApi): Future[Application]" href="dimscord/restapi/user.html#getCurrentApplication%2CRestApi">user: getCurrentApplication(api: RestApi): Future[Application]</a></li>
+          </ul></dd>
+<dt><a name="getCurrentGuildMember" href="#getCurrentGuildMember"><span>getCurrentGuildMember:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getCurrentGuildMember(api: RestApi; guild_id: string): Future[Member]" href="dimscord/restapi.html#getCurrentGuildMember%2CRestApi%2Cstring">restapi: getCurrentGuildMember(api: RestApi; guild_id: string): Future[Member]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="user: getCurrentGuildMember(api: RestApi; guild_id: string): Future[Member]" href="dimscord/restapi/user.html#getCurrentGuildMember%2CRestApi%2Cstring">user: getCurrentGuildMember(api: RestApi; guild_id: string): Future[Member]</a></li>
           </ul></dd>
 <dt><a name="getCurrentUser" href="#getCurrentUser"><span>getCurrentUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2801,9 +2827,9 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="MessageFlags.mfSourceMessageDeleted" href="dimscord/constants.html#mfSourceMessageDeleted">MessageFlags.mfSourceMessageDeleted</a></li>
           </ul></dd>
-<dt><a name="mfSupressEmbeds" href="#mfSupressEmbeds"><span>mfSupressEmbeds:</span></a></dt><dd><ul class="simple">
+<dt><a name="mfSuppressEmbeds" href="#mfSuppressEmbeds"><span>mfSuppressEmbeds:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="MessageFlags.mfSupressEmbeds" href="dimscord/constants.html#mfSupressEmbeds">MessageFlags.mfSupressEmbeds</a></li>
+          data-doc-search-tag="MessageFlags.mfSuppressEmbeds" href="dimscord/constants.html#mfSuppressEmbeds">MessageFlags.mfSuppressEmbeds</a></li>
           </ul></dd>
 <dt><a name="mfUrgent" href="#mfUrgent"><span>mfUrgent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3446,15 +3472,13 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="restapi: registerApplicationCommand(api: RestApi; application_id: string;
                            name, description: string; name_localizations,
     description_localizations = none Table[string, string]; kind = atSlash;
-                           guild_id = &quot;&quot;;
-                           default_permission, dm_permission = true;
+                           guild_id = &quot;&quot;; dm_permission = true;
                            default_member_permissions = none PermissionFlags;
                            options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]" href="dimscord/restapi.html#registerApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">restapi: registerApplicationCommand(api: RestApi; application_id: string;
                            name, description: string; name_localizations,
     description_localizations = none Table[string, string]; kind = atSlash;
-                           guild_id = &quot;&quot;;
-                           default_permission, dm_permission = true;
+                           guild_id = &quot;&quot;; dm_permission = true;
                            default_member_permissions = none PermissionFlags;
                            options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]</a></li>
@@ -3462,15 +3486,13 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="user: registerApplicationCommand(api: RestApi; application_id: string;
                            name, description: string; name_localizations,
     description_localizations = none Table[string, string]; kind = atSlash;
-                           guild_id = &quot;&quot;;
-                           default_permission, dm_permission = true;
+                           guild_id = &quot;&quot;; dm_permission = true;
                            default_member_permissions = none PermissionFlags;
                            options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]" href="dimscord/restapi/user.html#registerApplicationCommand%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">user: registerApplicationCommand(api: RestApi; application_id: string;
                            name, description: string; name_localizations,
     description_localizations = none Table[string, string]; kind = atSlash;
-                           guild_id = &quot;&quot;;
-                           default_permission, dm_permission = true;
+                           guild_id = &quot;&quot;; dm_permission = true;
                            default_member_permissions = none PermissionFlags;
                            options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]</a></li>
@@ -3608,12 +3630,14 @@ window.addEventListener('DOMContentLoaded', main);
           data-doc-search-tag="restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
             files = newSeq[DiscordFile](); embeds = newSeq[Embed]();
+            attachments = newSeq[Attachment]();
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
             components = newSeq[MessageComponent]();
             sticker_ids = newSeq[string]()): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring">restapi: sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
             files = newSeq[DiscordFile](); embeds = newSeq[Embed]();
+            attachments = newSeq[Attachment]();
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
             components = newSeq[MessageComponent]();
@@ -4024,7 +4048,7 @@ window.addEventListener('DOMContentLoaded', main);
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-14 11:53:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-18 10:47:42 UTC</small>
       </div>
     </div>
   </div>

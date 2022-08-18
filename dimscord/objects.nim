@@ -278,6 +278,14 @@ proc parseHook(s: string; i: var int; v: var set[ApplicationFlags]) {.used.} =
         bint = 0
     v = cast[set[ApplicationFlags]](bint)
 
+proc parseHook(s: string; i: var int; v: var set[ChannelFlags]) {.used.} =
+    var bint: BiggestInt
+    try:
+        parseHook(s, i, bint)
+    except:
+        bint = 0
+    v = cast[set[ChannelFlags]](bint)
+
 proc renameHook(s: var Message, fieldName: var string) =
     case fieldName:
     of "type":
@@ -317,14 +325,6 @@ proc renameHook(s: var MessageInteraction, fieldName: var string) =
 
 proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
-
-proc parseHook(s: string; i: var int; v: var set[ChannelFlags]) {.used.} =
-    var bint: BiggestInt
-    try:
-        parseHook(s, i, bint)
-    except:
-        bint = 0
-    v = cast[set[ChannelFlags]](bint)
 
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = ($data).fromJson(GuildChannel)

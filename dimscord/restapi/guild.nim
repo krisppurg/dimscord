@@ -186,7 +186,7 @@ proc createGuildRole*(api: RestApi, guild_id: string;
         permissions: PermObj;
         color = 0; reason = ""): Future[Role] {.async.} =
     ## Creates a guild role.
-    result = (await api.request("PUT", endpointGuildRoles(guild_id), $(%*{
+    result = (await api.request("POST", endpointGuildRoles(guild_id), $(%*{
         "name": name, "unicode_emoji": unicode_emoji,
         "icon": icon, "permissions": %($permissions.perms),
         "color": color, "hoist": hoist,

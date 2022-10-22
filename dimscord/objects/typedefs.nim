@@ -371,7 +371,7 @@ type
         self_deaf*, self_mute*, self_stream*: bool
         request_to_speak_timestamp*: Option[string]
     GuildScheduledEvent* = ref object
-        id*, guild_id*, scheduled_start_time*: string
+        id*, guild_id*, name*, scheduled_start_time*: string
         channel_id*, creator_id*, scheduled_end_time*: Option[string]
         description*, entity_id*, image*: Option[string]
         privacy_level*: GuildScheduledEventPrivacyLevel

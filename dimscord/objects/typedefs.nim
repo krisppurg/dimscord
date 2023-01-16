@@ -694,7 +694,7 @@ type
             label*: Option[string]
             emoji*: Option[Emoji]
             url*: Option[string]
-        of SelectMenu:
+        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             options*: seq[SelectMenuOption]
             min_values*, max_values*: Option[int]
         of TextInput:

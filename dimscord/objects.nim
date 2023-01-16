@@ -910,7 +910,7 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["url"] =         %comp.url
             if comp.emoji.isSome:
                 result["emoji"] =   comp.emoji.get.toPartial
-        of SelectMenu:
+        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             result["custom_id"] =   %comp.custom_id.get
             result["options"] =     %comp.options
             result["placeholder"] = %comp.placeholder

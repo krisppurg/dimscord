@@ -897,6 +897,8 @@ proc `%`*(permission: ApplicationCommandPermission): JsonNode =
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
+    if comp.disabled.isSome:
+        result["disabled"] = %comp.disabled.get
     case comp.kind:
         of None: discard
         of ActionRow:

@@ -535,7 +535,7 @@ type
             of atNothing: discard
         of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
-            of SelectMenu:
+            of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
                 values*: seq[string]
             else: discard
             custom_id*: string

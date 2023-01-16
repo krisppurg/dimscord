@@ -696,6 +696,7 @@ type
             url*: Option[string]
         of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             options*: seq[SelectMenuOption]
+            channel_types*: seq[ChannelType]
             min_values*, max_values*: Option[int]
         of TextInput:
             input_style*: Option[TextInputStyle]

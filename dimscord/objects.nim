@@ -918,6 +918,10 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["placeholder"] = %comp.placeholder
             result["min_values"] =  %comp.minValues
             result["max_values"] =  %comp.maxValues
+            if comp.channel_types.len > 0:
+                result["channel_types"] = newJArray()
+                for channel_type in comp.channel_types:
+                    result["channel_types"] &= %channel_type.ord
         of TextInput:
             result["custom_id"] =   %comp.custom_id.get
             result["placeholder"] =    %comp.placeholder

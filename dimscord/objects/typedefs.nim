@@ -535,7 +535,7 @@ type
             of atNothing: discard
         of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
-            of SelectMenu:
+            of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
                 values*: seq[string]
             else: discard
             custom_id*: string
@@ -694,8 +694,9 @@ type
             label*: Option[string]
             emoji*: Option[Emoji]
             url*: Option[string]
-        of SelectMenu:
+        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             options*: seq[SelectMenuOption]
+            channel_types*: seq[ChannelType]
             min_values*, max_values*: Option[int]
         of TextInput:
             input_style*: Option[TextInputStyle]

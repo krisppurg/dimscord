@@ -897,6 +897,8 @@ proc `%`*(permission: ApplicationCommandPermission): JsonNode =
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
+    if comp.disabled.isSome:
+        result["disabled"] = %comp.disabled.get
     case comp.kind:
         of None: discard
         of ActionRow:
@@ -910,12 +912,16 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["url"] =         %comp.url
             if comp.emoji.isSome:
                 result["emoji"] =   comp.emoji.get.toPartial
-        of SelectMenu:
+        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             result["custom_id"] =   %comp.custom_id.get
             result["options"] =     %comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] =  %comp.minValues
             result["max_values"] =  %comp.maxValues
+            if comp.channel_types.len > 0:
+                result["channel_types"] = newJArray()
+                for channel_type in comp.channel_types:
+                    result["channel_types"] &= %channel_type.ord
         of TextInput:
             result["custom_id"] =   %comp.custom_id.get
             result["placeholder"] =    %comp.placeholder

@@ -473,7 +473,7 @@ type
         guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
-        name_localizations*, description_localizations*: Option[string]
+        name_localizations*, description_localizations*: Option[Table[string, string]]
         default_permission*: bool
         default_member_permissions*: Option[PermissionFlags]
         dm_permission*: Option[bool]
@@ -488,7 +488,7 @@ type
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string
-        name_localizations*, description_localizations*: string
+        name_localizations*, description_localizations*: Option[Table[string, string]]
         required*, autocomplete*: Option[bool]
         channel_types*: seq[ChannelType]
         min_value*, max_value*: (Option[BiggestInt], Option[float])
@@ -497,7 +497,7 @@ type
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
         name*: string
-        name_localizations*: Table[string, string]
+        name_localizations*: Option[Table[string, string]]
         value*: (Option[string], Option[int])
     MessageInteraction* = object
         id*, name*: string

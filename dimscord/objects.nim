@@ -822,11 +822,17 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 "required": %(a.required.get false),
                 "autocomplete": %a.autocomplete
     }
+    if a.name_localizations.isSome:
+        result["name_localizations"] = %*a.name_localizations
+    if a.description_localizations.isSome:
+        result["description_localizations"] = %*a.description_localizations
 
     if a.choices.len > 0:
         result["choices"] = %a.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =
                 let json = %*{"name": %x.name}
+                if x.name_localizations.isSome:
+                    json["name_localizations"] = %*x.name_localizations
                 if x.value[0].isSome:
                     json["value"] = %x.value[0]
                 if x.value[1].isSome:
@@ -848,9 +854,13 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         "name": a.name,
         "type": commandKind.ord
     }
+    if a.name_localizations.isSome:
+        result["name_localizations"] = %*a.name_localizations
     if commandKind == atSlash:
         assert a.description.len in 1..100
         result["description"] = %a.description
+        if a.description_localizations.isSome:
+            result["description_localizations"] = %*a.description_localizations
         if a.options.len > 0: result["options"] = %(a.options.map(
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x

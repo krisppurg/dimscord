@@ -295,6 +295,10 @@ proc createInteractionResponse*(api: RestApi,
             data = %*(response.data.get)
             if response.data.get.flags.len!=0:
                 data["flags"] = %response.data.get.flags
+            if response.data.get.components.len > 0:
+                data["components"] = newJArray()
+                for component in response.data.get.components:
+                    data["components"] &= %%*component
     of irtAutoCompleteResult:
         let choices = %response.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =

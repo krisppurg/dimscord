@@ -822,11 +822,17 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 "required": %(a.required.get false),
                 "autocomplete": %a.autocomplete
     }
+    if a.name_localizations.isSome:
+        result["name_localizations"] = %*a.name_localizations
+    if a.description_localizations.isSome:
+        result["description_localizations"] = %*a.description_localizations
 
     if a.choices.len > 0:
         result["choices"] = %a.choices.map(
             proc (x: ApplicationCommandOptionChoice): JsonNode =
                 let json = %*{"name": %x.name}
+                if x.name_localizations.isSome:
+                    json["name_localizations"] = %*x.name_localizations
                 if x.value[0].isSome:
                     json["value"] = %x.value[0]
                 if x.value[1].isSome:
@@ -848,9 +854,13 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         "name": a.name,
         "type": commandKind.ord
     }
+    if a.name_localizations.isSome:
+        result["name_localizations"] = %*a.name_localizations
     if commandKind == atSlash:
         assert a.description.len in 1..100
         result["description"] = %a.description
+        if a.description_localizations.isSome:
+            result["description_localizations"] = %*a.description_localizations
         if a.options.len > 0: result["options"] = %(a.options.map(
             proc (x: ApplicationCommandOption): JsonNode =
                 %%*x
@@ -897,6 +907,8 @@ proc `%`*(permission: ApplicationCommandPermission): JsonNode =
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
+    if comp.disabled.isSome:
+        result["disabled"] = %comp.disabled.get
     case comp.kind:
         of None: discard
         of ActionRow:
@@ -910,12 +922,16 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             result["url"] =         %comp.url
             if comp.emoji.isSome:
                 result["emoji"] =   comp.emoji.get.toPartial
-        of SelectMenu:
+        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
             result["custom_id"] =   %comp.custom_id.get
             result["options"] =     %comp.options
             result["placeholder"] = %comp.placeholder
             result["min_values"] =  %comp.minValues
             result["max_values"] =  %comp.maxValues
+            if comp.channel_types.len > 0:
+                result["channel_types"] = newJArray()
+                for channel_type in comp.channel_types:
+                    result["channel_types"] &= %channel_type.ord
         of TextInput:
             result["custom_id"] =   %comp.custom_id.get
             result["placeholder"] =    %comp.placeholder

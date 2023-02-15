@@ -99,6 +99,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none int;
+        files = newSeq[DiscordFile]();
         embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
@@ -117,6 +118,30 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         payload["components"] = newJArray()
         for component in components:
             payload["components"] &= %%*component
+
+    if files.len > 0:
+        mpd = newMultipartData()
+        for file in files:
+            var contenttype = ""
+            if file.name == "":
+                raise newException(Exception,
+                    "File name needs to be provided."
+                )
+
+            let fil = splitFile(file.name)
+
+            if fil.ext != "":
+                let ext = fil.ext[1..high(fil.ext)]
+                contenttype = newMimetypes().getMimetype(ext)
+
+            if file.body == "":
+                file.body = readFile(file.name)
+
+            mpd.add(fil.name, file.body, file.name,
+                contenttype, useStream = false)
+
+        mpd.add("payload_json", $payload, contentType = "application/json")
+
     if attachments.len > 0:
         mpd = newMultipartData()
         payload["attachments"] = %[]
@@ -149,7 +174,8 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
     result = (await api.request(
         "PATCH",
         endpointChannelMessages(channel_id, message_id),
-        $payload
+        $payload,
+        mp = mpd
     )).newMessage
 
 proc crosspostMessage*(api: RestApi;

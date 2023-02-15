@@ -132,10 +132,7 @@ proc request*(api: RestApi, meth, endpoint: string;
         ))
 
         try:
-            if mp == nil:
-                resp = await client.request(url, parseEnum[HttpMethod](meth), pl)
-            else:
-                resp = await client.post(url, pl, mp)
+            resp = await client.request(url, parseEnum[HttpMethod](meth), pl, multipart=mp)
         except:
             r.processing = false
             raise newException(Exception, getCurrentExceptionMsg())

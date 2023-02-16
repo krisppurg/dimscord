@@ -224,7 +224,7 @@ proc getChannelWebhooks*(api: RestApi,
         endpointChannelWebhooks(channel_id)
     )).elems.map(newWebhook)
 
-proc createWebhook*(api: RestApi, channel_id, username: string;
+proc createWebhook*(api: RestApi, channel_id, name: string;
         avatar = none string; reason = ""): Future[Webhook] {.async.} =
     ## Creates a webhook.
     ## (webhook names cannot be: 'clyde', and they range 1-80)
@@ -232,7 +232,7 @@ proc createWebhook*(api: RestApi, channel_id, username: string;
         "POST",
         endpointChannelWebhooks(channel_id),
         $(%*{
-            "username": username,
+            "name": name,
             "avatar": avatar
         }),
         audit_reason = reason

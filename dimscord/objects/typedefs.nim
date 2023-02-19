@@ -475,7 +475,7 @@ type
         name*, description*: string
         name_localizations*, description_localizations*: Option[Table[string, string]]
         default_permission*: bool
-        default_member_permissions*: Option[PermissionFlags]
+        default_member_permissions*: Option[set[PermissionFlags]]
         dm_permission*: Option[bool]
         options*: seq[ApplicationCommandOption]
     GuildApplicationCommandPermissions* = object

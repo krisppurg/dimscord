@@ -866,6 +866,10 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
                 %%*x
         ))
     result["default_permission"] = %a.default_permission
+    if a.default_member_permissions.isSome:
+        result["default_member_permissions"] = %(
+            $cast[int](a.default_member_permissions.get)
+        )
 
 proc newApplicationCommandPermission*(
     data: JsonNode
@@ -916,10 +920,12 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
             for child in comp.components:
                 result["components"] &= %%* child
         of Button:
-            result["custom_id"] =   %comp.custom_id.get
-            result["label"] =       %comp.label
-            result["style"] =       %comp.style.ord
-            result["url"] =         %comp.url
+            if comp.custom_id.isSome:
+                result["custom_id"] = %comp.custom_id.get
+            result["label"] = %comp.label
+            result["style"] = %comp.style.ord
+            if comp.url.isSome:
+                result["url"] = %comp.url.get
             if comp.emoji.isSome:
                 result["emoji"] =   comp.emoji.get.toPartial
         of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:

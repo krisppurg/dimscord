@@ -874,6 +874,7 @@ proc threadDelete(s: Shard, data: JsonNode) {.async.} =
         thread = s.cache.guildChannels.getOrDefault(
             data["id"].str,
             GuildChannel(
+                kind: ChannelType(data["type"].getInt(ctGuildText.ord)),
                 id: data["id"].str,
                 guild_id: data["guild_id"].str,
                 parent_id: some data["parent_id"].str,
@@ -884,11 +885,6 @@ proc threadDelete(s: Shard, data: JsonNode) {.async.} =
             Guild(id: data["guild_id"].str)
         )
     var exists = false
-    if ChannelType(data["type"].getInt) in ChannelType.fullSet():
-        thread.kind = ChannelType data["type"].getInt
-    else:
-        thread.kind = ctGuildText
-
     if thread.id in s.cache.guildChannels:
         s.cache.guildChannels.del(thread.id)
         guild.threads.del(thread.id)

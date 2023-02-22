@@ -870,6 +870,8 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         result["default_member_permissions"] = %(
             $cast[int](a.default_member_permissions.get)
         )
+    if a.dm_permission.isSome:
+        result["dm_permission"] = %a.dm_permission.get
 
 proc newApplicationCommandPermission*(
     data: JsonNode

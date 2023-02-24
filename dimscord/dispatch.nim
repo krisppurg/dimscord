@@ -480,9 +480,10 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
         Guild(id: data["guild_id"].str)
     )
+    let cacheuser = s.cache.preferences.cache_users
 
     for member in data["members"].elems:
-        if member["user"]["id"].str notin guild.members:
+        if member["user"]["id"].str notin guild.members and cacheuser:
             guild.members[member["user"]["id"].str] = newMember(member)
 
             s.cache.users[member["user"]["id"].str] = newUser(member["user"])

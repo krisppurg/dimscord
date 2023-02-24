@@ -84,7 +84,7 @@ proc channelPinsUpdate(s: Shard, data: JsonNode) {.async.} =
         guild: Option[Guild]
         last_pin: Option[string]
 
-    if "last_pin_timestamp" in data:
+    if "last_pin_timestamp" in data and data["last_pin_timestamp"].kind != JNull:
         last_pin = some data["last_pin_timestamp"].str
 
     if "guild_id" in data:

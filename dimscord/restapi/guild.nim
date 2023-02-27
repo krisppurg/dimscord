@@ -224,10 +224,10 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
 proc editGuildRolePosition*(api: RestApi, guild_id, role_id: string;
         position = none int; reason = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role position.
-    result = (await api.request("PATCH", endpointGuildRoles(guild_id), $(%*{
+    result = (await api.request("PATCH", endpointGuildRoles(guild_id), $(%*[{
         "id": role_id,
         "position": %position
-    }), audit_reason = reason)).elems.map(newRole)
+    }]), audit_reason = reason)).elems.map(newRole)
 
 proc getGuildInvites*(api: RestApi,
         guild_id: string): Future[seq[InviteMetadata]] {.async.} =

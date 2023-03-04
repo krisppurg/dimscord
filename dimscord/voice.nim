@@ -677,4 +677,11 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
         command, args = ["--get-url", url], options = {poUsePath, poStdErrToStdOut}
     )
     # doAssert exitCode == 0, "An error occurred:\n" & output
-    await v.playFFMPEG(output.split("\n")[1])
+    let first = output.split("\n")[0]
+    let sec = output.split("\n")[1]
+
+    if not first.startsWith("http") and not sec.startsWith("http"):
+        raise newException(Exception, "error occurred:\n\n" & output)
+
+    if not sec.startsWith("http"): 
+        await v.playFFMPEG(first)

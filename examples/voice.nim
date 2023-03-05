@@ -1,4 +1,5 @@
 import dimscord, asyncdispatch, options, strutils, tables
+
 ##[
   In this example, the bot will accept these commands
 
@@ -12,6 +13,9 @@ import dimscord, asyncdispatch, options, strutils, tables
 const
     defaultTokenMsg = "<your bot token goes here or use -d:token=(yourtoken)>"
     token {.strdefine.} = defaultTokenMsg
+
+when not defined(dimscordVoice): # this would only work if you defined dimscordVoice
+    {.error: "Run with -d:dimscordVoice to make example work".}
 
 let discord = newDiscordClient(token)
 
@@ -32,76 +36,79 @@ proc voiceServerUpdate(s: Shard, g: Guild, token: string;
             discard await discord.api.sendMessage(
                 voicesessions[g.id].chanID, "Music ended."
             )
-    when defined(dimscordVoice): await vc.startSession()
+    echo "Starting session"
+    await vc.startSession()
 
-when defined(dimscordVoice): # this would only work if you defined dimscordVoice
-    proc messageCreate(s: Shard, m: Message) {.event(discord).} =
-        if m.author.bot: return
-        if m.guild_id.isNone: return
+proc messageCreate(s: Shard, m: Message) {.event(discord).} =
+    if m.author.bot: return
+    if m.guild_id.isNone: return
 
-        let args = m.content.split(" ")
-        let command = args[0]
-        case command:
-        of "!playmusic":
-            let g = s.cache.guilds[m.guildID.get]
-            if m.author.id notin g.voiceStates:
-                discard await discord.api.sendMessage(
-                    m.channelID,
-                    "You're not connected to a voice channel"
-                )
-                return
-            if m.guildID.get notin s.voiceConnections:
-                await s.voiceStateUpdate(
-                    guildID = m.guildID.get,
-                    channelID = g.voiceStates[m.author.id].channelID,
-                    selfDeaf = true
-                )
-                voicesessions[g.id] = (chanID: m.channelID, ready: false)
-
-                while not voicesessions[g.id].ready:
-                    await sleepAsync 1
-
-            let vc = s.voiceConnections[m.guildID.get]
-            let link = args[1]
-            discard await discord.api.sendMessage(m.channelID, "Playing music")
-
-            await vc.playYTDL(link)
-        of "!pause":
-            if m.guildID.get notin s.voiceConnections: return
-            let vc = s.voiceConnections[m.guildID.get]
-            if not vc.ready: return
-            vc.pause()
-
-            discard await discord.api.sendMessage(m.channelID, "Music paused.")
-        of "!resume":
-            if m.guildID.get notin s.voiceConnections: return
-            let vc = s.voiceConnections[m.guildID.get]
-            if not vc.ready: return
-            vc.resume()
-
-            discard await discord.api.sendMessage(m.channelID, "Music resumed.")
-        of "!stop":
-            if m.guildID.get notin s.voiceConnections: return
-            let vc = s.voiceConnections[m.guildID.get]
-            if not vc.ready: return
-            vc.stopped = true
-            voicesessions[m.guildID.get].ready = false
-            await s.voiceStateUpdate( # if channelID is none then we would disconnect
-                guildID=m.guildID.get,
-                channelID=none string
-            )
-
+    let args = m.content.split(" ")
+    let command = args[0]
+    echo "COMMAND: ", command
+    case command:
+    of "!playmusic":
+        let g = s.cache.guilds[m.guildID.get]
+        echo "IN THE COMMAND"
+        if m.author.id notin g.voiceStates:
             discard await discord.api.sendMessage(
                 m.channelID,
-                "Left voice channel."
+                "You're not connected to a voice channel"
             )
+            return
+        if m.guildID.get notin s.voiceConnections:
+            await s.voiceStateUpdate(
+                guildID = m.guildID.get,
+                channelID = g.voiceStates[m.author.id].channelID,
+                selfDeaf = true
+            )
+            voicesessions[g.id] = (chanID: m.channelID, ready: false)
+
+            while not voicesessions[g.id].ready:
+                await sleepAsync 10
+
+        let vc = s.voiceConnections[m.guildID.get]
+        let link = args[1]
+        discard await discord.api.sendMessage(m.channelID, "Playing music")
+
+        await vc.playYTDL(link)
+    of "!pause":
+        if m.guildID.get notin s.voiceConnections: return
+        let vc = s.voiceConnections[m.guildID.get]
+        if not vc.ready: return
+        vc.pause()
+
+        discard await discord.api.sendMessage(m.channelID, "Music paused.")
+    of "!resume":
+        if m.guildID.get notin s.voiceConnections: return
+        let vc = s.voiceConnections[m.guildID.get]
+        if not vc.ready: return
+        vc.resume()
+
+        discard await discord.api.sendMessage(m.channelID, "Music resumed.")
+    of "!stop":
+        if m.guildID.get notin s.voiceConnections: return
+        let vc = s.voiceConnections[m.guildID.get]
+        if not vc.ready: return
+        vc.stopped = true
+        voicesessions[m.guildID.get].ready = false
+        await s.voiceStateUpdate( # if channelID is none then we would disconnect
+            guildID=m.guildID.get,
+            channelID=none string
+        )
+
+        discard await discord.api.sendMessage(
+            m.channelID,
+            "Left voice channel."
+        )
+
 
 waitFor discord.startSession(
     gateway_intents = {
         giMessageContent,
         giGuildVoiceStates,
         giGuildMessages,
-        giGuilds,
-        giGuildMembers
+        giGuildMembers,
+        giGuilds
     }
 )

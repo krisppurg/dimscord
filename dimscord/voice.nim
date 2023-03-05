@@ -330,18 +330,33 @@ proc recvUDPPacket(v: VoiceClient, size: int): Future[string] {.async.} =
     ## Recvs a UDP packet from anyone (Could be security issue? couldn't get other proc to work though)
     result = v.udp.recvFrom(size).await().data
 
+proc addUint16BE(buffer: var string, val: uint16) =
+  buffer.addUint16(toBigEndian val)
+
+proc addUint32BE(buffer: var string, val: uint32) =
+  buffer.addUint32(toBigEndian val)
+
+
 proc sendDiscovery(v: VoiceClient) {.async.} =
     ## Sends ip/port discovery packet to discord.
     ## After calling this, call recvDiscovery to make `v` set its external IP
     var packet: string
-    packet.addUint32(toBigEndian uint32(v.ssrc))
+    packet.addUint16BE(0x1) # Requesting IP
+    packet.addUint16BE(70) # Length minus this and previous field
+    packet.addUint32BE(uint32(v.ssrc))
     packet.add chr(0).repeat(66)
     await v.sendUDPPacket(packet)
 
 proc recvDiscovery(v: VoiceClient) {.async.} =
     ## Recvs external ip/port from discord
-    let packet = await v.recvUDPPacket(70)
-    v.srcIP = packet[4..^3].replace($chr(0), "")
+    var packet = await v.recvUDPPacket(74)
+    v.srcIP = packet[8..^3]
+    # Find first null byte then strip to that
+    for i in 0..<v.srcIP.len:
+      if v.srcIP[i] == '\0':
+        v.srcIP.setLen(i)
+        break
+    # Read the port at the end
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
 
 proc handleSocketMessage(v: VoiceClient) {.async.} =
@@ -466,7 +481,7 @@ proc startSession*(v: VoiceClient) {.async.} =
         await v.handleSocketMessage()
     except:
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
-        raise newException(Exception, getCurrentExceptionMsg())
+        raise
 
 proc pause*(v: VoiceClient) =
     ## Pause the current audio
@@ -679,7 +694,7 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
     # doAssert exitCode == 0, "An error occurred:\n" & output
     let first = output.split("\n")[0]
     let sec = output.split("\n")[1]
-
+    
     if not first.startsWith("http") and not sec.startsWith("http"):
         raise newException(Exception, "error occurred:\n\n" & output)
 
@@ -687,3 +702,4 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
         await v.playFFMPEG(first)
     else:
         await v.playFFmpeg(sec)
+

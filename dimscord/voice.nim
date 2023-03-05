@@ -685,3 +685,5 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
 
     if not sec.startsWith("http"): 
         await v.playFFMPEG(first)
+    else:
+        await v.playFFmpeg(sec)

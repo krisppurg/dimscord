@@ -383,7 +383,9 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             else:
                 break
 
-        var data: JsonNode
+        var
+            data: JsonNode
+            dataVoiceOp = Something
 
         try:
             data = parseJson(packet[1])
@@ -395,7 +397,10 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             asyncCheck v.voice_events.on_disconnect(v)
             break
 
-        case VoiceOp(data["op"].num)
+        if data["op"].num in VoiceOp.low.ord..VoiceOp.high.ord:
+            dataVoiceOp = VoiceOp(data["op"].num)
+
+        case dataVoiceOp
         of Hello: # TODO: resume (after v1.4.0)
             logVoice "Received 'HELLO' from the voice gateway."
             v.interval = int data["d"]["heartbeat_interval"].getFloat

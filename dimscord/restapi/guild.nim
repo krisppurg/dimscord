@@ -474,6 +474,13 @@ proc getGuildEmojis*(
         endpointGuildEmojis(guild_id)
     )).elems.map(newEmoji)
 
+proc getGuildEmoji*(
+    api: RestApi, guild_id: string, emoji_id: string
+): Future[Emoji] {.async.} =
+    result = (await api.request("GET",
+        endpointGuildEmojis(guild_id, emoji_id)
+    )).newEmoji
+
 proc getGuildVoiceRegions*(api: RestApi,
         guild_id: string): Future[seq[VoiceRegion]] {.async.} =
     ## Gets a guild's voice regions.

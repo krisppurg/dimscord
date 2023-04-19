@@ -458,14 +458,14 @@ type
         members*: seq[TeamMember]
     Application* = object
         id*, description*, name*: string
-        rpc_origins*: seq[string]
+        rpc_origins*, tags*: seq[string]
         bot_public*, bot_require_code_grant*: bool
         terms_of_service_url*, privacy_policy_url*: Option[string]
         guild_id*, custom_install_url*: Option[string]
         owner*: User
         summary*, verify_key*: string
         team*: Option[Team]
-        icon*, primary_sku_id*, slug*, tags*, cover_image*: Option[string]
+        icon*, primary_sku_id*, slug*, cover_image*: Option[string]
         flags*: set[ApplicationFlags]
         install_params*: tuple[scopes: seq[string], permissions: string]
     ApplicationCommand* = object

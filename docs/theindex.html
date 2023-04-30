@@ -805,6 +805,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="constants: ChannelFlags" href="dimscord/constants.html#ChannelFlags">constants: ChannelFlags</a></li>
           </ul></dd>
+<dt><a name="ChannelSelect" href="#ChannelSelect"><span>ChannelSelect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageComponentType.ChannelSelect" href="dimscord/constants.html#ChannelSelect">MessageComponentType.ChannelSelect</a></li>
+          </ul></dd>
 <dt><a name="ChannelType" href="#ChannelType"><span>ChannelType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: ChannelType" href="dimscord/constants.html#ChannelType">constants: ChannelType</a></li>
@@ -1001,8 +1005,8 @@ window.addEventListener('DOMContentLoaded', main);
           </ul></dd>
 <dt><a name="createWebhook" href="#createWebhook"><span>createWebhook:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
-              reason = &quot;&quot;): Future[Webhook]" href="dimscord/restapi.html#createWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: createWebhook(api: RestApi; channel_id, username: string; avatar = none string;
+          data-doc-search-tag="restapi: createWebhook(api: RestApi; channel_id, name: string; avatar = none string;
+              reason = &quot;&quot;): Future[Webhook]" href="dimscord/restapi.html#createWebhook%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: createWebhook(api: RestApi; channel_id, name: string; avatar = none string;
               reason = &quot;&quot;): Future[Webhook]</a></li>
           </ul></dd>
 <dt><a name="crosspostMessage" href="#crosspostMessage"><span>crosspostMessage:</span></a></dt><dd><ul class="simple">
@@ -1448,11 +1452,11 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="editMessage" href="#editMessage"><span>editMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags = none int; embeds = newSeq[Embed]();
-            attachments = newSeq[Attachment]();
+            tts = false; flags = none int; files = newSeq[DiscordFile]();
+            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
             components = newSeq[MessageComponent]()): Future[Message]" href="dimscord/restapi.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring">restapi: editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags = none int; embeds = newSeq[Embed]();
-            attachments = newSeq[Attachment]();
+            tts = false; flags = none int; files = newSeq[DiscordFile]();
+            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
             components = newSeq[MessageComponent]()): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editScheduledEvent" href="#editScheduledEvent"><span>editScheduledEvent:</span></a></dt><dd><ul class="simple">
@@ -2054,6 +2058,10 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="getGuildChannels" href="#getGuildChannels"><span>getGuildChannels:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]" href="dimscord/restapi.html#getGuildChannels%2CRestApi%2Cstring">restapi: getGuildChannels(api: RestApi; guild_id: string): Future[seq[GuildChannel]]</a></li>
+          </ul></dd>
+<dt><a name="getGuildEmoji" href="#getGuildEmoji"><span>getGuildEmoji:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="restapi: getGuildEmoji(api: RestApi; guild_id: string; emoji_id: string): Future[Emoji]" href="dimscord/restapi.html#getGuildEmoji%2CRestApi%2Cstring%2Cstring">restapi: getGuildEmoji(api: RestApi; guild_id: string; emoji_id: string): Future[Emoji]</a></li>
           </ul></dd>
 <dt><a name="getGuildEmojis" href="#getGuildEmojis"><span>getGuildEmojis:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2742,6 +2750,10 @@ window.addEventListener('DOMContentLoaded', main);
 <dt><a name="memberBanner" href="#memberBanner"><span>memberBanner:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: memberBanner(g: Guild; m: Member; fmt = &quot;png&quot;): string" href="dimscord/helpers.html#memberBanner%2CGuild%2CMember%2Cstring">helpers: memberBanner(g: Guild; m: Member; fmt = &quot;png&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="MentionableSelect" href="#MentionableSelect"><span>MentionableSelect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageComponentType.MentionableSelect" href="dimscord/constants.html#MentionableSelect">MessageComponentType.MentionableSelect</a></li>
           </ul></dd>
 <dt><a name="MentionChannel" href="#MentionChannel"><span>MentionChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3575,6 +3587,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="objects: Role" href="dimscord/objects.html#Role">objects: Role</a></li>
           </ul></dd>
+<dt><a name="RoleSelect" href="#RoleSelect"><span>RoleSelect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageComponentType.RoleSelect" href="dimscord/constants.html#RoleSelect">MessageComponentType.RoleSelect</a></li>
+          </ul></dd>
 <dt><a name="RoleTag" href="#RoleTag"><span>RoleTag:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: RoleTag" href="dimscord/objects.html#RoleTag">objects: RoleTag</a></li>
@@ -3949,6 +3965,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li><a class="reference external"
           data-doc-search-tag="constants: UserPremiumType" href="dimscord/constants.html#UserPremiumType">constants: UserPremiumType</a></li>
           </ul></dd>
+<dt><a name="UserSelect" href="#UserSelect"><span>UserSelect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="MessageComponentType.UserSelect" href="dimscord/constants.html#UserSelect">MessageComponentType.UserSelect</a></li>
+          </ul></dd>
 <dt><a name="VerificationLevel" href="#VerificationLevel"><span>VerificationLevel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: VerificationLevel" href="dimscord/constants.html#VerificationLevel">constants: VerificationLevel</a></li>
@@ -4048,7 +4068,7 @@ window.addEventListener('DOMContentLoaded', main);
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-08-18 10:47:42 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-04-30 12:13:09 UTC</small>
       </div>
     </div>
   </div>

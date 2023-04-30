@@ -352,6 +352,10 @@ ActionRow	dimscord/constants.html#ActionRow	MessageComponentType.ActionRow
 Button	dimscord/constants.html#Button	MessageComponentType.Button	
 SelectMenu	dimscord/constants.html#SelectMenu	MessageComponentType.SelectMenu	
 TextInput	dimscord/constants.html#TextInput	MessageComponentType.TextInput	
+UserSelect	dimscord/constants.html#UserSelect	MessageComponentType.UserSelect	
+RoleSelect	dimscord/constants.html#RoleSelect	MessageComponentType.RoleSelect	
+MentionableSelect	dimscord/constants.html#MentionableSelect	MessageComponentType.MentionableSelect	
+ChannelSelect	dimscord/constants.html#ChannelSelect	MessageComponentType.ChannelSelect	
 MessageComponentType	dimscord/constants.html#MessageComponentType	constants: MessageComponentType	
 stStandard	dimscord/constants.html#stStandard	StickerType.stStandard	
 stGuild	dimscord/constants.html#stGuild	StickerType.stGuild	

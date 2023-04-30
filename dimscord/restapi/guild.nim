@@ -225,10 +225,13 @@ proc editGuildRolePositions*(api: RestApi, guild_id: string;
         positions: seq[tuple[id: string, position: Option[int]]];
         reason = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role positions.
+    var params = newJArray()
+    for pos in positions:
+        params.add(%*{"id": pos.id, "position": %pos.position})
     result = (await api.request(
         "PATCH",
         endpointGuildRoles(guild_id),
-        $(%positions),
+        $params,
         audit_reason = reason
     )).elems.map(newRole)
 

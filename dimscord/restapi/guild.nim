@@ -221,9 +221,21 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
         audit_reason = reason
     )).newRole
 
+proc editGuildRolePositions*(api: RestApi, guild_id: string;
+        positions = seq[tuple[id: string, position: Option[int]]];
+        reason = ""): Future[seq[Role]] {.async.} =
+    ## Edits guild role positions.
+    result = (await api.request(
+        "PATCH",
+        endpointGuildRoles(guild_id),
+        $(%positions),
+        audit_reason = reason
+    )).elems.map(newRole)
+
 proc editGuildRolePosition*(api: RestApi, guild_id, role_id: string;
         position = none int; reason = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role position.
+    ## Same as editGuildRolePositions but for one role.
     result = (await api.request("PATCH", endpointGuildRoles(guild_id), $(%*[{
         "id": role_id,
         "position": %position

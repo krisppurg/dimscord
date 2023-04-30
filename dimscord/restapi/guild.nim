@@ -222,7 +222,7 @@ proc editGuildRole*(api: RestApi, guild_id, role_id: string;
     )).newRole
 
 proc editGuildRolePositions*(api: RestApi, guild_id: string;
-        positions = seq[tuple[id: string, position: Option[int]]];
+        positions: seq[tuple[id: string, position: Option[int]]];
         reason = ""): Future[seq[Role]] {.async.} =
     ## Edits guild role positions.
     result = (await api.request(

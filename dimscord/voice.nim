@@ -528,6 +528,8 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     
     if v.encryptMode != Normal:
         packet &= nonce
+    while v.paused:
+        continue
     await v.sendUDPPacket(packet)
 
 proc incrementPacketHeaders(v: VoiceClient) =

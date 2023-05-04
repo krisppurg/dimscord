@@ -299,8 +299,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         asyncCheck s.handleEventDispatch(event, data)
 
 proc reconnect(s: Shard) {.async.} =
-    if s.authenticating: return
     if (s.reconnecting or not s.stop) and not reconnectable: return
+    if s.authenticating: return
     s.reconnecting = true
     s.retry_info.attempts += 1
 

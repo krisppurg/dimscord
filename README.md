@@ -67,7 +67,8 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 # Connect to Discord and run the bot.
 waitFor discord.startSession()
 ```
-Please ensure that when you are running your Discord bot you define `-d:ssl` example: `nim c -r -d:ssl main.nim`, you can use `-d:dimscordDebug`, if you want to debug.
+Please note that you need to define `-d:ssl` if you are importing httpclient before importing dimscord.
+You can use -d:dimscordDebug, if you want to debug.
 
 If you want to use voice then you can use `-d:dimscordVoice`, this requires libsodium, libopus, ffmpeg and optionally youtube-dl (by default)
 

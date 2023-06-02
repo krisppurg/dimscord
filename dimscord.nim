@@ -68,6 +68,8 @@
 ## - `-d:discordv9` Discord API v9 is used for threads (as in discord's channel type).
 ## - `-d:dimscordVoice` Enables the voice module. Requires libsodium and libopus
 
+{.define: ssl.}
+
 import dimscord/[
     gateway, restapi, constants,
     objects, helpers

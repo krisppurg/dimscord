@@ -97,6 +97,32 @@ proc sendMessage*(api: RestApi, channel_id: string;
         mp = mpd
     )).newMessage
 
+proc reply*(m: Message, content: string = "";
+            embeds: seq[Embed] = @[]; 
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]; 
+            files: seq[DiscordFile] = @[];
+            stickers: seq[string] = @[];
+            ping = false): Future[Message] {.async.} =
+    ## Replies to a Message.
+    ## (?) - use `ping = true` in order to ping the message on Discord.
+
+    let msg_ref = block:
+        if not ping: 
+            none MessageReference 
+        else: 
+            some MessageReference(message_id: some m.id, failIfNotExists: some false)
+
+    result = await client.api.sendMessage(
+        channel_id = m.channel_id,
+        content = content,
+        embeds = embeds,
+        sticker_ids = stickers,
+        attachments = attachments,
+        message_reference = msg_ref,
+        files = files
+    )
+
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none int;
         files = newSeq[DiscordFile]();
@@ -178,6 +204,21 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         mp = mpd
     )).newMessage
 
+proc edit*(m: Message, content = m.content;
+           embeds = m.embeds;
+           attachments = m.attachments): Future[Message] {.async.} =
+    ## Edits a Message non-destructively.
+    ## - Using `edit` for ephemeral messages results in an "Unknown Message" error !
+
+
+    result = await client.api.editMessage(
+        channel_id = m.channel_id,
+        message_id = m.id,
+        content = content,
+        embeds = embeds,
+        attachments = attachments
+    )
+
 proc crosspostMessage*(api: RestApi;
         channel_id, message_id: string): Future[Message] {.async.} =
     ## Crosspost channel message aka publish messages into news channels.
@@ -194,6 +235,10 @@ proc deleteMessage*(api: RestApi, channel_id, message_id: string;
         endpointChannelMessages(channel_id, message_id),
         audit_reason = reason
     )
+
+proc delete*(m: Message) {.async.} =
+    ## Deletes a Message.
+    await client.api.deleteMessage(m.channel_id, m.id)
 
 proc getChannelMessages*(api: RestApi, channel_id: string;
         around, before, after = "";
@@ -247,6 +292,12 @@ proc addMessageReaction*(api: RestApi,
         endpointReactions(channel_id, message_id, e=emj, uid="@me")
     )
 
+proc react*(m: Message, emoji: string) {.async.} =
+    ## Add a reaction to a Message
+    ## 
+    ## - `emoji` Example: '👀', '💩', `likethis:123456789012345678`
+    await client.api.addMessageReaction(m.channel_id, m.id, emoji)
+    
 proc deleteMessageReaction*(api: RestApi,
         channel_id, message_id, emoji: string;
         user_id = "@me") {.async.} =
@@ -260,6 +311,10 @@ proc deleteMessageReaction*(api: RestApi,
         endpointReactions(channel_id, message_id, e=emj, uid=user_id)
     )
 
+proc unreact*(m: Message, emoji: string, user_id = "@me") {.async.} =
+    ## Deletes the user's or the bot's message reaction to a Discord message.
+    await client.api.deleteMessageReaction(m.channel_id, m.id, user_id)
+
 proc deleteMessageReactionEmoji*(api: RestApi,
         channel_id, message_id, emoji: string) {.async.} =
     ## Deletes all the reactions for emoji.
@@ -268,6 +323,10 @@ proc deleteMessageReactionEmoji*(api: RestApi,
         endpointReactions(channel_id, message_id, emoji)
     )
 
+proc unreactAll*(m: Message, emoji: string) {.async.} =
+    ## Deletes all the reactions for emoji.
+    await client.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
+    
 proc getMessageReactions*(api: RestApi,
         channel_id, message_id, emoji: string;
         before, after = "";
@@ -298,6 +357,10 @@ proc deleteAllMessageReactions*(api: RestApi,
         "DELETE",
         endpointReactions(channel_id, message_id)
     )
+
+proc clear*(m: Message) {.async.} =
+    ## Remove all message reactions.
+    await client.api.deleteAllMessageReactions(m.channel_id, m.id)
 
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         wait = true; thread_id = none string;
@@ -416,6 +479,30 @@ proc createFollowupMessage*(api: RestApi,
         flags = flags,
         wait = true
     ))
+
+
+proc followup*(i: Interaction;
+            content = "";
+            embeds: seq[Embed] = @[];
+            components: seq[MessageComponent] = @[];
+            attachments: seq[Attachment] = @[];
+            files: seq[DiscordFile] = @[];
+            application_id = i.application_id;
+            token = i.token;              
+            ephemeral = false): Future[Message] {.async.} =
+    ## Follow-up to an Interaction.
+    ## - Use this function when sending messages to acknowledged Interactions.
+
+    result = await client.api.createFollowupMessage(
+        application_id = application_id,
+        interaction_token = token,
+        content = content,
+        attachments = attachments,
+        embeds = embeds,
+        components = components,
+        files = files,
+        flags = if ephemeral: some (1 shl 6) else: none int
+    )
 
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
@@ -540,6 +627,10 @@ proc getInteractionResponse*(
         application_id, interaction_token, message_id
     )
 
+proc fetchResponse*(i: Interaction, id = "@original"): Future[Message] {.async.} =
+    ## Get the response (Message) to an Interaction
+    result = await client.api.getWebhookMessage(i.application_id, i.token, id)
+
 proc deleteWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         thread_id = none string) {.async.} =
@@ -554,6 +645,10 @@ proc deleteInteractionResponse*(api: RestApi;
     await api.deleteWebhookMessage(
         application_id, interaction_token, message_id
     )
+
+proc delete*(i: Interaction) {.async.} =
+    ## Deletes an Interaction Response or Followup Message
+    await client.api.deleteInteractionResponse(i.application_id, i.token, "@original")
 
 proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
         wait = true;thread_id = none string): Future[Option[Message]] {.async.} =

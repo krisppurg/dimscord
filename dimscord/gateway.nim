@@ -620,7 +620,9 @@ proc startSession*(discord: DiscordClient,
 
     # when defined(discordCompress):
     #     query &= "&compress=zlib-stream"
-
+    
+    client = discord
+    
     if discord.shards.len == 0:
         log("Starting gateway session.")
 
@@ -677,3 +679,4 @@ proc startSession*(discord: DiscordClient,
 proc latency*(s: Shard): int =
     ## Gets the shard's latency ms.
     result = int((s.lastHBReceived - s.lastHBTransmit) * 1000)
+

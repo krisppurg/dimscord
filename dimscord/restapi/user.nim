@@ -400,6 +400,77 @@ proc interactionResponseMessage*(api: RestApi,
         })
     )
 
+proc reply*(i: Interaction;
+            content = "";
+            embeds: seq[Embed] = @[];
+            components: seq[MessageComponent] = @[];
+            attachments: seq[Attachment] = @[];
+            application_id = i.application_id;
+            token = i.token;              
+            ephemeral = false) {.async.} =
+    ## Respond to an Interaction.
+    ## /!\ - Do NOT use this if you used `defer` or if you already sent a `reply`. 
+    ## (?) - This is a "response" to an Interaction. Use `followup`, `createFollowupMessage` or `edit` if you already responded.
+    ## (?) - Set `ephemeral` to true to send ephemeral responses.
+
+    let flag = if ephemeral == true: { mfEphemeral } else: { }
+    
+    await client.api.interactionResponseMessage(
+        application_id,
+        token,
+        irtChannelMessageWithSource,
+        InteractionApplicationCommandCallbackData(
+            flags: flag,
+            content: content,
+            components: components,
+            attachments: attachments,
+            embeds: embeds
+        )
+    )
+
+proc update*(i: Interaction;
+            content = "";
+            embeds: seq[Embed] = @[];
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]): Future[Message] {.async.} =
+    ## Updates the message of a component on which an Interaction was received on.
+    ## - This acknowledges an Interaction.
+
+    let resp = InteractionApplicationCommandCallbackData(
+        content: content,
+        embeds: embeds,
+        attachments: attachments,
+        components: components
+    )
+
+    await client.api.interactionResponseMessage(
+        i.application_id, i.token,
+        kind = irtUpdateMessage,
+        response = resp
+    )
+
+proc `defer`*(i: Interaction, update = false, ephemeral = false) {.async.} =
+    ## Defers the response/update to an Interaction.
+    ## - You must use `followup` or `edit` after calling `defer`.
+    ## - Set `ephemeral` to true in order to make the Interaction ephemeral.
+    ## - Set `update` to true to defer the update of an Interaction.
+    
+    let flag = if ephemeral == true: { mfEphemeral } else: { }
+
+    let response = 
+        if update == true:
+            InteractionResponse(
+                kind: irtDeferredUpdateMessage,
+                data: some InteractionApplicationCommandCallbackData(flags: flag)
+            )
+        else:
+            InteractionResponse(
+                kind: irtDeferredChannelMessageWithSource,
+                data: some InteractionApplicationCommandCallbackData(flags: flag)
+            )
+
+    await client.api.createInteractionResponse(i.id, i.token, response)
+
 proc interactionResponseAutocomplete*(api: RestApi,
         interaction_id, interaction_token: string;
         response: InteractionCallbackDataAutocomplete) {.async.} =

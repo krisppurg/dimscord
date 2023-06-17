@@ -473,7 +473,7 @@ proc `$`*(p:PermissionFlags): string=
     if p==permMentionEveryone:
         return "Mention @everyone, @here and All Roles"
     system.`$`(p)[4..^1].findandcaptureall(
-        re"(^[a-z]|[A-Z])[a-z]*"
+        re"(^[a-z]|[A-Z]+)[a-z]*"
     ).join" "
 
 # Rest Endpoints

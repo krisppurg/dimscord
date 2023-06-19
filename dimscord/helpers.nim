@@ -41,7 +41,7 @@ proc defaultAvatarUrl*(u: User): string =
         else:
             (parseInt(u.id) shr 22) mod 6
 
-    result = &"{cdnBase}embeds/avatars/{index}.png"
+    result = &"{cdnBase}embed/avatars/{index}.png"
 
 proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
     ## Gets the user's avatar url.

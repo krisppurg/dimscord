@@ -355,7 +355,7 @@ proc reconnect(s: Shard) {.async.} =
         await s.identify()
     else:
         await s.resume()
- 
+
 proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
     ## Disconnects a shard.
     if s.sockClosed: return
@@ -381,11 +381,11 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
 proc heartbeat(s: Shard, requested = false) {.async.} =
     if s.sockClosed or s.resuming: return
 
-    if not requested: 
+    if not requested:
         if not s.hbAck:
             s.logShard("A zombied connection was detected.")
             await s.disconnect(should_reconnect = true)
-            return 
+            return
         s.hbAck = false
     s.logShard("Sending heartbeat.")
 
@@ -559,13 +559,13 @@ proc startSession(s: Shard, url, query: string) {.async.} =
         s.logShard("Socket state:\n  ->  " & $s.connection[])
     except:
         s.stop = true
-        raise newException(Exception, getCurrentExceptionMsg())
+        raise
 
     try:
         await s.handleSocketMessage()
     except:
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
-        raise newException(Exception, getCurrentExceptionMsg())
+        raise
 
 proc startSession*(discord: DiscordClient,
             autoreconnect = true;
@@ -577,11 +577,11 @@ proc startSession*(discord: DiscordClient,
             cache_users, cache_guilds, guild_subscriptions = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
-    ## 
+    ##
     ## - `gateway_intents` Allows you to subscribe to pre-defined events.
     ##    **NOTE:** When not specified this will default to:
     ##    `giGuilds, giGuildMessages, giDirectMessages, giGuildVoiceStates, giMessageContent`
-    ## 
+    ##
     ## - `large_threshold` The number that would be considered a large guild (50-250).
     ## - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
     ## - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
@@ -631,7 +631,7 @@ proc startSession*(discord: DiscordClient,
                 log("A network error has been detected.")
                 return
 
-        log("Successfully retrived gateway information from Discord:" & 
+        log("Successfully retrived gateway information from Discord:" &
             "\n  shards: $1,\n  session_start_limit: $2" % [
             $info.shards,
             $info.session_start_limit

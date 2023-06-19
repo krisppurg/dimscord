@@ -135,7 +135,7 @@ proc request*(api: RestApi, meth, endpoint: string;
             resp = await client.request(url, parseEnum[HttpMethod](meth), pl, multipart=mp)
         except:
             r.processing = false
-            raise newException(Exception, getCurrentExceptionMsg())
+            raise
 
         log("Got response.")
 
@@ -185,7 +185,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                     invalid_requests += 1
 
                     error = fin & "You are being rate-limited."
-                    var retry: int 
+                    var retry: int
 
                     if api.restVersion >= 8:
                         retry = data["retry_after"].getInt * 1000

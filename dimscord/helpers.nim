@@ -36,7 +36,7 @@ macro event*(discord: DiscordClient, fn: untyped): untyped =
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.
     var index = block:
-        if u.discriminator == "0":
+        if u.discriminator != "0":
             parseInt(u.discriminator) mod 5
         else:
             (parseInt(u.id) shr 22) mod 6

@@ -480,7 +480,7 @@ proc startSession*(v: VoiceClient) {.async.} =
         logVoice "Socket opened."
     except:
         v.stopped = true
-        raise getCurrentException()
+        raise
     try:
         # logVoice "handlong socket" ???
         await v.handleSocketMessage()
@@ -518,14 +518,14 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
     header.addUint16(toBigEndian uint16 v.sequence)
     header.addUint32(toBigEndian uint32 v.time)
     header.addUint32(toBigEndian uint32(v.ssrc))
-    let 
+    let
         nonce = v.makeNonce(header)
         encrypted = crypto_secretbox_easy(v.secret_key, data, nonce)
 
     var packet = newStringOfCap(header.len + encrypted.len)
     packet &= header
     packet &= encrypted
-    
+
     if v.encryptMode != Normal:
         packet &= nonce
     while v.paused:
@@ -701,11 +701,11 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
     # doAssert exitCode == 0, "An error occurred:\n" & output
     let first = output.split("\n")[0]
     let sec = output.split("\n")[1]
-    
+
     if not first.startsWith("http") and not sec.startsWith("http"):
         raise newException(Exception, "error occurred:\n\n" & output)
 
-    if not sec.startsWith("http"): 
+    if not sec.startsWith("http"):
         await v.playFFMPEG(first)
     else:
         await v.playFFmpeg(sec)

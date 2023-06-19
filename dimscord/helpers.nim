@@ -35,7 +35,13 @@ macro event*(discord: DiscordClient, fn: untyped): untyped =
 
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.
-    result = &"{cdnBase}embeds/avatars/{parseInt(u.discriminator) mod 5}.png"
+    var index = block:
+        if u.discriminator == "0":
+            parseInt(u.discriminator) mod 5
+        else:
+            (parseInt(u.id) shr 22) mod 6
+
+    result = &"{cdnBase}embeds/avatars/{index}.png"
 
 proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
     ## Gets the user's avatar url.

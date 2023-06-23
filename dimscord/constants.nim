@@ -210,6 +210,7 @@ type
         ctGuildStageVoice =    13
         ctGuildDirectory =     14
         ctGuildForum =         15
+        ctGuildMedia =         16
     MessageNotificationLevel* = enum
         mnlAllMessages =  0
         mnlOnlyMentions = 1

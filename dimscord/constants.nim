@@ -210,6 +210,7 @@ type
         ctGuildStageVoice =    13
         ctGuildDirectory =     14
         ctGuildForum =         15
+        ctGuildMedia =         16
     MessageNotificationLevel* = enum
         mnlAllMessages =  0
         mnlOnlyMentions = 1
@@ -403,6 +404,13 @@ type
         mttHarmfulLink =   2
         mttSpam =          3
         mttKeywordPreset = 4
+    ForumSortOrder* = enum
+        fsoLatestActivity = 0
+        fsoCreationDate =   1
+    ForumLayout* = enum
+        flNotSet =      0
+        flListView =    1
+        flGalleryView = 2
 
 const
     permAllText* = {permCreateInstantInvite,

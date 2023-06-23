@@ -37,7 +37,6 @@ proc newShard*(id: int, client: DiscordClient): Shard =
         ),
         retry_info: (ms: 1000, attempts: 0)
     )
-# var client*: DiscordClient
 
 proc newDiscordClient*(token: string;
         rest_mode = false;

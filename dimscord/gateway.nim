@@ -650,9 +650,6 @@ proc startSession*(discord: DiscordClient,
 
         if max_shards.isNone:
             discord.max_shards = info.shards
-        
-        discard getClient(some(discord))
-
 
     for id in 0..discord.max_shards - 1:
         var sid = id
@@ -677,8 +674,6 @@ proc startSession*(discord: DiscordClient,
 
         await s.waitWhenReady()
         if invididualShard: break
-    
-    
 
 proc latency*(s: Shard): int =
     ## Gets the shard's latency ms.

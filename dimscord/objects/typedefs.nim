@@ -15,6 +15,8 @@ type
         ## For parse: The values should be "roles", "users", "everyone"
         parse*, roles*, users*: seq[string]
         replied_user*: bool
+    DiscordEvent* = ref object of RootObj
+        client: DiscordClient
     DiscordClient* = ref object
         api*: RestApi
         events*: Events
@@ -136,7 +138,7 @@ type
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
-    Message* = ref object
+    Message* = ref object of DiscordEvent
         ## - `sticker_items` == Table[sticker_id, object]
         ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
@@ -176,7 +178,7 @@ type
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, locale*: Option[string]
-    Member* = ref object
+    Member* = ref object of DiscordEvent
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.
         user*: User
@@ -246,12 +248,12 @@ type
         resume_gateway_url*, session_id*: string
         shard*: Option[seq[int]]
         application*: tuple[id: string, flags: set[ApplicationFlags]]
-    DMChannel* = ref object
+    DMChannel* = ref object of DiscordEvent
         id*, last_message_id*: string
         kind*: ChannelType
         recipients*: seq[User]
         messages*: Table[string, Message]
-    GuildChannel* = ref object
+    GuildChannel* = ref object of DiscordEvent
         id*, name*, guild_id*: string
         nsfw*: bool
         parent_id*: Option[string]
@@ -328,7 +330,7 @@ type
     WelcomeChannel* = object
         channel_id*, description*: string
         emoji_id*, emoji_name*: Option[string]
-    Guild* = ref object
+    Guild* = ref object of DiscordEvent
         id*, name*, owner_id*: string
         preferred_locale*: string
         rtc_region*, permissions_new*: Option[string]
@@ -504,7 +506,7 @@ type
         kind*: InteractionType
         user*: User
         member*: Option[Member]
-    Interaction* = object
+    Interaction* = object of DiscordEvent
         ## if `member` is present, then that means the interaction is in guild,
         ## and `user` is therefore not present.
         ##
@@ -885,3 +887,7 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+proc client*(e: DiscordEvent): DiscordClient =
+    ## Get current client
+    result = e.client

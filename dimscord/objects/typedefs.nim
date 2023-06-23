@@ -275,6 +275,12 @@ type
             thread_metadata*: ThreadMetadata
             member*: Option[ThreadMember]
             flags*: set[ChannelFlags]
+        of ctGuildForum, ctGuildMedia:
+            available_tags*: seq[string]
+            default_reaction_emoji*: Option[DefaultForumReaction]
+            default_thread_rate_limit_per_user*: Option[int]
+            default_sort_order*: Option[ForumSortOrder]
+            default_forum_layout*: Option[ForumLayout]
         else:
             discard
     StageInstance* = object
@@ -863,6 +869,8 @@ type
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
+    DefaultForumReaction* = object
+        emoji_id*, emoji_name*: Option[string]
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

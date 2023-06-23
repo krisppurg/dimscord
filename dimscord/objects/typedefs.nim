@@ -251,6 +251,12 @@ type
         kind*: ChannelType
         recipients*: seq[User]
         messages*: Table[string, Message]
+    DefaultForumReaction* = object
+        emoji_id*, emoji_name*: Option[string]
+    ForumTag* = object
+        id*, name*: string
+        moderated: bool
+        emoji_id*, emoji_name*: Option[string]
     GuildChannel* = ref object
         id*, name*, guild_id*: string
         nsfw*: bool
@@ -275,8 +281,9 @@ type
             thread_metadata*: ThreadMetadata
             member*: Option[ThreadMember]
             flags*: set[ChannelFlags]
+            applied_tags*: Option[seq[string]]
         of ctGuildForum, ctGuildMedia:
-            available_tags*: seq[string]
+            available_tags*: seq[ForumTag]
             default_reaction_emoji*: Option[DefaultForumReaction]
             default_thread_rate_limit_per_user*: Option[int]
             default_sort_order*: Option[ForumSortOrder]
@@ -869,8 +876,6 @@ type
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
-    DefaultForumReaction* = object
-        emoji_id*, emoji_name*: Option[string]
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

@@ -529,7 +529,11 @@ proc handleSocketMessage(s: Shard) {.async.} =
 
         if not s.networkError: await s.handleSocketMessage()
     else:
-        raise newException(Exception, "Fatal error occurred.")
+        let info = extractCloseData(packet[1])
+        raise newException(
+            Exception,
+            "Fatal discord gateway error: "&"["&($info.code)&"] "&info.reason
+        )
 
 proc endSession*(discord: DiscordClient) {.async.} =
     ## Ends the session.

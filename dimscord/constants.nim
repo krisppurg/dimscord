@@ -52,6 +52,11 @@ type
         permSendMessagesInThreads
         permStartEmbeddedActivities
         permModerateMembers
+        permViewCreatorMonetizationInsights
+        permUseSoundboard
+        permCreateExpressions
+        permCreateEvents
+        permUseExternalSounds
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,

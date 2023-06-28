@@ -372,3 +372,147 @@ proc deleteStageInstance*(api: RestApi;
         endpointStageInstances(channel_id),
         audit_reason = reason
     )
+
+proc pin*(m: Message, reason = "") {.async.} =
+    ## Add pinned message.
+    await m.client.api.addChannelMessagePin(m.channel_id, m.id, reason)
+
+proc unpin*(m: Message, reason = "") {.async.} =
+    ## Remove pinned message.
+    await m.client.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
+
+proc pins*(ch: GuildChannel): Future[seq[Message]] {.async.} =
+    ## Get channel pins.
+    ## Note: Due to a limitation of Discord API, `Message` objects do not contain complete `Reaction` data 
+    result = await ch.client.api.getChannelPins(ch.id)
+
+proc edit*(ch: GuildChannel;
+            name, parent_id, topic = none string;
+            rate_limit_per_user = none range[0..21600];
+            bitrate = none range[8000..128000]; user_limit = none range[0..99];
+            position = none int; permission_overwrites = none seq[Overwrite];
+            nsfw = none bool; reason = ""): Future[GuildChannel] {.async.} =
+    ## Modify a guild channel.
+    result = await ch.client.api.editGuildChannel(
+        ch.id, name, parent_id, 
+        topic, rate_limit_per_user, bitrate, 
+        user_limit, position, permission_overwrites, 
+        nsfw, reason
+    )
+
+proc delete*(ch: GuildChannel, reason = "") {.async.} =
+    ## Deletes or closes a channel/thread
+    await ch.client.api.deleteChannel(ch.id, reason)
+
+proc newInvite*(ch: GuildChannel;
+        max_age = 86400; max_uses = 0;
+        temporary, unique = false; target_user = none string;
+        target_user_id, target_application_id = none string;
+        target_type = none InviteTargetType;
+        reason = ""
+): Future[Invite] {.async.} =
+    ## Creates an instant channel invite.
+    result = await ch.client.api.createChannelInvite(
+        ch.id, max_age, max_uses,
+        temporary, unique, target_user,
+        target_user_id, target_application_id,
+        target_type, reason
+    )
+
+# proc delete*(inv: Invite, reason = "") {.async.} =
+#     ## Delete a guild invite.
+#     await inv.client.api.deleteInvite(inv.code, reason)
+
+proc invites*(ch: GuildChannel): Future[seq[Invite]] {.async.} =
+    ## Gets a list of a channel's invites.
+    result = await ch.client.api.getChannelInvites(ch.id)
+
+# proc channel*(g: Guild, channel_id: string): Future[GuildChannel] {.async.} =
+#     ## Gets guild channel by ID.
+#     ## 
+#     ## Fallbacks to discord api if not found inside `Guild` or cache.
+#     
+#     if channel_id in g.channels:
+#         result = g.channels[channel_id]
+#     elif channel_id in g.client.shards[0].cache.guildChannels:
+#         result = g.client.shards[0].cache.guildChannels[channel_id]
+#     else:
+#         let chan = await g.client.api.getChannel(channel_id)
+#         if chan[0].isSome:
+#             result = get chan[0]
+# 
+#     case result.kind
+#     of ctGuildPrivateThread, ctGuildPublicThread:
+#         return result
+# 
+#     raise newException(ValueError, "Channel doesn't exist or is a DM.")
+
+# proc thread*(g: Guild, thread_id: string): Future[Option[GuildChannel]] {.async.} =
+#     ## Gets guild thread by ID.
+#     ## 
+#     ## Fallbacks to discord api if not found inside `Guild` or cache.
+#     if thread_id in g.threads:
+#         result = some g.threads[thread_id]
+#     elif thread_id in g.client.shards[0].cache.guildChannels:
+#         result = some g.client.shards[0].cache.guildChannels[thread_id]
+#     else:
+#         let thr = await g.client.api.getChannel(thread_id)
+#         if thr[0].isSome:
+#             result = thr[0]
+
+# proc dms*(m: Member): Future[Option[DMChannel]] {.async.} =
+#     ## Gets dm channel from a Member
+#     if m.user.isNil: raise newException(ValueError, "User is Nil")
+# 
+#     for v in m.client.shards[0].cache.dmChannels.values:
+#         if (v.kind == ctDirect) and (m.user in v.recipients): # probably wont work for now ?
+#             return some v
+#     
+#     # if nothing was found in the loop we return none T
+#     return none(DMChannel)
+
+# proc dms*(s: Shard, channel_id: string): Future[Option[DMChannel]] {.async.} =
+#     ## Gets dm channel by ID
+#     ## 
+#     ## Fallbacks to discord api if not found inside cache
+#     if channel_id in s.cache.dmChannels:
+#         result = s.cache.dmChannels[channel_id]
+#     else:
+#         let chan = await s.client.api.getChannel(channel_id)
+#         if chan[0].isSome:
+#             result = chan[0]
+
+proc webhooks*(ch: GuildChannel): Future[seq[Webhook]] {.async.} =
+    ## Gets a list of a channel's webhooks.
+    result = await ch.client.api.getChannelWebhooks(ch.id)
+
+# proc delete*(w: Webhook, reason = "") {.async.} =
+#     ## Deletes a webhook.
+#     await w.client.api.deleteWebhook(w.id, reason)
+
+# proc edit*(w: Webhook, name = w.name, avatar = w.avatar, reason = "") {.async.} =
+#     await w.client.api.editWebhook(w.id, name, avatar, some w.channel_id, reason)
+
+proc newThread*(ch: GuildChannel;
+    name: string;
+    auto_archive_duration = 60;
+    kind = ctGuildPrivateThread;
+    invitable = none bool;
+    reason = ""
+): Future[GuildChannel] {.async.} =
+    ## Starts a new thread.
+    ## /!\ Can only accept ... as `kind`
+    result = ch.client.api.startThreadWithoutMessage(ch.id, name, auto_archive_duration, kind, invitable, reason)
+
+proc createStage*(ch: GuildChannel, topic: string, reason = "", privacy = int plGuildOnly): Future[StageInstance] {.async.} =
+    ## Create a stage instance.
+    ## 
+    result = await ch.client.api.createStageInstance(ch.id, topic, privacy, reason)
+
+# proc edit*(si: StageInstance, topic = si.topic, privacy = si.privacy_level, reason = ""): Future[StageInstance] {.async.} =
+#     ## Modify a stage instance.
+#     result = await si.client.api.editStageInstance(si.channel_id, topic, privacy, reason)
+
+# proc delete*(si: StageInstance, reason = "") {.async.} =
+#     ## Delete the stage instance.
+#     await si.client.api.deleteStageInstance(si.channel_id, reason)

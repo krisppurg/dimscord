@@ -54,6 +54,10 @@ proc setGuildNick*(api: RestApi, guild_id: string;
     ## Sets the current user's guild nickname, defaults to "" if no nick is set.
     await api.editCurrentMember(guild_id, nick = some nick, reason)
 
+proc nickname*(g: Guild, nick, reason = "") {.async.} =
+    ## Sets the current user's guild nickname, defaults to "" if no nick is set.
+    await g.client.api.setGuildNick(g.id, nick, reason)
+    
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         reason = "") {.async.} =
     ## Assigns a member's role.
@@ -63,6 +67,11 @@ proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         audit_reason = reason
     )
 
+# proc add*(mb: Member, r: Role, reason = "") {.async.} =
+#     ## Assigns a member's role.
+#     let id = when r is Role: r.id else: r
+#     await mb.client.api.addGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+    
 proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         reason = "") {.async.} =
     ## Removes a member's role.
@@ -72,6 +81,10 @@ proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         audit_reason = reason
     )
 
+# proc remove*(mb: Member, r: Role, reason = "") {.async.} =
+#     ## Removes a member's role.
+#     await mb.client.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+
 proc getUser*(api: RestApi, user_id: string): Future[User] {.async.} =
     ## Gets a user.
     result = (await api.request("GET", endpointUsers(user_id))).newUser
@@ -80,6 +93,10 @@ proc leaveGuild*(api: RestApi, guild_id: string) {.async.} =
     ## Leaves a guild.
     discard await api.request("DELETE", endpointUserGuilds(guild_id))
 
+proc leave*(g: Guild) {.async.} =
+    ## Leaves a guild.
+    await g.client.api.leaveGuild(g.id)
+
 proc getCurrentGuildMember*(api: RestApi;
         guild_id: string): Future[Member] {.async.} =
     ## Get guild member as the current user aka you.
@@ -87,6 +104,10 @@ proc getCurrentGuildMember*(api: RestApi;
         "GET",
         endpointUserGuildMember(guild_id)
     )).newMember
+
+proc bot*(g: Guild): Future[Member] {.async.} =
+    ## Get guild member as the current user aka you.
+    result = await g.client.api.getCurrentGuildMember(g.id)
 
 proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     ## Create user dm.
@@ -264,6 +285,23 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         $payload
     )).newApplicationCommand
 
+# proc edit*(apc: ApplicationCommand;
+#         name, desc = "";
+#         name_localizations,description_localizations = none Table[string,string];
+#         default_member_permissions = none PermissionFlags;
+#         options: seq[ApplicationCommandOption] = @[]
+# ): Future[ApplicationCommand] {.async.} =
+#     ## Modify slash command for a specific application.
+#     ##
+#     ## - `guild_id` - Optional
+#     ## - `name` - Optional Character length (3 - 32)
+#     ## - `descripton` - Optional Character length (1 - 100)
+#     result = apc.client.api.editApplicationCommand(
+#         apc.application_id, apc.id, apc.get(guild_id),
+#         name, desc, name_localizations, description_localizations,
+#         default_member_permissions, options
+#     )
+    
 proc deleteApplicationCommand*(
         api: RestApi, application_id, command_id: string;
         guild_id = "") {.async.} =
@@ -275,6 +313,10 @@ proc deleteApplicationCommand*(
         "DELETE",
         endpoint
     )
+
+# proc delete*(apc: ApplicationCommand) {.async.} =
+#     ## Delete slash command for a specific application, `guild_id` is optional.
+#     await apc.client.api.deleteApplicationCommand(apc.application_id, apc.id)
 
 proc `%`(o: set[UserFlags]): JsonNode =
     %cast[int](o)
@@ -443,7 +485,7 @@ proc update*(i: Interaction;
         components: components
     )
 
-    await client.api.interactionResponseMessage(
+    await i.client.api.interactionResponseMessage(
         i.application_id, i.token,
         kind = irtUpdateMessage,
         response = resp
@@ -469,7 +511,7 @@ proc `defer`*(i: Interaction, update = false, ephemeral = false) {.async.} =
                 data: some InteractionApplicationCommandCallbackData(flags: flag)
             )
 
-    await client.api.createInteractionResponse(i.id, i.token, response)
+    await i.client.api.createInteractionResponse(i.id, i.token, response)
 
 proc interactionResponseAutocomplete*(api: RestApi,
         interaction_id, interaction_token: string;
@@ -495,6 +537,10 @@ proc interactionResponseAutocomplete*(api: RestApi,
         })
     )
 
+proc suggest*(i: Interaction, choices: seq[ApplicationCommandOptionChoice]) {.async.} =
+    ## Create an interaction response which is an autocomplete response.
+    await i.client.api.interactionResponseAutocomplete(i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
+
 proc interactionResponseModal*(api: RestApi,
         interaction_id, interaction_token: string;
         response: InteractionCallbackDataModal) {.async.} =
@@ -517,3 +563,7 @@ proc interactionResponseModal*(api: RestApi,
             "data": %data
         })
     )
+
+proc sendModal*(i: Interaction, response: InteractionCallbackDataModal) {.async.} =
+    ## Create an interaction response which is a modal.
+    await i.client.api.interactionResponseModal(i.id, i.token, response)

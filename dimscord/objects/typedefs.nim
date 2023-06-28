@@ -16,7 +16,7 @@ type
         parse*, roles*, users*: seq[string]
         replied_user*: bool
     DiscordEvent* = ref object of RootObj
-        client: DiscordClient
+        client*: DiscordClient
     DiscordClient* = ref object
         api*: RestApi
         events*: Events
@@ -887,7 +887,3 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
-
-proc client*(e: DiscordEvent): DiscordClient =
-    ## Get current client
-    result = e.client

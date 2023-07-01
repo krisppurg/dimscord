@@ -15,8 +15,6 @@ type
         ## For parse: The values should be "roles", "users", "everyone"
         parse*, roles*, users*: seq[string]
         replied_user*: bool
-    DiscordEvent* = ref object of RootObj
-        client*: DiscordClient
     DiscordClient* = ref object
         api*: RestApi
         events*: Events
@@ -138,7 +136,7 @@ type
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
-    Message* = ref object of DiscordEvent
+    Message* = ref object 
         ## - `sticker_items` == Table[sticker_id, object]
         ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
@@ -178,7 +176,7 @@ type
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, locale*: Option[string]
-    Member* = ref object of DiscordEvent
+    Member* = ref object 
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.
         user*: User
@@ -248,12 +246,12 @@ type
         resume_gateway_url*, session_id*: string
         shard*: Option[seq[int]]
         application*: tuple[id: string, flags: set[ApplicationFlags]]
-    DMChannel* = ref object of DiscordEvent
+    DMChannel* = ref object 
         id*, last_message_id*: string
         kind*: ChannelType
         recipients*: seq[User]
         messages*: Table[string, Message]
-    GuildChannel* = ref object of DiscordEvent
+    GuildChannel* = ref object 
         id*, name*, guild_id*: string
         nsfw*: bool
         parent_id*: Option[string]
@@ -330,7 +328,7 @@ type
     WelcomeChannel* = object
         channel_id*, description*: string
         emoji_id*, emoji_name*: Option[string]
-    Guild* = ref object of DiscordEvent
+    Guild* = ref object 
         id*, name*, owner_id*: string
         preferred_locale*: string
         rtc_region*, permissions_new*: Option[string]
@@ -506,7 +504,7 @@ type
         kind*: InteractionType
         user*: User
         member*: Option[Member]
-    Interaction* = object of DiscordEvent
+    Interaction* = object 
         ## if `member` is present, then that means the interaction is in guild,
         ## and `user` is therefore not present.
         ##
@@ -887,3 +885,30 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+proc getClient*(discord: Option[DiscordClient] = none DiscordClient): DiscordClient =
+    ## Get the current state of `DiscordClient` (use `discord` instead)
+
+    # There are two ways to use this proc:
+    #   - In library code, inside `newDiscordClient` proc in order to get a ref to the user's `discord` variable.
+    #   - Still in library code, when used to fetch the user's current `DiscordClient` state from that ref.
+  
+    # How it works:
+    # - This is possible due to `DiscordClient` being a ref object and due to the `{.global.}` pragma.
+    # - The `DiscordClient` returned by this proc is always "updated" because it's a ref.
+    # - The `private_client` var store the ref from the first time it has been called from `newDiscordClient` and persist beyond the proc "lifetime"
+
+    # Important info:
+    # `{.global.}` docs: https://nim-lang.org/docs/manual.html#pragmas-global-pragma
+    # must use the global pragma in a way to avoid compiler bugs (see issue 15005, 18645, 17552 at nim github) 
+
+    var private_client {.global.}: DiscordClient
+
+    # `once` template means to not assign a ref to `private_client` more than twice if the proc is called again (could use `let` for that if it wasn't for a compiler bug)
+    once:
+        if discord.isSome: private_client = get discord
+
+    # ensure the reference did not get GC'd (it should never happen though!)
+    assert (private_client.isNil == false)
+
+    result = private_client

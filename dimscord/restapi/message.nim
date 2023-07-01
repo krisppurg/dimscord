@@ -665,7 +665,7 @@ proc send*(ch: GuildChannel;
 ): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
-    result = await ch.client.api.sendMessage(
+    result = await getClient().api.sendMessage(
         ch.id, content, tts,
         nonce, files, embeds,
         attachments, allowed_mentions, message_reference,
@@ -688,7 +688,7 @@ proc reply*(m: Message, content: string = "";
         else: 
             some MessageReference(message_id: some m.id, failIfNotExists: some false)
 
-    result = await client.api.sendMessage(
+    result = await getClient().api.sendMessage(
         channel_id = m.channel_id,
         content = content,
         embeds = embeds,
@@ -703,13 +703,13 @@ proc edit*(m: Message;
         embeds = m.embeds;
         attachments = m.attachments;
         tts = m.tts;
-        flags = m.flags;
+        flags = some cast[int](m.flags)
         ): Future[Message] {.async.} =
     ## Edits a Message non-destructively.
     ## - Using `edit` for ephemeral messages results in an "Unknown Message" error !
 
 
-    result = await client.api.editMessage(
+    result = await getClient().api.editMessage(
         channel_id = m.channel_id,
         message_id = m.id,
         content = content,
@@ -720,34 +720,34 @@ proc edit*(m: Message;
     
 proc delete*(m: Message, reason = "") {.async.} =
     ## Deletes a Message.
-    await m.client.api.deleteMessage(m.channel_id, m.id, reason)
+    await getClient().api.deleteMessage(m.channel_id, m.id, reason)
 
 proc react*(m: Message, emoji: string) {.async.} =
     ## Add a reaction to a Message
     ## 
     ## - `emoji` Example: '👀', '💩', `likethis:123456789012345678`
-    await client.api.addMessageReaction(m.channel_id, m.id, emoji)
+    await getClient().api.addMessageReaction(m.channel_id, m.id, emoji)
 
 proc unreact*(m: Message, emoji: string, user_id = "@me") {.async.} =
     ## Deletes the user's or the bot's message reaction to a Discord message.
-    await client.api.deleteMessageReaction(m.channel_id, m.id, user_id)
+    await getClient().api.deleteMessageReaction(m.channel_id, m.id, user_id)
 
 proc unreactAll*(m: Message, emoji: string) {.async.} =
     ## Deletes all the reactions for emoji.
-    await client.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
+    await getClient().api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
 
 proc reactions(m: Message, emoji: string;
         before, after = "";
         limit: range[1..100] = 25
 ): Future[seq[User]] {.async.} =
     ## Get all user message reactions on the emoji provided.
-    result = m.client.api.getMessageReactions(
+    result = await getClient().api.getMessageReactions(
         m.channel_id, m.id, emoji,
         before, after, limit
     )
 proc clear*(m: Message) {.async.} =
     ## Remove all message reactions.
-    await client.api.deleteAllMessageReactions(m.channel_id, m.id)
+    await getClient().api.deleteAllMessageReactions(m.channel_id, m.id)
 
 proc followup*(i: Interaction;
             content = "";
@@ -761,7 +761,7 @@ proc followup*(i: Interaction;
     ## Follow-up to an Interaction.
     ## - Use this function when sending messages to acknowledged Interactions.
 
-    result = await client.api.createFollowupMessage(
+    result = await getClient().api.createFollowupMessage(
         application_id = application_id,
         interaction_token = token,
         content = content,
@@ -784,7 +784,7 @@ proc edit*(i: Interaction, message_id = "@original";
     ## You can actually use this to modify original interaction or followup message.
     ##
     ## - `message_id` can be `@original`
-    result = await i.client.api.editWebhookMessage(
+    result = await getClient().api.editWebhookMessage(
         i.id, i.token, message_id,
         content = content,
         embeds = embeds,
@@ -796,23 +796,23 @@ proc edit*(i: Interaction, message_id = "@original";
 
 proc fetchResponse*(i: Interaction, message_id = "@original"): Future[Message] {.async.} =
     ## Get the response (Message) to an Interaction
-    result = await client.api.getWebhookMessage(i.application_id, i.token, message_id)
+    result = await getClient().api.getWebhookMessage(i.application_id, i.token, message_id)
 
 proc delete*(i: Interaction, message_id = "@original") {.async.} =
     ## Deletes an Interaction Response or Followup Message
-    await i.client.api.deleteInteractionResponse(i.application_id, i.token, message_id)
+    await getClient().api.deleteInteractionResponse(i.application_id, i.token, message_id)
 
 proc leave*(ch: GuildChannel) {.async.} =
     ## Leave thread.
-    if ch.kind == ctGuildPublicThread or ctGuildPrivateThread:
-        await ch.client.api.leaveThread(ch.id)
+    if ch.kind == ctGuildPublicThread or (ch.kind == ctGuildPrivateThread):
+        await getClient().api.leaveThread(ch.id)
     else:
         raise newException(CatchableError, "Channel is not a thread !")
 
 proc join*(ch: GuildChannel) {.async.} =
     ## Join thread.
-    if ch.kind == ctGuildPublicThread or ctGuildPrivateThread:
-        await ch.client.api.joinThread(ch.id)
+    if ch.kind == ctGuildPublicThread or (ch.kind == ctGuildPrivateThread):
+        await getClient().api.joinThread(ch.id)
     else:
         raise newException(CatchableError, "Channel is not a thread !")
 
@@ -821,7 +821,7 @@ proc startThread*(m: Message, name: string;
 ): Future[GuildChannel] {.async.} =
     ## Starts a public thread.
     ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
-    result = await m.client.api.startThreadWithMessage(
+    result = await getClient().api.startThreadWithMessage(
         m.channel_id, m.id, name,
         auto_archive_duration, reason
     )

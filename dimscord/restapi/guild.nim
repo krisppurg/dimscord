@@ -1,4 +1,4 @@
-import asyncdispatch, json, options
+import asyncdispatch, json, options, tables
 import ../objects, ../constants, ../helpers
 import sequtils, strutils, jsony
 import requester
@@ -972,23 +972,21 @@ proc prune*(g: Guild;
         include_roles: seq[string] = @[];
         compute_prune_count = true) {.async.} =
     ## Begins a guild prune.
-    await g.client.api.beginGuildPrune(g.id, days, include_roles, compute_prune_count)
+    await getClient().api.beginGuildPrune(g.id, days, include_roles, compute_prune_count)
 
 proc pruneCount*(g: Guild, days: int): Future[int] {.async.} =
     ## Gets the prune count.
-    result = await g.client.api.getGuildPruneCount(g.id, days)
+    result = await getClient().api.getGuildPruneCount(g.id, days)
 
 proc editMFA(g: Guild, lvl: MFALevel): Future[MFALevel] {.async.} =
     ## Modify Guild MFA Level, requiring guild ownership.
-    if g.owner_id != g.client.shards[0].user.id:
-        raise newException(ValueError, "Bot is not server owner, cannot change MFA level!")
-    result = await g.client.api.editGuildMFALevel(g.id, lvl)
+    
+    result = await getClient().api.editGuildMFALevel(g.id, lvl)
 
 proc delete*(g: Guild) {.async.} =
     ## Deletes a guild. Requires guild ownership.
-    if g.owner_id != g.client.shards[0].user.id:
-        raise newException(ValueError, "Bot is not server owner, cannot change MFA level!")
-    await g.client.api.deleteGuild(g.id)
+
+    await getClient().api.deleteGuild(g.id)
 
 proc edit*(g: Guild;
         name, description, region, afk_channel_id, icon = none string;
@@ -1009,8 +1007,8 @@ proc edit*(g: Guild;
     ## 
     ## Read more at: 
     ## https://discord.com/developers/docs/resources/guild#modify-guild
-    result = g.client.api.editGuild(    
-        name, description, region, afk_channel_id, icon,
+    result = await getClient().api.editGuild(    
+        g.id, name, description, region, afk_channel_id, icon,
         discovery_splash, owner_id, splash, banner,
         system_channel_id, rules_channel_id,
         preferred_locale, public_updates_channel_id,
@@ -1022,15 +1020,18 @@ proc edit*(g: Guild;
 
 proc audits*(g: Guild; 
         user_id, before = "", action_type = -1;
-        limit: range[1..100 = 50]
+        limit: range[1..100] = 50
 ): Future[AuditLog] {.async.} =
     ## Get guild audit logs. The maximum limit is 100.
-    result = await g.client.api.getGuildAuditLogs(g.id, user_id, before, action_type, limit)
+    result = await getClient().api.getGuildAuditLogs(g.id, user_id, before, action_type, limit)
 
+# +[requires `guild_id`]
 # proc delete*(r: Role) {.async.} =
 #    ## Deletes a guild role.
-#    await r.client.api.deleteGuildRole(r.guild_id, r.id)
+#    await getClient().api.deleteGuildRole(r.guild_id, r.id)
 
+
+# +[requires `guild_id`]
 # proc edit*(r: Role;
 #         name = none string;
 #         icon, unicode_emoji = none string;
@@ -1039,7 +1040,7 @@ proc audits*(g: Guild;
 #         reason = ""
 # ): Future[Role] {.async.} =
 #     ## Modifies a guild role.
-#     result = await r.client.api.editGuildRole(
+#     result = await getClient().api.editGuildRole(
 #         r.guild_id, r.id,
 #         name, icon, unicode_emoji,
 #         permissions, color,
@@ -1049,13 +1050,14 @@ proc audits*(g: Guild;
 
 proc invites*(g: Guild): Future[seq[InviteMetadata]] {.async.} =
     ## Gets guild invites.
-    result = await g.client.api.getGuildInvites(g.id)
+    result = await getClient().api.getGuildInvites(g.id)
 
 proc vanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] {.async.} =
     ## Get the guild vanity url. Requires the MANAGE_GUILD permission. 
     ## `code` will be null if a vanity url for the guild is not set.
-    result = g.client.api.getGuildVanityUrl(g.id)
+    result = await getClient().api.getGuildVanityUrl(g.id)
 
+# +[requires `guild_id`]
 # proc edit*(mb: Member;
 #         nick, channel_id, communication_disabled_until = none string;
 #         roles = none seq[string];
@@ -1065,150 +1067,158 @@ proc vanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] {.async.}
 #     ## Modifies a guild member
 #     ## Note:
 #     ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
-#     await mb.client.api.editGuildMember(
+#     await getClient().api.editGuildMember(
 #         mb.guild_id, mb.user.id, nick, channel_id, communication_disabled_until,
 #         roles, mute, deaf, reason
 #     )
 
+# +[requires `guild_id`]
 # proc kick*(mb: Member, reason = "") {.async.} =
 #     ## Removes a guild member.
-#     await mb.client.api.removeGuildMember(mb.guild_id, mb.user.id, reason)
+#     await getClient().api.removeGuildMember(mb.guild_id, mb.user.id, reason)
 
+# +[requires `guild_id`]
 # proc banStatus*(mb: Member): Future[GuildBan] {.async.} =
 #     ## Gets guild ban.
-#     mb.client.api.getGuildBan(mb.guild_id, mb.user.id)
+#     getClient().api.getGuildBan(mb.guild_id, mb.user.id)
 
 proc bans*(g: Guild): Future[seq[GuildBan]] {.async.} =
     ## Gets all the guild bans.
-    result = await g.client.api.getGuildBans(g.id)
+    result = await getClient().api.getGuildBans(g.id)
 
+# +[requires `guild_id`]
 # proc ban*(mb: Member, purge_range: range[0..7] = 0; reason = "") {.async.} =
 #     ## Creates a guild ban.
-#     await mb.client.api.createGuildBan(mb.guild_id, mb.user.id, purge_range, reason)
+#     await getClient().api.createGuildBan(mb.guild_id, mb.user.id, purge_range, reason)
 
+# +[requires `guild_id`]
 # proc unban*(mb: Member, reason = "") {.async.} =
 #     ## Removes a guild ban.
-#     await mb.client.api.removeGuildBan(mb.guild_id, mb.user.id, reason)
+#     await getClient().api.removeGuildBan(mb.guild_id, mb.user.id, reason)
 
 proc integrations*(g: Guild): Future[seq[Integration]] {.async.} =
     ## Gets a list of guild integrations.
-    result = await g.client.api.getGuildIntegrations(g.id)
+    result = await getClient().api.getGuildIntegrations(g.id)
 
 proc webhooks*(g: Guild): Future[seq[Webhook]] {.async.} =
     ## Gets a list of a channel's webhooks.
-    result = await g.client.api.getGuildWebhooks(g.id)
+    result = await getClient().api.getGuildWebhooks(g.id)
 
-# proc delete*(integ: Integration, reason = "") {.async.} =
-#     ## Deletes a guild integration.
-#     await integ.client.api.deleteGuildIntegration(integ.id, reason)
+proc delete*(integ: Integration, reason = "") {.async.} =
+    ## Deletes a guild integration.
+    await getClient().api.deleteGuildIntegration(integ.id, reason)
 
 proc preview*(g: Guild): Future[GuildPreview] {.async.} =
     ## Gets guild preview.
-    result = await g.client.api.getGuildPreview(g.id)
+    result = await getClient().api.getGuildPreview(g.id)
 
 proc search*(g: Guild, query = "", limit: range[1..1000] = 1): Future[seq[Member]] {.async.} =
     ## Search for guild members.
-    result = await g.client.api.searchGuildMembers(g.id, query, limit)
+    result = await getClient().api.searchGuildMembers(g.id, query, limit)
 
+# +[requires `guild_id`]
 # proc edit*(em: Emoji, name = none string;
 #         roles = none seq[string];
 #         reason = ""
 # ): Future[Emoji] {.async.} =
 #     ## Modifies a guild emoji.
-#     result = await em.client.api.editGuildEmoji(em.guild_id, em.id, name, roles, reason)
+#     result = await getClient().api.editGuildEmoji(em.guild_id, em.id, name, roles, reason)
 
+# +[requires `guild_id`]
 # proc delete*(em: Emoji, reason = "") {.async.} =
 #     ## Deletes a guild emoji.
-#     result = await em.client.api.deleteGuildEmoji(em.guild_id, em.id, reason)
+#     result = await getClient().api.deleteGuildEmoji(em.guild_id, em.id, reason)
 
 proc regions*(g: Guild): Future[seq[VoiceRegion]] {.async.} =
     ## Gets a guild's voice regions.
-    result = await g.client.api.getGuildVoiceRegions(g.id)
+    result = await getClient().api.getGuildVoiceRegions(g.id)
 
-# proc edit*(sk: Sticker;
-#         name, desc, tags = none string;
-#         reason = ""
-# ): Future[Sticker] {.async.} =
-#     ## Modify a guild sticker.
-#     if sk.guild_id.isNone:
-#         raise newException(ValueError, "This sticker doesn't belong to any guilds !")
-#     result = await sk.client.api.editGuildSticker(sk.get(guild_id), sk.id, name, desc, tags, reason)
 
-# proc delete*(sk: Sticker, reason = ""): Future[Sticker] {.async.} =
-#     ## Deletes a guild sticker.
-#     if sk.guild_id.isNone:
-#         raise newException(ValueError, "This sticker doesn't belong to any guilds !")
-#     result = await sk.client.api.deleteGuildSticker(sk.get(guild_id), sk.id, reason)
+proc edit*(sk: Sticker;
+        name, desc, tags = none string;
+        reason = ""
+): Future[Sticker] {.async.} =
+    ## Modify a guild sticker.
+    if sk.guild_id.isNone:
+        raise newException(CatchableError, "This sticker doesn't belong to any guilds !")
+    result = await getClient().api.editGuildSticker(sk.guild_id.get, sk.id, name, desc, tags, reason)
+
+proc delete*(sk: Sticker, reason = ""): Future[Sticker] {.async.} =
+    ## Deletes a guild sticker.
+    if sk.guild_id.isNone:
+        raise newException(CatchableError, "This sticker doesn't belong to any guilds !")
+    result = await getClient().api.deleteGuildSticker(sk.guild_id.get, sk.id, reason)
 
 proc scheduledEvent*(g: Guild;
         event_id: string, with_user_count = false
 ): Future[GuildScheduledEvent] {.async.} =
     ## Get a scheduled event in a guild.
-    result = await g.client.api.getScheduledEvent(g.id, event_id, with_user_count)
+    result = await getClient().api.getScheduledEvent(g.id, event_id, with_user_count)
 
 proc scheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] {.async.} =
     ## Get all scheduled events in a guild.
-    result = await g.client.api.getScheduledEvents(g.id)
+    result = await getClient().api.getScheduledEvents(g.id)
 
-# proc edit*(gse: GuildScheduledEvent;
-#         name, start_time, image = none string;
-#         channel_id, end_time, desc = none string;
-#         privacy_level = none GuildScheduledEventPrivacyLevel;
-#         entity_type = none EntityType;
-#         entity_metadata = none EntityMetadata;
-#         status = none GuildScheduledEventStatus;
-#         reason = ""
-# ): Future[GuildScheduledEvent] {.async.} =
-#     ## Update a scheduled event in a guild.
-#     ## Read more: https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event-json-params
-#     result = await gse.client.api.editScheduledEvent(
-#         gse.guild_id, gse.id, name;
-#         start_time, image,
-#         channel_id, end_time, desc,
-#         privacy_level, entity_type,
-#         entity_metadata, status,
-#         reason
-#     )
+proc edit*(gse: GuildScheduledEvent;
+        name, start_time, image = none string;
+        channel_id, end_time, desc = none string;
+        privacy_level = none GuildScheduledEventPrivacyLevel;
+        entity_type = none EntityType;
+        entity_metadata = none EntityMetadata;
+        status = none GuildScheduledEventStatus;
+        reason = ""
+): Future[GuildScheduledEvent] {.async.} =
+    ## Update a scheduled event in a guild.
+    ## Read more: https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event-json-params
+    result = await getClient().api.editScheduledEvent(
+        gse.guild_id, gse.id, name,
+        start_time, image,
+        channel_id, end_time, desc,
+        privacy_level, entity_type,
+        entity_metadata, status,
+        reason
+    )
 
-# proc delete*(gse: GuildScheduledEvent, reason = "") {.async.} =
-#     ## Delete a scheduled event in guild.
-#     result = await gse.client.api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
+proc delete*(gse: GuildScheduledEvent, reason = "") {.async.} =
+   ## Delete a scheduled event in guild.
+   await getClient().api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
 
-# proc subscribers*(gse: GuildScheduledEvent;
-#         limit = 100, with_member = false;
-#         before, after = ""
-# ): Future[seq[GuildScheduledEventUser]] {.async.} =
-#     ## Gets the users and/or members that were subscribed to the scheduled event.
-#     result = await gse.client.api.getScheduledEventUsers(gse.guild_id, gse.id, limit, with_member, before, after)
+proc subscribers*(gse: GuildScheduledEvent;
+        limit = 100, with_member = false;
+        before, after = ""
+): Future[seq[GuildScheduledEventUser]] {.async.} =
+    ## Gets the users and/or members that were subscribed to the scheduled event.
+    await getClient().api.getScheduledEventUsers(gse.guild_id, gse.id, limit, with_member, before, after)
 
-# proc rules*(g: Guild): Future[seq[AutoModerationRule]] {.async.} =
-#     ## Get a Guild's current AutoMod Rules
-#     result = await g.client.api.getAutoModerationRules(g.id)
+proc rules*(g: Guild): Future[seq[AutoModerationRule]] {.async.} =
+    ## Get a Guild's current AutoMod Rules
+    result = await getClient().api.getAutoModerationRules(g.id)
 
-# proc rule*(g: Guild, rule_id: string): Future[AutoModerationRule] {.async.} =
-#     ## Get a Guild's specific AutoMod Rule
-#     result = await g.client.api.getAutoModerationRule(g.id, rule_id)
+proc rule*(g: Guild, rule_id: string): Future[AutoModerationRule] {.async.} =
+    ## Get a Guild's specific AutoMod Rule
+    result = await getClient().api.getAutoModerationRule(g.id, rule_id)
 
-# proc delete*(amr: AutoModerationRule) {.async.} =
-#     ## deletes automod rule
-#     await amr.client.api.deleteAutoModerationRule(amr.guild_id, amr.id)
+proc delete*(amr: AutoModerationRule) {.async.} =
+    ## deletes automod rule
+    await getClient().api.deleteAutoModerationRule(amr.guild_id, amr.id)
 
-# proc edit*(amr: AutoModerationRule;
-#     guild_id, rule_id: string; event_type = none int;
-#     name = none string; trigger_type = none ModerationTriggerType;
-#     trigger_metadata = none tuple[
-#         keyword_filter: seq[string],
-#         presets: seq[int]
-#     ];
-#     actions = none seq[ModerationAction]; enabled = none bool;
-#     exempt_roles, exempt_channels = none seq[string];
-#     reason = ""
-# ): Future[AutoModerationRule] {.async.} =
-#     ## Edits an automod rule.
-#     ## `event_type` is gonna be 1 for SEND_MESSAGE
-#     result = await amr.client.api.editAutoModerationRule(
-#         amr.guild_id, amr.id, event_type, 
-#         name, trigger_metadata, actions, 
-#         enabled, exempt_roles, exempt_channels, 
-#         reason 
-#     )
+proc edit*(amr: AutoModerationRule;
+    event_type = none int, name = none string; 
+    trigger_type = none ModerationTriggerType;
+    trigger_metadata = none tuple[
+        keyword_filter: seq[string],
+        presets: seq[int]
+    ];
+    actions = none seq[ModerationAction]; enabled = none bool;
+    exempt_roles, exempt_channels = none seq[string];
+    reason = ""
+): Future[AutoModerationRule] {.async.} =
+    ## Edits an automod rule.
+    ## `event_type` is gonna be 1 for SEND_MESSAGE
+    result = await getClient().api.editAutoModerationRule(
+        amr.guild_id, amr.id, event_type, 
+        name, trigger_type,
+        trigger_metadata, actions, 
+        enabled, exempt_roles, exempt_channels, 
+        reason 
+    )

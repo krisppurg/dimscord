@@ -54,10 +54,6 @@ proc setGuildNick*(api: RestApi, guild_id: string;
     ## Sets the current user's guild nickname, defaults to "" if no nick is set.
     await api.editCurrentMember(guild_id, nick = some nick, reason)
 
-proc nickname*(g: Guild, nick, reason = "") {.async.} =
-    ## Sets the current user's guild nickname, defaults to "" if no nick is set.
-    await g.client.api.setGuildNick(g.id, nick, reason)
-    
 proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         reason = "") {.async.} =
     ## Assigns a member's role.
@@ -67,11 +63,6 @@ proc addGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         audit_reason = reason
     )
 
-# proc add*(mb: Member, r: Role, reason = "") {.async.} =
-#     ## Assigns a member's role.
-#     let id = when r is Role: r.id else: r
-#     await mb.client.api.addGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
-    
 proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         reason = "") {.async.} =
     ## Removes a member's role.
@@ -81,10 +72,6 @@ proc removeGuildMemberRole*(api: RestApi, guild_id, user_id, role_id: string;
         audit_reason = reason
     )
 
-# proc remove*(mb: Member, r: Role, reason = "") {.async.} =
-#     ## Removes a member's role.
-#     await mb.client.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
-
 proc getUser*(api: RestApi, user_id: string): Future[User] {.async.} =
     ## Gets a user.
     result = (await api.request("GET", endpointUsers(user_id))).newUser
@@ -93,10 +80,6 @@ proc leaveGuild*(api: RestApi, guild_id: string) {.async.} =
     ## Leaves a guild.
     discard await api.request("DELETE", endpointUserGuilds(guild_id))
 
-proc leave*(g: Guild) {.async.} =
-    ## Leaves a guild.
-    await g.client.api.leaveGuild(g.id)
-
 proc getCurrentGuildMember*(api: RestApi;
         guild_id: string): Future[Member] {.async.} =
     ## Get guild member as the current user aka you.
@@ -104,10 +87,6 @@ proc getCurrentGuildMember*(api: RestApi;
         "GET",
         endpointUserGuildMember(guild_id)
     )).newMember
-
-proc bot*(g: Guild): Future[Member] {.async.} =
-    ## Get guild member as the current user aka you.
-    result = await g.client.api.getCurrentGuildMember(g.id)
 
 proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     ## Create user dm.
@@ -247,7 +226,7 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
         endpoint,
         $payload
     )).elems.map(newApplicationCommand)
-
+    
 proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         guild_id, name, description = "";
         name_localizations,description_localizations = none Table[string,string];
@@ -285,23 +264,6 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         $payload
     )).newApplicationCommand
 
-# proc edit*(apc: ApplicationCommand;
-#         name, desc = "";
-#         name_localizations,description_localizations = none Table[string,string];
-#         default_member_permissions = none PermissionFlags;
-#         options: seq[ApplicationCommandOption] = @[]
-# ): Future[ApplicationCommand] {.async.} =
-#     ## Modify slash command for a specific application.
-#     ##
-#     ## - `guild_id` - Optional
-#     ## - `name` - Optional Character length (3 - 32)
-#     ## - `descripton` - Optional Character length (1 - 100)
-#     result = apc.client.api.editApplicationCommand(
-#         apc.application_id, apc.id, apc.get(guild_id),
-#         name, desc, name_localizations, description_localizations,
-#         default_member_permissions, options
-#     )
-    
 proc deleteApplicationCommand*(
         api: RestApi, application_id, command_id: string;
         guild_id = "") {.async.} =
@@ -313,10 +275,6 @@ proc deleteApplicationCommand*(
         "DELETE",
         endpoint
     )
-
-# proc delete*(apc: ApplicationCommand) {.async.} =
-#     ## Delete slash command for a specific application, `guild_id` is optional.
-#     await apc.client.api.deleteApplicationCommand(apc.application_id, apc.id)
 
 proc `%`(o: set[UserFlags]): JsonNode =
     %cast[int](o)
@@ -442,6 +400,162 @@ proc interactionResponseMessage*(api: RestApi,
         })
     )
 
+proc interactionResponseAutocomplete*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionCallbackDataAutocomplete) {.async.} =
+    ## Create an interaction response which is an autocomplete response.
+    var data = newJObject()
+    let choices = %response.choices.map(
+        proc (x: ApplicationCommandOptionChoice): JsonNode =
+            result = %*{"name": x.name}
+            if x.value[0].isSome:
+                result["value"] = %x.value[0]
+            if x.value[1].isSome:
+                result["value"] = %x.value[1]
+    )
+    data["choices"] = %*choices
+
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int irtAutoCompleteResult,
+            "data": %data
+        })
+    )
+
+proc interactionResponseModal*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionCallbackDataModal) {.async.} =
+    ## Create an interaction response which is a modal.
+    var data = %*{
+        "custom_id": response.custom_id,
+        "title": response.title,
+    }
+
+    if response.components.len > 0:
+        data["components"] = newJArray()
+        for component in response.components:
+            data["components"] &= %%*component
+
+    discard await api.request(
+        "POST",
+        endpointInteractionsCallback(interaction_id, interaction_token),
+        $(%*{
+            "type": int irtModal,
+            "data": %data
+        })
+    )
+
+
+
+proc member*(g: Guild, user_id: string): Future[Member] {.async.} =
+    ## Gets a guild member.
+    result = await getClient().api.getGuildMember(g.id, user_id)
+
+proc members*(g: Guild, limit: range[1..1000] = 1, after = "0"): Future[seq[Member]] {.async.} =
+    ## Gets a list of a guild's members.
+    result = await getClient().api.getGuildMembers(g.id, limit, after)
+    
+proc nickname*(g: Guild, nick: string, reason = "") {.async.} =
+    ## Sets the current user's guild nickname
+    ## - Set `nick` to "" to reset nickname.
+    await getClient().api.setGuildNick(g.id, nick, reason)
+
+# +[requires `guild_id`]
+# proc add*(mb: Member, r: Role | string, reason = "") {.async.} =
+#     ## Assigns a member's role.
+#     let id: string = when r is Role: r.id else: r
+#     await getClient().api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
+
+# +[requires `guild_id`]
+# proc remove*(mb: Member, r: Role, reason = "") {.async.} =
+#     ## Removes a member's role.
+#     await getClient().api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+
+proc leave*(g: Guild) {.async.} =
+    ## Leaves a guild.
+    await getClient().api.leaveGuild(g.id)
+
+proc bot*(g: Guild): Future[Member] {.async.} =
+    ## Get guild member as the current user aka you.
+    result = await getClient().api.getCurrentGuildMember(g.id)
+
+proc register*(
+        app: Application;
+        name, description: string;
+        name_localizations, description_localizations = none Table[string, string];
+        kind = atSlash; guild_id = ""; dm_permission = true;
+        default_member_permissions = none PermissionFlags;
+        options: seq[ApplicationCommandOption] = @[]
+): Future[ApplicationCommand] {.async.} =
+    ## Create a global or guild only slash command.
+    ##
+    ## - `guild_id` - Optional
+    ## - `name` - Character length (3 - 32)
+    ## - `descripton` - Character length (1 - 100)
+    ##
+    ## **NOTE:** Creating a command with the same name
+    ## as an existing command for your application will
+    ## overwrite the old command.
+    result = await getClient().api.registerApplicationCommand(
+        app.id, name, description,
+        name_localizations, description_localizations, 
+        kind, guild_id, dm_permission,
+        default_member_permissions, options
+    )
+
+proc commands*(
+        app: Application, guild_id = "";
+        with_localizations = false;
+): Future[seq[ApplicationCommand]] {.async.} =
+    ## Get slash commands for a specific Application, `guild_id` is optional.
+    result = await getClient().api.getApplicationCommands(
+        app.id, guild_id, with_localizations
+    )
+
+proc command*(
+        app: Application, guild_id = "";
+        command_id: string
+): Future[ApplicationCommand] {.async.} =
+    ## Get a single slash command for a specific Application, `guild_id` is optional.
+    result = await getClient().api.getApplicationCommand(
+        app.id, guild_id, command_id
+    )
+
+proc bulkRegister*(
+        app: Application;
+        commands: seq[ApplicationCommand];
+        guild_id = ""
+): Future[seq[ApplicationCommand]] {.async.} =
+    ## Overwrites existing commands slash command that were registered in guild or application.
+    ## This means that only the commands you send in this request will be available globally or in a specific guild
+    ## - `guild_id` is optional.
+    result = await getClient().api.bulkOverwriteApplicationCommands(
+        app.id, commands, guild_id
+    )
+
+proc edit*(apc: ApplicationCommand;
+        name, desc = "";
+        name_localizations,description_localizations = none Table[string,string];
+        default_member_permissions = none PermissionFlags;
+        options: seq[ApplicationCommandOption] = @[]
+): Future[ApplicationCommand] {.async.} =
+    ## Modify slash command for a specific application.
+    ##
+    ## - `guild_id` - Optional
+    ## - `name` - Optional Character length (3 - 32)
+    ## - `descripton` - Optional Character length (1 - 100)
+    result = await getClient().api.editApplicationCommand(
+        apc.application_id, apc.id, apc.guild_id.get,
+        name, desc, name_localizations, description_localizations,
+        default_member_permissions, options
+    )
+
+proc delete*(apc: ApplicationCommand, guild_id = "") {.async.} =
+    ## Delete slash command for a specific application, `guild_id` is optional.
+    await getClient().api.deleteApplicationCommand(apc.application_id, apc.id, guild_id)
+
 proc reply*(i: Interaction;
             content = "";
             embeds: seq[Embed] = @[];
@@ -457,7 +571,7 @@ proc reply*(i: Interaction;
 
     let flag = if ephemeral == true: { mfEphemeral } else: { }
     
-    await client.api.interactionResponseMessage(
+    await getClient().api.interactionResponseMessage(
         application_id,
         token,
         irtChannelMessageWithSource,
@@ -474,7 +588,7 @@ proc update*(i: Interaction;
             content = "";
             embeds: seq[Embed] = @[];
             attachments: seq[Attachment] = @[];
-            components: seq[MessageComponent] = @[]): Future[Message] {.async.} =
+            components: seq[MessageComponent] = @[]) {.async.} =
     ## Updates the message of a component on which an Interaction was received on.
     ## - This acknowledges an Interaction.
 
@@ -485,7 +599,7 @@ proc update*(i: Interaction;
         components: components
     )
 
-    await i.client.api.interactionResponseMessage(
+    await getClient().api.interactionResponseMessage(
         i.application_id, i.token,
         kind = irtUpdateMessage,
         response = resp
@@ -511,59 +625,12 @@ proc `defer`*(i: Interaction, update = false, ephemeral = false) {.async.} =
                 data: some InteractionApplicationCommandCallbackData(flags: flag)
             )
 
-    await i.client.api.createInteractionResponse(i.id, i.token, response)
-
-proc interactionResponseAutocomplete*(api: RestApi,
-        interaction_id, interaction_token: string;
-        response: InteractionCallbackDataAutocomplete) {.async.} =
-    ## Create an interaction response which is an autocomplete response.
-    var data = newJObject()
-    let choices = %response.choices.map(
-        proc (x: ApplicationCommandOptionChoice): JsonNode =
-            result = %*{"name": x.name}
-            if x.value[0].isSome:
-                result["value"] = %x.value[0]
-            if x.value[1].isSome:
-                result["value"] = %x.value[1]
-    )
-    data["choices"] = %*choices
-
-    discard await api.request(
-        "POST",
-        endpointInteractionsCallback(interaction_id, interaction_token),
-        $(%*{
-            "type": int irtAutoCompleteResult,
-            "data": %data
-        })
-    )
+    await getClient().api.createInteractionResponse(i.id, i.token, response)
 
 proc suggest*(i: Interaction, choices: seq[ApplicationCommandOptionChoice]) {.async.} =
     ## Create an interaction response which is an autocomplete response.
-    await i.client.api.interactionResponseAutocomplete(i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
-
-proc interactionResponseModal*(api: RestApi,
-        interaction_id, interaction_token: string;
-        response: InteractionCallbackDataModal) {.async.} =
-    ## Create an interaction response which is a modal.
-    var data = %*{
-        "custom_id": response.custom_id,
-        "title": response.title,
-    }
-
-    if response.components.len > 0:
-        data["components"] = newJArray()
-        for component in response.components:
-            data["components"] &= %%*component
-
-    discard await api.request(
-        "POST",
-        endpointInteractionsCallback(interaction_id, interaction_token),
-        $(%*{
-            "type": int irtModal,
-            "data": %data
-        })
-    )
+    await getClient().api.interactionResponseAutocomplete(i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
 
 proc sendModal*(i: Interaction, response: InteractionCallbackDataModal) {.async.} =
     ## Create an interaction response which is a modal.
-    await i.client.api.interactionResponseModal(i.id, i.token, response)
+    await getClient().api.interactionResponseModal(i.id, i.token, response)

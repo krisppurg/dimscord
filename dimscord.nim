@@ -75,8 +75,7 @@ import dimscord/[
     objects, helpers
 ]
 
-export gateway, restapi, constants, helpers
-export objects except client
+export gateway, restapi, constants, helpers, objects
 
 when defined(dimscordVoice):
     import dimscord/voice

@@ -657,6 +657,7 @@ proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
   let createFuture = newFuture[Message]("waitForReply")
   result = createFuture
   client.addHandler("MESSAGE_CREATE") do (m: DimscordObject) -> bool:
+    if createFuture.finished(): return true
     let newMsg = Message(m)
     if newMsg.referencedMessage.isSome():
       let referenced = newMsg.referencedMessage.unsafeGet()
@@ -670,6 +671,7 @@ proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   result = delFuture
 
   client.addHandler("MESSAGE_DELETE") do (m: DimscordObject) -> bool:
+    if delFuture.finished(): return true
     let deletedMsg = Message(m)
     if deletedMsg.id == msg.id:
       delFuture.complete()

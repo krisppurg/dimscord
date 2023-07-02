@@ -7,6 +7,9 @@ import std/asyncnet
 
 type
     RestError* = object of CatchableError
+    DimscordObject* = ref object of RootObj
+      ## Base object that most objects inherit from.
+      ## Used to implement wait handling
     DiscordFile* = ref object
         ## A Discord file.
         name*, body*: string
@@ -20,13 +23,14 @@ type
         events*: Events
         token*: string
         shards*: Table[int, Shard]
+        waits*: WaitTable
         restMode*, autoreconnect*, guildSubscriptions*: bool
         largeThreshold*, gatewayVersion*, maxShards*: int
         intents*: set[GatewayIntent]
     Shard* = ref object
         ## This is where you interact with the gateway api with.
         ## It's basically a gateway connection.
-        ## 
+        ##
         ## For `voiceConnections`, the string is a guild_id.
         id*, sequence*: int
         client*: DiscordClient
@@ -48,7 +52,7 @@ type
         Lite = "xsalsa20_poly1305_lite"
     VoiceClient* = ref object
         ## Representing VoiceClient object
-        ## You can also change the values of the fields 
+        ## You can also change the values of the fields
         ##
         ## For example: `v.sleep_offset = 0.96`
         ## But this may cause some effects.
@@ -136,7 +140,7 @@ type
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
-    Message* = ref object
+    Message* = ref object of DimscordObject
         ## - `sticker_items` == Table[sticker_id, object]
         ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
@@ -783,9 +787,9 @@ type
         session_start_limit*: GatewaySession
     Events* = ref object
         ## An object containing events that can be changed.
-        ## 
+        ##
         ## - `exists` Checks message is cached or not. Other cachable objects dont have them.
-        ## 
+        ##
         ## - `on_dispatch` event gives you the raw event data for you to handle things.
         ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
         on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
@@ -876,6 +880,20 @@ type
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
+
+    WaitHandler* = proc (x: DimscordObject): bool {.closure.}
+      ## This proc will filter an object to see what it should do.
+      ## It should be a closure that can complete a future it has already returned.
+      ## If the filter passes then it should return true to let the WaitTable know it can remove it
+    WaitTable* = Table[string, seq[WaitHandler]]
+      ## Mapping of event to handlers that are awaiting for something to happen via that event.
+      ## e.g. "MESSAGE_CREATE": @[waitingForDeletiong(), waitingForResponse]
+
+proc addHandler*(c: DiscordClient, id: string, handler: WaitHandler) =
+  ## Adds a handle to the wait table for an ID
+  if id notin c.waits:
+    c.waits[id] = @[]
+  c.waits[id] &= handler
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)

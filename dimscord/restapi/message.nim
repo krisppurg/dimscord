@@ -585,7 +585,7 @@ proc getNitroStickerPacks*(api: RestApi): Future[seq[StickerPack]] {.async.} =
 proc getThreadMembers*(api: RestApi;
         channel_id: string): Future[seq[ThreadMember]] {.async.} =
     ## List thread members.
-    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent 
+    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent
     ## if not enabled on your application.
     result = (await api.request(
         "GET",
@@ -651,3 +651,26 @@ proc startThreadWithMessage*(api: RestApi,
         }),
         audit_reason = reason
     )).newGuildChannel
+
+proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
+  ## Waits for a message to reply to a message
+  let createFuture = newFuture[Message]("waitForReply")
+  result = createFuture
+  client.addHandler("MESSAGE_CREATE") do (m: DimscordObject) -> bool:
+    let newMsg = Message(m)
+    if newMsg.referencedMessage.isSome():
+      let referenced = newMsg.referencedMessage.unsafeGet()
+      if referenced.id == to.id:
+        createFuture.complete(newMsg)
+        return true
+
+proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
+  ## Waits for a message to be deleted
+  let delFuture = newFuture[void]("waitForDeletion")
+  result = delFuture
+
+  client.addHandler("MESSAGE_DELETE") do (m: DimscordObject) -> bool:
+    let deletedMsg = Message(m)
+    if deletedMsg.id == msg.id:
+      delFuture.complete()
+      return true

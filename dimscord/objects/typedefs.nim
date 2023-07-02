@@ -887,7 +887,7 @@ type
       ## If the filter passes then it should return true to let the WaitTable know it can remove it
     WaitTable* = Table[string, seq[WaitHandler]]
       ## Mapping of event to handlers that are awaiting for something to happen via that event.
-      ## e.g. "MESSAGE_CREATE": @[waitingForDeletiong(), waitingForResponse]
+      ## e.g. "MESSAGE_CREATE": @[waitingForDeletiong(), waitingForResponse()]
 
 proc addHandler*(c: DiscordClient, id: string, handler: WaitHandler) =
   ## Adds a handle to the wait table for an ID

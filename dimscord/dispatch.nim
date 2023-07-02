@@ -18,10 +18,6 @@ proc checkIfAwaiting(client: DiscordClient, id: string, data: DimscordObject) =
       if handlers[i](data):
         # Remove the handler if it gets completed
         handlers[].del(i)
-      # Remove empty keys
-      # TODO: Is this safe? Think it is
-      if handlers[].len == 0:
-        client.waits.del id
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])

@@ -415,19 +415,6 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     )
     component.options &= item
 
-proc waitFor*[T: DimscordObject](client: DiscordClient, event: string,
-                                 handler: proc (obj: T): bool): Future[void] =
-  ## Allows you to define a custom condition to wait for.
-  ##
-  ## - See [waitForObject] which also returns the object that passed the condition
-  let fut = newFuture[void]("waitFor(" & event & ")")
-  result = fut
-  client.addHandler(event) do (obj: DimscordObject) -> bool:
-    if fut.finished(): return true
-    if obj of T: # Just for safety reasons, shouldn't really be needed
-      if handler(T(obj)):
-        fut.complete()
-        return true
 
 proc waitForObject*[T: DimscordObject](client: DiscordClient, event: string,
                                  handler: proc (obj: T): bool): Future[T] =
@@ -443,3 +430,10 @@ proc waitForObject*[T: DimscordObject](client: DiscordClient, event: string,
       if handler(T(obj)):
         fut.complete(T(obj))
         return true
+
+proc waitFor*[T: DimscordObject](client: DiscordClient, event: string,
+                                 handler: proc (obj: T): bool): Future[void] {.async.} =
+  ## Allows you to define a custom condition to wait for.
+  ##
+  ## - See [waitForObject] which also returns the object that passed the condition
+  discard await client.waitForObject(event, handler)

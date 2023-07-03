@@ -296,7 +296,8 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
-        asyncCheck s.handleEventDispatch(event, data)
+        let eventKind = parseEnum[DispatchEvent](event, Unknown)
+        asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =
     if (s.reconnecting or not s.stop) and not reconnectable: return

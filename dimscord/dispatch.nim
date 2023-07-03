@@ -850,7 +850,7 @@ proc threadCreate(s: Shard, data: JsonNode) {.async.} =
         Guild(id: data["guild_id"].str)
     )
     if s.cache.preferences.cache_guild_channels:
-        s.cache.guildChannels[thread.id] = thread 
+        s.cache.guildChannels[thread.id] = thread
         guild.threads[thread.id] = thread
     asyncCheck s.client.events.thread_create(s, guild, thread)
 
@@ -939,84 +939,84 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     asyncCheck s.client.events.voice_server_update(s, guild,
         data["token"].str, endpoint, initial)
 
-proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
+proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.async.} =
     case event:
-    of "VOICE_STATE_UPDATE": await s.voiceStateUpdate(data)
-    of "CHANNEL_PINS_UPDATE": await s.channelPinsUpdate(data)
-    of "GUILD_EMOJIS_UPDATE": await s.guildEmojisUpdate(data)
-    of "GUILD_STICKERS_UPDATE": await s.guildStickersUpdate(data)
-    of "PRESENCE_UPDATE": await s.presenceUpdate(data)
-    of "MESSAGE_CREATE": await s.messageCreate(data)
-    of "MESSAGE_REACTION_ADD": await s.messageReactionAdd data
-    of "MESSAGE_REACTION_REMOVE": await s.messageReactionRemove data
-    of "MESSAGE_REACTION_REMOVE_EMOJI": await s.messageReactionRemoveEmoji data
-    of "MESSAGE_REACTION_REMOVE_ALL": await s.messageReactionRemoveAll data
-    of "MESSAGE_DELETE": await s.messageDelete(data)
-    of "MESSAGE_UPDATE": await s.messageUpdate(data)
-    of "MESSAGE_DELETE_BULK": await s.messageDeleteBulk(data)
-    of "CHANNEL_CREATE": await s.channelCreate(data)
-    of "CHANNEL_UPDATE": await s.channelUpdate(data)
-    of "CHANNEL_DELETE": await s.channelDelete(data)
-    of "GUILD_MEMBERS_CHUNK": await s.guildMembersChunk(data)
-    of "GUILD_MEMBER_ADD": await s.guildMemberAdd(data)
-    of "GUILD_MEMBER_UPDATE": await s.guildMemberUpdate(data)
-    of "GUILD_MEMBER_REMOVE": await s.guildMemberRemove(data)
-    of "GUILD_BAN_ADD": await s.guildBanAdd(data)
-    of "GUILD_BAN_REMOVE": await s.guildBanRemove(data)
-    of "GUILD_UPDATE": await s.guildUpdate(data)
-    of "GUILD_DELETE": await s.guildDelete(data)
-    of "GUILD_CREATE": await s.guildCreate(data)
-    of "GUILD_ROLE_CREATE": await s.guildRoleCreate(data)
-    of "GUILD_ROLE_UPDATE": await s.guildRoleUpdate(data)
-    of "GUILD_ROLE_DELETE": await s.guildRoleDelete(data)
-    of "WEBHOOKS_UPDATE": await s.webhooksUpdate(data)
-    of "TYPING_START":
+    of VoiceStateUpdate: await s.voiceStateUpdate(data)
+    of ChannelPinsUpdate: await s.channelPinsUpdate(data)
+    of GuildEmojisUpdate: await s.guildEmojisUpdate(data)
+    of GuildStickersUpdate: await s.guildStickersUpdate(data)
+    of PresenceUpdate: await s.presenceUpdate(data)
+    of MessageCreate: await s.messageCreate(data)
+    of MessageReactionAdd: await s.messageReactionAdd data
+    of MessageReactionRemove: await s.messageReactionRemove data
+    of MessageReactionRemoveEmoji: await s.messageReactionRemoveEmoji data
+    of MessageReactionRemoveAll: await s.messageReactionRemoveAll data
+    of MessageDelete: await s.messageDelete(data)
+    of MessageUpdate: await s.messageUpdate(data)
+    of MessageDeleteBulk: await s.messageDeleteBulk(data)
+    of ChannelCreate: await s.channelCreate(data)
+    of ChannelUpdate: await s.channelUpdate(data)
+    of ChannelDelete: await s.channelDelete(data)
+    of GuildMembersChunk: await s.guildMembersChunk(data)
+    of GuildMemberAdd: await s.guildMemberAdd(data)
+    of GuildMemberUpdate: await s.guildMemberUpdate(data)
+    of GuildMemberRemove: await s.guildMemberRemove(data)
+    of GuildBanAdd: await s.guildBanAdd(data)
+    of GuildBanRemove: await s.guildBanRemove(data)
+    of GuildUpdate: await s.guildUpdate(data)
+    of GuildDelete: await s.guildDelete(data)
+    of GuildCreate: await s.guildCreate(data)
+    of GuildRoleCreate: await s.guildRoleCreate(data)
+    of GuildRoleUpdate: await s.guildRoleUpdate(data)
+    of GuildRoleDelete: await s.guildRoleDelete(data)
+    of WebhooksUpdate: await s.webhooksUpdate(data)
+    of TypingStart:
         asyncCheck s.client.events.typing_start(s, newTypingStart(data))
-    of "INVITE_CREATE":
+    of InviteCreate:
         asyncCheck s.client.events.invite_create(s, newInviteCreate(data))
-    of "INVITE_DELETE": await s.inviteDelete(data)
-    of "GUILD_INTEGRATIONS_UPDATE":
+    of InviteDelete: await s.inviteDelete(data)
+    of GuildIntegrationsUpdate:
         let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
             Guild(id: data["guild_id"].str)
         )
         asyncCheck s.client.events.guild_integrations_update(s, guild)
-    of "VOICE_SERVER_UPDATE":
+    of VoiceServerUpdate:
         await s.voiceServerUpdate(data)
-    of "USER_UPDATE":
+    of UserUpdate:
         let user = newUser(data)
         s.user = user
         asyncCheck s.client.events.user_update(s, user)
-    of "INTERACTION_CREATE":
+    of InteractionCreate:
         asyncCheck s.client.events.interaction_create(s, newInteraction(data))
-    of "THREAD_CREATE": await s.threadCreate(data)
-    of "THREAD_UPDATE": await s.threadUpdate(data)
-    of "THREAD_DELETE": await s.threadDelete(data)
-    of "THREAD_LIST_SYNC":
+    of ThreadCreate: await s.threadCreate(data)
+    of ThreadUpdate: await s.threadUpdate(data)
+    of ThreadDelete: await s.threadDelete(data)
+    of ThreadListSync:
         asyncCheck s.client.events.thread_list_sync(s, ThreadListSync(
             channel_ids: data{"channel_ids"}.getElems.mapIt(it.getStr),
             threads: data{"threads"}.getElems.map(newGuildChannel),
             members: data["members"].elems.mapIt(it.`$`.fromJson(ThreadMember))
         ))
-    of "THREAD_MEMBERS_UPDATE": await s.threadMembersUpdate(data)
-    of "THREAD_MEMBER_UPDATE":
+    of ThreadMembersUpdate: await s.threadMembersUpdate(data)
+    of ThreadMemberUpdate:
         let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
             Guild(id: data["guild_id"].str)
         )
         asyncCheck s.client.events.thread_member_update(
             s, guild, data.`$`.fromJson(ThreadMember)
         )
-    of "STAGE_INSTANCE_CREATE": await s.stageInstanceCreate(data)
-    of "STAGE_INSTANCE_UPDATE": await s.stageInstanceUpdate(data)
-    of "STAGE_INSTANCE_DELETE": await s.stageInstanceDelete(data)
-    of "GUILD_SCHEDULED_EVENT_USER_ADD": await s.guildScheduledEventUserAdd data
-    of "GUILD_SCHEDULED_EVENT_USER_REMOVE": await s.guildScheduledEventUserRemove data
-    of "GUILD_SCHEDULED_EVENT_CREATE": await s.guildScheduledEventCreate data
-    of "GUILD_SCHEDULED_EVENT_UPDATE": await s.guildScheduledEventUpdate data
-    of "GUILD_SCHEDULED_EVENT_DELETE": await s.guildScheduledEventDelete data
-    of "AUTO_MODERATION_RULE_CREATE": await s.autoModerationRuleCreate data
-    of "AUTO_MODERATION_RULE_UPDATE": await s.autoModerationRuleUpdate data
-    of "AUTO_MODERATION_RULE_DELETE": await s.autoModerationRuleDelete data
-    of "AUTO_MODERATION_ACTION_EXECUTION":
+    of StageInstanceCreate: await s.stageInstanceCreate(data)
+    of StageInstanceUpdate: await s.stageInstanceUpdate(data)
+    of StageInstanceDelete: await s.stageInstanceDelete(data)
+    of GuildScheduledEventUserAdd: await s.guildScheduledEventUserAdd data
+    of GuildScheduledEventUserRemove: await s.guildScheduledEventUserRemove data
+    of GuildScheduledEventCreate: await s.guildScheduledEventCreate data
+    of GuildScheduledEventUpdate: await s.guildScheduledEventUpdate data
+    of GuildScheduledEventDelete: await s.guildScheduledEventDelete data
+    of AutoModerationRuleCreate: await s.autoModerationRuleCreate data
+    of AutoModerationRuleUpdate: await s.autoModerationRuleUpdate data
+    of AutoModerationRuleDelete: await s.autoModerationRuleDelete data
+    of AutoModerationActionExecution:
         await s.autoModerationActionExecution data
-    else:
-        discard
+    of Unknown: discard
+

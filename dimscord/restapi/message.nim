@@ -654,25 +654,14 @@ proc startThreadWithMessage*(api: RestApi,
 
 proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
   ## Waits for a message to reply to a message
-  let createFuture = newFuture[Message]("waitForReply")
-  result = createFuture
-  client.addHandler("MESSAGE_CREATE") do (m: DimscordObject) -> bool:
-    if createFuture.finished(): return true
-    let newMsg = Message(m)
-    if newMsg.referencedMessage.isSome():
-      let referenced = newMsg.referencedMessage.unsafeGet()
+  client.waitForObject("MESSAGE_CREATE") do (m: Message) -> bool:
+    if m.referencedMessage.isSome():
+      let referenced = m.referencedMessage.unsafeGet()
       if referenced.id == to.id:
-        createFuture.complete(newMsg)
         return true
 
 proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   ## Waits for a message to be deleted
-  let delFuture = newFuture[void]("waitForDeletion")
-  result = delFuture
+  client.waitFor("MESSAGE_DELETE") do (m: Message) -> bool:
+    m.id == msg.id
 
-  client.addHandler("MESSAGE_DELETE") do (m: DimscordObject) -> bool:
-    if delFuture.finished(): return true
-    let deletedMsg = Message(m)
-    if deletedMsg.id == msg.id:
-      delFuture.complete()
-      return true

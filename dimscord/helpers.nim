@@ -6,11 +6,12 @@
 import constants, objects, options
 import strformat, strutils, times
 import tables, regex
+import asyncdispatch
 import macros
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.
-    let 
+    let
         eventName = fn[0]
         params = fn[3]
         pragmas = fn[4]
@@ -200,7 +201,7 @@ proc computePerms*(guild: Guild;
         member: Member, channel: GuildChannel): PermObj =
     ## Returns the permissions for the guild member of the channel.
     ## For permission checking you can do something like this:
-    ## 
+    ##
     ## .. code-block:: Nim
     ##    cast[int](setofpermshere).permCheck(PermObj(
     ##        allowed: {permExample}
@@ -237,10 +238,10 @@ proc computePerms*(guild: Guild;
 proc createBotInvite*(client_id: string, permissions: set[PermissionFlags]={};
         guild_id = ""; disable_guild_select = false): string =
     ## Creates an invite link for the bot of the form.
-    ## 
+    ##
     ## Example:
     ## `https://discord.com/api/oauth2/authorize?client_id=1234&scope=bot&permissions=1`
-    ## 
+    ##
     ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
     result = restBase & "oauth2/authorize?client_id=" & client_id &
         "&scope=bot&permissions=" & $cast[int](permissions)
@@ -413,3 +414,32 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
         "Can only add menu options to a SelectMenu."
     )
     component.options &= item
+
+proc waitFor*[T: DimscordObject](client: DiscordClient, event: string,
+                                 handler: proc (obj: T): bool): Future[void] =
+  ## Allows you to define a custom condition to wait for.
+  ##
+  ## - See [waitForObject] which also returns the object that passed the condition
+  let fut = newFuture[void]("waitFor(" & event & ")")
+  result = fut
+  client.addHandler(event) do (obj: DimscordObject) -> bool:
+    if fut.finished(): return true
+    if obj of T: # Just for safety reasons, shouldn't really be needed
+      if handler(T(obj)):
+        fut.complete()
+        return true
+
+proc waitForObject*[T: DimscordObject](client: DiscordClient, event: string,
+                                 handler: proc (obj: T): bool): Future[T] =
+  ## Allows you to define a custom condition to wait for.
+  ## This also returns the object that passed the condition
+  ##
+  ## - See [waitFor] which doesn't return the object
+  let fut = newFuture[T]("waitForObject(" & event & ")")
+  result = fut
+  client.addHandler(event) do (obj: DimscordObject) -> bool:
+    if fut.finished(): return true
+    if obj of T: # Just for safety reasons, shouldn't really be needed
+      if handler(T(obj)):
+        fut.complete(T(obj))
+        return true

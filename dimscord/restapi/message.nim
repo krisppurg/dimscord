@@ -654,7 +654,7 @@ proc startThreadWithMessage*(api: RestApi,
 
 proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
   ## Waits for a message to reply to a message
-  client.waitForObject("MESSAGE_CREATE") do (m: Message) -> bool:
+  client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
       let referenced = m.referencedMessage.unsafeGet()
       if referenced.id == to.id:
@@ -662,6 +662,6 @@ proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
 
 proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   ## Waits for a message to be deleted
-  client.waitFor("MESSAGE_DELETE") do (m: Message) -> bool:
+  client.waitFor(MessageDelete) do (m: Message) -> bool:
     m.id == msg.id
 

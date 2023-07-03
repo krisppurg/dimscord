@@ -9,15 +9,16 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
 when defined(dimscordVoice):
     from voice import pause, disconnect
 
-proc checkIfAwaiting(client: DiscordClient, id: string, data: DimscordObject) =
+proc checkIfAwaiting(client: DiscordClient, event: DispatchEvent, data: DimscordObject) =
   ## Runs `data` against a series of handlers waiting on `id`.
-
-  client.waits.withValue(id, handlers):
-    # We countdown so we can delete while iterating
-    for i in countdown(handlers[].len - 1, 0):
-      if handlers[i](data):
-        # Remove the handler if it gets completed
-        handlers[].del(i)
+  # TODO: Using pointer so works same as when I add the inner table
+  var handlers = addr client.waits[event]
+  # We countdown so we can delete while iterating
+  for i in countdown(handlers[].len - 1, 0):
+    if handlers[i](data):
+      # Remove the handler if it gets completed
+      handlers[].del(i)
+  echo client.waits[event].len
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
@@ -179,7 +180,7 @@ proc messageCreate(s: Shard, data: JsonNode) {.async.} =
         asyncCheck chan.addMsg(msg, $data, s.cache.preferences)
         chan.last_message_id = msg.id
     # Check handlers for new messages in channel
-    s.client.checkIfAwaiting("MESSAGE_CREATE", msg)
+    s.client.checkIfAwaiting(MessageCreate, msg)
 
     asyncCheck s.client.events.message_create(s, msg)
 
@@ -360,7 +361,7 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
             exists = true
 
         chan.messages.del(msg.id)
-    s.client.checkIfAwaiting("MESSAGE_DELETE", msg)
+    s.client.checkIfAwaiting(MessageDelete, msg)
     asyncCheck s.client.events.message_delete(s, msg, exists)
 
 proc messageUpdate(s: Shard, data: JsonNode) {.async.} =

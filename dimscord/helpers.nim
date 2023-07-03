@@ -416,22 +416,22 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     component.options &= item
 
 
-proc waitForObject*[T: DimscordObject](client: DiscordClient, event: string,
+proc waitForObject*[T: DimscordObject](client: DiscordClient, event: DispatchEvent,
                                  handler: proc (obj: T): bool): Future[T] =
   ## Allows you to define a custom condition to wait for.
   ## This also returns the object that passed the condition
   ##
   ## - See [waitFor] which doesn't return the object
-  let fut = newFuture[T]("waitForObject(" & event & ")")
+  let fut = newFuture[T]("waitForObject(" & $event & ")")
   result = fut
-  client.addHandler(event) do (obj: DimscordObject) -> bool:
+  client.waits[event].add do (obj: DimscordObject) -> bool:
     if fut.finished(): return true
     if obj of T: # Just for safety reasons, shouldn't really be needed
       if handler(T(obj)):
         fut.complete(T(obj))
         return true
 
-proc waitFor*[T: DimscordObject](client: DiscordClient, event: string,
+proc waitFor*[T: DimscordObject](client: DiscordClient, event: DispatchEvent,
                                  handler: proc (obj: T): bool): Future[void] {.async.} =
   ## Allows you to define a custom condition to wait for.
   ##

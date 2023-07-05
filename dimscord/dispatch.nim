@@ -155,7 +155,7 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
         asyncCheck s.client.events.presence_update(s, presence, oldPresence)
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
-    let msg = newMessage(data)
+    let msg = newMessage(data, s.client.api)
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -314,6 +314,7 @@ proc messageReactionRemoveAll(s: Shard, data: JsonNode) {.async.} =
     if msg.reactions.len > 0:
         msg.reactions.clear()
 
+    if msg.ctx.isNil: msg.ctx = s.client.api
     asyncCheck s.client.events.message_reaction_remove_all(s, msg, exists)
 
 proc messageDelete(s: Shard, data: JsonNode) {.async.} =
@@ -380,6 +381,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         msg = msg.updateMessage(data)
         if msg.id in chan.messages: chan.messages[msg.id] = msg
 
+    if msg.ctx.isNil: msg.ctx = s.client.api
     asyncCheck s.client.events.message_update(s, msg, oldMessage, exists)
 
 proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =

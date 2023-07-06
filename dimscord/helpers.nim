@@ -437,3 +437,16 @@ proc waitFor*[T: DimscordObject](client: DiscordClient, event: DispatchEvent,
   ##
   ## - See [waitForObject] which also returns the object that passed the condition
   discard await client.waitForObject(event, handler)
+
+proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
+  ## Waits for a message to reply to a message
+  client.waitForObject(MessageCreate) do (m: Message) -> bool:
+    if m.referencedMessage.isSome():
+      let referenced = m.referencedMessage.unsafeGet()
+      if referenced.id == to.id:
+        return true
+
+proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
+  ## Waits for a message to be deleted
+  client.waitFor(MessageDelete) do (m: Message) -> bool:
+    m.id == msg.id

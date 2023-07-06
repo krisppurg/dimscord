@@ -18,7 +18,6 @@ proc checkIfAwaiting(client: DiscordClient, event: DispatchEvent, data: Dimscord
     if handlers[i](data):
       # Remove the handler if it gets completed
       handlers[].del(i)
-  echo client.waits[event].len
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])

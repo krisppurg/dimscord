@@ -1,6 +1,6 @@
 import asyncdispatch, json, options, jsony
 import ../objects, ../constants, ../helpers
-import tables, sequtils, sugar
+import tables, sequtils
 import uri, macros, requester
 
 proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async.} =
@@ -28,9 +28,10 @@ proc deleteChannelMessagePin*(api: RestApi,
 proc getChannelPins*(api: RestApi,
         channel_id: string): Future[seq[Message]] {.async.} =
     ## Get channel pins.
-    result = collect:
-        for node in (await api.request("GET",endpointChannelPins(channel_id))).elems:
-            newMessage(node, api)
+    result = (await api.request(
+        "GET",
+        endpointChannelPins(channel_id)
+    )).elems.map(newMessage)
 
 proc editGuildChannel*(api: RestApi, channel_id: string;
             name, parent_id, topic = none string;

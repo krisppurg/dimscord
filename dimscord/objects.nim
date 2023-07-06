@@ -323,9 +323,8 @@ proc renameHook(s: var MessageInteraction, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
 
-proc newMessage*(data: JsonNode, api: RestApi): Message =
+proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
-    result.ctx = api
 
 proc newGuildChannel*(data: JsonNode): GuildChannel =
     result = ($data).fromJson(GuildChannel)
@@ -590,7 +589,7 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         attachments = data{"attachments"}.getElems.map(newAttachment)
         embeds = data{"embeds"}.getElems.mapIt(it.`$`.fromJson(Embed))
     if result.referenced_message.isSome and "referenced_message" in data:
-        result.referenced_message = some data["referenced_message"].newMessage(nil)
+        result.referenced_message = some data["referenced_message"].newMessage
     if result.messageReference.isSome:
         if "message_reference"in data and data["message_reference"].kind!=JNull:
             result.message_reference = some ($data{"message_reference"}).fromJson(

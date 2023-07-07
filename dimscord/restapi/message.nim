@@ -668,3 +668,4 @@ proc startThreadWithMessage*(api: RestApi,
         }),
         audit_reason = reason
     )).newGuildChannel
+    result.setContext(api)

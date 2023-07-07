@@ -435,12 +435,14 @@ proc channelCreate(s: Shard, data: JsonNode) {.async.} =
             guild = some s.cache.guilds[guild.get.id]
 
         chan = some newGuildChannel(data)
+        chan.unsafeGet.setContext(s.client.api)
 
         if s.cache.preferences.cache_guild_channels:
             s.cache.guildChannels[chan.get.id] = chan.get
             guild.get.channels[chan.get.id] = chan.get
     elif data["id"].str notin s.cache.dmChannels:
         dmChan = some newDMChannel(data)
+        dmChan.unsafeGet.setContext(s.client.api)
         if s.cache.preferences.cache_dm_channels:
             s.cache.dmChannels[data["id"].str] = dmChan.get
 
@@ -460,6 +462,9 @@ proc channelUpdate(s: Shard, data: JsonNode) {.async.} =
         guild.channels[gchan.id] = gchan
         s.cache.guildChannels[gchan.id] = gchan
 
+    gchan.setContext(s.client.api)
+    if oldChan.isSome:
+        oldChan.unsafeGet.setContext(s.client.api)
     asyncCheck s.client.events.channel_update(s, guild, gchan, oldChan)
 
 proc channelDelete(s: Shard, data: JsonNode) {.async.} =
@@ -475,6 +480,7 @@ proc channelDelete(s: Shard, data: JsonNode) {.async.} =
 
     if data["id"].str in s.cache.guildChannels:
         gc = some newGuildChannel(data)
+        gc.unsafeGet.setContext(s.client.api)
 
         if guild.get.id in s.cache.guilds:
             guild.get.channels.del(gc.get.id)
@@ -482,6 +488,8 @@ proc channelDelete(s: Shard, data: JsonNode) {.async.} =
         s.cache.guildChannels.del(gc.get.id)
     elif data["id"].str in s.cache.dmChannels:
         dm = some newDMChannel(data)
+        dm.unsafeGet.setContext(s.client.api)
+
         s.cache.dmChannels.del(dm.get.id)
 
     asyncCheck s.client.events.channel_delete(s, guild, gc, dm)

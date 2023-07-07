@@ -752,6 +752,8 @@ proc listActiveGuildThreads*(
         threads: data["threads"].elems.map(newGuildChannel),
         members: data["members"].elems.mapIt(($it).fromJson(ThreadMember))
     )
+    result[0].setContext(api)
+
 
 proc getScheduledEvent*(api: RestApi;
         guild_id, event_id: string;

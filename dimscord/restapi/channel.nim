@@ -32,6 +32,7 @@ proc getChannelPins*(api: RestApi,
         "GET",
         endpointChannelPins(channel_id)
     )).elems.map(newMessage)
+    result.setContext(api)
 
 proc editGuildChannel*(api: RestApi, channel_id: string;
             name, parent_id, topic = none string;
@@ -60,6 +61,7 @@ proc editGuildChannel*(api: RestApi, channel_id: string;
         $payload,
         audit_reason = reason
     )).newGuildChannel
+    result.setContext(api)
 
 proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             parent_id, topic = none string; nsfw = none bool;
@@ -82,6 +84,8 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
         $payload,
         audit_reason = reason
     )).newGuildChannel
+    result.setContext(api)
+
 
 proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     ## Deletes or closes a channel.
@@ -186,8 +190,12 @@ proc getChannel*(api: RestApi;
     ))
     if data["type"].getInt == int ctDirect:
         result = (none GuildChannel, some newDMChannel(data))
+        result[1].unsafeGet.setContext(api)
+
     else:
         result = (some newGuildChannel(data), none DMChannel)
+        result[0].unsafeGet.setContext(api)
+
 
 proc getGuildChannels*(api: RestApi,
         guild_id: string): Future[seq[GuildChannel]] {.async.} =
@@ -196,6 +204,8 @@ proc getGuildChannels*(api: RestApi,
         "GET",
         endpointGuildChannels(guild_id)
     )).elems.map(newGuildChannel)
+    result.setContext(api)
+
 
 proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
         position = none int; parent_id = none string; lock_permissions = false;
@@ -292,6 +302,8 @@ proc startThreadWithoutMessage*(api: RestApi,
         $payload,
         audit_reason = reason
     )).newGuildChannel
+    result.setContext(api)
+
 
 proc listArchivedThreads*(api: RestApi;
     joined: bool; typ, channel_id: string;
@@ -322,6 +334,8 @@ proc listArchivedThreads*(api: RestApi;
         members: seq[ThreadMember],
         has_more: bool
     ])
+    result[0].setContext(api)
+
 
 proc createStageInstance*(api: RestApi; channel_id, topic: string;
     privacy_level = int plGuildOnly; reason = ""

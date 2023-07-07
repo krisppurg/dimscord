@@ -93,6 +93,7 @@ proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     result = (await api.request("POST", endpointUserChannels(), $(%*{
         "recipient_id": user_id
     }))).newDMChannel
+    result.setContext(api)
 
 proc getCurrentUser*(api: RestApi): Future[User] {.async.} =
     ## Gets the current user.
@@ -129,6 +130,7 @@ proc createGroupDm*(api: RestApi,
             "nicks": %nicks
         })
     )).newDMChannel
+    result.setContext(api)
 
 proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
     ## Gets the current application for the current user (bot user).

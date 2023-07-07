@@ -248,7 +248,7 @@ type
         resume_gateway_url*, session_id*: string
         shard*: Option[seq[int]]
         application*: tuple[id: string, flags: set[ApplicationFlags]]
-    DMChannel* = ref object
+    DMChannel* = ref object of DimscordObject
         id*, last_message_id*: string
         kind*: ChannelType
         recipients*: seq[User]
@@ -259,7 +259,7 @@ type
         id*, name*: string
         moderated: bool
         emoji_id*, emoji_name*: Option[string]
-    GuildChannel* = ref object
+    GuildChannel* = ref object of DimscordObject
         id*, name*, guild_id*: string
         nsfw*: bool
         parent_id*: Option[string]
@@ -901,7 +901,7 @@ proc `$`*(e: Emoji): string =
         else:
             e.name.get("?")
 
-proc setContext*[T: DimscordObject](obj: var T | lent T, api: RestApi) {.inline.} =
+proc setContext*[T: DimscordObject](obj: var T | T, api: RestApi) {.inline.} =
     ## Sets the `ctx` field of a single of `DimscordObject`
     if not (api.isNil):
         obj.ctx = api

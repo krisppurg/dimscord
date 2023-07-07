@@ -7,6 +7,8 @@ import std/asyncnet
 
 type
     RestError* = object of CatchableError
+    DimscordObject* = ref object of RootObj
+        ctx*: RestApi
     DiscordFile* = ref object
         ## A Discord file.
         name*, body*: string
@@ -136,7 +138,7 @@ type
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
-    Message* = ref object
+    Message* = ref object of DimscordObject
         ## - `sticker_items` == Table[sticker_id, object]
         ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
@@ -898,3 +900,14 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+proc setContext*[T: DimscordObject](obj: var T | lent T, api: RestApi) {.inline.} =
+    ## Sets the `ctx` field of a single of `DimscordObject`
+    if not (api.isNil):
+        obj.ctx = api
+
+proc setContext*[T: DimscordObject](obj: var seq[T], api: RestApi) {.inline.} =
+    ## Sets the `ctx` field for every item in `seq[DimscordObject]`
+    if not (api.isNil):
+        for item in obj:
+            item.ctx = api

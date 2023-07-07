@@ -169,6 +169,7 @@ proc messageCreate(s: Shard, data: JsonNode) {.async.} =
         asyncCheck chan.addMsg(msg, $data, s.cache.preferences)
         chan.last_message_id = msg.id
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_create(s, msg)
 
 proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
@@ -214,6 +215,7 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
         reaction.reacted = data["user_id"].str == s.user.id
         msg.reactions[$emoji] = reaction
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_reaction_add(s, msg, user, emoji, exists)
 
 proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
@@ -257,6 +259,7 @@ proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
     else:
         msg.reactions.del($emoji)
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_reaction_remove(s, msg, user,
         reaction, exists)
 
@@ -286,6 +289,7 @@ proc messageReactionRemoveEmoji(s: Shard, data: JsonNode) {.async.} =
 
     msg.reactions.del($emoji)
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_reaction_remove_emoji(s, msg, emoji, exists)
 
 proc messageReactionRemoveAll(s: Shard, data: JsonNode) {.async.} =
@@ -314,6 +318,7 @@ proc messageReactionRemoveAll(s: Shard, data: JsonNode) {.async.} =
     if msg.reactions.len > 0:
         msg.reactions.clear()
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_reaction_remove_all(s, msg, exists)
 
 proc messageDelete(s: Shard, data: JsonNode) {.async.} =
@@ -349,6 +354,7 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
 
         chan.messages.del(msg.id)
 
+    msg.setContext(s.client.api)
     asyncCheck s.client.events.message_delete(s, msg, exists)
 
 proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
@@ -380,6 +386,9 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         msg = msg.updateMessage(data)
         if msg.id in chan.messages: chan.messages[msg.id] = msg
 
+    msg.setContext(s.client.api)
+    if oldMessage.isSome:
+        oldMessage.unsafeGet.setContext(s.client.api)
     asyncCheck s.client.events.message_update(s, msg, oldMessage, exists)
 
 proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =
@@ -408,6 +417,7 @@ proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =
                 chan.messages.del(m.id)
                 exists = true
 
+        m.setContext(s.client.api)
         mids.add (msg: m, exists: exists)
 
     asyncCheck s.client.events.message_delete_bulk(s, mids)

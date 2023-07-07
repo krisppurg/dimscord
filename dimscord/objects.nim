@@ -588,8 +588,11 @@ proc updateMessage*(m: Message, data: JsonNode): Message =
         mention_users = data{"mentions"}.getElems.map(newUser)
         attachments = data{"attachments"}.getElems.map(newAttachment)
         embeds = data{"embeds"}.getElems.mapIt(it.`$`.fromJson(Embed))
+        
     if result.referenced_message.isSome and "referenced_message" in data:
         result.referenced_message = some data["referenced_message"].newMessage
+        result.referenced_message.get.setContext(m.ctx)
+
     if result.messageReference.isSome:
         if "message_reference"in data and data["message_reference"].kind!=JNull:
             result.message_reference = some ($data{"message_reference"}).fromJson(

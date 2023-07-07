@@ -1,4 +1,4 @@
-import httpclient, mimetypes, asyncdispatch, options
+import httpclient, mimetypes, asyncdispatch, options, sugar
 import ../objects, ../constants
 import tables, os, json, sequtils, jsony
 import uri, ../helpers, requester
@@ -96,6 +96,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         pl = $payload,
         mp = mpd
     )).newMessage
+    result.setContext(api)
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags = none int;
@@ -177,6 +178,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         $payload,
         mp = mpd
     )).newMessage
+    result.setContext(api)
 
 proc crosspostMessage*(api: RestApi;
         channel_id, message_id: string): Future[Message] {.async.} =
@@ -185,6 +187,7 @@ proc crosspostMessage*(api: RestApi;
         "POST",
         endpointChannelMessagesCrosspost(channel_id, message_id)
     )).newMessage
+    result.setContext(api)
 
 proc deleteMessage*(api: RestApi, channel_id, message_id: string;
         reason = "") {.async.} =
@@ -211,6 +214,7 @@ proc getChannelMessages*(api: RestApi, channel_id: string;
     result = (await api.request("GET",
         url & "limit=" & $limit
     )).elems.map(newMessage)
+    result.setContext(api)
 
 proc getChannelMessage*(api: RestApi, channel_id,
         message_id: string): Future[Message] {.async.} =
@@ -219,6 +223,7 @@ proc getChannelMessage*(api: RestApi, channel_id,
         "GET",
         endpointChannelMessages(channel_id, message_id)
     )).newMessage
+    result.setContext(api)
 
 proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         message_ids: seq[string]; reason = "") {.async.} =
@@ -388,8 +393,10 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     rawResult = (await api.request("POST", url, $payload, mp = mpd))
 
+
     if wait:
         result = some rawResult.newMessage
+        result.unsafeGet.setContext(api)
     else:
         result = none Message
 
@@ -500,6 +507,7 @@ proc editWebhookMessage*(api: RestApi;
         mpd.add("payload_json", $payload, contentType = "application/json")
 
     result = (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
+    result.setContext(api)
 
 proc editInteractionResponse*(api: RestApi;
         application_id, interaction_token, message_id: string;
@@ -530,6 +538,7 @@ proc getWebhookMessage*(api: RestApi;
     var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
     result = (await api.request("GET", endpoint)).newMessage
+    result.setContext(api)
 
 proc getInteractionResponse*(
     api: RestApi;
@@ -562,7 +571,11 @@ proc executeSlackWebhook*(api: RestApi, webhook_id, token: string;
     var rawResult: JsonNode
     if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
     rawResult = (await api.request("POST", ep))
-    if wait: return some rawResult.newMessage else: return none Message
+    if wait: 
+        result = some rawResult.newMessage
+        result.unsafeGet.setContext(api)
+    else: 
+        result = none Message
 
 proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
         wait = true;thread_id = none string): Future[Option[Message]] {.async.} =
@@ -571,7 +584,11 @@ proc executeGithubWebhook*(api: RestApi, webhook_id, token: string;
     var rawResult: JsonNode
     if thread_id.isSome: ep &= "&thread_id=" & thread_id.get
     rawResult = (await api.request("POST", ep))
-    if wait: return some rawResult.newMessage else: return none Message
+    if wait:
+        result = some rawResult.newMessage
+        result.unsafeGet.setContext(api)
+    else: 
+        result = none Message
 
 proc getSticker*(api: RestApi, sticker_id: string): Future[Sticker] {.async.} =
     result = (await api.request("GET", endpointStickers(sticker_id))).newSticker

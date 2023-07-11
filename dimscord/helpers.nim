@@ -10,7 +10,7 @@ import macros
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.
-    let 
+    let
         eventName = fn[0]
         params = fn[3]
         pragmas = fn[4]
@@ -200,7 +200,7 @@ proc computePerms*(guild: Guild;
         member: Member, channel: GuildChannel): PermObj =
     ## Returns the permissions for the guild member of the channel.
     ## For permission checking you can do something like this:
-    ## 
+    ##
     ## .. code-block:: Nim
     ##    cast[int](setofpermshere).permCheck(PermObj(
     ##        allowed: {permExample}
@@ -237,10 +237,10 @@ proc computePerms*(guild: Guild;
 proc createBotInvite*(client_id: string, permissions: set[PermissionFlags]={};
         guild_id = ""; disable_guild_select = false): string =
     ## Creates an invite link for the bot of the form.
-    ## 
+    ##
     ## Example:
     ## `https://discord.com/api/oauth2/authorize?client_id=1234&scope=bot&permissions=1`
-    ## 
+    ##
     ## See https://discord.com/developers/docs/topics/oauth2#bots for more information.
     result = restBase & "oauth2/authorize?client_id=" & client_id &
         "&scope=bot&permissions=" & $cast[int](permissions)
@@ -315,13 +315,13 @@ proc checkActionRow*(row: MessageComponent) =
     else:
         assert not contains.hasKey(ActionRow), "Action row cannot contain an action row"
 
-proc newActionRow*(components: seq[MessageComponent] = @[]): MessageComponent =
+proc newActionRow*(components: varargs[MessageComponent]): MessageComponent =
     ## Creates a new action row which you can add components to.
     ## It is recommended to use this over raw objects since this
     ## does validation of the row as you add objects
     result = MessageComponent(
         kind: ActionRow,
-        components: components
+        components: @components
     )
     if components.len > 0:
         checkActionRow result

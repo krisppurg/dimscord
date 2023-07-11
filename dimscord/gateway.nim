@@ -265,9 +265,9 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
             s.logShard("Received event: " & event)
     else:
         s.logShard("Received event: " & event) # please do not enable dimscordDebug while you are on a large guild.
-
-    case event:
-    of "READY":
+    let eventKind = parseEnum[DispatchEvent](event, Unknown)
+    case eventKind
+    of Ready:
         s.session_id = data["session_id"].str
         s.resumeGatewayUrl = data["resume_gateway_url"].str
         s.authenticating = false
@@ -288,7 +288,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfully identified.")
 
         asyncCheck s.client.events.on_ready(s, newReady(data))
-    of "RESUMED":
+    of Resumed:
         s.resuming = false
         s.authenticating = false
         s.ready = true
@@ -296,7 +296,6 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
-        let eventKind = parseEnum[DispatchEvent](event, Unknown)
         asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =

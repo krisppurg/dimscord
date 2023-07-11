@@ -418,6 +418,8 @@ type
         flGalleryView = 2
     DispatchEvent* = enum
       Unknown
+      Ready = "READY"
+      Resumed = "RESUMED"
       VoiceStateUpdate = "VOICE_STATE_UPDATE"
       ChannelPinsUpdate = "CHANNEL_PINS_UPDATE"
       GuildEmojisUpdate = "GUILD_EMOJIS_UPDATE"

@@ -1018,5 +1018,5 @@ proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.asyn
     of AutoModerationRuleDelete: await s.autoModerationRuleDelete data
     of AutoModerationActionExecution:
         await s.autoModerationActionExecution data
-    of Unknown: discard
+    of Unknown, Ready, Resumed: discard
 

@@ -371,7 +371,7 @@ proc newMenuOption*(label: string, value: string,
         default: some default
     )
 
-proc newSelectMenu*(custom_id: string; options: seq[SelectmenuOption];
+proc newSelectMenu*(custom_id: string; options: openArray[SelectmenuOption];
         placeholder = ""; minValues, maxValues = 1;
         disabled = false
 ): MessageComponent =
@@ -391,7 +391,7 @@ proc newSelectMenu*(custom_id: string; options: seq[SelectmenuOption];
     result = MessageComponent(
         kind: SelectMenu,
         customID: some customID,
-        options: options,
+        options: @options,
         placeholder: optionIf(placeholder == ""),
         minValues: some minValues,
         maxValues: some maxValues

@@ -31,7 +31,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
                 emoji = Emoji(name: some "🔥")
             )
         of "menu":
-            row &= newSelectMenu("slmColours", @[
+            row &= newSelectMenu("slmColours", [
                 newMenuOption("Red", "red", emoji = Emoji(name: some "🔥")),
                 newMenuOption("Green", "green"),
                 newMenuOption("Blue", "blue")

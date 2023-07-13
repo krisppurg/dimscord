@@ -7,7 +7,8 @@ import constants, objects, options
 import strformat, strutils, times
 import tables, regex
 import asyncdispatch
-import macros
+import sugar, sequtils
+import std/[macros, macrocache]
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.
@@ -415,38 +416,139 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     )
     component.options &= item
 
+const procsTable = macrocache.CacheTable"dimscord.handlerTypes"
+  ## Stores a mapping of EventName -> proc needed to handle it
+  ## Note:: The shared parameter is removed from them
 
-proc waitForObject*[T: DimscordObject](client: DiscordClient, event: DispatchEvent,
-                                 handler: proc (obj: T): bool): Future[T] =
+# Build up the procsTable
+static:
+  # getTypleImpl returns `ref ObjSym` so we need to get the impl of ObjSym
+  let impl = Events.getTypeImpl()[0].getImpl()
+  for identDefs in impl[2][2]:
+    var typ = identDefs[^2]
+    # Make return type be Future[void]
+    # typ[0][0] = nnkBracketExpr.newTree(ident"Future", ident"void")
+    typ[0][0] = ident"bool"
+    # Delete shard parameter
+    typ[0].del(1)
+    # Force proc to be a closure
+    typ[1] = nnkPragma.newTree(ident"closure")
+    # Desym all the parameters
+    var newParams = nnkFormalParams.newTree(ident"bool")
+    for identDef in typ[0][1 .. ^1]:
+      var newDef = nnkIdentDefs.newTree()
+      for param in identDef[0 ..< ^2]:
+        newDef &= ident $param
+      newDef &= identDef[^2]
+      newDef &= identDef[^1]
+      newParams &= newDef
+    typ[0] = newParams
+
+    for field in identDefs[0 ..< ^2]:
+      # Not exported so just ignore it
+      if field.kind == nnkIdent: continue
+      # Normalise the field
+      #  - Remove `on_` prefix
+      #  - Remove underscores
+      let name = multiReplace($field[1], {
+        "on_": ""
+      })
+      procsTable[name] = typ.copy()
+
+proc prc(event: DispatchEvent): NimNode =
+  ## Returns the proc type stored for an event
+  procsTable[toLowerAscii($event)].copy()
+
+proc params(event: DispatchEvent): seq[NimNode] =
+  ## Returns all the parameters for an event (Ignores the return type)
+  for identDef in event.prc()[0][1..^1]:
+    for param in identDef[0 ..< ^2]:
+      result &= ident $param
+
+macro getEventProc(event: static[DispatchEvent]): typedesc[proc] =
+  ## Returns the proc type that is required to handle an event.
+  echo event.prc().treeRepr
+  event.prc()
+
+
+macro getEventTuple(event: static[DispatchEvent]): typedesc[tuple] =
+  ## Returns a tuple that corresponsd to the parameters for an event
+  result = nnkTupleTy.newTree(event.prc()[0][1..^1])
+
+macro makeDataTuple(event: static[DispatchEvent]): tuple =
+  ## Returns a tuple containing the data for an event.
+  result = nnkTupleConstr.newTree(event.params())
+
+macro passArgs(prc: proc, event: static[DispatchEvent]): untyped =
+  ## Pass arguments to `prc` that are needed for `event`.
+  ## Expects the variables to be in scope
+  result = newCall(prc, event.params())
+
+macro passArgs(prc: proc, data: tuple): untyped =
+  ## Calls a proc using the fields in a tuple
+  let args = collect:
+    for i in 0..<data.getTypeImpl().len:
+      nnkBracketExpr.newTree(data, newLit i)
+  result = newCall(prc, args)
+
+macro makeHandler(event: static[DispatchEvent], body: untyped): untyped =
+  ## Creates a proc that can handle `event`.
+  ## This is casted to `proc () {.closure.}` to hide the types (Will be casted back later).
+  var params = procsTable[toLowerAscii($event)].copy()
+  # TODO: Maybe make handler async? User might need to check cache maybe
+  params[0][0] = ident "bool"
+  let prcName = genSym(nskProc, "handler")
+  let handlerProc = newProc(name = prcName, params = toSeq(params[0]), body = body)
+  echo handlerProc.treeRepr
+  result = quote do:
+    `handlerProc`
+    `prcName`
+    # cast[proc () {.closure.}](`prcName`)
+
+proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
+                                 handler: proc): auto =
   ## Allows you to define a custom condition to wait for.
   ## This also returns the object that passed the condition
   ##
   ## - See [waitFor] which doesn't return the object
-  let fut = newFuture[T]("waitForObject(" & $event & ")")
+  type
+    DataType = getEventTuple(event)
+    ProcType = getEventProc(event)
+  let fut = newFuture[DataType]("waitForObject(" & $event & ")")
+  # when handler isnot ProcType:
+  #   # TODO: Better error message plz
+  #   # https://github.com/nim-lang/Nim/issues/22276 =(
+  #   {.error: "Proc is wrong".}
+  # We wrap the users handler inside another proc.
+  # This allows us to abstract creating the future, completing it, handling timeouts, etc
   result = fut
-  client.waits[event].add do (obj: DimscordObject) -> bool:
+  let h = event.makeHandler:
     if fut.finished(): return true
-    if obj of T: # Just for safety reasons, shouldn't really be needed
-      if handler(T(obj)):
-        fut.complete(T(obj))
-        return true
+    if handler.passArgs(event):
+      fut.complete(makeDataTuple(event))
+      return true
+  client.waits[event] &= cast[ptr WaitHandler](addr h)[]
 
-proc waitFor*[T: DimscordObject](client: DiscordClient, event: DispatchEvent,
-                                 handler: proc (obj: T): bool): Future[void] {.async.} =
+
+proc waitFor*[T: proc](client: DiscordClient, event: static[DispatchEvent],
+                                 handler: T): Future[void] {.async.} =
   ## Allows you to define a custom condition to wait for.
   ##
   ## - See [waitForObject] which also returns the object that passed the condition
   discard await client.waitForObject(event, handler)
 
-proc waitForReply*(client: DiscordClient, to: Message): Future[Message] =
+proc waitForReply*(client: DiscordClient, to: Message): Future[Message] {.async.} =
   ## Waits for a message to reply to a message
-  client.waitForObject(MessageCreate) do (m: Message) -> bool:
+  let resp = await client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
       let referenced = m.referencedMessage.unsafeGet()
       if referenced.id == to.id:
         return true
+  resp.m
 
 proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   ## Waits for a message to be deleted
-  client.waitFor(MessageDelete) do (m: Message) -> bool:
+  client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
     m.id == msg.id
+
+discard DiscordClient().waitForReply(Message())

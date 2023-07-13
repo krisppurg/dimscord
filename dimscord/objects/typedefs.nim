@@ -7,9 +7,6 @@ import std/asyncnet
 
 type
     RestError* = object of CatchableError
-    DimscordObject* = ref object of RootObj
-      ## Base object that most objects inherit from.
-      ## Used to implement wait handling
     DiscordFile* = ref object
         ## A Discord file.
         name*, body*: string
@@ -140,7 +137,7 @@ type
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
-    Message* = ref object of DimscordObject
+    Message* = ref object
         ## - `sticker_items` == Table[sticker_id, object]
         ## - `reactions` == Table["REACTION_EMOJI", object]
         id*, channel_id*: string
@@ -881,7 +878,7 @@ type
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
 
-    WaitHandler* = proc (x: DimscordObject): bool {.closure.}
+    WaitHandler* = proc () {.closure.}
       ## This proc will filter an object to see what it should do.
       ## It should be a closure that can complete a future it has already returned.
       ## If the filter passes then it should return true to let the WaitTable know it can remove it

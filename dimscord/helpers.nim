@@ -417,7 +417,7 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     component.options &= item
 
 const procsTable = macrocache.CacheTable"dimscord.handlerTypes"
-  ## Stores a mapping of EventName -> proc needed to handle it
+  ## Stores a mapping of EventName -> parameters for event
   ## Note:: The shared parameter is removed from them
 
 # Build up the procsTable
@@ -426,23 +426,17 @@ static:
   let impl = Events.getTypeImpl()[0].getImpl()
   for identDefs in impl[2][2]:
     var typ = identDefs[^2]
-    # Make return type be Future[void]
-    # typ[0][0] = nnkBracketExpr.newTree(ident"Future", ident"void")
-    typ[0][0] = ident"bool"
-    # Delete shard parameter
-    typ[0].del(1)
-    # Force proc to be a closure
-    typ[1] = nnkPragma.newTree(ident"closure")
+
     # Desym all the parameters
-    var newParams = nnkFormalParams.newTree(ident"bool")
-    for identDef in typ[0][1 .. ^1]:
+    var params: seq[NimNode]
+    # Skip return type and shard parameter
+    for identDef in typ[0][2 .. ^1]:
       var newDef = nnkIdentDefs.newTree()
       for param in identDef[0 ..< ^2]:
         newDef &= ident $param
       newDef &= identDef[^2]
       newDef &= identDef[^1]
-      newParams &= newDef
-    typ[0] = newParams
+      params &= newDef
 
     for field in identDefs[0 ..< ^2]:
       # Not exported so just ignore it
@@ -453,36 +447,15 @@ static:
       let name = multiReplace($field[1], {
         "on_": ""
       })
-      procsTable[name] = typ.copy()
+      procsTable[name] = newStmtList(params).copy()
 
-proc prc(event: DispatchEvent): NimNode =
+proc params(event: DispatchEvent): NimNode =
   ## Returns the proc type stored for an event
   procsTable[toLowerAscii($event)].copy()
 
-proc params(event: DispatchEvent): seq[NimNode] =
-  ## Returns all the parameters for an event (Ignores the return type)
-  for identDef in event.prc()[0][1..^1]:
-    for param in identDef[0 ..< ^2]:
-      result &= ident $param
-
-macro getEventProc(event: static[DispatchEvent]): typedesc[proc] =
-  ## Returns the proc type that is required to handle an event.
-  echo event.prc().treeRepr
-  event.prc()
-
-
 macro getEventTuple(event: static[DispatchEvent]): typedesc[tuple] =
   ## Returns a tuple that corresponsd to the parameters for an event
-  result = nnkTupleTy.newTree(event.prc()[0][1..^1])
-
-macro makeDataTuple(event: static[DispatchEvent]): tuple =
-  ## Returns a tuple containing the data for an event.
-  result = nnkTupleConstr.newTree(event.params())
-
-macro passArgs(prc: proc, event: static[DispatchEvent]): untyped =
-  ## Pass arguments to `prc` that are needed for `event`.
-  ## Expects the variables to be in scope
-  result = newCall(prc, event.params())
+  result = nnkTupleTy.newTree(toSeq(event.params()))
 
 macro passArgs(prc: proc, data: tuple): untyped =
   ## Calls a proc using the fields in a tuple
@@ -491,43 +464,23 @@ macro passArgs(prc: proc, data: tuple): untyped =
       nnkBracketExpr.newTree(data, newLit i)
   result = newCall(prc, args)
 
-macro makeHandler(event: static[DispatchEvent], body: untyped): untyped =
-  ## Creates a proc that can handle `event`.
-  ## This is casted to `proc () {.closure.}` to hide the types (Will be casted back later).
-  var params = procsTable[toLowerAscii($event)].copy()
-  # TODO: Maybe make handler async? User might need to check cache maybe
-  params[0][0] = ident "bool"
-  let prcName = genSym(nskProc, "handler")
-  let handlerProc = newProc(name = prcName, params = toSeq(params[0]), body = body)
-  echo handlerProc.treeRepr
-  result = quote do:
-    `handlerProc`
-    `prcName`
-    # cast[proc () {.closure.}](`prcName`)
-
 proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
                                  handler: proc): auto =
   ## Allows you to define a custom condition to wait for.
   ## This also returns the object that passed the condition
   ##
   ## - See [waitFor] which doesn't return the object
-  type
-    DataType = getEventTuple(event)
-    ProcType = getEventProc(event)
+  type DataType = getEventTuple(event)
   let fut = newFuture[DataType]("waitForObject(" & $event & ")")
-  # when handler isnot ProcType:
-  #   # TODO: Better error message plz
-  #   # https://github.com/nim-lang/Nim/issues/22276 =(
-  #   {.error: "Proc is wrong".}
   # We wrap the users handler inside another proc.
   # This allows us to abstract creating the future, completing it, handling timeouts, etc
   result = fut
-  let h = event.makeHandler:
+  client.waits[event] &= proc (data: pointer): bool =
     if fut.finished(): return true
-    if handler.passArgs(event):
-      fut.complete(makeDataTuple(event))
+    let data {.cursor.} = cast[ptr DataType](data)[]
+    if handler.passArgs(data):
+      fut.complete(data)
       return true
-  client.waits[event] &= cast[ptr WaitHandler](addr h)[]
 
 
 proc waitFor*[T: proc](client: DiscordClient, event: static[DispatchEvent],

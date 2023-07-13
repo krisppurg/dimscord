@@ -878,7 +878,7 @@ type
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
 
-    WaitHandler* = proc () {.closure.}
+    WaitHandler* = proc (data: pointer): bool {.closure.}
       ## This proc will filter an object to see what it should do.
       ## It should be a closure that can complete a future it has already returned.
       ## If the filter passes then it should return true to let the WaitTable know it can remove it

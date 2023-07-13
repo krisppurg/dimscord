@@ -16,7 +16,7 @@ proc checkIfAwaiting(client: DiscordClient, event: static[DispatchEvent], data: 
   var handlers = addr client.waits[event]
   # We countdown so we can delete while iterating
   for i in countdown(handlers[].len - 1, 0):
-    if cast[ptr getEventProc(event)](addr handlers[i])[].passArgs(data):
+    if handlers[i](addr data):
       # Remove the handler if it gets completed
       handlers[].del(i)
 

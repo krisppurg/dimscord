@@ -8,6 +8,7 @@ import strformat, strutils, times
 import tables, regex
 import asyncdispatch
 import sugar, sequtils
+import typetraits
 import std/[macros, macrocache]
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
@@ -453,9 +454,11 @@ proc params(event: DispatchEvent): NimNode =
   ## Returns the proc type stored for an event
   procsTable[toLowerAscii($event)].copy()
 
-macro getEventTuple(event: static[DispatchEvent]): typedesc[tuple] =
-  ## Returns a tuple that corresponsd to the parameters for an event
-  result = nnkTupleTy.newTree(toSeq(event.params()))
+macro tupleType(event: static[DispatchEvent]): typedesc[tuple] =
+  ## Returns a type that corresponds to the data for an event.
+  ## If ther are multiple parameters for the event then a tuple is
+  ## returned, else just a single value
+  result = nnkTupleTy.newTree(toSeq(event.params))
 
 macro passArgs(prc: proc, data: tuple): untyped =
   ## Calls a proc using the fields in a tuple
@@ -470,8 +473,14 @@ proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
   ## This also returns the object that passed the condition
   ##
   ## - See [waitFor] which doesn't return the object
-  type DataType = getEventTuple(event)
-  let fut = newFuture[DataType]("waitForObject(" & $event & ")")
+  type DataType = event.tupleType
+  # For single field tuples, we just want to return the first type
+  when tupleLen(DataType) == 1:
+    type FutReturn = get(DataType, 0)
+  else:
+    type FutReturn = DataType
+
+  let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
   # We wrap the users handler inside another proc.
   # This allows us to abstract creating the future, completing it, handling timeouts, etc
   result = fut
@@ -479,7 +488,10 @@ proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
     if fut.finished(): return true
     let data {.cursor.} = cast[ptr DataType](data)[]
     if handler.passArgs(data):
-      fut.complete(data)
+      when FutReturn is DataType:
+        fut.complete(data)
+      else:
+        fut.complete(data[0])
       return true
 
 
@@ -492,12 +504,11 @@ proc waitFor*[T: proc](client: DiscordClient, event: static[DispatchEvent],
 
 proc waitForReply*(client: DiscordClient, to: Message): Future[Message] {.async.} =
   ## Waits for a message to reply to a message
-  let resp = await client.waitForObject(MessageCreate) do (m: Message) -> bool:
+  await client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
       let referenced = m.referencedMessage.unsafeGet()
       if referenced.id == to.id:
         return true
-  resp.m
 
 proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   ## Waits for a message to be deleted

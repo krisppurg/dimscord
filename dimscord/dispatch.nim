@@ -1000,7 +1000,9 @@ proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.asyn
         s.user = user
         asyncCheck s.client.events.user_update(s, user)
     of InteractionCreate:
-        asyncCheck s.client.events.interaction_create(s, newInteraction(data))
+        let interaction = newInteraction(data)
+        s.client.checkIfAwaiting(InteractionCreate, (interaction,))
+        asyncCheck s.client.events.interaction_create(s, interaction)
     of ThreadCreate: await s.threadCreate(data)
     of ThreadUpdate: await s.threadUpdate(data)
     of ThreadDelete: await s.threadDelete(data)

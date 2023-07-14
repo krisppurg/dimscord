@@ -442,12 +442,8 @@ static:
     for field in identDefs[0 ..< ^2]:
       # Not exported so just ignore it
       if field.kind == nnkIdent: continue
-      # Normalise the field
-      #  - Remove `on_` prefix
-      #  - Remove underscores
-      let name = multiReplace($field[1], {
-        "on_": ""
-      })
+      # Remove the on_ prefix for some events
+      let name = dup($field[1], removePrefix("on_"))
       procsTable[name] = newStmtList(params).copy()
 
 proc params(event: DispatchEvent): NimNode =
@@ -475,8 +471,8 @@ proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
   ## - See [waitFor] which doesn't return the object
   type DataType = event.tupleType
   # For single field tuples, we just want to return the first type
-  when tupleLen(DataType) == 1:
-    type FutReturn = get(DataType, 0)
+  when DataType.tupleLen == 1:
+    type FutReturn = DataType.get(0)
   else:
     type FutReturn = DataType
 
@@ -514,5 +510,15 @@ proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
   ## Waits for a message to be deleted
   client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
     m.id == msg.id
+
+proc waitForComponentUse*(client: DiscordClient, id: string): Future[Interaction] =
+  ## Waits for a component to be used and returns the interaction.
+  ## Data sent in the component can then be extracted.
+  ## `id` is the ID that you used when creating the component
+  client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
+    i.data.isSome and
+    i.data.unsafeGet().interactionType == idtMessageComponent and
+    i.data.get().custom_id == id
+
 
 discard DiscordClient().waitForReply(Message())

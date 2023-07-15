@@ -536,5 +536,3 @@ proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.asyn
 
   if await fut.withTimeout(milliseconds):
     result = some await fut
-
-discard DiscordClient().waitForReply(Message())

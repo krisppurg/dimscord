@@ -41,9 +41,9 @@ macro checkAndCall(shard: Shard, event: static[DispatchEvent], args: varargs[unt
   result = quote do:
     `client`.checkIfAwaiting(`event`, `tupleData`)
     when compiles(`callWithShard`):
-      await `callWithShard`
+      asyncCheck `callWithShard`
     else:
-      await `call`
+      asyncCheck `call`
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])

@@ -1,4 +1,5 @@
-import dimscord, asyncdispatch, strutils, options
+import dimscord, asyncdispatch, strutils, options, times
+
 const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
 let discord = newDiscordClient(token)
 
@@ -28,12 +29,13 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         "hello",
         components = @[row]
     )
-    let iResp = discord.waitForComponentUse("someUniqueID")
-    # Wait 10 seconds for user to use a component
-    if not await iResp.withTimeout(10 * 1000):
-      return
+    let iOpt = await discord.waitForComponentUse("someUniqueID").orTimeout(10.seconds)
+    # Timed out, just ignore it.
+    # You could send a message to the user, delete the components, etc
+    if iOpt.isNone: return
+
     let
-      i = await iResp
+      i = iOpt.unsafeGet()
       data = i.data.unsafeGet()
     # Change the message depending on what the user used
     let msg = if data.componentType == SelectMenu: "You selected " & data.values[0]

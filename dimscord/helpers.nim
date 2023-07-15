@@ -520,5 +520,22 @@ proc waitForComponentUse*(client: DiscordClient, id: string): Future[Interaction
     i.data.unsafeGet().interactionType == idtMessageComponent and
     i.data.get().custom_id == id
 
+proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
+  ## Helper that returns `none(T)` if a Future timeouts.
+  ## Returns `some(T)` is it finished within time limit
+  # TODO: Merge orTimeout into Nim? Honestly a pretty nice helper
+  # We need time in milliseconds
+  let milliseconds = initDuration(
+    time.nanoseconds,
+    time.microseconds,
+    time.milliseconds,
+    time.seconds,
+    time.minutes,
+    time.hours,
+    time.days,
+    time.weeks).inMilliseconds()
+
+  if await fut.withTimeout(milliseconds):
+    result = some await fut
 
 discard DiscordClient().waitForReply(Message())

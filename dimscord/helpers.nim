@@ -463,7 +463,26 @@ macro passArgs(prc: proc, data: tuple): untyped =
       nnkBracketExpr.newTree(data, newLit i)
   result = newCall(prc, args)
 
-proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
+proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
+  ## Helper that returns `none(T)` if a Future timeouts.
+  ## Returns `some(T)` is it finished within time limit
+  # We need time in milliseconds
+  let milliseconds = initDuration(
+    time.nanoseconds,
+    time.microseconds,
+    time.milliseconds,
+    time.seconds,
+    time.minutes,
+    time.hours,
+    time.days,
+    time.weeks).inMilliseconds()
+
+  if await fut.withTimeout(milliseconds):
+    result = some await fut
+
+using client: DiscordClient
+
+proc waitForObject*(client; event: static[DispatchEvent],
                                  handler: proc): auto =
   ## Allows you to define a custom condition to wait for.
   ## This also returns the object that passed the condition
@@ -491,14 +510,14 @@ proc waitForObject*(client: DiscordClient, event: static[DispatchEvent],
       return true
 
 
-proc waitFor*[T: proc](client: DiscordClient, event: static[DispatchEvent],
+proc waitFor*[T: proc](client; event: static[DispatchEvent],
                                  handler: T): Future[void] {.async.} =
   ## Allows you to define a custom condition to wait for.
   ##
   ## - See [waitForObject] which also returns the object that passed the condition
   discard await client.waitForObject(event, handler)
 
-proc waitForReply*(client: DiscordClient, to: Message): Future[Message] {.async.} =
+proc waitForReply*(client; to: Message): Future[Message] {.async.} =
   ## Waits for a message to reply to a message
   await client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
@@ -506,12 +525,12 @@ proc waitForReply*(client: DiscordClient, to: Message): Future[Message] {.async.
       if referenced.id == to.id:
         return true
 
-proc waitForDeletion*(client: DiscordClient, msg: Message): Future[void] =
+proc waitForDeletion*(client; msg: Message): Future[void] =
   ## Waits for a message to be deleted
   client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
     m.id == msg.id
 
-proc waitForComponentUse*(client: DiscordClient, id: string): Future[Interaction] =
+proc waitForComponentUse*(client; id: string): Future[Interaction] =
   ## Waits for a component to be used and returns the interaction.
   ## Data sent in the component can then be extracted.
   ## `id` is the ID that you used when creating the component
@@ -520,19 +539,13 @@ proc waitForComponentUse*(client: DiscordClient, id: string): Future[Interaction
     i.data.unsafeGet().interactionType == idtMessageComponent and
     i.data.get().custom_id == id
 
-proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
-  ## Helper that returns `none(T)` if a Future timeouts.
-  ## Returns `some(T)` is it finished within time limit
-  # We need time in milliseconds
-  let milliseconds = initDuration(
-    time.nanoseconds,
-    time.microseconds,
-    time.milliseconds,
-    time.seconds,
-    time.minutes,
-    time.hours,
-    time.days,
-    time.weeks).inMilliseconds()
+proc waitToJoinVoice*(client; user: User, guildID: string): Future[VoiceState] {.async.} =
+  ## Waits for a user to join a voice channel in a guild.
+  proc handleUpdate(vs: VoiceState, o: Option[VoiceState]): bool =
+    vs.guildID.isSome() and
+    guildID == vs.guildID.unsafeGet() and
+    user.id == vs.user_id
 
-  if await fut.withTimeout(milliseconds):
-    result = some await fut
+  let data = await client.waitForObject(VoiceStateUpdate, handleUpdate)
+  return data.v
+

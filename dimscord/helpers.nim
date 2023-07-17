@@ -525,8 +525,7 @@ proc waitForReply*(client; to: Message): Future[Message] {.async.} =
   await client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
       let referenced = m.referencedMessage.unsafeGet()
-      if referenced.id == to.id:
-        return true
+      return referenced.id == to.id
 
 proc waitForDeletion*(client; msg): Future[void] =
   ## Waits for a message to be deleted
@@ -544,26 +543,29 @@ proc waitForComponentUse*(client; id: string): Future[Interaction] =
 
 proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async.} =
   ## Waits for a user to join a voice channel in a guild.
+  assert giGuildVoiceStates in client.intents, "Client isn't receiving voice state events"
+
   proc handleUpdate(vs: VoiceState, o: Option[VoiceState]): bool =
     vs.guildID.isSome() and
     guildID == vs.guildID.unsafeGet() and
     user.id == vs.user_id
 
-  let data = await client.waitForObject(VoiceStateUpdate, handleUpdate)
-  return data.v
+  client
+    .waitForObject(VoiceStateUpdate, handleUpdate)
+    .await()
+    .v
 
 proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
   ## Waits for a reaction to a message. Can optionally provide
   ## a user to only wait for a certain user.
-  # TODO: Move this check into `waitForObject`
-  assert giGuildMessageReactions in client.intents, "Client won't recieve any message reaction events"
+  assert giGuildMessageReactions in client.intents, "Client isn't receiving message reaction events"
 
   proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
     msg.id == m.id and
     (user == nil or user.id == u.id)
-  return client
-          .waitForObject(MessageReactionAdd, handleUpdate)
-          .await()
-          .e
+  client
+    .waitForObject(MessageReactionAdd, handleUpdate)
+    .await()
+    .e
 
 

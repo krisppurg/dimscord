@@ -60,7 +60,7 @@ type
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
-        giGuildBans,
+        giGuildBans, # AKA: GUILD_MODERATION
         giGuildEmojisAndStickers,
         giGuildIntegrations,
         giGuildWebhooks,

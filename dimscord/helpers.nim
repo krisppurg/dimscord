@@ -9,6 +9,7 @@ import tables, regex
 import asyncdispatch
 import sugar, sequtils
 import typetraits
+import json
 import std/[macros, macrocache]
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
@@ -429,7 +430,7 @@ static:
     var typ = identDefs[^2]
 
     # Desym all the parameters
-    var params: seq[NimNode]
+    var params = newSeq[NimNode]()
     # Skip return type and shard parameter
     for identDef in typ[0][2 .. ^1]:
       var newDef = nnkIdentDefs.newTree()
@@ -522,7 +523,7 @@ proc waitFor*[T: proc](client; event: static[DispatchEvent],
 
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
   ## Waits for a message to reply to a message
-  await client.waitForObject(MessageCreate) do (m: Message) -> bool:
+  return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
     if m.referencedMessage.isSome():
       let referenced = m.referencedMessage.unsafeGet()
       return referenced.id == to.id
@@ -536,7 +537,7 @@ proc waitForComponentUse*(client; id: string): Future[Interaction] =
   ## Waits for a component to be used and returns the interaction.
   ## Data sent in the component can then be extracted.
   ## `id` is the ID that you used when creating the component
-  client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
+  return client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
     i.data.isSome and
     i.data.unsafeGet().interactionType == idtMessageComponent and
     i.data.get().custom_id == id
@@ -550,7 +551,7 @@ proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async
     guildID == vs.guildID.unsafeGet() and
     user.id == vs.user_id
 
-  client
+  return client
     .waitForObject(VoiceStateUpdate, handleUpdate)
     .await()
     .v
@@ -563,7 +564,7 @@ proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
   proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
     msg.id == m.id and
     (user == nil or user.id == u.id)
-  client
+  return client
     .waitForObject(MessageReactionAdd, handleUpdate)
     .await()
     .e

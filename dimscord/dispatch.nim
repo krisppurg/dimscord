@@ -17,7 +17,9 @@ proc checkIfAwaiting(client: DiscordClient, event: static[DispatchEvent], data: 
   var handlers = addr client.waits[event]
   # We countdown so we can delete while iterating
   for i in countdown(handlers[].len - 1, 0):
-    if handlers[i](addr data):
+    let dataPtr = when (NimMajor, NimMinor) >= (1, 9): addr data
+                  else: unsafeAddr data
+    if handlers[i](dataPtr):
       # Remove the handler if it gets completed
       handlers[].del(i)
 
@@ -39,7 +41,7 @@ macro checkAndCall(shard: Shard, event: static[DispatchEvent], args: varargs[unt
     # Generate version with shard
     callWithShard = call.dup(insert(1, shard))
   result = quote do:
-    `client`.checkIfAwaiting(`event`, `tupleData`)
+    `client`.checkIfAwaiting(DispatchEvent(`event`), `tupleData`)
     when compiles(`callWithShard`):
       asyncCheck `callWithShard`
     else:
@@ -1001,7 +1003,7 @@ proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.asyn
     of ChannelCreate: await s.channelCreate(data)
     of ChannelUpdate: await s.channelUpdate(data)
     of ChannelDelete: await s.channelDelete(data)
-    of GuildMembersChunk: await s.guildMembersChunk(data)
+    of DispatchEvent.GuildMembersChunk: await s.guildMembersChunk(data)
     of GuildMemberAdd: await s.guildMemberAdd(data)
     of GuildMemberUpdate: await s.guildMemberUpdate(data)
     of GuildMemberRemove: await s.guildMemberRemove(data)
@@ -1014,10 +1016,10 @@ proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.asyn
     of GuildRoleUpdate: await s.guildRoleUpdate(data)
     of GuildRoleDelete: await s.guildRoleDelete(data)
     of WebhooksUpdate: await s.webhooksUpdate(data)
-    of TypingStart:
+    of DispatchEvent.TypingStart:
         let typingStart = newTypingStart(data)
         s.checkAndCall(DispatchEvent.TypingStart, typingStart)
-    of InviteCreate:
+    of DispatchEvent.InviteCreate:
         let invite = newInviteCreate(data)
         s.checkAndCall(DispatchEvent.InviteCreate, invite)
     of InviteDelete: await s.inviteDelete(data)
@@ -1038,14 +1040,14 @@ proc handleEventDispatch*(s: Shard, event: DispatchEvent, data: JsonNode) {.asyn
     of ThreadCreate: await s.threadCreate(data)
     of ThreadUpdate: await s.threadUpdate(data)
     of ThreadDelete: await s.threadDelete(data)
-    of ThreadListSync:
+    of DispatchEvent.ThreadListSync:
         let sync = ThreadListSync(
             channel_ids: data{"channel_ids"}.getElems.mapIt(it.getStr),
             threads: data{"threads"}.getElems.map(newGuildChannel),
             members: data["members"].elems.mapIt(it.`$`.fromJson(ThreadMember))
         )
         s.checkAndCall(DispatchEvent.ThreadListSync, sync)
-    of ThreadMembersUpdate:
+    of DispatchEvent.ThreadMembersUpdate:
       await s.threadMembersUpdate(data)
     of ThreadMemberUpdate:
         let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,

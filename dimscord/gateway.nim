@@ -247,12 +247,14 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
 
     await s.sendSock(opRequestGuildMembers, payload)
 
-proc getGuildMember*(s: Shard; guild_id, user_id: string): Future[Member] =
+proc getGuildMember*(s: Shard;
+        guild_id, user_id: string): Future[Member] {.async.} =
     await s.requestGuildMembers(guild_id, user_ids = @[user_id])
 
-    let evt = await discord.waitForObject(DispatchEvent.GuildMembersChunk)
-        do (g: Guild, e: GuildMembersChunk) -> bool:
-            return e.members.len >= 0
+    proc handle(g: Guild, e: GuildMembersChunk): bool =
+        return e.members.len >= 0
+
+    let evt = await s.client.waitForObject(DispatchEvent.GuildMembersChunk, handle)
 
     if evt.m.members.len == 0: raise newException(Exception, "Member not found")
     result = evt.m.members[0]

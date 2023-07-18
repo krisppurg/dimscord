@@ -441,19 +441,19 @@ static:
         var params = newSeq[NimNode]()
         # Skip return type and shard parameter
         for identDef in typ[0][2 .. ^1]:
-        var newDef = nnkIdentDefs.newTree()
-        for param in identDef[0 ..< ^2]:
-            newDef &= ident $param
-        newDef &= identDef[^2]
-        newDef &= identDef[^1]
-        params &= newDef
+            var newDef = nnkIdentDefs.newTree()
+            for param in identDef[0 ..< ^2]:
+                newDef &= ident $param
+            newDef &= identDef[^2]
+            newDef &= identDef[^1]
+            params &= newDef
 
         for field in identDefs[0 ..< ^2]:
-        # Not exported so just ignore it
-        if field.kind == nnkIdent: continue
-        # Remove the on_ prefix for some events
-        let name = dup($field[1], removePrefix("on_"))
-        procsTable[name] = newStmtList(params).copy()
+            # Not exported so just ignore it
+            if field.kind == nnkIdent: continue
+            # Remove the on_ prefix for some events
+            let name = dup($field[1], removePrefix("on_"))
+            procsTable[name] = newStmtList(params).copy()
 
 proc params(event: DispatchEvent): NimNode =
     ## Returns the proc type stored for an event
@@ -469,7 +469,7 @@ macro passArgs(prc: proc, data: tuple): untyped =
     ## Calls a proc using the fields in a tuple
     let args = collect:
         for i in 0..<data.getTypeImpl().len:
-        nnkBracketExpr.newTree(data, newLit i)
+            nnkBracketExpr.newTree(data, newLit i)
     result = newCall(prc, args)
 
 proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
@@ -515,11 +515,11 @@ proc waitForObject*(client; event: static[DispatchEvent],
         if fut.finished(): return true
         let data {.cursor.} = cast[ptr DataType](data)[]
         if handler.passArgs(data):
-        when FutReturn is DataType:
-            fut.complete(data)
-        else:
-            fut.complete(data[0])
-        return true
+            when FutReturn is DataType:
+                fut.complete(data)
+            else:
+                fut.complete(data[0])
+            return true
 
 proc waitFor*[T: proc](client; event: static[DispatchEvent],
                                handler: T): Future[void] {.async.} =
@@ -531,11 +531,11 @@ proc waitFor*[T: proc](client; event: static[DispatchEvent],
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message
     return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
-        if m.referencedMessage.isSome():
-        let referenced = m.referencedMessage.unsafeGet()
-        return referenced.id == to.id
+        if m.referencedMessage.isSome:
+            let referenced = m.referencedMessage.unsafeGet
+            return referenced.id == to.id
 
-proc waitForDeletion*(client; msg) {.async.} =
+proc waitForDeletion*(client; msg): Future[void] =
     ## Waits for a message to be deleted
     client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
         m.id == msg.id
@@ -572,9 +572,8 @@ proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
         assert giGuildMessageReactions in client.intents
 
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
-        msg.id == m.id and
-            (user == nil or user.id == u.id)
-            return client
-            .waitForObject(MessageReactionAdd, handleUpdate)
-            .await()
-            .e
+        return msg.id == m.id and (user == nil or user.id == u.id)
+    return client
+        .waitForObject(MessageReactionAdd, handleUpdate)
+        .await()
+        .e

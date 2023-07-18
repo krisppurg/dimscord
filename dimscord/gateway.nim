@@ -233,6 +233,11 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
     }
     if query.isSome:
         payload["query"] = %query
+        assert(
+            limit.isSome,
+            "You need to specify the limit once you've specified query."
+        )
+
     if limit.isSome:
         payload["limit"] = %limit
     if user_ids.len > 0:
@@ -241,6 +246,16 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
         payload["nonce"] = %nonce
 
     await s.sendSock(opRequestGuildMembers, payload)
+
+proc getGuildMember*(s: Shard; guild_id, user_id: string): Future[Member] =
+    await s.requestGuildMembers(guild_id, user_ids = @[user_id])
+
+    let evt = await discord.waitForObject(DispatchEvent.GuildMembersChunk)
+        do (g: Guild, e: GuildMembersChunk) -> bool:
+            return e.members.len >= 0
+
+    if evt.m.members.len == 0: raise newException(Exception, "Member not found")
+    result = evt.m.members[0]
 
 proc voiceStateUpdate*(s: Shard,
         guild_id: string, channel_id = none string;

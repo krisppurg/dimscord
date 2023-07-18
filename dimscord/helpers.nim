@@ -311,13 +311,19 @@ proc checkActionRow*(row: MessageComponent) =
     # Beware, this check might be invalid in future when more
     # components are added
     assert contains.len <= 1, "Action rows can only contain one type"
-    if contains.hasKey(SelectMenu):
-        assert contains[SelectMenu] == 1, "Can only have one select menu per action row"
+    if SelectMenu in contains:
+        assert(
+            contains[SelectMenu] == 1,
+            "Can only have one select menu per action row"
+        )
         assert row.components[0].options.len > 0, "Menu must have options"
-    elif contains.hasKey(Button):
+    elif Button in contains:
         assert contains[Button] <= 5, "Can only have <= 5 buttons per row"
     else:
-        assert not contains.hasKey(ActionRow), "Action row cannot contain an action row"
+        assert(
+            ActionRow notin contains,
+            "Action row cannot contain an action row"
+        )
 
 proc newActionRow*(components: seq[MessageComponent] = @[]): MessageComponent =
     ## Creates a new action row which you can add components to.
@@ -418,155 +424,157 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     )
     component.options &= item
 
+## Event Handlers
+
 const procsTable = macrocache.CacheTable"dimscord.handlerTypes"
-  ## Stores a mapping of EventName -> parameters for event
-  ## Note:: The shared parameter is removed from them
+    ## Stores a mapping of EventName -> parameters for event
+    ## Note:: The shared parameter is removed from them
 
 # Build up the procsTable
 static:
-  # getTypleImpl returns `ref ObjSym` so we need to get the impl of ObjSym
-  let impl = Events.getTypeImpl()[0].getImpl()
-  for identDefs in impl[2][2]:
-    var typ = identDefs[^2]
+    # getTypleImpl returns `ref ObjSym` so we need to get the impl of ObjSym
+    let impl = Events.getTypeImpl()[0].getImpl()
+    for identDefs in impl[2][2]:
+        var typ = identDefs[^2]
 
-    # Desym all the parameters
-    var params = newSeq[NimNode]()
-    # Skip return type and shard parameter
-    for identDef in typ[0][2 .. ^1]:
-      var newDef = nnkIdentDefs.newTree()
-      for param in identDef[0 ..< ^2]:
-        newDef &= ident $param
-      newDef &= identDef[^2]
-      newDef &= identDef[^1]
-      params &= newDef
+        # Desym all the parameters
+        var params = newSeq[NimNode]()
+        # Skip return type and shard parameter
+        for identDef in typ[0][2 .. ^1]:
+        var newDef = nnkIdentDefs.newTree()
+        for param in identDef[0 ..< ^2]:
+            newDef &= ident $param
+        newDef &= identDef[^2]
+        newDef &= identDef[^1]
+        params &= newDef
 
-    for field in identDefs[0 ..< ^2]:
-      # Not exported so just ignore it
-      if field.kind == nnkIdent: continue
-      # Remove the on_ prefix for some events
-      let name = dup($field[1], removePrefix("on_"))
-      procsTable[name] = newStmtList(params).copy()
+        for field in identDefs[0 ..< ^2]:
+        # Not exported so just ignore it
+        if field.kind == nnkIdent: continue
+        # Remove the on_ prefix for some events
+        let name = dup($field[1], removePrefix("on_"))
+        procsTable[name] = newStmtList(params).copy()
 
 proc params(event: DispatchEvent): NimNode =
-  ## Returns the proc type stored for an event
-  procsTable[toLowerAscii($event)].copy()
+    ## Returns the proc type stored for an event
+    procsTable[toLowerAscii($event)].copy()
 
 macro tupleType(event: static[DispatchEvent]): typedesc[tuple] =
-  ## Returns a type that corresponds to the data for an event.
-  ## If ther are multiple parameters for the event then a tuple is
-  ## returned, else just a single value
-  result = nnkTupleTy.newTree(toSeq(event.params))
+    ## Returns a type that corresponds to the data for an event.
+    ## If ther are multiple parameters for the event then a tuple is
+    ## returned, else just a single value
+    result = nnkTupleTy.newTree(toSeq(event.params))
 
 macro passArgs(prc: proc, data: tuple): untyped =
-  ## Calls a proc using the fields in a tuple
-  let args = collect:
-    for i in 0..<data.getTypeImpl().len:
-      nnkBracketExpr.newTree(data, newLit i)
-  result = newCall(prc, args)
+    ## Calls a proc using the fields in a tuple
+    let args = collect:
+        for i in 0..<data.getTypeImpl().len:
+        nnkBracketExpr.newTree(data, newLit i)
+    result = newCall(prc, args)
 
 proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
-  ## Helper that returns `none(T)` if a Future timeouts.
-  ## Returns `some(T)` is it finished within time limit
-  # We need time in milliseconds
-  let milliseconds = initDuration(
-    time.nanoseconds,
-    time.microseconds,
-    time.milliseconds,
-    time.seconds,
-    time.minutes,
-    time.hours,
-    time.days,
-    time.weeks).inMilliseconds()
+    ## Helper that returns `none(T)` if a Future timeouts.
+    ## Returns `some(T)` is it finished within time limit
+    # We need time in milliseconds
+    let milliseconds = initDuration(
+        time.nanoseconds,
+        time.microseconds,
+        time.milliseconds,
+        time.seconds,
+        time.minutes,
+        time.hours,
+        time.days,
+        time.weeks).inMilliseconds()
 
-  if await fut.withTimeout(milliseconds):
-    result = some await fut
+    if await fut.withTimeout(int milliseconds):
+        result = some await fut
 
 using
-  client: DiscordClient
-  msg: Message
-  user: User
+    client: DiscordClient
+    msg: Message
+    user: User
 
 proc waitForObject*(client; event: static[DispatchEvent],
-                                 handler: proc): auto =
-  ## Allows you to define a custom condition to wait for.
-  ## This also returns the object that passed the condition
-  ##
-  ## - See [waitFor] which doesn't return the object
-  type DataType = event.tupleType
-  # For single field tuples, we just want to return the first type
-  when DataType.tupleLen == 1:
-    type FutReturn = DataType.get(0)
-  else:
-    type FutReturn = DataType
+                            handler: proc): auto =
+    ## Allows you to define a custom condition to wait for.
+    ## This also returns the object that passed the condition
+    ##
+    ## - See [waitFor] which doesn't return the object
+    type DataType = event.tupleType
+    # For single field tuples, we just want to return the first type
+    when DataType.tupleLen == 1:
+        type FutReturn = DataType.get(0)
+    else:
+        type FutReturn = DataType
 
-  let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
-  # We wrap the users handler inside another proc.
-  # This allows us to abstract creating the future, completing it, handling timeouts, etc
-  result = fut
-  client.waits[event] &= proc (data: pointer): bool =
-    if fut.finished(): return true
-    let data {.cursor.} = cast[ptr DataType](data)[]
-    if handler.passArgs(data):
-      when FutReturn is DataType:
-        fut.complete(data)
-      else:
-        fut.complete(data[0])
-      return true
-
+    let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
+    # We wrap the users handler inside another proc.
+    # This allows us to abstract creating the future, completing it, handling timeouts, etc
+    result = fut
+    client.waits[event] &= proc (data: pointer): bool =
+        if fut.finished(): return true
+        let data {.cursor.} = cast[ptr DataType](data)[]
+        if handler.passArgs(data):
+        when FutReturn is DataType:
+            fut.complete(data)
+        else:
+            fut.complete(data[0])
+        return true
 
 proc waitFor*[T: proc](client; event: static[DispatchEvent],
                                handler: T): Future[void] {.async.} =
-  ## Allows you to define a custom condition to wait for.
-  ##
-  ## - See [waitForObject] which also returns the object that passed the condition
-  discard await client.waitForObject(event, handler)
+    ## Allows you to define a custom condition to wait for.
+    ##
+    ## - See [waitForObject] which also returns the object that passed the condition
+    discard await client.waitForObject(event, handler)
 
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
-  ## Waits for a message to reply to a message
-  return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
-    if m.referencedMessage.isSome():
-      let referenced = m.referencedMessage.unsafeGet()
-      return referenced.id == to.id
+    ## Waits for a message to reply to a message
+    return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
+        if m.referencedMessage.isSome():
+        let referenced = m.referencedMessage.unsafeGet()
+        return referenced.id == to.id
 
-proc waitForDeletion*(client; msg): Future[void] =
-  ## Waits for a message to be deleted
-  client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
-    m.id == msg.id
+proc waitForDeletion*(client; msg) {.async.} =
+    ## Waits for a message to be deleted
+    client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
+        m.id == msg.id
 
 proc waitForComponentUse*(client; id: string): Future[Interaction] =
-  ## Waits for a component to be used and returns the interaction.
-  ## Data sent in the component can then be extracted.
-  ## `id` is the ID that you used when creating the component
-  return client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
-    i.data.isSome and
-    i.data.unsafeGet().interactionType == idtMessageComponent and
-    i.data.get().custom_id == id
+    ## Waits for a component to be used and returns the interaction.
+    ## Data sent in the component can then be extracted.
+    ## `id` is the ID that you used when creating the component
+    return client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
+        i.data.isSome and
+        i.data.unsafeGet().interactionType == idtMessageComponent and
+        i.data.get.custom_id == id
 
 proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async.} =
-  ## Waits for a user to join a voice channel in a guild.
-  assert giGuildVoiceStates in client.intents, "Client isn't receiving voice state events"
+    ## Waits for a user to join a voice channel in a guild.
+    assert giGuildVoiceStates in client.intents
 
-  proc handleUpdate(vs: VoiceState, o: Option[VoiceState]): bool =
-    vs.guildID.isSome() and
-    guildID == vs.guildID.unsafeGet() and
-    user.id == vs.user_id
+    proc handleUpdate(vs: VoiceState, o: Option[VoiceState]): bool =
+        vs.guildID.isSome() and
+        guildID == vs.guildID.unsafeGet() and
+        user.id == vs.user_id
 
-  return client
-    .waitForObject(VoiceStateUpdate, handleUpdate)
-    .await()
-    .v
+    return client
+        .waitForObject(VoiceStateUpdate, handleUpdate)
+        .await()
+        .v
 
 proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
-  ## Waits for a reaction to a message. Can optionally provide
-  ## a user to only wait for a certain user.
-  assert giGuildMessageReactions in client.intents, "Client isn't receiving message reaction events"
+    ## Waits for a reaction to a message. Can optionally provide
+    ## a user to only wait for a certain user.
+    if msg.guild_id.isNone:
+        assert giDirectMessageReactions in client.intents
+    else:
+        assert giGuildMessageReactions in client.intents
 
-  proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
-    msg.id == m.id and
-    (user == nil or user.id == u.id)
-  return client
-    .waitForObject(MessageReactionAdd, handleUpdate)
-    .await()
-    .e
-
-
+    proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
+        msg.id == m.id and
+            (user == nil or user.id == u.id)
+            return client
+            .waitForObject(MessageReactionAdd, handleUpdate)
+            .await()
+            .e

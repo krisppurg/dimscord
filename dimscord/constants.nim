@@ -166,8 +166,11 @@ const
     cdnAppAssets* =          cdnBase & "app-assets/" # KrispPurg, really? Come on you can do better than that no one is going to use this.
     cdnDiscoverySplashes* =  cdnBase & "discovery-splashes/"
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
+    cdnAvatarDecorations*  = cdnBase & "avatar-decorations/"
     cdnAppIcons* =           cdnBase & "app-icons/"
+    cdnAppAssets* =          cdnBase & "app-assets/"
     cdnRoleIcons* =          cdnBase & "role-icons/"
+    cdnStickers* =           cdnBase & "stickers/"
     cdnBanners* =            cdnBase & "banners/"
 
 type
@@ -430,10 +433,12 @@ const
         permReadMessageHistory,
         permMentionEveryone,
         permUseExternalEmojis,
+        permUseExternalStickers,
         permManageRoles,
         permManageWebhooks,
         permUseSlashCommands,
         permManageThreads,
+        permSendMessagesInThreads,
         permUsePublicThreads,
         permUsePrivateThreads}
     permAllVoice* = {permCreateInstantInvite,
@@ -447,7 +452,9 @@ const
         permVoiceDeafenMembers,
         permVoiceMoveMembers,
         permUseVAD,
-        permManageRoles}
+        permUseSoundboard,
+        permUseExternalSounds,
+        permStartEmbeddedActivities}
     permAllStage* = {permCreateInstantInvite,
         permManageChannels,
         permViewChannel,
@@ -466,7 +473,13 @@ const
         permViewGuildInsights,
         permChangeNickname,
         permManageNicknames,
-        permManageEmojis} + permAllChannel
+        permCreateExpressions,
+        permViewCreatorMonetizationInsights,
+        permModerateMembers
+        permManageEmojis,
+        permManageThreads,
+        permManageEvents,
+        permCreateEvents} + permAllChannel
 
 # Logging stuffs
 proc log*(msg: string, info: tuple) =
@@ -488,6 +501,64 @@ proc `$`*(p:PermissionFlags): string=
     system.`$`(p)[4..^1].findandcaptureall(
         re"(^[a-z]|[A-Z]+)[a-z]*"
     ).join" "
+
+# CDN Endpoints
+
+proc cdnGuilds*(): string =
+    result = cdnBase & "guilds"
+
+proc cdnGuildUsers*(gid, uid:string): string =
+    result = cdnGuilds(gid) & "/users/" & uid
+
+proc cdnGuildMemberAvatar*(gid, uid, avatar: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp", "gif"] in fmt
+    result = cdnGuildUsers(gid, uid)&"/avatars/"&avatar&"."&fmt
+
+proc cdnGuildMemberBanner*(gid, uid, banner: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp", "gif"] in fmt
+    result = cdnGuildUsers(gid, uid)&"/banners/"&banner&"."&fmt
+
+proc cdnGuildScheduledEvents*(eid: string): string =
+    result = cdnBase & "guild-events/" & eid
+
+proc cdnGuildScheduledEventCover*(eid, cover: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnGuildScheduledEvents(eid)&"/"&cover&"."&fmt
+
+proc cdnRoleIcon*(rid, icon: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnRoleIcons&rid&"/"&icon&"."&fmt
+
+proc cdnSticker*(sid: string; fmt = "png"): string =
+    assert ["png", "lottie", "webp"] in fmt
+
+proc cdnTeamIcon*(tid, icon: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnTeamIcons&tid&"/"&icon&"."&fmt
+
+proc cdnAppIcon*(aid, icon: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnAppIcons&aid&"/"&icon&"."&fmt
+
+proc cdnAppAsset*(aid, asid: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnAppAssets&aid&"/"&asid&"."&fmt
+
+proc cdnUserAvatarDecoration*(uid, decoration: string): string =
+    result = cdnAvatarDecorations&uid"/"&decoration&".png"
+
+proc cdnBanner*(bid, banner: string; fmt = "png"): string =
+    ## `bid` could be user or guild id
+    assert ["png", "jpg", "webp", "gif"] in fmt
+    result = cdnBanners&uid"/"&banner&"."&fmt
+
+proc cdnGuildSplash*(gid, splash: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnSplashes&gid"/"&splash&"."&fmt
+
+proc cdnGuildDiscoverySplash*(gid, splash: string; fmt = "png"): string =
+    assert ["png", "jpg", "webp"] in fmt
+    result = cdnDiscoverySplashes&gid"/"&splash&"."&fmt
 
 # Rest Endpoints
 
@@ -535,12 +606,6 @@ proc endpointGuildAutoModerationRules*(gid: string; rid = ""): string =
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
-
-proc endpointGuildMemberAvatar*(gid, uid: string): string =
-    result = endpointGuilds(uid) & "/users/" & uid & "/avatars/member_avatar.png"
-
-proc endpointRoleIcon*(rid: string): string =
-    result = cdnRoleIcons & "/" & rid & "/" & "role_icon.png"
 
 proc endpointGuildScheduledEvents*(gid: string; eid = ""): string =
     result = endpointGuilds(gid)&"/scheduled-events"&(if eid!="":"/"&eid else:"")

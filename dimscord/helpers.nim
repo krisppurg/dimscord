@@ -36,7 +36,7 @@ macro event*(discord: DiscordClient, fn: untyped): untyped =
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.
     var index = block:
-        if u.bot:
+        if u.discriminator != "0":
             parseInt(u.discriminator) mod 5
         else:
             (parseInt(u.id) shr 22) mod 6
@@ -50,7 +50,7 @@ proc avatarUrl*(u: User, fmt = "png"; size = 128): string =
         return defaultAvatarUrl(u)
     cdnAvatars&u.id&"/"&u.avatar.get&"."&fmt&"?size="&($size)
 
-proc guildAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
+proc memberAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
     ## Gets a user's avatar url.
     ## If user does not have an avatar it will return default avatar of the user.
     if m.user.isNil: return "" # imagine
@@ -58,23 +58,26 @@ proc guildAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
     if m.avatar.isNone:
         return avatarUrl(m.user)
 
-    endpointGuilds(g.id)&"/users/"&m.user.id&"/avatars/"&m.avatar.get&"."&fmt
+    result = cdnGuildMemberAvatar(g.id, m.user.id, m.avatar.get, fmt)
 
-proc iconUrl*(r: Role, fmt = "png"): string =
+proc iconUrl*(r: Role; fmt = "png"): string =
     ## Gets a role's icon url.
-    result = cdnRoleIcons&r.id&"/role_icon."&fmt
+    assert role.icon.isSome
+    result = cdnRoleIcon(r.id, r.icon.get, fmt)
 
-proc eventCover*(e: GuildScheduledEvent, fmt = "png"): string =
+proc eventCover*(e: GuildScheduledEvent; fmt = "png"): string =
     ## Get scheduled event cover
-    result = cdnBase&"guild-events/"&e.id&"/scheduled_event_cover_image."&fmt
+    assert e.image.isSome
 
-proc guildBanner*(g: Guild, fmt = "png"): string =
+    result = cdnGuildScheduledEventCover(e.id, e.image.get, fmt)
+
+proc guildBanner*(g: Guild; fmt = "png"): string =
     ## Get guild banner url
-    cdnBanners&g.id&"/guild_banner."&fmt
+    result = cdnBanner(g.id, fmt)
 
-proc memberBanner*(g: Guild, m: Member, fmt = "png"): string =
+proc memberBanner*(g: Guild, m: Member; fmt = "png"): string =
     ## Get member banner url
-    endpointGuilds(g.id)&"/users/"&m.user.id&"/banners/member_banner."&fmt
+    result = cdnGuildMemberBanner(g.id, m.user.id, fmt)
 
 proc iconUrl*(e: Emoji, fmt = "png"; size = 128): string =
     ## Gets an emoji's url.
@@ -92,8 +95,10 @@ proc iconUrl*(g: Guild, fmt = "png"; size = 128): string =
 
 proc `$`*(u: User): string =
     ## Stringifies a user.
-    ## This would return something like `MrDude#6969`
-    result = &"{u.username}#{u.discriminator}"
+    ## This would return something like `krisppurg#3211` or `krisp0`
+    result = u.username
+    if u.discriminator != "0":
+        result &= "#" u.discriminator
 
 proc `@`*(u: User, nick = false): string =
     ## Mentions a user.
@@ -107,6 +112,10 @@ proc `@`*(r: Role): string =
 proc `@`*(g: GuildChannel): string =
     ## Mentions a guild channel.
     result = &"<#{g.id}>"
+
+proc `@`*(a: ApplicationCommand): string =
+    ## Mentions a slash command.
+    result = &"</{a.name}:{a.id}>"
 
 proc `$`*(g: GuildChannel): string =
     ## Stringifies a guild channel.
@@ -170,7 +179,7 @@ proc permCheck*(perms: int, p: PermObj): bool =
         if p.perms != 0:
             result = permCheck(perms, p.perms)
 
-proc computePerms*(guild: Guild, role: Role): PermObj =
+proc computePerms*(guild: Guild, role: Role): PermObj =# todo: replace permobj with permissionflags
     ## Computes the guild permissions for a role.
     let
         everyone = guild.roles[guild.id]
@@ -181,7 +190,7 @@ proc computePerms*(guild: Guild, role: Role): PermObj =
 
     result = PermObj(allowed: perms)
 
-proc computePerms*(guild: Guild, member: Member): PermObj =
+proc computePerms*(guild: Guild, member: Member): PermObj = # todo: replace permobj with permissionflags
     ## Computes the guild permissions for a member.
     if guild.owner_id == member.user.id:
         return PermObj(allowed: permAll)

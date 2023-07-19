@@ -112,9 +112,8 @@ type
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
         ## you were to do for example: `cast[int]({apfGatewayPresence})`
-        ufNone,
         ufDiscordEmployee,
-        ufPartneredServerOwner,
+        ufPartneredServerOwner =  1
         ufHypesquadEvents,
         ufBugHunterLevel1,
         ufHouseBravery =          6,
@@ -127,6 +126,7 @@ type
         ufEarlyVerifiedBotDeveloper,
         ufDiscordCertifiedModerator,
         ufBotHttpInteractions
+        ufActiveDeveloper      = 22
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
         scfSupressPremiumSubscriptions,
@@ -168,7 +168,6 @@ const
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
     cdnAvatarDecorations*  = cdnBase & "avatar-decorations/"
     cdnAppIcons* =           cdnBase & "app-icons/"
-    cdnAppAssets* =          cdnBase & "app-assets/"
     cdnRoleIcons* =          cdnBase & "role-icons/"
     cdnStickers* =           cdnBase & "stickers/"
     cdnBanners* =            cdnBase & "banners/"
@@ -475,7 +474,7 @@ const
         permManageNicknames,
         permCreateExpressions,
         permViewCreatorMonetizationInsights,
-        permModerateMembers
+        permModerateMembers,
         permManageEmojis,
         permManageThreads,
         permManageEvents,
@@ -504,61 +503,61 @@ proc `$`*(p:PermissionFlags): string=
 
 # CDN Endpoints
 
-proc cdnGuilds*(): string =
-    result = cdnBase & "guilds"
+proc cdnGuilds(gid=""): string =
+    result = cdnBase&"guilds"&(if gid!="":"/"&gid else:"")
 
 proc cdnGuildUsers*(gid, uid:string): string =
     result = cdnGuilds(gid) & "/users/" & uid
 
 proc cdnGuildMemberAvatar*(gid, uid, avatar: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp", "gif"] in fmt
+    assert fmt in @["png", "jpg", "webp", "gif"]
     result = cdnGuildUsers(gid, uid)&"/avatars/"&avatar&"."&fmt
 
 proc cdnGuildMemberBanner*(gid, uid, banner: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp", "gif"] in fmt
+    assert fmt in @["png", "jpg", "webp", "gif"]
     result = cdnGuildUsers(gid, uid)&"/banners/"&banner&"."&fmt
 
 proc cdnGuildScheduledEvents*(eid: string): string =
     result = cdnBase & "guild-events/" & eid
 
 proc cdnGuildScheduledEventCover*(eid, cover: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
+    assert fmt in @["png", "jpg", "webp"]
     result = cdnGuildScheduledEvents(eid)&"/"&cover&"."&fmt
 
 proc cdnRoleIcon*(rid, icon: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
+    assert fmt in @["png", "jpg", "webp"]
     result = cdnRoleIcons&rid&"/"&icon&"."&fmt
 
 proc cdnSticker*(sid: string; fmt = "png"): string =
-    assert ["png", "lottie", "webp"] in fmt
+    assert fmt in @["png", "lottie", "webp"]
 
 proc cdnTeamIcon*(tid, icon: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
+    assert fmt in @["png", "jpg", "webp"]
     result = cdnTeamIcons&tid&"/"&icon&"."&fmt
 
 proc cdnAppIcon*(aid, icon: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
+    assert fmt in @["png", "jpg", "webp"]
     result = cdnAppIcons&aid&"/"&icon&"."&fmt
 
 proc cdnAppAsset*(aid, asid: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
+    assert fmt in @["png", "jpg", "webp"]
     result = cdnAppAssets&aid&"/"&asid&"."&fmt
 
 proc cdnUserAvatarDecoration*(uid, decoration: string): string =
-    result = cdnAvatarDecorations&uid"/"&decoration&".png"
+    result = cdnAvatarDecorations&uid&"/"&decoration&".png"
 
 proc cdnBanner*(bid, banner: string; fmt = "png"): string =
     ## `bid` could be user or guild id
-    assert ["png", "jpg", "webp", "gif"] in fmt
-    result = cdnBanners&uid"/"&banner&"."&fmt
+    assert fmt in @["png", "jpg", "webp", "gif"]
+    result = cdnBanners&bid&"/"&banner&"."&fmt
 
 proc cdnGuildSplash*(gid, splash: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
-    result = cdnSplashes&gid"/"&splash&"."&fmt
+    assert fmt in @["png", "jpg", "webp"] 
+    result = cdnSplashes&gid&"/"&splash&"."&fmt
 
 proc cdnGuildDiscoverySplash*(gid, splash: string; fmt = "png"): string =
-    assert ["png", "jpg", "webp"] in fmt
-    result = cdnDiscoverySplashes&gid"/"&splash&"."&fmt
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnDiscoverySplashes&gid&"/"&splash&"."&fmt
 
 # Rest Endpoints
 

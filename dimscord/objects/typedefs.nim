@@ -169,13 +169,14 @@ type
         ## The fields for bot and system are false by default
         ## simply because they are assumable.
         id*, username*, discriminator*: string
-        banner*: Option[string]
+        global_name*, display_name*: Option[string]
+        banner*, banner_color*: Option[string]
         bot*, system*: bool
         mfa_enabled*: Option[bool]
         accent_color*, premium_type*: Option[int]
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
-        avatar*, locale*: Option[string]
+        avatar*, avatar_decoration*, locale*: Option[string]
     Member* = ref object
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.

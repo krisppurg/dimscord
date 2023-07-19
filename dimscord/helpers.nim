@@ -62,7 +62,7 @@ proc memberAvatarUrl*(g: Guild, m: Member; fmt = "png"): string =
 
 proc iconUrl*(r: Role; fmt = "png"): string =
     ## Gets a role's icon url.
-    assert role.icon.isSome
+    assert r.icon.isSome
     result = cdnRoleIcon(r.id, r.icon.get, fmt)
 
 proc eventCover*(e: GuildScheduledEvent; fmt = "png"): string =
@@ -98,7 +98,7 @@ proc `$`*(u: User): string =
     ## This would return something like `krisppurg#3211` or `krisp0`
     result = u.username
     if u.discriminator != "0":
-        result &= "#" u.discriminator
+        result &= "#" & u.discriminator
 
 proc `@`*(u: User, nick = false): string =
     ## Mentions a user.

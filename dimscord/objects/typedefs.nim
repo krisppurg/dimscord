@@ -318,9 +318,12 @@ type
         member_count*: int
         added_members*: seq[ThreadMember]
         removed_member_ids*: seq[string]
-    GameAssets* = object
+    ActivityAssets* = object
+        ## Read more at:
+        ## https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-asset-image
         small_text*, small_image*: string
         large_text*, large_image*: string
+    GameAssets* = ActivityAssets
     Activity* = object
         name*: string
         kind*: ActivityType
@@ -330,9 +333,9 @@ type
         timestamps*: Option[tuple[start, final: BiggestFloat]]
         emoji*: Option[Emoji]
         party*: Option[tuple[id: string, size: seq[int]]]
-        assets*: Option[GameAssets]
+        assets*: Option[ActivityAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
-        buttons*: seq[string]
+        buttons*: seq[tuple[label, url: string]]
         instance*: bool
     Presence* = ref object
         user*: User
@@ -430,6 +433,22 @@ type
         matched_keyword*, matched_content*: Option[string]
         action*: ModerationAction
         rule_trigger_type*: ModerationTriggerType
+    GuildOnboarding* = object
+        guild_id*: string
+        prompts*: seq[GuildOnboardingPrompt]
+        default_channel_ids*: seq[string]
+        enabled*: bool
+        mode*: GuildOnboardingMode
+    GuildOnboardingPrompt* = object
+        id*, title*: string
+        kind*: GuildOnboardingPromptType
+        options*: seq[GuildOnboardingPromptOption]
+        single_select*, required*, in_onboarding*: bool
+    GuildOnboardingPromptOption* = object
+        id*, title*: string
+        description*: Option[string]
+        channel_ids*, role_ids*: seq[string]
+        emoji*: Emoji
     GuildTemplate* = object
         code*, name*, creator_id*: string
         description*: Option[string]
@@ -822,6 +841,8 @@ type
         guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
         guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
                 u: User) {.async.}
+        guild_audit_log_entry_create*: proc (s: Shard; g: Guild;
+                e: AuditLogEntry) {.async.}
         guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
         guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
                 m: Member) {.async.}

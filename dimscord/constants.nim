@@ -419,6 +419,12 @@ type
         flNotSet =      0
         flListView =    1
         flGalleryView = 2
+    GuildOnboardingMode* = enum
+        omDefault,
+        omAdvanced = 1
+    GuildOnboardingPromptType* = enum
+        ptMultipleChoice,
+        ptDropdown =    1
 
 const
     permAllText* = {permCreateInstantInvite,
@@ -654,6 +660,9 @@ proc endpointGuildInvites*(gid: string): string =
 
 proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
+
+proc endpointGuildOnboarding*(gid: string): string =
+    result = endpointGuilds(gid) & "/onboarding"
 
 proc endpointGuildChannels*(gid: string; cid = ""): string =
     result = endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")

@@ -175,7 +175,8 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
     var
         msg = Message(
             id: data["message_id"].str,
-            channel_id: data["channel_id"].str)
+            channel_id: data["channel_id"].str
+            )
 
         user = s.cache.users.getOrDefault(data["user_id"].str,
             User(id: data["user_id"].str)
@@ -184,6 +185,12 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
         emoji = newEmoji(data["emoji"])
         reaction = Reaction(emoji: emoji)
         exists = false
+
+    if data{"message_author_id"}.getStr != "":
+        msg.author = s.cache.users.getOrDefault(
+            data["message_author_id"].str,
+            User(id: data["message_author_id"].str)
+        )
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -578,6 +585,15 @@ proc guildBanRemove(s: Shard, data: JsonNode) {.async.} =
 
     asyncCheck s.client.events.guild_ban_remove(s, guild, user)
 
+proc guildAuditLogEntryCreate(s: Shard, data: JsonNode) {.async.} =
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        entry = newAuditLogEntry(data)
+
+    asyncCheck s.client.events.guild_audit_log_entry_create(s, guild, entry)
+
 proc guildUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = newGuild(data)
     var oldGuild: Option[Guild]
@@ -963,6 +979,7 @@ proc handleEventDispatch*(s: Shard, event: string, data: JsonNode) {.async.} =
     of "GUILD_MEMBER_REMOVE": await s.guildMemberRemove(data)
     of "GUILD_BAN_ADD": await s.guildBanAdd(data)
     of "GUILD_BAN_REMOVE": await s.guildBanRemove(data)
+    of "GUILD_AUDIT_LOG_ENTRY_CREATE": await s.guildAuditLogEntryCreate(data)
     of "GUILD_UPDATE": await s.guildUpdate(data)
     of "GUILD_DELETE": await s.guildDelete(data)
     of "GUILD_CREATE": await s.guildCreate(data)

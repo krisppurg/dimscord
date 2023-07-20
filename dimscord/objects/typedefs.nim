@@ -15,6 +15,7 @@ type
         ## For parse: The values should be "roles", "users", "everyone"
         parse*, roles*, users*: seq[string]
         replied_user*: bool
+    Context* = DiscordClient | Shard | RestApi
     DiscordClient* = ref object
         api*: RestApi
         events*: Events
@@ -899,3 +900,10 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+
+template api*[T: Context](ctx: T): RestApi =
+    result = 
+        when ctx is Shard: ctx.client.api
+        elif ctx is DiscordClient: ctx.api
+        elif ctx is RestApi: ctx

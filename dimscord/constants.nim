@@ -60,7 +60,7 @@ type
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
-        giGuildBans,
+        giGuildModeration,
         giGuildEmojisAndStickers,
         giGuildIntegrations,
         giGuildWebhooks,
@@ -369,6 +369,7 @@ type
         uptNone =         0
         uptNitroClassic = 1
         uptNitro =        2
+        uptNitroBasic =   3
     ButtonStyle* = enum
         Primary =   1
         Secondary = 2
@@ -570,8 +571,8 @@ proc endpointUserChannels*(): string =
 proc endpointVoiceRegions*(): string =
     result = "voice/regions"
 
-proc endpointUserGuilds*(gid: string): string =
-    result = endpointUsers("@me") & "/guilds/" & gid
+proc endpointUserGuilds*(gid=""): string =
+    result = endpointUsers("@me")&"/guilds"&(if gid != "": "/" & gid else: "")
 
 proc endpointUserGuildMember*(gid: string): string =
     result = endpointUserGuilds(gid) & "/member"

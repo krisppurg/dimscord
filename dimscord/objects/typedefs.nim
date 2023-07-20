@@ -173,7 +173,7 @@ type
         banner*, banner_color*: Option[string]
         bot*, system*: bool
         mfa_enabled*: Option[bool]
-        accent_color*, premium_type*: Option[int]
+        accent_color*, premium_type*: Option[UserPremiumType]
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, avatar_decoration*, locale*: Option[string]

@@ -88,6 +88,21 @@ proc getCurrentGuildMember*(api: RestApi;
         endpointUserGuildMember(guild_id)
     )).newMember
 
+proc getCurrentUserGuilds*(api: RestApi;
+        before, after = none string; with_counts = false;
+        limit: range[1..200] = 200): Future[seq[Guild]] {.async.} =
+    ## Gets current user guilds.
+    var endpoint = endpointUserGuilds()&"?limit="&($limit)
+    if before.isSome:
+        endpoint &= "&before=" & before.get
+    if after.isSome:
+        endpoint &= "&after=" & after.get
+
+    result = (await api.request(
+        "GET",
+        endpoint&"&with_counts="&($with_counts)
+    )).getElems.map newGuild
+
 proc createUserDm*(api: RestApi, user_id: string): Future[DMChannel]{.async.} =
     ## Create user dm.
     result = (await api.request("POST", endpointUserChannels(), $(%*{

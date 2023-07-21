@@ -903,7 +903,6 @@ proc `$`*(e: Emoji): string =
 
 
 template api*[T: Context](ctx: T): RestApi =
-    result = 
-        when ctx is Shard: ctx.client.api
-        elif ctx is DiscordClient: ctx.api
-        elif ctx is RestApi: ctx
+    when ctx is Shard: ctx.client.api
+    elif ctx is DiscordClient: ctx.api
+    elif ctx is RestApi: ctx

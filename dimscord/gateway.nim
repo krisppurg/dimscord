@@ -248,16 +248,26 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
     await s.sendSock(opRequestGuildMembers, payload)
 
 proc getGuildMember*(s: Shard;
-        guild_id, user_id: string): Future[Member] {.async.} =
-    await s.requestGuildMembers(guild_id, user_ids = @[user_id])
+        guild_id, user_id: string;
+        presence = false): Future[Member] {.async.} =
+    ## Gets a guild member by using `requestGuildMembers`.
+    ## - `presence` Have members presence when returned (member.presence).
+    await s.requestGuildMembers(guild_id,
+        user_ids = @[user_id],
+        presences = presence
+    )
 
     proc handle(g: Guild, e: GuildMembersChunk): bool =
         return e.members.len >= 0
 
-    let evt = await s.client.waitForObject(DispatchEvent.GuildMembersChunk, handle)
+    let evt = await s.client.waitForObject(
+        DispatchEvent.GuildMembersChunk,
+        handle
+    )
 
     if evt.m.members.len == 0: raise newException(Exception, "Member not found")
     result = evt.m.members[0]
+    if evt.m.presences.len != 0: result.presence = evt.m.presences[0]
 
 proc voiceStateUpdate*(s: Shard,
         guild_id: string, channel_id = none string;

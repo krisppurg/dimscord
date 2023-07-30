@@ -183,8 +183,23 @@ proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
     parseHook(s, i, number)
     v = cast[set[UserFlags]](number)
 
+proc parseHook*(s: string, i: var int, v: var set[GuildMemberFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[GuildMemberFlags]](number)
+
 proc newUser*(data: JsonNode): User =
     result = ($data).fromJson(User)
+
+proc parseHook(s: string, i: var int;
+        v: var seq[tuple[label, url: string]]) {.used.} =
+    var data: JsonNode
+    parseHook(s, i, data)
+    for btn in data:
+        if btn.kind == JString:
+            v.add (label: btn.getStr, url: "")
+        elif btn.kind == JObject:
+            v.add (label: btn{"label"}.getStr, url: btn{"url"}.getStr)
 
 proc postHook(p: var Presence) =
     if p.status == "": p.status = "offline"
@@ -461,8 +476,8 @@ proc parseHook(s: string, i: var int, a: var AuditLogEntry) =
             else:
                 a[k] = val # incase
         of JObject:
-            if "opts" in data:
-                a.opts = some ($data["opts"]).fromJson AuditLogOptions
+            if "options" in data:
+                a.opts = some ($data["options"]).fromJson AuditLogOptions
         else:
             discard
 

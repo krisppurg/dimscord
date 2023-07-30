@@ -173,7 +173,8 @@ type
         banner*, banner_color*: Option[string]
         bot*, system*: bool
         mfa_enabled*: Option[bool]
-        accent_color*, premium_type*: Option[UserPremiumType]
+        accent_color*: Option[int]
+        premium_type*: Option[UserPremiumType]
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, avatar_decoration*, locale*: Option[string]
@@ -187,6 +188,7 @@ type
         roles*: seq[string]
         deaf*, mute*: bool
         pending*: Option[bool]
+        flags*: set[GuildMemberFlags]
         permissions*: set[PermissionFlags]
         presence*: Presence
         voice_state*: Option[VoiceState]
@@ -413,6 +415,11 @@ type
     RoleTag* = object
         bot_id*, integration_id*: Option[string]
         premium_subscriber*: Option[bool] #no idea what type is supposed to be
+    TriggerMetadata* = object
+        keyword_filter*, regex_patterns*, allow_list*: seq[string]
+        presets*: seq[KeywordPresetType]
+        mention_total_limit*: int
+        mention_raid_protection_enabled*: bool
     AutoModerationRule* = object
         ## trigger_metadata info: https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata
         ## event_type: https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-event-types
@@ -420,13 +427,17 @@ type
         id*, guild_id*, name*, creator_id*: string
         event_type*: int
         trigger_type*: ModerationTriggerType
-        trigger_metadata*: tuple[keyword_filter: seq[string], presets: seq[int]]
+        trigger_metadata*: TriggerMetadata
         actions*: seq[ModerationAction]
         enabled*: bool
         exempt_roles*, exempt_channels*: seq[string]
     ModerationAction* = object
         kind*: ModerationActionType
-        metadata*: tuple[channel_id: string, duration_seconds: int]
+        metadata*: tuple[
+            channel_id: string,
+            duration_seconds: int,
+            custom_message: Option[string]
+        ]
     ModerationActionExecution* = object
         guild_id*, rule_id*, user_id*, content*: string
         channel_id*, message_id*, alert_system_message_id*: Option[string]
@@ -491,14 +502,17 @@ type
         members*: seq[TeamMember]
     Application* = object
         id*, description*, name*: string
+        summary*, verify_key*: string
         rpc_origins*, tags*: seq[string]
+        approximate_guild_count*: Option[int]
         bot_public*, bot_require_code_grant*: bool
         terms_of_service_url*, privacy_policy_url*: Option[string]
         guild_id*, custom_install_url*: Option[string]
-        owner*: User
-        summary*, verify_key*: string
-        team*: Option[Team]
         icon*, primary_sku_id*, slug*, cover_image*: Option[string]
+        role_connections_verification_url*: Option[string]
+        owner*: User
+        guild*: PartialGuild
+        team*: Option[Team]
         flags*: set[ApplicationFlags]
         install_params*: tuple[scopes: seq[string], permissions: string]
     ApplicationCommand* = object
@@ -506,10 +520,10 @@ type
         guild_id*: Option[string]
         kind*: ApplicationCommandType
         name*, description*: string
-        name_localizations*, description_localizations*: Option[Table[string, string]]
-        default_permission*: bool
+        name_localizations*: Option[Table[string, string]]
+        description_localizations*: Option[Table[string, string]]
         default_member_permissions*: Option[set[PermissionFlags]]
-        dm_permission*: Option[bool]
+        default_permission*, nsfw*, dm_permission*: Option[bool]
         options*: seq[ApplicationCommandOption]
     GuildApplicationCommandPermissions* = object
         id*, application_id*, guild_id*: string
@@ -518,10 +532,16 @@ type
         id*: string ## ID of role or user
         kind*: ApplicationCommandPermissionType
         permission*: bool ## true to allow, false to disallow
+    ApplicationRoleConnectionMetadata* = object
+        kind*: RoleConnectionMetadataType
+        key*, name*, description*: string
+        name_localizations*: Option[Table[string, string]]
+        description_localizations*: Option[Table[string, string]]
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string
-        name_localizations*, description_localizations*: Option[Table[string, string]]
+        name_localizations*: Option[Table[string, string]]
+        description_localizations*: Option[Table[string, string]]
         required*, autocomplete*: Option[bool]
         channel_types*: seq[ChannelType]
         min_value*, max_value*: (Option[BiggestInt], Option[float])
@@ -663,7 +683,7 @@ type
         guild_id*: Option[string]
         uses*, max_uses*, max_age*: int
         channel_id*: string
-        inviter*, taget_user*: Option[User]
+        inviter*, target_user*: Option[User]
         target_type*: Option[InviteTargetType]
         target_application*: Option[Application]
         temporary*: bool

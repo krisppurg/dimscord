@@ -922,10 +922,7 @@ proc deleteAutoModerationRule*(api: RestApi;
 proc createAutoModerationRule*(api: RestApi;
     guild_id, name: string; event_type: int;
     trigger_type: ModerationTriggerType;
-    trigger_metadata = none tuple[
-        keyword_filter: seq[string],
-        presets: seq[int]
-    ];
+    trigger_metadata = none TriggerMetadata;
     actions: seq[ModerationAction] = @[]; enabled = false;
     exempt_roles, exempt_channels: seq[string] = @[];
     reason = ""
@@ -959,10 +956,7 @@ proc createAutoModerationRule*(api: RestApi;
 proc editAutoModerationRule*(api: RestApi,
     guild_id, rule_id: string; event_type = none int;
     name = none string; trigger_type = none ModerationTriggerType;
-    trigger_metadata = none tuple[
-        keyword_filter: seq[string],
-        presets: seq[int]
-    ];
+    trigger_metadata = none TriggerMetadata;
     actions = none seq[ModerationAction]; enabled = none bool;
     exempt_roles, exempt_channels = none seq[string];
     reason = ""

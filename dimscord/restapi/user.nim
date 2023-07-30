@@ -153,9 +153,9 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
     )).newApplication
 
 proc registerApplicationCommand*(api: RestApi; application_id: string;
-        name, description: string;
+        name: string; description, guild_id = "";
         name_localizations,description_localizations=none Table[string,string];
-        kind = atSlash; guild_id = ""; dm_permission = true;
+        kind = atSlash; dm_permission = true; nsfw = false;
         default_member_permissions = none PermissionFlags;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
@@ -168,7 +168,7 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
     ## overwrite the old command.
-    assert name.len >= 3 and name.len <= 32
+    assert name.len in 1..32
     var payload = %*{"name": name,
                      "dm_permission": dm_permission,
                      "type": ord kind}
@@ -179,8 +179,9 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
         )
 
     payload.loadOpt(name_localizations, description_localizations)
+
     if kind notin {atUser, atMessage}:
-        assert description.len >= 1 and description.len <= 100
+        assert description.len in 1..100
         payload["description"] = %description
     else:
         assert description == "", "Context menu commands cannot have description"
@@ -245,7 +246,7 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
 proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         guild_id, name, description = "";
         name_localizations,description_localizations = none Table[string,string];
-        default_member_permissions = none PermissionFlags;
+        default_member_permissions = none PermissionFlags; nsfw = false;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] {.async.} =
     ## Modify slash command for a specific application.
@@ -259,7 +260,7 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id, command_id)
     if name != "":
-        assert name.len in 3..32
+        assert name.len in 1..32
         payload["name"] = %name
     if description != "":
         assert description.len in 1..100
@@ -461,3 +462,46 @@ proc interactionResponseModal*(api: RestApi,
             "data": %data
         })
     )
+
+proc getApplicationRoleConnectionMetadataRecords*(
+    api: RestApi; application_id: string
+): Future[seq[ApplicationRoleConnectionMetadata]] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointApplicationRoleConnectionMetadata(application_id)
+    )).getElems.mapIt it.`$`.fromJson(ApplicationRoleConnectionMetadata)
+
+proc updateApplicationRoleConnectionMetadataRecords*(
+    api: RestApi; application_id: string
+): Future[seq[ApplicationRoleConnectionMetadata]] {.async.} =
+    result = (await api.request(
+        "PUT",
+        endpointApplicationRoleConnectionMetadata(application_id)
+    )).getElems.mapIt it.`$`.fromJson(ApplicationRoleConnectionMetadata)
+
+proc getUserApplicationRoleConnection*(
+    api: RestApi; application_id: string
+): Future[ApplicationRoleConnectionMetadata] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointUserApplicationRoleConnection(application_id)
+    )).`$`.fromJson(ApplicationRoleConnectionMetadata)
+
+proc updateUserApplicationRoleConnection*(api: RestApi,
+    application_id: string;
+    platform_name, platform_username = none string;
+    metadata = none ApplicationRoleConnectionMetadata
+): Future[ApplicationRoleConnectionMetadata] {.async.} =
+    var payload = %*{}
+    payload.loadOpt(platform_name, platform_username)
+
+    if metadata.isSome:
+        payload["metadata"] = %metadata.get
+        payload["metadata"]["type"] = %metadata.get.kind
+        payload["metadata"].delete("kind")
+
+    result = (await api.request(
+        "PUT",
+        endpointUserApplicationRoleConnection(application_id),
+        $payload
+    )).`$`.fromJson(ApplicationRoleConnectionMetadata)

@@ -262,11 +262,18 @@ proc request*(api: RestApi, meth, endpoint: string;
         if fatalErr:
             raise newException(RestError, err)
 
-proc `%`*(t: tuple[channel_id: string, duration_seconds: int]): JsonNode =
-    %*{"channel_id":t.channel_id,"duration_seconds":t.duration_seconds}
+proc `%`*(t: tuple[
+        channel_id: string, duration_seconds: int,
+        custom_message: Option[string]
+    ]): JsonNode =
+    result = %*{
+        "channel_id":t.channel_id,
+        "duration_seconds":t.duration_seconds,
+    }
+    if t.custom_message.isSome: result["custom_message"] = %t.custom_message.get
 
-proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
-    %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
+# proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
+#     %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
 
 proc `%`*(o: Overwrite): JsonNode =
     %*{"id": o.id,

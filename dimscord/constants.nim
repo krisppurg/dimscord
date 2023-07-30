@@ -41,7 +41,7 @@ type
         permManageNicknames
         permManageRoles
         permManageWebhooks
-        permManageEmojis
+        permManageExpressions
         permUseSlashCommands
         permRequestToSpeak
         permManageEvents
@@ -127,17 +127,25 @@ type
         ufDiscordCertifiedModerator,
         ufBotHttpInteractions
         ufActiveDeveloper      = 22
+    GuildMemberFlags* = enum
+        gmfDidRejoin
+        gmfCompletedOnboarding
+        gmfBypassesVerification
+        gmfStartedOnboarding
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
-        scfSupressPremiumSubscriptions,
-        scfSupressGuildReminderNotifications
-        scfJoinNotificationReplies
+        scfSuppressPremiumSubscriptions,
+        scfSuppressGuildReminderNotifications
+        scfSuppressJoinNotificationReplies
+        scfSuppressRoleSubscriptionPurchaseNotifications
+        scfSuppressRoleSubscriptionPurchaseNotificationReplies
     ApplicationFlags* = enum
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
         ## you were to do for example: `cast[int]({apfGatewayPresence})`
         apfNone,
-        apfGatewayPresence =          12,
+        apfApplicationAutoModerationRuleCreateBadge = 6,
+        apfGatewayPresence                          = 12,
         apfGatewayPresenceLimited,
         apfGatewayGuildMembers,
         apfGatewayGuildMembersLimited,
@@ -145,6 +153,7 @@ type
         apfEmbeded,
         apfGatewayMessageContent,
         apfGatewayMessageContentLimited,
+        apfApplicationCommandBadge = 23
     ChannelFlags* = enum
         cfNone,
         cfPinned = 1
@@ -315,80 +324,89 @@ type
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
     MessageStickerFormat* = enum
-        msfPng =    1
-        msfAPng =   2
+        msfPng    = 1
+        msfAPng   = 2
         msfLottie = 3
     ApplicationCommandOptionType* = enum
-        acotNothing =         0 # Will never popup unless the user shoots themselves in the foot
-        acotSubCommand =      1
+        acotNothing         = 0 # Will never popup unless the user shoots themselves in the foot
+        acotSubCommand      = 1
         acotSubCommandGroup = 2
-        acotStr =             3
-        acotInt =             4
-        acotBool =            5
-        acotUser =            6
-        acotChannel =         7
-        acotRole =            8
-        acotMentionable =     9 ## Includes Users and Roles
-        acotNumber =          10 ## A double
-        acotAttachment =      11
+        acotStr             = 3
+        acotInt             = 4
+        acotBool            = 5
+        acotUser            = 6
+        acotChannel         = 7
+        acotRole            = 8
+        acotMentionable     = 9 ## Includes Users and Roles
+        acotNumber          = 10 ## A double
+        acotAttachment      = 11
     ApplicationCommandType* = enum
         atNothing  = 0 ## Should never appear
         atSlash    = 1 ## CHAT_INPUT
         atUser         ## USER
         atMessage      ## MESSAGE
     ApplicationCommandPermissionType* = enum
-        acptRole =    1
-        acptUser =    2
+        acptRole    = 1
+        acptUser    = 2
         acptChannel = 3
+    RoleConnectionMetadataType* = enum
+        rcmIntegerLessThanOrEqual     = 1
+        rcmIntegerGreaterThanOrEqual  = 2
+        rcmIntegerEqual               = 3
+        rcmIntegerNotEqual            = 4
+        rcmDatetimeLessThanOrEqual    = 5
+        rcmDatetimeGreaterThanOrEqual = 6
+        rcmBooleanEqual               = 7
+        rcmBooleanNotEqual            = 8
     InteractionType* = enum
-        itPing =               1
+        itPing               = 1
         itApplicationCommand = 2
-        itMessageComponent =   3
-        itAutoComplete =       4
-        itModalSubmit =        5
+        itMessageComponent   = 3
+        itAutoComplete       = 4
+        itModalSubmit        = 5
     InteractionDataType* = enum
         idtApplicationCommand
         idtMessageComponent
         idtAutoComplete
         idtModalSubmit
     InteractionResponseType* = enum
-        irtInvalid =                          0
-        irtPong =                             1
-        irtChannelMessageWithSource =         4
+        irtInvalid                          = 0
+        irtPong                             = 1
+        irtChannelMessageWithSource         = 4
         irtDeferredChannelMessageWithSource = 5
-        irtDeferredUpdateMessage =            6
-        irtUpdateMessage =                    7
-        irtAutoCompleteResult =               8
-        irtModal =                            9
+        irtDeferredUpdateMessage            = 6
+        irtUpdateMessage                    = 7
+        irtAutoCompleteResult               = 8
+        irtModal                            = 9
     InviteTargetType* = enum
-        ittStream =              1
+        ittStream              = 1
         ittEmbeddedApplication = 2
     PrivacyLevel* = enum
         plGuildOnly = 2
     UserPremiumType* = enum
-        uptNone =         0
+        uptNone         = 0
         uptNitroClassic = 1
-        uptNitro =        2
-        uptNitroBasic =   3
+        uptNitro        = 2
+        uptNitroBasic   = 3
     ButtonStyle* = enum
-        Primary =   1
+        Primary   = 1
         Secondary = 2
-        Success =   3
-        Danger =    4
-        Link =      5
+        Success   = 3
+        Danger    = 4
+        Link      = 5
     TextInputStyle* = enum
-        Short =     1
+        Short     = 1
         Paragraph = 2
     MessageComponentType* = enum
-        None =              0 # This should never happen
-        ActionRow =         1
-        Button =            2
-        SelectMenu =        3
-        TextInput =         4
-        UserSelect =        5
-        RoleSelect =        6
+        None              = 0 # This should never happen
+        ActionRow         = 1
+        Button            = 2
+        SelectMenu        = 3
+        TextInput         = 4
+        UserSelect        = 5
+        RoleSelect        = 6
         MentionableSelect = 7
-        ChannelSelect =     8
+        ChannelSelect     = 8
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
@@ -396,35 +414,40 @@ type
         splGuildOnly = 2
     GuildScheduledEventStatus* = enum
         esScheduled = 1
-        esActive =    2
+        esActive    = 2
         esCompleted = 3
-        esCanceled =  4
+        esCanceled  = 4
     EntityType* = enum
         etStageInstance = 1
-        etVoice =         2
-        etExternal =      3
+        etVoice         = 2
+        etExternal      = 3
     ModerationActionType* = enum
-        matBlockMessage =     1
+        matBlockMessage     = 1
         matSendAlertMessage = 2
-        matTimeout =          3
+        matTimeout          = 3
     ModerationTriggerType* = enum
-        mttKeyword =       1
-        mttHarmfulLink =   2
-        mttSpam =          3
+        mttKeyword       = 1
+        mttHarmfulLink   = 2
+        mttSpam          = 3
         mttKeywordPreset = 4
+        mttMentionSpam   = 5
+    KeywordPresetType* = enum
+        kptProfanity =     1
+        kptSexualContent = 2
+        kptSlurs         = 3
     ForumSortOrder* = enum
         fsoLatestActivity = 0
-        fsoCreationDate =   1
+        fsoCreationDate   = 1
     ForumLayout* = enum
-        flNotSet =      0
-        flListView =    1
+        flNotSet      = 0
+        flListView    = 1
         flGalleryView = 2
     GuildOnboardingMode* = enum
-        omDefault,
+        omDefault  = 0,
         omAdvanced = 1
     GuildOnboardingPromptType* = enum
-        ptMultipleChoice,
-        ptDropdown =    1
+        ptMultipleChoice = 0,
+        ptDropdown       = 1
 
 const
     permAllText* = {permCreateInstantInvite,
@@ -482,10 +505,11 @@ const
         permCreateExpressions,
         permViewCreatorMonetizationInsights,
         permModerateMembers,
-        permManageEmojis,
+        permManageExpressions,
         permManageThreads,
         permManageEvents,
         permCreateEvents} + permAllChannel
+    permManageEmojis* = permManageExpressions # ;) no need to thank me
 
 # Logging stuffs
 proc log*(msg: string, info: tuple) =
@@ -770,6 +794,15 @@ proc endpointGuildCommandPermission*(aid, gid: string; cid = ""): string =
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"
+
+proc endpointApplicationRoleConnectionMetadata*(aid: string): string =
+    result = "/applications/"&aid&"/role-connections/metadata"
+
+proc endpointUserApplications*(aid: string): string =
+    result = endpointUsers()&"/applications"&(if aid != "": "/"&aid else: "")
+
+proc endpointUserApplicationRoleConnection*(aid: string): string =
+    result = endpointUserApplicationRoleConnection(aid) & "/role-connection"
 
 proc endpointStickers*(sid: string): string =
     result = "stickers/"&sid

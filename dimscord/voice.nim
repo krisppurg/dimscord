@@ -557,10 +557,8 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
 
     when input is Stream:
         let stream = input
-        let atEnd = proc (): bool = stream.atEnd
     else:
         let stream = input.outputStream
-        let atEnd = proc (): bool = not input.running
 
     while stream.atEnd:
         await sleepAsync 1000
@@ -572,7 +570,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         start:   float64
         counts:  float64
         elapsed: float64
-    while not atEnd() and not v.stopped:
+    while not stream.atEnd() and not v.stopped:
         while v.paused:
             await sleepAsync 1
 
@@ -696,7 +694,8 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
     doAssert exeExists(command), "You need to install " & command
 
     let output = execProcess(
-        command, args = ["--get-url", url], options = {poUsePath, poStdErrToStdOut}
+        command, args = ["--get-url", url, "--no-warnings"],
+        options = {poUsePath, poStdErrToStdOut}
     )
     # doAssert exitCode == 0, "An error occurred:\n" & output
     let first = output.split("\n")[0]

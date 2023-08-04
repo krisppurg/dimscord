@@ -551,6 +551,9 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     if v.paused: v.paused = false
     v.stopped = false
 
+    while v.start != 0.0:
+        await sleepAsync 20
+
     await v.sendSpeaking(true)
     v.speaking = true
     asyncCheck v.voice_events.on_speaking(v, true)
@@ -590,9 +593,10 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
             else:
                 break
 
+        echo v.data
         if attempts == 0:
             logVoice("Couldn't read needed amount of data in time\n  Data size: " & $v.data.len)
-            return
+            continue
 
         v.sent += 1
         v.loops += 1
@@ -639,12 +643,11 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
 
         await sleepAsync float(delay * 1000) + offset
 
+    v.start = 0.0
+    v.loops = 0
     v.stopped = false
-    if not v.paused: v.data = ""
+    v.data = ""
     v.paused = false
-    # not 100% sure if this might cause issues, but i'll leave it commented
-    # v.loops = 0
-    # v.start = 0.0
     v.sent = 0
     v.time = 0
     v.sequence = 0

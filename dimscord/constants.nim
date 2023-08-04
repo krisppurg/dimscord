@@ -57,6 +57,7 @@ type
         permCreateExpressions
         permCreateEvents
         permUseExternalSounds
+        permSendVoiceMessages
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
@@ -94,6 +95,8 @@ type
         afPartyPrivacyFriends,
         afPartyPrivacyVoiceChannel,
         afEmbeded
+    RoleFlags* = enum
+        rfInPrompt = 1
     VoiceSpeakingFlags* = enum
         vsfMicrophone,
         vsfSoundshare,
@@ -469,9 +472,18 @@ const
         permManageThreads,
         permSendMessagesInThreads,
         permUsePublicThreads,
-        permUsePrivateThreads}
+        permUsePrivateThreads,
+        permSendVoiceMessages}
     permAllVoice* = {permCreateInstantInvite,
+        permMentionEveryone,
         permManageChannels,
+        permUseExternalStickers,
+        permUseExternalEmojis,
+        permReadMessageHistory,
+        permSendTTSMessage,
+        permAddReactions,
+        permManageWebhooks,
+        permUseSlashCommands,
         permPrioritySpeaker,
         permVoiceStream,
         permViewChannel,
@@ -483,16 +495,26 @@ const
         permUseVAD,
         permUseSoundboard,
         permUseExternalSounds,
-        permStartEmbeddedActivities}
+        permStartEmbeddedActivities,
+        permSendVoiceMessages}
     permAllStage* = {permCreateInstantInvite,
+        permUseExternalStickers,
+        permUseSlashCommands,
+        permManageWebhooks,
+        permMentionEveryone,
+        permUseExternalEmojis,
+        permReadMessageHistory,
+        permAddReactions,
         permManageChannels,
+        permSendTTSMessage,
         permViewChannel,
         permVoiceConnect,
         permVoiceMuteMembers,
-        permVoiceDeafenMembers,
         permVoiceMoveMembers,
         permManageRoles,
-        permRequestToSpeak}
+        permRequestToSpeak,
+        permSendVoiceMessages,
+        permVoiceStream}
     permAllChannel* = permAllText + permAllVoice + permAllStage
     permAll* = {permKickMembers,
         permBanMembers,

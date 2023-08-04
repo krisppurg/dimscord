@@ -263,7 +263,7 @@ type
     GuildChannel* = ref object
         id*, name*, guild_id*: string
         nsfw*: bool
-        parent_id*: Option[string]
+        topic*, parent_id*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
         position*: Option[int]
         default_auto_archive_duration*: Option[int]
@@ -272,8 +272,6 @@ type
         messages*: Table[string, Message]
         last_message_id*: string
         case kind*: ChannelType
-        of ctGuildText, ctGuildNews:
-            topic*: Option[string]
         of ctGuildVoice, ctGuildStageVoice:
             rtc_region*: Option[string]
             video_quality_mode*: Option[int]
@@ -412,9 +410,12 @@ type
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
         tags*: Option[RoleTag]
+        flags*: set[RoleFlags]
     RoleTag* = object
         bot_id*, integration_id*: Option[string]
+        subscription_listing_id*: Option[string]
         premium_subscriber*: Option[bool] #no idea what type is supposed to be
+        available_for_purchase*, guild_connections*: Option[bool]
     TriggerMetadata* = object
         keyword_filter*, regex_patterns*, allow_list*: seq[string]
         presets*: seq[KeywordPresetType]

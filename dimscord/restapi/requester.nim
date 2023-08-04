@@ -284,6 +284,9 @@ proc `%`*(o: Overwrite): JsonNode =
 proc `%`*(flags: set[MessageFlags]): JsonNode =
     %cast[int](flags)
 
+proc `%`*(flags: set[RoleFlags]): JsonNode =
+    %cast[int](flags)
+
 proc `%`*(flags: set[PermissionFlags]): JsonNode =
     %($cast[int](flags))
 

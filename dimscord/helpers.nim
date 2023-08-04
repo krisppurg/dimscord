@@ -296,6 +296,12 @@ proc stripMentions*(m: Message): string =
     else:
         for chan in m.mention_channels:
             result = result.replace(re"<#\d{17,19}>", "#" & chan.name)
+
+proc reference*(m: Message): MessageReference =
+    result.channel_id = some m.channel_id
+    result.message_id = some m.id
+    result.guild_id   = m.guild_id
+
 #
 # Message components
 #

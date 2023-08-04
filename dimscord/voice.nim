@@ -593,7 +593,6 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
             else:
                 break
 
-        echo v.data
         if attempts == 0:
             logVoice("Couldn't read needed amount of data in time\n  Data size: " & $v.data.len)
             continue

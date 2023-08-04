@@ -500,7 +500,7 @@ proc unpause*(v: VoiceClient) =
     ## (Alias) same as resume
     v.paused = false
 
-proc stop*(v: VoiceClient) =
+proc stopPlaying*(v: VoiceClient) =
     ## Stop the current audio
     v.stopped = true
     v.data = ""

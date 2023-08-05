@@ -1,4 +1,6 @@
-import std/macros
+import std/[macros, genasts, macrocache]
+
+const clientCache = CacheSeq"discord.client"
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -60,3 +62,17 @@ macro optionIf*(check: typed): untyped =
 
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
+
+macro dimClient*(x: typed): untyped =
+  # Registers a DiscordClient
+  if clientCache.len > 0:
+    error("There is already a client registered")
+  clientCache &= x[0][0]
+  result = x
+
+macro getClient*(): DiscordClient = 
+  # Checks that a user has registered a client before trying to use a helper
+  if clientCache.len == 0:
+    error("Client not registered")
+  clientCache[0]
+

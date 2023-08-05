@@ -4,9 +4,11 @@
 ## the hassle for doing complicated bitwise work.
 
 import constants, objects, options
-import strformat, strutils, times
+import strformat, strutils, times, asyncdispatch
 import tables, regex
 import macros
+include ./helpers/[channel, guild, message, user]
+
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.

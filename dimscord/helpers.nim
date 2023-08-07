@@ -452,7 +452,9 @@ static:
             # Not exported so just ignore it
             if field.kind == nnkIdent: continue
             # Remove the on_ prefix for some events
-            let name = dup($field[1], removePrefix("on_"))
+            let origName = $field[1]
+            let name = if origName == "on_dispatch": "unknown"
+                       else: dup(origName, removePrefix("on_"))
             procsTable[name] = newStmtList(params).copy()
 
 proc params(event: DispatchEvent): NimNode =
@@ -471,6 +473,7 @@ macro passArgs(prc: proc, data: tuple): untyped =
         for i in 0..<data.getTypeImpl().len:
             nnkBracketExpr.newTree(data, newLit i)
     result = newCall(prc, args)
+    echo result[0].getImpl().treeRepr
 
 proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
     ## Helper that returns `none(T)` if a Future timeouts.
@@ -506,7 +509,8 @@ proc waitForObject*(client; event: static[DispatchEvent],
         type FutReturn = DataType.get(0)
     else:
         type FutReturn = DataType
-
+    static:
+        echo event.tupleType
     let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
     # We wrap the users handler inside another proc.
     # This allows us to abstract creating the future, completing it, handling timeouts, etc
@@ -527,6 +531,16 @@ proc waitFor*[T: proc](client; event: static[DispatchEvent],
     ##
     ## - See [waitForObject] which also returns the object that passed the condition
     discard await client.waitForObject(event, handler)
+
+proc waitForRaw*(client: DiscordClient, event: string, handler: proc (data: JsonNode): bool): Future[JsonNode] {.async.} =
+  ## THis allows waiting for a dispatch event, except you can specify any string.
+  ## This allows for handling events that aren't implemented in dimscord yet.
+  ## The handler is ran before dimscord handles the event and so items might not be in cache.
+  ## Use [waitFor] or [waitForObject] instead if you know what event to wait for
+  let resp = await client.waitForObject(Unknown) do (eventKind: string, data: JsonNode) -> bool:
+      if event == eventKind:
+          return handler(data)
+  return resp.data
 
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message

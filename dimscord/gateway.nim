@@ -257,12 +257,12 @@ proc getGuildMember*(s: Shard;
         presences = presence
     )
 
-    proc handle(g: Guild, e: GuildMembersChunk): bool =
+    proc handledd(g: Guild, e: GuildMembersChunk): bool =
         return e.members.len >= 0
 
     let evt = await s.client.waitForObject(
         DispatchEvent.GuildMembersChunk,
-        handle
+        handledd
     )
 
     if evt.m.members.len == 0: raise newException(Exception, "Member not found")

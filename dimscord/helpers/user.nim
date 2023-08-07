@@ -7,7 +7,7 @@ template get*(g: Guild, what: typedesc[seq[Member]];
     ## Gets a seq of a guild's members.
     getClient.api.getGuildMembers(g.id, limit, after)
 
-template nickname*(g: Guild, nick: string, reason = ""): Future[void] =
+template setNickname*(g: Guild, nick: string, reason = ""): Future[void] =
     ## Sets the current user's guild nickname
     ## - Set `nick` to "" to reset nickname.
     getClient.api.setGuildNick(g.id, nick, reason)

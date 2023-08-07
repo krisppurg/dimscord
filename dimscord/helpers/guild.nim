@@ -107,7 +107,7 @@ template vanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] =
 #     getClient.api.removeGuildMember(mb.guild_id, mb.user.id, reason)
 
 # (!): requires PR to add `guild_id` field
-# template banStatus*(mb: Member): Future[GuildBan] =
+# template banInfo*(mb: Member): Future[GuildBan] =
 #     ## Gets guild ban.
 #     getClient.api.getGuildBan(mb.guild_id, mb.user.id)
 
@@ -212,7 +212,7 @@ template delete*(gse: GuildScheduledEvent, reason = ""): Future[void] =
    ## Delete a scheduled event in guild.
    getClient.api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
 
-template subscribers*(gse: GuildScheduledEvent;
+template eventSubscribers*(gse: GuildScheduledEvent;
         limit = 100, with_member = false;
         before, after = ""
 ): Future[seq[GuildScheduledEventUser]] =

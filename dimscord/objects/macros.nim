@@ -1,6 +1,6 @@
 import std/[macros, genasts, macrocache]
 
-const clientCache = CacheSeq"discord.client"
+const clientCache = CacheSeq"dimscord.client"
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -63,16 +63,26 @@ macro optionIf*(check: typed): untyped =
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
 
-macro dimClient*(x: typed): untyped =
-  # Registers a DiscordClient
-  if clientCache.len > 0:
-    error("There is already a client registered")
-  clientCache &= x[0][0]
-  result = x
+macro dimClient*(x: DiscordClient): untyped =
+    ## Register a DiscordClient
+    ## - Use this variable to use the helper functions. Can be set only once.
+    runnableExamples "-r:off":
+        # Register the client when declaring it
+        let discord* {.dimClient.} = newDiscordClient("YOUR_TOKEN")
+        # Now you can use the helper functions
+        
+    if clientCache.len > 0:
+        error("There is already a client registered")
+    elif x.kind notin {nnkLetSection, nnkVarSection}:
+        error("Must be used when declaring the variable", x)
+    else:
+        clientCache &= x[0][0]
+        result = x
 
 macro getClient*(): DiscordClient = 
-  # Checks that a user has registered a client before trying to use a helper
+  ## Fetch a registered DiscordClient
+  ## - You must use `dimClient` before using this macro !
   if clientCache.len == 0:
-    error("Client not registered")
+      error("Client not registered")
   clientCache[0]
 

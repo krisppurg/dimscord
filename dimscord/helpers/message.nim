@@ -67,15 +67,15 @@ template react*(m: Message, emoji: string): Future[void] =
     ## - `emoji` Example: '👀', '💩', `likethis:123456789012345678`
     getClient.api.addMessageReaction(m.channel_id, m.id, emoji)
 
-template unreact*(m: Message, emoji: string, user_id = "@me"): Future[void] =
-    ## Deletes the user's or the bot's message reaction to a Discord message.
+template removeReaction*(m: Message, emoji: string, user_id = "@me"): Future[void] =
+    ## Removes the user's or the bot's message reaction to a Discord message.
     getClient.api.deleteMessageReaction(m.channel_id, m.id, emoji, user_id)
 
-template unreactAll*(m: Message, emoji: string): Future[void] =
-    ## Deletes all the reactions for emoji.
+template clear*(m: Message, emoji: string): Future[void] =
+    ## Remove all the reactions of a given emoji.
     getClient.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
 
-template reactions*(m: Message, emoji: string;
+template getReactions*(m: Message, emoji: string;
         before, after = "";
         limit: range[1..100] = 25
 ): Future[seq[User]] =
@@ -84,18 +84,18 @@ template reactions*(m: Message, emoji: string;
         m.channel_id, m.id, emoji,
         before, after, limit
     )
-template clear*(m: Message): Future[void] =
-    ## Remove all message reactions.
+template clearAll*(m: Message): Future[void] =
+    ## Remove all the reactions of a given message.
     getClient.api.deleteAllMessageReactions(m.channel_id, m.id)
 
-template leave*(ch: GuildChannel): Future[void] =
+template leaveThread*(ch: GuildChannel): Future[void] =
     ## Leave thread.
     if ch.kind == ctGuildPublicThread or (ch.kind == ctGuildPrivateThread):
         getClient.api.leaveThread(ch.id)
     else:
         raise newException(CatchableError, "Channel is not a thread !")
 
-template join*(ch: GuildChannel): Future[void] =
+template joinThread*(ch: GuildChannel): Future[void] =
     ## Join thread.
     if ch.kind == ctGuildPublicThread or (ch.kind == ctGuildPrivateThread):
         getClient.api.joinThread(ch.id)

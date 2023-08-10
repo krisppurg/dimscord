@@ -260,7 +260,7 @@ proc updateStatus*(s: Shard, activity = none ActivityStatus;
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
-    s.updateStatus(
+    await s.updateStatus(
         activities = (if activity.isSome: @[activity.get] else: @[]),
         status = status,
         afk = afk

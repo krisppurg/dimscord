@@ -85,19 +85,23 @@ when defined(discordEtf):
                 x[k]
             )
         result = term(toOpenArray(v, v.low, v.high))
+
     proc term [T: Table[string, Term]](x: seq[T]): Term =
         term toOpenArray(x.mapIt(term(it,false)), x.low, x.high)
+
     proc term [T: not Table[string, Term]](x: seq[T]): Term =
         term toOpenArray(x.mapIt(term(it)), x.low, x.high)
 
-    proc toUgly(result: var string, x: DataValue) =
+    proc toUgly(result: var string, x: DataValue; fieldname = "") =
         var comma = false
+
         case x.tag:
         of tagList:
             result.add "["
             for child in x.lst:
                 if comma: result.add ","
                 else: comma = true
+
                 result.toUgly child
             result.add "]"
         of tagMap:
@@ -105,40 +109,40 @@ when defined(discordEtf):
             for (key, value) in x.map:
                 if comma: result.add ","
                 else: comma = true
+                var fld = ""
+
                 case key.tag:
-                of tagAtom: string(key.atom).escapeJson(result)
-                of tagBinary: key.bin.escapeJson(result)
+                of tagAtom: fld = string(key.atom)
+                of tagBinary: fld = key.bin
                 else: discard
+
+                fld.escapeJson(result)
                 result.add ":"
-                result.toUgly value
+                result.toUgly value, fld 
             result.add "}"
-        of tagString:
-            escapeJson(x.str, result)
+        of tagString: escapeJson(x.str, result)
         of tagAtom:
             let v = string x.atom
+
             case v:
             of "nil": result.add("null")
             of "true": result.add("true")
             of "false": result.add("false")
             else:
                 escapeJson(v, result)
-        of tagBinary:
-            escapeJson(x.bin, result)
-        of tagInt32:
-            result.addInt(x.i32)
-        of tagUint8:
-            result.addInt(x.u8)
+        of tagBinary: escapeJson(x.bin, result)
+        of tagInt32: result.addInt(x.i32)
+        of tagUint8: result.addInt(x.u8)
         of tagSmallBigInt:
             var u: uint64
             copyMem(addr u, unsafeAddr x.bigint.data[0], x.bigint.data.len)
-            if x.bigint.data.len == 8:
+
+            if x.bigint.data.len in 7..8 or "id" in fieldname:
                 result.add('"'&($u)&'"')
             else:
                 result.add($u)
-        of tagFloat64:
-            result.addFloat(x.f64)
-        of tagNil:
-            result.add "[]"
+        of tagFloat64: result.addFloat(x.f64)
+        of tagNil: result.add "[]"
         else:
             discard
 
@@ -186,9 +190,9 @@ proc sendSock(s: Shard, opcode: int, data: Table[string, DataValue] | DataValue;
     var tosend: (string, Opcode)
 
     when defined(discordEtf):
-        tosend=(term(payload).toEtf, Opcode.Binary)
+        tosend = (term(payload).toEtf, Opcode.Binary)
     else:
-        tosend=($payload, Opcode.Text)
+        tosend = ($payload, Opcode.Text)
 
     doAssert(len(tosend[0]) <= 4096,
         "There was an attempt on sending a payload over 4096 characters."

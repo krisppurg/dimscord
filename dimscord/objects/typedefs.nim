@@ -332,7 +332,7 @@ type
         created_at*: BiggestFloat
         timestamps*: Option[tuple[start, final: BiggestFloat]]
         emoji*: Option[Emoji]
-        party*: Option[tuple[id: string, size: seq[int]]]
+        party*: Option[tuple[id: string, size: seq[int]]] ## todo
         assets*: Option[ActivityAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
         buttons*: seq[tuple[label, url: string]]

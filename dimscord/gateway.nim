@@ -86,7 +86,7 @@ when defined(discordEtf):
             )
         result = term(toOpenArray(v, v.low, v.high))
     proc term [T: Table[string, Term]](x: seq[T]): Term =
-        term toOpenArray(x.mapIt(term(it,true)), x.low, x.high)
+        term toOpenArray(x.mapIt(term(it,false)), x.low, x.high)
     proc term [T: not Table[string, Term]](x: seq[T]): Term =
         term toOpenArray(x.mapIt(term(it)), x.low, x.high)
 
@@ -157,7 +157,7 @@ proc `%%`*(v: openarray[(string, DataValue)]): Table[string, DataValue] =
 
 proc toTerm [T: auto](x: T): DataValue =
     when x is seq:
-        if x.len == 0: Term(tag: tagAtom, atom: Atom "nil")
+        if x.len == 0: term nil
     else: term x
 
 proc `&`[T: auto](v: T): DataValue =
@@ -235,46 +235,36 @@ proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
         result = false
         log("Fatal error: " & closeData.reason)
 
-proc updateStatus*(s: Shard, activity = none ActivityStatus;
-        status = "online";
-        afk = false) {.async.} =
-    ## Updates the shard's status.
-    if s.sockClosed or not s.ready: return
-    var payload = %%{
-        "since": &uint8 0,
-        "afk": &afk,
-        "status": &status
-    }
-
-    if activity.isSome:
-        var act = %%{
-            "type": &int32 activity.get.kind,
-            "name": &activity.get.name
-        }
-        if activity.get.url.isSome:
-            act["url"] = &get activity.get.url
-
-        payload["activities"] = & @[act]
-
-    await s.sendSock(opStatusUpdate, payload)
-
 proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
     if s.sockClosed or not s.ready: return
+    var acts: seq[Table[string, DataValue]] = @[]
     var payload = %%{
         "since": &uint8 0,
         "afk": &afk,
-        "status": &status
+        "status": &status,
+        "activities": &initTable[string, DataValue]()
     }
 
+    # if activities.len > 0 or not defined(discordEtf):
     payload["activities"] = &activities.mapIt(%%{
         "type": &uint8 it.kind,
         "name": &it.name,
         "url": &it.url
     })
     await s.sendSock(opStatusUpdate, payload)
+
+proc updateStatus*(s: Shard, activity = none ActivityStatus;
+        status = "online";
+        afk = false) {.async.} =
+    ## Updates the shard's status.
+    s.updateStatus(
+        activities = (if activity.isSome: @[activity.get] else: @[]),
+        status = status,
+        afk = afk
+    )
 
 proc identify(s: Shard) {.async, used.} =
     if s.authenticating or s.sockClosed: return

@@ -152,7 +152,7 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
 
         member.presence = presence
 
-        asyncCheck s.client.events.presence_update(s, presence, oldPresence)
+    asyncCheck s.client.events.presence_update(s, presence, oldPresence)
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
     let msg = newMessage(data)

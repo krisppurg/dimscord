@@ -120,7 +120,12 @@ when defined(discordEtf):
                 result.add ":"
                 result.toUgly value, fld 
             result.add "}"
-        of tagString: escapeJson(x.str, result)
+        of tagString:
+            var res: seq[int] = @[]
+            for chr in cast[seq[char]](x.str):
+                res.add(int chr)
+
+            result.toUgly res.term
         of tagAtom:
             let v = string x.atom
 

@@ -63,7 +63,7 @@ macro optionIf*(check: typed): untyped =
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
 
-macro dimClient*(x: DiscordClient): untyped =
+macro dimClient*(x: typed): untyped =
     ## Register a DiscordClient
     ## - Use this variable to use the helper functions. Can be set only once.
     runnableExamples "-r:off":

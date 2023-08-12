@@ -21,20 +21,25 @@ template reply*(m: Message, content = "";
         embeds: seq[Embed] = @[];
         attachments: seq[Attachment] = @[];
         components: seq[MessageComponent] = @[];
+        flags: set[MessageFlags] = {};
         files: seq[DiscordFile] = @[];
         stickers: seq[string] = @[];
         allowed_mentions = none AllowedMentions;
-        tag: static[bool] = false;
-        tts: static[bool] = false): Future[Message] =
+        mention = false; failifnotexists = false;
+        tts = false): Future[Message] =
     ## Replies to a Message.
     ## (?) - set `tag` to `true` in order to tag the replied message in Discord.
- 
+    let message_reference = some MessageReference(
+        message_id: some m.id,
+        failIfNotExists: some failifnotexists
+    )
+
     getClient.api.sendMessage(
         m.channel_id,
-        content, tts, none(int),
+        content, tts, flags,
         files, embeds, attachments,
         allowed_mentions, 
-        when tag == true: some(MessageReference(message_id: some m.id, failIfNotExists: some false)) else: none(MessageReference), 
+        message_reference,
         components, stickers
     )
 

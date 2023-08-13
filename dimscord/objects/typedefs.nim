@@ -487,6 +487,7 @@ type
     PartialChannel* = object
         id*, name*: string
         kind*: ChannelType
+    SomeChannel* = DMChannel|GuildChannel
     Channel* = object
         ## Used for creating guilds.
         name*, parent_id*: string

@@ -1,4 +1,4 @@
-template send*(ch: GuildChannel;
+template send*(ch: SomeChannel;
     content = "", tts = false;
     nonce: Option[string] or Option[int] = none(int);
     files: seq[DiscordFile] = @[];
@@ -11,11 +11,11 @@ template send*(ch: GuildChannel;
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     getClient.api.sendMessage(
-            ch.id, content, tts,
-            nonce, files, embeds,
-            attachments, allowed_mentions, message_reference,
-            components, sticker_ids
-        )
+        ch.id, content, tts,
+        nonce, files, embeds,
+        attachments, allowed_mentions, message_reference,
+        components, sticker_ids
+    )
 
 template reply*(m: Message, content = "";
         embeds: seq[Embed] = @[];
@@ -28,7 +28,7 @@ template reply*(m: Message, content = "";
         mention = false; failifnotexists = false;
         tts = false): Future[Message] =
     ## Replies to a Message.
-    ## (?) - set `tag` to `true` in order to tag the replied message in Discord.
+    ## - set `tag` to `true` in order to tag the replied message in Discord.
     let message_reference = some MessageReference(
         message_id: some m.id,
         failIfNotExists: some failifnotexists
@@ -53,7 +53,6 @@ template edit*(m: Message;
         flags = none int
         ): Future[Message]  =
     ## Edits a Message.
-    ## - Using `edit` for ephemeral messages results in an "Unknown Message" error !
     getClient.api.editMessage(
         m.channel_id, m.id,
         content, tts, flags,
@@ -75,7 +74,7 @@ template delete*(m: Message | seq[Message] | seq[string], reason = ""): Future[v
             reason
         )
 
-template get*(ch: GuildChannel, what: typedesc[seq[Message]];
+template getMessages*(ch: SomeChannel;
         around, before, after = "";
         limit: range[1..100] = 50): Future[seq[Message]] =
     ## Gets channel messages.
@@ -83,7 +82,7 @@ template get*(ch: GuildChannel, what: typedesc[seq[Message]];
         ch.id, around, before, after, limit
     )
 
-template get*(ch: GuildChannel, what: typedesc[Message];
+template getMessage*(ch: SomeChannel;
         message_id: string): Future[Message] =
     ## Get a channel message.
     getClient.api.getChannelMessage(ch.id, message_id)
@@ -98,7 +97,7 @@ template removeReaction*(m: Message, emoji: string, user_id = "@me"): Future[voi
     ## Removes the user's or the bot's message reaction to a Discord message.
     getClient.api.deleteMessageReaction(m.channel_id, m.id, emoji, user_id)
 
-template clear*(m: Message, emoji: string): Future[void] =
+template removeReactionEmoji*(m: Message, emoji: string): Future[void] =
     ## Remove all the reactions of a given emoji.
     getClient.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
 
@@ -111,7 +110,8 @@ template getReactions*(m: Message, emoji: string;
         m.channel_id, m.id, emoji,
         before, after, limit
     )
-template clearAll*(m: Message): Future[void] =
+
+template clearReactions*(m: Message): Future[void] =
     ## Remove all the reactions of a given message.
     getClient.api.deleteAllMessageReactions(m.channel_id, m.id)
 
@@ -133,84 +133,10 @@ template followup*(i: Interaction;
         embeds = embeds,
         components = components,
         files = files,
-        flags = (if ephemeral: some (1 shl 6) else: none int)
+        flags = (if ephemeral: some mfEphemeral.ord else: none int)
     )
 
-template edit*(i: Interaction, message_id = "@original";
-        content = none string;
-        embeds = newSeq[Embed]();
-        allowed_mentions = none AllowedMentions;
-        attachments = newSeq[Attachment]();
-        files = newSeq[DiscordFile]();
-        components = newSeq[MessageComponent]()
-): Future[Message] =
-    ## Edit an interaction response
-    ## You can actually use this to modify original interaction or followup message.
-    ##
-    ## - `message_id` can be `@original`
-    getClient.api.editWebhookMessage(
-        i.id, i.token, message_id,
-        content = content,
-        embeds = embeds,
-        allowed_mentions = allowed_mentions,
-        attachments = attachments,
-        files = files,
-        components = components,
-    )
-
-template reply*(i: Interaction;
-        content = "";
-        embeds: seq[Embed] = @[];
-        components: seq[MessageComponent] = @[];
-        attachments: seq[Attachment] = @[];             
-        ephemeral = false
-): Future[void] =
-    ## Respond to an Interaction.
-    ## - Do NOT use this if you used `defer` or if you already sent a `reply`. 
-    ## - This is a "response" to an Interaction. Use `followup`, `createFollowupMessage` or `edit` if you already responded.
-    ## - Set `ephemeral` to true to send ephemeral responses.
-    
-    getClient.api.interactionResponseMessage(
-        application_id,
-        token,
-        irtChannelMessageWithSource,
-        InteractionApplicationCommandCallbackData(
-            flags: if ephemeral == true: {mfEphemeral},
-            content: content,
-            components: components,
-            attachments: attachments,
-            embeds: embeds
-        )
-    )
-
-template update*(i: Interaction;
-        content = "";
-        embeds: seq[Embed] = @[];
-        attachments: seq[Attachment] = @[];
-        components: seq[MessageComponent] = @[];
-        flags: set[MessageFlags] = {};
-        tts: Option[bool] = none bool
-): Future[void] =
-    ## For Components only: edits the message the component is attached to.
-    ## - This acknowledges an Interaction.
-    
-    # assert i.kind == itMessageComponent
-    let resp = InteractionApplicationCommandCallbackData(
-        content: content,
-        embeds: embeds,
-        attachments: attachments,
-        components: components,
-        flags: flags,
-        tts: tts
-    )
-
-    getClient.api.interactionResponseMessage(
-        i.application_id, i.token,
-        kind = irtUpdateMessage,
-        response = resp
-    )
-
-template get*(i: Interaction, what: typedesc[Message], message_id = "@original"): Future[Message] =
+template getMessage*(i: Interaction, message_id = "@original"): Future[Message] =
     ## Get the response (Message) to an Interaction
     getClient.api.getWebhookMessage(i.application_id, i.token, message_id)
 
@@ -218,55 +144,14 @@ template delete*(i: Interaction, message_id = "@original"): Future[void] =
     ## Deletes an Interaction Response or Followup Message
     getClient.api.deleteInteractionResponse(i.application_id, i.token, message_id)
 
-template `defer`*(i: Interaction;
-        ephemeral = false;
-        hide = false): Future[void] =
-    ## Defers the response/update to an Interaction.
-    ## - You must use `followup()` or `edit()` after calling `defer()`.
-    ## - Set `ephemeral` to `true` to make the Interaction ephemeral.
-    ## - Set `hide` to `true` to hide the "thinking" state of the bot.
-
-    let response = 
-        InteractionResponse(
-            kind: 
-                if hide == true: 
-                    irtDeferredUpdateMessage 
-                else:
-                    irtDeferredChannelMessageWithSource
-            ,
-            data: some InteractionApplicationCommandCallbackData(
-                flags: if ephemeral == true: { mfEphemeral }
-            )
-        )
-
-    getClient.api.createInteractionResponse(i.id, i.token, response)
-
-template suggest*(i: Interaction;
-        choices: seq[ApplicationCommandOptionChoice]
-): Future[void] =
-    ## Create an interaction response which is an autocomplete response.
-    getClient.api.interactionResponseAutocomplete(i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
-
-template sendModal*(i: Interaction;
-        response: InteractionCallbackDataModal
-): Future[void] =
-    ## Create an interaction response which is a modal.
-    getClient.api.interactionResponseModal(i.id, i.token, response)
-
-template get*(what: typedesc[Sticker], sticker_id: string): Future[Sticker] =
-    getClient.api.getSticker(sticker_id)
-
-template get*(what: typedesc[StickerPack]): Future[seq[StickerPack]] =
-    getClient.api.getNitroStickerPacks()
-
-template get*(ch: GuildChannel, what: typedesc[ThreadMember];
+template getThreadMember*(ch: GuildChannel;
         user: User | string): Future[ThreadMember] =
     ## Get a thread member.
     getClient.api.getThreadMember(
         when user is User: user.id else: user
     )
 
-template get*(ch: GuildChannel, what: typedesc[seq[ThreadMember]]): Future[seq[ThreadMember]] =
+template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
     ## List thread members.
     ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent 
     ## if not enabled on your application.

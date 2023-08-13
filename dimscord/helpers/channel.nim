@@ -2,13 +2,12 @@ template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
     getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
         
-template unpin*(m: Message, reason = ""): Future[void]  =
+template removePin*(m: Message, reason = ""): Future[void]  =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
 
-template pins*(ch: GuildChannel): Future[seq[Message]] =
+template pins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.
-    ## Note: Due to a limitation of Discord API, `Message` objects do not contain complete `Reaction` data 
     getClient.api.getChannelPins(ch.id)
 
 template edit*(ch: GuildChannel;
@@ -26,12 +25,12 @@ template edit*(ch: GuildChannel;
         nsfw, reason
     )
 
-template create*(g: Guild, what: typedesc[GuildChannel];
-            name: string; kind = 0;
-            parent_id, topic = none string; nsfw = none bool;
-            rate_limit_per_user, bitrate, position, user_limit = none int;
-            permission_overwrites = none seq[Overwrite];
-            reason = ""
+template createGuildChannel*(g: Guild;
+    name: string; kind = 0;
+    parent_id, topic = none string; nsfw = none bool;
+    rate_limit_per_user, bitrate, position, user_limit = none int;
+    permission_overwrites = none seq[Overwrite];
+    reason = ""
 ): Future[GuildChannel]  =
     ## Creates a channel.
     getClient.api.createGuildChannel(
@@ -40,11 +39,11 @@ template create*(g: Guild, what: typedesc[GuildChannel];
         user_limit, permission_overwrites, reason
     )
 
-template delete*(ch: GuildChannel, reason = ""): Future[void] =
+template deleteChannel*(ch: SomeChannel, reason = ""): Future[void] =
     ## Deletes or closes a channel
     getClient.api.deleteChannel(ch.id, reason)
 
-template create*(ch: GuildChannel, what: typedesc[Invite];
+template createInvite*(ch: GuildChannel;
     max_age = 86400; max_uses = 0;
     temporary, unique = false; target_user = none string;
     target_user_id, target_application_id = none string;
@@ -59,39 +58,35 @@ template create*(ch: GuildChannel, what: typedesc[Invite];
         target_type, reason
     )
 
-template delete*(inv: Invite, reason = ""): Future[void] =
+template delete*(inv: Invite | string, reason = ""): Future[void] =
     ## Delete a guild invite.
-    getClient.api.deleteInvite(inv.code, reason)
+    let code = when inv is Invite: inv.code else: inv
+    getClient.api.deleteInvite(code, reason)
 
 template invites*(ch: GuildChannel): Future[seq[Invite]] =
     ## Gets a list of a channel's invites.
     getClient.api.getChannelInvites(ch.id)
 
-template channel*(g: Guild, channel_id: string): Future[GuildChannel] =
-    ## Gets guild channel by ID.
-    getClient.api.getChannel(channel_id)
-
-template dms*(s: Shard, channel_id: string): Future[DMChannel] =
-    ## Gets dm channel by ID
-    let chan = getClient.api.getChannel(channel_id)
-    if chan[1].isSome:
-        get chan[1]
-
-    case result.kind
-    of ctDirect, ctGroupDM:
-        discard
-    else: 
-        raise newException(CatchableError, "Channel type is not a dm")
+template getChannel*(g: Guild, channel_id: string): Future[SomeChannel] =
+    ## Gets channel by ID.
+    let channel = getClient.api.getChannel(channel_id)
+    if channel[0].isSome:
+        result = channel[0].get
+    elif channel[1].isSome:
+        result = channel[1].get
 
 template webhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getChannelWebhooks(ch.id)
 
-template delete*(w: Webhook, reason = ""): Future[void] =
+template deleteWebhook*(w: Webhook | string, reason = ""): Future[void] =
     ## Deletes a webhook.
-    getClient.api.deleteWebhook(w.id, reason)
+    let wid = when w is Webhook: w.id else: w
+    getClient.api.deleteWebhook(wid, reason)
 
-template edit*(w: Webhook, name = w.name, avatar = w.avatar, reason = ""): Future[void] =
+template edit*(w: Webhook,
+        name, avatar = none string;
+        reason = ""): Future[void] =
     let chan = w.channel_id
     if chan.isSome:
         getClient.api.editWebhook(w.id, name, avatar, w.channel_id, reason)
@@ -105,20 +100,26 @@ template newThread*(ch: GuildChannel;
     invitable = none bool;
     reason = ""
 ): Future[GuildChannel] =
-    ## Starts a new thread.
-    getClient.api.startThreadWithoutMessage(ch.id, name, auto_archive_duration, some kind, invitable, reason)
+    ## Starts a new thread without any message.
+    getClient.api.startThreadWithoutMessage(
+        ch.id, name, auto_archive_duration, some kind, invitable, reason)
 
-template create*(ch: GuildChannel, what: typedesc[StageInstance];
+template createStageInstance*(ch: GuildChannel;
         topic: string, reason = "";
         privacy = int plGuildOnly
 ): Future[StageInstance] =
     ## Create a stage instance.
     getClient.api.createStageInstance(ch.id, topic, privacy, reason)
 
-template edit*(si: StageInstance, topic = si.topic, privacy = int(si.privacy_level), reason = ""): Future[StageInstance] =
+template editStageInstance*(si: StageInstance | string,
+        topic = none string;
+        privacy = none int; reason = ""): Future[StageInstance] =
     ## Modify a stage instance.
-    getClient.api.editStageInstance(si.channel_id, topic, some privacy, reason)
+    let st = when si is StageInstance: si.channel_id else: si
+    getClient.api.editStageInstance(st, topic, privacy, reason)
 
-template delete*(si: StageInstance, reason = ""): Future[void] =
+template deleteStageInstance*(si: StageInstance | string,
+        reason = ""): Future[void] =
     ## Delete the stage instance.
-    getClient.api.deleteStageInstance(si.channel_id, reason)
+    let st = when si is StageInstance: si.channel_id else: si
+    getClient.api.deleteStageInstance(st, reason)

@@ -63,12 +63,12 @@ macro optionIf*(check: typed): untyped =
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
 
-macro useHelper*(x: DiscordClient): untyped =
+macro mainClient*(x: DiscordClient): untyped =
     ## Register a DiscordClient
     ## - Use this variable to use the helper functions. Can be set only once.
     runnableExamples "-r:off":
         # Register the client when declaring it
-        let discord* {.useHelper.} = newDiscordClient("YOUR_TOKEN")
+        let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
         # Now you can use the helper functions
         
     if clientCache.len > 0:
@@ -81,7 +81,7 @@ macro useHelper*(x: DiscordClient): untyped =
 
 macro getClient*(): DiscordClient = 
     ## Fetch a registered DiscordClient that would be used as the main variable for helper functions.
-    ## - You must use `useHelper` before using this macro!
+    ## - You must use `mainClient` before using this macro!
     if clientCache.len == 0:
         error("Client not registered")
     clientCache[0]

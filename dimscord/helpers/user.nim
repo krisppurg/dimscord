@@ -183,12 +183,10 @@ template edit*(i: Interaction, message_id = "@original";
     ## - `message_id` can be `@original`
     getClient.api.editWebhookMessage(
         i.application_id, i.token, message_id,
-        content = content,
-        embeds = embeds,
-        allowed_mentions = allowed_mentions,
-        attachments = attachments,
-        files = files,
-        components = components,
+        content, i.channel_id,
+        embeds, allowed_mentions,
+        attachments, files,
+        components
     )
 
 template getResponse*(i: Interaction, message_id="@original"): Future[Message] =

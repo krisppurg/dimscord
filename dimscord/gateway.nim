@@ -257,7 +257,6 @@ proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         "activities": &initTable[string, DataValue]()
     }
 
-    # if activities.len > 0 or not defined(discordEtf):
     payload["activities"] = &activities.mapIt(%%{
         "type": &uint8 it.kind,
         "name": &it.name,

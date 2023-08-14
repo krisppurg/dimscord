@@ -573,7 +573,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         start:   float64
         counts:  float64
         elapsed: float64
-    while not stream.atEnd() and not v.stopped:
+    while (not stream.atEnd() or input.running) and not v.stopped:
         while v.paused:
             await sleepAsync 1
 

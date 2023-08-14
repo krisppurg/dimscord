@@ -214,7 +214,7 @@ template deferResponse*(i: Interaction;
         )
     )
 
-    getClient.api.interactionResponseMessage(i.id, i.token, response)
+    getClient.api.createInteractionResponse(i.id, i.token, response)
 
 template suggest*(i: Interaction;
         choices: seq[ApplicationCommandOptionChoice]

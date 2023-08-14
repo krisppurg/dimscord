@@ -84,5 +84,5 @@ macro getClient*(): DiscordClient =
     ## - You must use `mainClient` before using this macro!
     if clientCache.len == 0:
         error("Client not registered")
-    clientCache[0]
+    result = clientCache[0]
 

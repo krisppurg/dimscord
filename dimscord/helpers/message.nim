@@ -115,27 +115,6 @@ template clearReactions*(m: Message): Future[void] =
     ## Remove all the reactions of a given message.
     getClient.api.deleteAllMessageReactions(m.channel_id, m.id)
 
-template followup*(i: Interaction;
-        content = "";
-        embeds: seq[Embed] = @[];
-        components: seq[MessageComponent] = @[];
-        attachments: seq[Attachment] = @[];
-        files: seq[DiscordFile] = @[];
-        ephemeral = false): Future[Message] =
-    ## Follow-up to an Interaction.
-    ## - Use this function when sending messages to acknowledged Interactions.
-
-    getClient.api.createFollowupMessage(
-        application_id = i.application_id,
-        interaction_token = i.token,
-        content = content,
-        attachments = attachments,
-        embeds = embeds,
-        components = components,
-        files = files,
-        flags = (if ephemeral: some mfEphemeral.ord else: none int)
-    )
-
 template getMessage*(i: Interaction, message_id = "@original"): Future[Message] =
     ## Get the response (Message) to an Interaction
     getClient.api.getWebhookMessage(i.application_id, i.token, message_id)

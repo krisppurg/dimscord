@@ -154,21 +154,21 @@ template followup*(i: Interaction;
         components: seq[MessageComponent] = @[];
         attachments: seq[Attachment] = @[];
         files: seq[DiscordFile] = @[];
+        allowed_mentions = none AllowedMentions;
+        tts = false;
         ephemeral = false): Future[Message] =
     ## Follow-up to an Interaction.
     ## - Use this function when sending messages to acknowledged Interactions.
 
     getClient.api.createFollowupMessage(
-        application_id = i.application_id,
-        interaction_token = i.token,
-        content = content,
-        attachments = attachments,
-        embeds = embeds,
-        components = components,
-        files = files,
+        i.application_id, i.token,
+        content, tts,
+        files, attachments,
+        embeds, allowed_mentions,
+        components,
         flags = (if ephemeral: some mfEphemeral.ord else: none int)
     )
-
+    
 template edit*(i: Interaction, message_id = "@original";
         content = none string;
         embeds = newSeq[Embed]();

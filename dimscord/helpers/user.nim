@@ -205,16 +205,17 @@ template deferResponse*(i: Interaction;
     ## - You must use `followup()` or `edit()` after calling `defer()`.
     ## - Set `ephemeral` to `true` to make the Interaction ephemeral.
     ## - Set `hide` to `true` to hide the "X is thinking..." state of the bot.
-
-    let response = InteractionResponse(
-        kind: (if hide: irtDeferredUpdateMessage 
-              else: irtDeferredChannelMessageWithSource),
-        data: some InteractionCallbackDataMessage(
-            flags: if ephemeral: {mfEphemeral} else: {}
+    getClient.api.createInteractionResponse(
+        i.id, 
+        i.token, 
+        InteractionResponse(
+            kind: (if hide: irtDeferredUpdateMessage 
+                  else: irtDeferredChannelMessageWithSource),
+            data: some InteractionCallbackDataMessage(
+                flags: if ephemeral: {mfEphemeral} else: {}
+            )
         )
     )
-
-    getClient.api.interactionResponseMessage(i.id, i.token, response)
 
 template suggest*(i: Interaction;
         choices: seq[ApplicationCommandOptionChoice]

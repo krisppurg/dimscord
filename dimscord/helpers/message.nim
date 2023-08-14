@@ -25,8 +25,7 @@ template reply*(m: Message, content = "";
         files: seq[DiscordFile] = @[];
         stickers: seq[string] = @[];
         allowed_mentions = none AllowedMentions;
-        mention = false; failifnotexists = false;
-        tts = false): Future[Message] =
+        mention, failifnotexists, tts = false): Future[Message] =
     ## Replies to a Message.
     ## - set `tag` to `true` in order to tag the replied message in Discord.
     let message_reference = some MessageReference(
@@ -60,7 +59,8 @@ template edit*(m: Message;
         components
     )
 
-template delete*(m: Message | seq[Message] | seq[string], reason = ""): Future[void] =
+template delete*(m: Message | seq[Message] | seq[string];
+        reason = ""): Future[void] =
     ## Deletes one or multiple Message(s).
     when m is Message:
         getClient.api.deleteMessage(m.channel_id, m.id, reason)

@@ -47,93 +47,86 @@ template edit*(g: Guild;
         features, premium_progress_bar_enabled
     )
 
-template audits*(g: Guild; 
+template getAuditLogs*(g: Guild; 
         user_id, before = "", action_type = -1;
         limit: range[1..100] = 50
 ): Future[AuditLog] =
     ## Get guild audit logs. The maximum limit is 100.
     getClient.api.getGuildAuditLogs(g.id, user_id, before, action_type, limit)
 
-# (!): requires PR to add `guild_id` field
-# template delete*(r: Role): Future[void] =
-#    ## Deletes a guild role.
-#    getClient.api.deleteGuildRole(r.guild_id, r.id)
+template deleteRole*(g: Guild, r: Role): Future[void] =
+   ## Deletes a guild role.
+   getClient.api.deleteGuildRole(g.id, r.id)
 
+template editRole*(g: Guild, r: Role;
+        name = none string;
+        icon, unicode_emoji = none string;
+        permissions = none PermObj; color = none int;
+        hoist, mentionable = none bool;
+        reason = ""
+): Future[Role] =
+    ## Modifies a guild role.
+    getClient.api.editGuildRole(
+        g.id, r.id,
+        name, icon, unicode_emoji,
+        permissions, color,
+        hoist, mentionable,
+        reason
+    )
 
-# (!): requires PR to add `guild_id` field
-# template edit*(r: Role;
-#         name = none string;
-#         icon, unicode_emoji = none string;
-#         permissions = none PermObj; color = none int;
-#         hoist, mentionable = none bool;
-#         reason = ""
-# ): Future[Role] =
-#     ## Modifies a guild role.
-#     getClient.api.editGuildRole(
-#         r.guild_id, r.id,
-#         name, icon, unicode_emoji,
-#         permissions, color,
-#         hoist, mentionable,
-#         reason
-#     )
-
-template invites*(g: Guild): Future[seq[InviteMetadata]] =
+template getInvites*(g: Guild): Future[seq[InviteMetadata]] =
     ## Gets guild invites.
     getClient.api.getGuildInvites(g.id)
 
-template vanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] =
+template getVanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] =
     ## Get the guild vanity url. Requires the MANAGE_GUILD permission. 
     ## `code` will be null if a vanity url for the guild is not set.
     getClient.api.getGuildVanityUrl(g.id)
 
-# (!): requires PR to add `guild_id` field
-# template edit*(mb: Member;
-#         nick, channel_id, communication_disabled_until = none string;
-#         roles = none seq[string];
-#         mute, deaf = none bool;
-#         reason = ""
-# ): Future[void] = 
-#     ## Modifies a guild member
-#     ## Note:
-#     ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
-#     getClient.api.editGuildMember(
-#         mb.guild_id, mb.user.id, nick, channel_id, communication_disabled_until,
-#         roles, mute, deaf, reason
-#     )
+template editMember*(g: Guild, m: Member;
+        nick, channel_id, communication_disabled_until = none string;
+        roles = none seq[string];
+        mute, deaf = none bool;
+        reason = ""
+): Future[void] = 
+    ## Modifies a guild member
+    ## Note:
+    ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
+    getClient.api.editGuildMember(
+        g.id, m.user.id, nick, channel_id, communication_disabled_until,
+        roles, mute, deaf, reason
+    )
 
-# (!): requires PR to add `guild_id` field
-# template kick*(mb: Member, reason = ""): Future[void] =
-#     ## Removes a guild member.
-#     getClient.api.removeGuildMember(mb.guild_id, mb.user.id, reason)
+template removeMember*(g: Guild, m: Member, reason = ""): Future[void] =
+    ## Removes a guild member.
+    getClient.api.removeGuildMember(g.id, m.user.id, reason)
 
-# (!): requires PR to add `guild_id` field
-# template banInfo*(mb: Member): Future[GuildBan] =
-#     ## Gets guild ban.
-#     getClient.api.getGuildBan(mb.guild_id, mb.user.id)
+template getBan*(g: Guild, user_id: string): Future[GuildBan] =
+    ## Gets guild ban.
+    getClient.api.getGuildBan(g.id, mb.user.id)
 
-template bans*(g: Guild): Future[seq[GuildBan]] =
+template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.
     getClient.api.getGuildBans(g.id)
 
-# (!): requires PR to add `guild_id` field
-# template ban*(mb: Member, purge_range: range[0..7] = 0; reason = ""): Future[void] =
-#     ## Creates a guild ban.
-#     getClient.api.createGuildBan(mb.guild_id, mb.user.id, purge_range, reason)
+template ban*(g: Guild, m: Member, deletemsgdays: range[0..7] = 0;
+        reason = ""): Future[void] =
+    ## Creates a guild ban.
+    getClient.api.createGuildBan(g.id, m.user.id, deletemsgdays, reason)
 
-# (!): requires PR to add `guild_id` field
-# template unban*(mb: Member, reason = ""): Future[void] =
-#     ## Removes a guild ban.
-#     getClient.api.removeGuildBan(mb.guild_id, mb.user.id, reason)
+template removeBan*(g: Guild, mb: Member, reason = ""): Future[void] =
+    ## Removes a guild ban.
+    getClient.api.removeGuildBan(mb.guild_id, mb.user.id, reason)
 
-template integrations*(g: Guild): Future[seq[Integration]] =
+template getIntegrations*(g: Guild): Future[seq[Integration]] =
     ## Gets a list of guild integrations.
     getClient.api.getGuildIntegrations(g.id)
 
-template webhooks*(g: Guild): Future[seq[Webhook]] =
+template getWebhooks*(g: Guild): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getGuildWebhooks(g.id)
 
-template delete*(integ: Integration, reason = ""): Future[void] =
+template deleteIntegration*(integ: Integration, reason = ""): Future[void] =
     ## Deletes a guild integration.
     getClient.api.deleteGuildIntegration(integ.id, reason)
 
@@ -141,50 +134,44 @@ template preview*(g: Guild): Future[GuildPreview] =
     ## Gets guild preview.
     getClient.api.getGuildPreview(g.id)
 
-template search*(g: Guild, query = "", limit: range[1..1000] = 1): Future[seq[Member]] =
+template searchMembers*(g: Guild, query = "";
+        limit: range[1..1000] = 1): Future[seq[Member]] =
     ## Search for guild members.
     getClient.api.searchGuildMembers(g.id, query, limit)
 
-# (!): requires PR to add `guild_id` field
-# template edit*(em: Emoji, name = none string;
-#         roles = none seq[string];
-#         reason = ""
-# ): Future[Emoji] =
-#     ## Modifies a guild emoji.
-#     getClient.api.editGuildEmoji(em.guild_id, em.id, name, roles, reason)
+template editEmoji*(g: Guild, e: Emoji, name = none string;
+        roles = none seq[string];
+        reason = ""
+): Future[Emoji] =
+    ## Modifies a guild emoji.
+    getClient.api.editGuildEmoji(g.id, e.id, name, roles, reason)
 
-# (!): requires PR to add `guild_id` field
-# template delete*(em: Emoji, reason = ""): Future[void] =
-#     ## Deletes a guild emoji.
-#     getClient.api.deleteGuildEmoji(em.guild_id, em.id, reason)
+template deleteEmoji*(g: Guild, e: Emoji, reason = ""): Future[void] =
+    ## Deletes a guild emoji.
+    getClient.api.deleteGuildEmoji(g.id, e.id, reason)
 
-template regions*(g: Guild): Future[seq[VoiceRegion]] =
+template getRegions*(g: Guild): Future[seq[VoiceRegion]] =
     ## Gets a guild's voice regions.
     getClient.api.getGuildVoiceRegions(g.id)
 
-
-template edit*(sk: Sticker;
+template editSticker*(g: Guild, s: Sticker;
         name, desc, tags = none string;
         reason = ""
 ): Future[Sticker] =
     ## Modify a guild sticker.
-    if sk.guild_id.isNone:
-        raise newException(CatchableError, "This sticker doesn't belong to any guilds !")
-    getClient.api.editGuildSticker(sk.guild_id.get, sk.id, name, desc, tags, reason)
+    getClient.api.editGuildSticker(g.id, s.id, name, desc, tags, reason)
 
-template delete*(sk: Sticker, reason = ""): Future[Sticker] =
+template deleteSticker*(g: Guild, sk: Sticker, reason = ""): Future[Sticker] =
     ## Deletes a guild sticker.
-    if sk.guild_id.isNone:
-        raise newException(CatchableError, "This sticker doesn't belong to any guilds !")
     getClient.api.deleteGuildSticker(sk.guild_id.get, sk.id, reason)
 
-template scheduledEvent*(g: Guild;
+template getScheduledEvent*(g: Guild;
         event_id: string, with_user_count = false
 ): Future[GuildScheduledEvent] =
     ## Get a scheduled event in a guild.
     getClient.api.getScheduledEvent(g.id, event_id, with_user_count)
 
-template scheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
+template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 

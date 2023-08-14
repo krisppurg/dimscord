@@ -12,16 +12,14 @@ template setNickname*(g: Guild, nick: string, reason = ""): Future[void] =
     ## - Set `nick` to "" to reset nickname.
     getClient.api.setGuildNick(g.id, nick, reason)
 
-# requires PR to add `guild_id` field
-# template add*(mb: Member, r: Role | string, reason = ""): Future[void] =
-#     ## Assigns a member's role.
-#     let id: string = when r is Role: r.id else: r
-#     getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
+template addRole*(mb: Member, r: Role | string, reason = ""): Future[void] =
+    ## Assigns a member's role.
+    let id = when r is Role: r.id else: r
+    getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
 
-# requires PR to add `guild_id` field
-# template remove*(mb: Member, r: Role, reason = ""): Future[void] =
-#     ## Removes a member's role.
-#     getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
+    ## Removes a member's role.
+    getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
 
 template leave*(g: Guild): Future[void] =
     ## Leaves a guild.
@@ -111,7 +109,8 @@ template reply*(i: Interaction;
 ): Future[void] =
     ## Respond to an Interaction.
     ## - Do NOT use this if you used `defer` or if you already sent a `reply`. 
-    ## - This is a "response" to an Interaction. Use `followup`, `createFollowupMessage` or `edit` if you already responded.
+    ## - This is a "response" to an Interaction.
+    ## Use `followup`, `createFollowupMessage` or `edit` if you already responded.
     ## - Set `ephemeral` to true to send ephemeral responses.
 
     let flag = if ephemeral: {mfEphemeral} else: {}
@@ -155,11 +154,9 @@ template followup*(i: Interaction;
         attachments: seq[Attachment] = @[];
         files: seq[DiscordFile] = @[];
         allowed_mentions = none AllowedMentions;
-        tts = false;
-        ephemeral = false): Future[Message] =
+        tts, ephemeral = false): Future[Message] =
     ## Follow-up to an Interaction.
     ## - Use this function when sending messages to acknowledged Interactions.
-
     getClient.api.createFollowupMessage(
         i.application_id, i.token,
         content, tts,
@@ -203,12 +200,13 @@ template deferResponse*(i: Interaction;
     ## - You must use `followup()` or `edit()` after calling `defer()`.
     ## - Set `ephemeral` to `true` to make the Interaction ephemeral.
     ## - Set `hide` to `true` to hide the "X is thinking..." state of the bot.
+    if hide: assert i.kind in {itMessageComponent}
     getClient.api.createInteractionResponse(
         i.id, 
         i.token, 
         InteractionResponse(
-            kind: (if hide: irtDeferredUpdateMessage 
-                  else: irtDeferredChannelMessageWithSource),
+            kind: (if hide: irtDeferredUpdateMessage
+            else: irtDeferredChannelMessageWithSource),
             data: some InteractionCallbackDataMessage(
                 flags: if ephemeral: {mfEphemeral} else: {}
             )
@@ -219,7 +217,8 @@ template suggest*(i: Interaction;
         choices: seq[ApplicationCommandOptionChoice]
 ): Future[void] =
     ## Create an interaction response which is an autocomplete response.
-    getClient.api.interactionResponseAutocomplete(i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
+    getClient.api.interactionResponseAutocomplete(
+        i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
 
 template sendModal*(i: Interaction;
         response: InteractionCallbackDataModal

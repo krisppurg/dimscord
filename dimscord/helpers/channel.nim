@@ -25,7 +25,7 @@ template edit*(ch: GuildChannel;
         nsfw, reason
     )
 
-template createGuildChannel*(g: Guild;
+template createChannel*(g: Guild;
     name: string; kind = 0;
     parent_id, topic = none string; nsfw = none bool;
     rate_limit_per_user, bitrate, position, user_limit = none int;
@@ -63,7 +63,7 @@ template delete*(inv: Invite | string, reason = ""): Future[void] =
     let code = when inv is Invite: inv.code else: inv
     getClient.api.deleteInvite(code, reason)
 
-template invites*(ch: GuildChannel): Future[seq[Invite]] =
+template getInvites*(ch: GuildChannel): Future[seq[Invite]] =
     ## Gets a list of a channel's invites.
     getClient.api.getChannelInvites(ch.id)
 
@@ -75,7 +75,7 @@ template getChannel*(g: Guild, channel_id: string): Future[SomeChannel] =
     elif channel[1].isSome:
         result = channel[1].get
 
-template webhooks*(ch: GuildChannel): Future[seq[Webhook]] =
+template getWebhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getChannelWebhooks(ch.id)
 

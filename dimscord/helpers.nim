@@ -1,7 +1,10 @@
-# Utilities for every discord object.
+## Utilities and helper functions for every discord object.
 ## It mostly contains `helper` procedures.
 ## You can use this for getting an avatar url and permission checking without
 ## the hassle for doing complicated bitwise work.
+##
+## Alongside you can use this for helper restapi functions like `channel.send(...)`, `msg.react(...)`.
+## Which is useful for shortening code, but you can use `discord.api` as an alternate as well.
 
 import constants, objects, options
 import strformat, strutils, times, asyncdispatch

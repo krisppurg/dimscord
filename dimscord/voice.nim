@@ -589,7 +589,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
             v.data &= stream.readStr(dataSize - v.data.len)
             dec attempts
             if v.data.len != dataSize:
-                await sleepAsync 500 # reading data may take a little bit long so sleep for 500ms
+                await sleepAsync 1000
             else:
                 break
 
@@ -668,6 +668,8 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
     ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
     ## Requires `ffmpeg` be installed.
     let args = @[
+        "-reconnect",
+        "1",
         "-i",
         path,
         "-loglevel",

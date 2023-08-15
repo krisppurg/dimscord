@@ -100,6 +100,8 @@ proc newDiscordClient*(token: string;
                     u: User) {.async.} = discard,
             guild_ban_remove: proc (s: Shard, g: Guild,
                     u: User) {.async.} = discard,
+            guild_audit_log_entry_create: proc (s: Shard, g: Guild,
+                    e: AuditLogEntry) {.async.} = discard,
             guild_integrations_update: proc (s: Shard,
                     g: Guild) {.async.} = discard,
             guild_member_add: proc (s: Shard, g: Guild,

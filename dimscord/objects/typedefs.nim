@@ -822,6 +822,8 @@ type
         guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
         guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
                 u: User) {.async.}
+        guild_audit_log_entry_create*: proc (s: Shard; g: Guild;
+                e: AuditLogEntry) {.async.}
         guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
         guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
                 m: Member) {.async.}

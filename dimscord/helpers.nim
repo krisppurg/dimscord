@@ -530,21 +530,21 @@ proc waitFor*[T: proc](client; event: static[DispatchEvent],
 
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message
-    return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
+    return await client.waitForObject(deMessageCreate) do (m: Message) -> bool:
         if m.referencedMessage.isSome:
             let referenced = m.referencedMessage.unsafeGet
             return referenced.id == to.id
 
 proc waitForDeletion*(client; msg): Future[void] =
     ## Waits for a message to be deleted
-    client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
+    client.waitFor(deMessageDelete) do (m: Message, exists: bool) -> bool:
         m.id == msg.id
 
 proc waitForComponentUse*(client; id: string): Future[Interaction] =
     ## Waits for a component to be used and returns the interaction.
     ## Data sent in the component can then be extracted.
     ## `id` is the ID that you used when creating the component
-    return client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
+    return client.waitForObject(deInteractionCreate) do (i: Interaction) -> bool:
         i.data.isSome and
         i.data.unsafeGet().interactionType == idtMessageComponent and
         i.data.get.custom_id == id
@@ -559,7 +559,7 @@ proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async
         user.id == vs.user_id
 
     return client
-        .waitForObject(VoiceStateUpdate, handleUpdate)
+        .waitForObject(deVoiceStateUpdate, handleUpdate)
         .await()
         .v
 
@@ -574,6 +574,6 @@ proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)
     return client
-        .waitForObject(MessageReactionAdd, handleUpdate)
+        .waitForObject(deMessageReactionAdd, handleUpdate)
         .await()
         .e

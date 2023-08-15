@@ -257,13 +257,10 @@ proc getGuildMember*(s: Shard;
         presences = presence
     )
 
-    proc handle(g: Guild, e: GuildMembersChunk): bool =
+    proc event(g: Guild, e: GuildMembersChunk): bool =
         return e.members.len >= 0
 
-    let evt = await s.client.waitForObject(
-        DispatchEvent.GuildMembersChunk,
-        handle
-    )
+    let evt = await s.client.waitForObject(deGuildMembersChunk, event)
 
     if evt.m.members.len == 0: raise newException(Exception, "Member not found")
     result = evt.m.members[0]
@@ -323,7 +320,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
-        let eventKind = parseEnum[DispatchEvent](event, Unknown)
+        let eventKind = parseEnum[DispatchEvent](event, deUnknown)
         asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =

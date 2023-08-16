@@ -13,7 +13,6 @@ when defined(dimscordVoice):
 
 proc checkIfAwaiting(client: DiscordClient, event: static[DispatchEvent], data: tuple) =
   ## Runs `data` against a series of handlers waiting on `id`.
-  # TODO: Using pointer so works same as when I add the inner table
   var handlers = addr client.waits[event]
   # We countdown so we can delete while iterating
   for i in countdown(handlers[].len - 1, 0):

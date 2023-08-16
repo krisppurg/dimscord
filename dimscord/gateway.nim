@@ -260,7 +260,7 @@ proc getGuildMember*(s: Shard;
     proc handledd(g: Guild, e: GuildMembersChunk): bool =
         return e.members.len >= 0
 
-    let evt = await s.client.waitForObject(
+    let evt = await s.client.waitFor(
         DispatchEvent.GuildMembersChunk,
         handledd
     )

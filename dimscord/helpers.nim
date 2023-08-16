@@ -541,51 +541,46 @@ proc waitForInternal*(client; event: static[DispatchEvent], handler: proc): auto
                 fut.complete(data[0])
             return true
 
-template waitForObject*(client; event: static[DispatchEvent],
-                            handler: proc): auto =
+template waitFor*(client; event: static[DispatchEvent],
+                            handler: untyped): auto =
     ## Allows you to define a custom condition to wait for.
     ## This also returns the object that passed the condition
-    ##
-    ## - See [waitFor] which doesn't return the object
     block:
+      # Issue is that we can't refine the handler type to be
+      # different depending on what event is. To get around this
+      # we create a shim template which restricts the proc to only be
+      # of one type
       template shim(prc: handlerTypeDesc(event)): auto =
         client.waitForInternal(event, prc)
       shim(handler)
-
-proc waitFor*[T: proc](client; event: static[DispatchEvent],
-                               handler: T): Future[void] {.async.} =
-    ## Allows you to define a custom condition to wait for.
-    ##
-    ## - See [waitForObject] which also returns the object that passed the condition
-    discard await client.waitForObject(event, handler)
 
 proc waitForRaw*(client: DiscordClient, event: string, handler: proc (data: JsonNode): bool): Future[JsonNode] {.async.} =
   ## THis allows waiting for a dispatch event, except you can specify any string.
   ## This allows for handling events that aren't implemented in dimscord yet.
   ## The handler is ran before dimscord handles the event and so items might not be in cache.
   ## Use [waitFor] or [waitForObject] instead if you know what event to wait for
-  let resp = await client.waitForObject(Unknown) do (eventKind: string, data: JsonNode) -> bool:
+  let resp = await client.waitFor(Unknown) do (eventKind: string, data: JsonNode) -> bool:
       if event == eventKind:
           return handler(data)
   return resp.data
 
 proc waitForReply*(client; to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message
-    return await client.waitForObject(MessageCreate) do (m: Message) -> bool:
+    return await client.waitFor(MessageCreate) do (m: Message) -> bool:
         if m.referencedMessage.isSome:
             let referenced = m.referencedMessage.unsafeGet
             return referenced.id == to.id
 
-proc waitForDeletion*(client; msg): Future[void] =
+proc waitForDeletion*(client; msg): Future[void] {.async.} =
     ## Waits for a message to be deleted
-    client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
+    discard await client.waitFor(MessageDelete) do (m: Message, exists: bool) -> bool:
         m.id == msg.id
 
 proc waitForComponentUse*(client; id: string): Future[Interaction] =
     ## Waits for a component to be used and returns the interaction.
     ## Data sent in the component can then be extracted.
     ## `id` is the ID that you used when creating the component
-    return client.waitForObject(InteractionCreate) do (i: Interaction) -> bool:
+    return client.waitFor(InteractionCreate) do (i: Interaction) -> bool:
         i.data.isSome and
         i.data.unsafeGet().interactionType == idtMessageComponent and
         i.data.get.custom_id == id
@@ -600,7 +595,7 @@ proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async
         user.id == vs.user_id
 
     return client
-        .waitForObject(VoiceStateUpdate, handleUpdate)
+        .waitFor(VoiceStateUpdate, handleUpdate)
         .await()
         .v
 
@@ -615,6 +610,6 @@ proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)
     return client
-        .waitForObject(MessageReactionAdd, handleUpdate)
+        .waitFor(MessageReactionAdd, handleUpdate)
         .await()
         .e

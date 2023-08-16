@@ -11,8 +11,8 @@ jobs:
       with:
         version: binary:stable
     - name: Install dimscord
-      run: nimble install
-      
+      run: nimble install -y
+
     - name: Compile examples
       run: |
         for file in examples/*.nim

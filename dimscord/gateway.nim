@@ -4,7 +4,7 @@
 import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, strutils, ./restapi/user
 import tables, random, times, constants, objects, json
-import nativesockets, helpers, dispatch
+import nativesockets, helpers, dispatch {.all.}
 
 when defined(discordCompress):
     import zippy
@@ -257,12 +257,12 @@ proc getGuildMember*(s: Shard;
         presences = presence
     )
 
-    proc handledd(g: Guild, e: GuildMembersChunk): bool =
+    proc handled(g: Guild, e: GuildMembersChunk): bool =
         return e.members.len >= 0
 
     let evt = await s.client.waitFor(
         DispatchEvent.GuildMembersChunk,
-        handledd
+        handled
     )
 
     if evt.m.members.len == 0: raise newException(Exception, "Member not found")
@@ -323,6 +323,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
+        s.client.checkIfAwaiting(Unknown, (event, data))
         let eventKind = parseEnum[DispatchEvent](event, Unknown)
         asyncCheck s.handleEventDispatch(eventKind, data)
 

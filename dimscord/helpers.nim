@@ -558,7 +558,7 @@ proc waitForRaw*(client: DiscordClient, event: string, handler: proc (data: Json
   ## THis allows waiting for a dispatch event, except you can specify any string.
   ## This allows for handling events that aren't implemented in dimscord yet.
   ## The handler is ran before dimscord handles the event and so items might not be in cache.
-  ## Use [waitFor] or [waitForObject] instead if you know what event to wait for
+  ## Use [waitFor] if you know the event you want to wait for
   let resp = await client.waitFor(Unknown) do (eventKind: string, data: JsonNode) -> bool:
       if event == eventKind:
           return handler(data)

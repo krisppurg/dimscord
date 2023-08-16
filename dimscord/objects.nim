@@ -100,6 +100,8 @@ proc newDiscordClient*(token: string;
                     u: User) {.async.} = discard,
             guild_ban_remove: proc (s: Shard, g: Guild,
                     u: User) {.async.} = discard,
+            guild_audit_log_entry_create: proc (s: Shard, g: Guild,
+                    e: AuditLogEntry) {.async.} = discard,
             guild_integrations_update: proc (s: Shard,
                     g: Guild) {.async.} = discard,
             guild_member_add: proc (s: Shard, g: Guild,
@@ -181,8 +183,28 @@ proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
     parseHook(s, i, number)
     v = cast[set[UserFlags]](number)
 
+proc parseHook*(s: string, i: var int, v: var set[GuildMemberFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[GuildMemberFlags]](number)
+
+proc parseHook*(s: string, i: var int, v: var set[RoleFlags]) =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[RoleFlags]](number)
+
 proc newUser*(data: JsonNode): User =
     result = ($data).fromJson(User)
+
+proc parseHook(s: string, i: var int;
+        v: var seq[tuple[label, url: string]]) {.used.} =
+    var data: JsonNode
+    parseHook(s, i, data)
+    for btn in data:
+        if btn.kind == JString:
+            v.add (label: btn.getStr, url: "")
+        elif btn.kind == JObject:
+            v.add (label: btn{"label"}.getStr, url: btn{"url"}.getStr)
 
 proc postHook(p: var Presence) =
     if p.status == "": p.status = "offline"
@@ -212,8 +234,12 @@ proc parseHook*(s: string, i: var int, v: var set[PermissionFlags]) =
 
 proc newRole*(data: JsonNode): Role =
     result = ($data).fromJson(Role)
-    if "tags" in data and "premium_subscriber" in data["tags"]:
-        result.tags.get.premium_subscriber = some true
+    if "tags" in data:
+        let tag = data["tags"]
+        result.tags.get.premium_subscriber = some "premium_subscriber" in tag
+        result.tags.get.available_for_purchase = some(
+            "available_for_purchase" in tag)
+        result.tags.get.guild_connections = some "guild_connections" in tag
 
 proc newHook(m: var Member) =
     m = Member()
@@ -459,8 +485,8 @@ proc parseHook(s: string, i: var int, a: var AuditLogEntry) =
             else:
                 a[k] = val # incase
         of JObject:
-            if "opts" in data:
-                a.opts = some ($data["opts"]).fromJson AuditLogOptions
+            if "options" in data:
+                a.opts = some ($data["options"]).fromJson AuditLogOptions
         else:
             discard
 

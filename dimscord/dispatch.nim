@@ -185,7 +185,7 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
             guild.presences[presence.user.id] = presence
 
         member.presence = presence
-        s.checkAndCall(PresenceUpdate, presence, oldPresence)
+    s.checkAndCall(PresenceUpdate, presence, oldPresence)
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
     let msg = newMessage(data)
@@ -208,7 +208,8 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
     var
         msg = Message(
             id: data["message_id"].str,
-            channel_id: data["channel_id"].str)
+            channel_id: data["channel_id"].str
+            )
 
         user = s.cache.users.getOrDefault(data["user_id"].str,
             User(id: data["user_id"].str)
@@ -217,6 +218,12 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
         emoji = newEmoji(data["emoji"])
         reaction = Reaction(emoji: emoji)
         exists = false
+
+    if data{"message_author_id"}.getStr != "":
+        msg.author = s.cache.users.getOrDefault(
+            data["message_author_id"].str,
+            User(id: data["message_author_id"].str)
+        )
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -606,6 +613,15 @@ proc guildBanRemove(s: Shard, data: JsonNode) {.async.} =
         user = newUser(data["user"])
 
     s.checkAndCall(GuildBanRemove, guild, user)
+
+proc guildAuditLogEntryCreate(s: Shard, data: JsonNode) {.async.} =
+    let
+        guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        entry = newAuditLogEntry(data)
+
+    asyncCheck s.client.events.guild_audit_log_entry_create(s, guild, entry)
 
 proc guildUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = newGuild(data)

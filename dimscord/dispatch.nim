@@ -208,7 +208,8 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
     var
         msg = Message(
             id: data["message_id"].str,
-            channel_id: data["channel_id"].str)
+            channel_id: data["channel_id"].str
+            )
 
         user = s.cache.users.getOrDefault(data["user_id"].str,
             User(id: data["user_id"].str)
@@ -217,6 +218,12 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
         emoji = newEmoji(data["emoji"])
         reaction = Reaction(emoji: emoji)
         exists = false
+
+    if data{"message_author_id"}.getStr != "":
+        msg.author = s.cache.users.getOrDefault(
+            data["message_author_id"].str,
+            User(id: data["message_author_id"].str)
+        )
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]

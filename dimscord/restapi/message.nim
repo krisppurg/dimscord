@@ -613,12 +613,12 @@ proc addThreadMember*(api: RestApi;
     )
 
 proc getThreadMember*(api: RestApi;
-        channel_id, user_id: string) {.async.} =
+        channel_id, user_id: string): Future[ThreadMember] {.async.} =
     ## Get a thread member.
-    discard await api.request(
+    result = (await api.request(
         "GET",
         endpointChannelThreadsMembers(channel_id, user_id)
-    )
+    )).`$`.fromJson(ThreadMember)
 
 proc leaveThread*(api: RestApi; channel_id: string) {.async.} =
     ## Leave thread.

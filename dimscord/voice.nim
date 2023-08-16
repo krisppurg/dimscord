@@ -506,7 +506,7 @@ proc unpause*(v: VoiceClient) =
     ## (Alias) same as resume
     v.paused = false
 
-proc stop*(v: VoiceClient) =
+proc stopPlaying*(v: VoiceClient) =
     ## Stop the current audio
     v.stopped = true
     v.data = ""
@@ -557,16 +557,17 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     if v.paused: v.paused = false
     v.stopped = false
 
+    while v.start != 0.0:
+        await sleepAsync 20
+
     await v.sendSpeaking(true)
     v.speaking = true
     asyncCheck v.voice_events.on_speaking(v, true)
 
     when input is Stream:
         let stream = input
-        let atEnd = proc (): bool = stream.atEnd
     else:
         let stream = input.outputStream
-        let atEnd = proc (): bool = not input.running
 
     while stream.atEnd:
         await sleepAsync 1000
@@ -578,7 +579,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         start:   float64
         counts:  float64
         elapsed: float64
-    while not atEnd() and not v.stopped:
+    while (not stream.atEnd() or input.running) and not v.stopped:
         while v.paused:
             await sleepAsync 1
 
@@ -594,13 +595,13 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
             v.data &= stream.readStr(dataSize - v.data.len)
             dec attempts
             if v.data.len != dataSize:
-                await sleepAsync 500 # reading data may take a little bit long so sleep for 500ms
+                await sleepAsync 1000
             else:
                 break
 
         if attempts == 0:
             logVoice("Couldn't read needed amount of data in time\n  Data size: " & $v.data.len)
-            return
+            continue
 
         v.sent += 1
         v.loops += 1
@@ -647,12 +648,11 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
 
         await sleepAsync float(delay * 1000) + offset
 
-    v.stopped = true
-    if not v.paused: v.data = ""
+    v.start = 0.0
+    v.loops = 0
+    v.stopped = false
+    v.data = ""
     v.paused = false
-    # not 100% sure if this might cause issues, but i'll leave it commented
-    # v.loops = 0
-    # v.start = 0.0
     v.sent = 0
     v.time = 0
     v.sequence = 0
@@ -674,6 +674,8 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
     ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
     ## Requires `ffmpeg` be installed.
     let args = @[
+        "-reconnect",
+        "1",
         "-i",
         path,
         "-loglevel",
@@ -702,7 +704,8 @@ proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
     doAssert exeExists(command), "You need to install " & command
 
     let output = execProcess(
-        command, args = ["--get-url", url], options = {poUsePath, poStdErrToStdOut}
+        command, args = ["--get-url", url, "--no-warnings"],
+        options = {poUsePath, poStdErrToStdOut}
     )
     # doAssert exitCode == 0, "An error occurred:\n" & output
     let first = output.split("\n")[0]

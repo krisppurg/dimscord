@@ -30,14 +30,16 @@ proc getGuildPruneCount*(api: RestApi, guild_id: string,
     ))["pruned"].getInt
 
 proc editGuildMFALevel*(api: RestApi;
-        guild_id: string, level: MFALevel): Future[MFALevel] {.async.} =
+        guild_id: string, level: MFALevel;
+        reason = ""): Future[MFALevel] {.async.} =
     ## Modify Guild MFA Level, requiring guild ownership.
     result = MFALevel (await api.request(
         "POST",
         endpointGuildMFA(guild_id),
         $(%*{
             "level": %level
-        })
+        }),
+        reason
     )).getInt
 
 proc deleteGuild*(api: RestApi, guild_id: string) {.async.} =
@@ -84,7 +86,6 @@ proc editGuild*(api: RestApi, guild_id: string;
         payload["features"] = %[]
         for f in features:
             payload["features"].add(%f)
-
 
     result = (await api.request(
         "PATCH",
@@ -193,9 +194,14 @@ proc createGuildRole*(api: RestApi, guild_id: string;
         "mentionable": mentionable
     }), audit_reason = reason)).newRole
 
-proc deleteGuildRole*(api: RestApi, guild_id, role_id: string) {.async.} =
+proc deleteGuildRole*(api: RestApi, guild_id, role_id: string;
+    reason = "") {.async.} =
     ## Deletes a guild role.
-    discard await api.request("DELETE", endpointGuildRoles(guild_id, role_id))
+    discard await api.request(
+        "DELETE",
+        endpointGuildRoles(guild_id, role_id),
+        audit_reason = reason
+    )
 
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none string;
@@ -341,7 +347,6 @@ proc getGuildWebhooks*(api: RestApi,
         endpointGuildWebhooks(guild_id)
     )).elems.map(newWebhook)
 
-
 proc syncGuildIntegration*(api: RestApi, guild_id, integ_id: string) {.async.} =
     ## Syncs a guild integration.
     discard await api.request(
@@ -396,7 +401,8 @@ proc editGuildWidget*(api: RestApi, guild_id: string,
     result = (await api.request(
         "PATCH",
         endpointGuildWidget(guild_id),
-        $payload
+        $payload,
+        reason
     )).`$`.fromJson(tuple[enabled: bool, channel_id: Option[string]])
 
 proc getGuildPreview*(api: RestApi,
@@ -557,10 +563,11 @@ proc deleteGuildTemplate*(api: RestApi;
     )).newGuildTemplate
 
 proc editUserVoiceState*(api: RestApi,
-    guild_id, channel_id: string;
-    user_id: string; suppress = false;
-    request_to_speak_timestamp = none string) {.async.} =
-    ## Modify current user voice state, read more at:
+    guild_id, user_id: string;
+    channel_id, request_to_speak_timestamp = none string;
+    suppress = none bool;
+    reason = "") {.async.} =
+    ## Modify user or current user voice state, read more at:
     ## https://discord.com/developers/docs/resources/guild#update-current-user-voice-state
     ## or 
     ## https://discord.com/developers/docs/resources/guild#update-user-voice-state-caveats
@@ -568,15 +575,27 @@ proc editUserVoiceState*(api: RestApi,
     if user_id != "@me":
         assert request_to_speak_timestamp.isNone
 
-    let payload = %*{
-        "channel_id": channel_id,
-        "suppress": suppress
-    }
-    payload.loadNullableOptStr(request_to_speak_timestamp)
+    let payload = %*{"channel_id":channel_id}
+    payload.loadNullableOptStr(channel_id, request_to_speak_timestamp)
+    payload.loadOpt(suppress)
 
     discard await api.request(
         "PATCH", endpointGuildVoiceStatesUser(guild_id, user_id),
-        $payload
+        $payload,
+        reason
+    )
+
+proc editCurrentUserVoiceState*(api: RestApi;
+    guild_id, channel_id: string;
+    request_to_speak_timestamp = none string;
+    suppress = none bool;
+    reason = "") {.async.} =
+    ## Modify current user voice state
+    await api.editUserVoiceState(
+        guild_id = guild_id, user_id = "@me",
+        channel_id = some channel_id, suppress = suppress,
+        request_to_speak_timestamp = request_to_speak_timestamp,
+        reason = reason
     )
 
 proc editGuildWelcomeScreen*(api: RestApi, guild_id: string;
@@ -596,7 +615,8 @@ proc editGuildWelcomeScreen*(api: RestApi, guild_id: string;
 
     return (await api.request(
         "PATCH", endpointGuildWelcomeScreen(guild_id),
-        $payload
+        $payload,
+        reason
     )).`$`.fromJson(tuple[
             description: Option[string],
             welcome_channels: seq[WelcomeChannel]
@@ -732,7 +752,8 @@ proc deleteGuildSticker*(
     ## Deletes a guild sticker.
     result = (await api.request(
         "DELETE",
-        endpointGuildStickers(guild_id, sticker_id)
+        endpointGuildStickers(guild_id, sticker_id),
+        audit_reason = reason
     )).newSticker
 
 proc listActiveGuildThreads*(
@@ -898,10 +919,7 @@ proc deleteAutoModerationRule*(api: RestApi;
 proc createAutoModerationRule*(api: RestApi;
     guild_id, name: string; event_type: int;
     trigger_type: ModerationTriggerType;
-    trigger_metadata = none tuple[
-        keyword_filter: seq[string],
-        presets: seq[int]
-    ];
+    trigger_metadata = none TriggerMetadata;
     actions: seq[ModerationAction] = @[]; enabled = false;
     exempt_roles, exempt_channels: seq[string] = @[];
     reason = ""
@@ -935,10 +953,7 @@ proc createAutoModerationRule*(api: RestApi;
 proc editAutoModerationRule*(api: RestApi,
     guild_id, rule_id: string; event_type = none int;
     name = none string; trigger_type = none ModerationTriggerType;
-    trigger_metadata = none tuple[
-        keyword_filter: seq[string],
-        presets: seq[int]
-    ];
+    trigger_metadata = none TriggerMetadata;
     actions = none seq[ModerationAction]; enabled = none bool;
     exempt_roles, exempt_channels = none seq[string];
     reason = ""
@@ -963,3 +978,28 @@ proc editAutoModerationRule*(api: RestApi,
         "PATCH", endpointGuildAutoModerationRules(guild_id, rule_id),
         $payload, audit_reason = reason
     )).`$`.fromJson(AutoModerationRule)
+
+proc getGuildOnboarding*(api: RestApi;
+        guild_id: string): Future[GuildOnboarding] {.async.} =
+    ## Gets guild onboarding.
+    result = (await api.request(
+        "GET",
+        endpointGuildOnboarding(guild_id)
+    )).`$`.fromJson GuildOnboarding
+
+proc editGuildOnboarding*(api: RestApi, guild_id: string;
+        prompts = none seq[GuildOnboardingPrompt];
+        default_channel_ids = none seq[string];
+        enabled = none bool; mode = none GuildOnboardingMode;
+        reason = ""): Future[GuildOnboarding] {.async.} =
+    ## Modify guild onboarding.
+    let payload = newJObject()
+    payload.loadOpt(enabled, prompts, default_channel_ids)
+    if mode.isSome: payload["mode"] = %*(int mode.get)
+
+    result = (await api.request(
+        "PATCH",
+        endpointGuildOnboarding(guild_id),
+        $payload,
+        audit_reason = reason
+    )).`$`.fromJson GuildOnboarding

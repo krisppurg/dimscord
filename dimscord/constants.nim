@@ -41,7 +41,7 @@ type
         permManageNicknames
         permManageRoles
         permManageWebhooks
-        permManageEmojis
+        permManageExpressions
         permUseSlashCommands
         permRequestToSpeak
         permManageEvents
@@ -57,10 +57,11 @@ type
         permCreateExpressions
         permCreateEvents
         permUseExternalSounds
+        permSendVoiceMessages
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
-        giGuildBans, # AKA: GUILD_MODERATION
+        giGuildModeration,
         giGuildEmojisAndStickers,
         giGuildIntegrations,
         giGuildWebhooks,
@@ -94,6 +95,8 @@ type
         afPartyPrivacyFriends,
         afPartyPrivacyVoiceChannel,
         afEmbeded
+    RoleFlags* = enum
+        rfInPrompt = 1
     VoiceSpeakingFlags* = enum
         vsfMicrophone,
         vsfSoundshare,
@@ -112,9 +115,8 @@ type
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
         ## you were to do for example: `cast[int]({apfGatewayPresence})`
-        ufNone,
         ufDiscordEmployee,
-        ufPartneredServerOwner,
+        ufPartneredServerOwner =  1
         ufHypesquadEvents,
         ufBugHunterLevel1,
         ufHouseBravery =          6,
@@ -127,17 +129,26 @@ type
         ufEarlyVerifiedBotDeveloper,
         ufDiscordCertifiedModerator,
         ufBotHttpInteractions
+        ufActiveDeveloper      = 22
+    GuildMemberFlags* = enum
+        gmfDidRejoin
+        gmfCompletedOnboarding
+        gmfBypassesVerification
+        gmfStartedOnboarding
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
-        scfSupressPremiumSubscriptions,
-        scfSupressGuildReminderNotifications
-        scfJoinNotificationReplies
+        scfSuppressPremiumSubscriptions,
+        scfSuppressGuildReminderNotifications
+        scfSuppressJoinNotificationReplies
+        scfSuppressRoleSubscriptionPurchaseNotifications
+        scfSuppressRoleSubscriptionPurchaseNotificationReplies
     ApplicationFlags* = enum
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
         ## you were to do for example: `cast[int]({apfGatewayPresence})`
         apfNone,
-        apfGatewayPresence =          12,
+        apfApplicationAutoModerationRuleCreateBadge = 6,
+        apfGatewayPresence                          = 12,
         apfGatewayPresenceLimited,
         apfGatewayGuildMembers,
         apfGatewayGuildMembersLimited,
@@ -145,6 +156,7 @@ type
         apfEmbeded,
         apfGatewayMessageContent,
         apfGatewayMessageContentLimited,
+        apfApplicationCommandBadge = 23
     ChannelFlags* = enum
         cfNone,
         cfPinned = 1
@@ -166,8 +178,10 @@ const
     cdnAppAssets* =          cdnBase & "app-assets/" # KrispPurg, really? Come on you can do better than that no one is going to use this.
     cdnDiscoverySplashes* =  cdnBase & "discovery-splashes/"
     cdnDefaultUserAvatars* = cdnBase & "embed/avatars/"
+    cdnAvatarDecorations*  = cdnBase & "avatar-decorations/"
     cdnAppIcons* =           cdnBase & "app-icons/"
     cdnRoleIcons* =          cdnBase & "role-icons/"
+    cdnStickers* =           cdnBase & "stickers/"
     cdnBanners* =            cdnBase & "banners/"
 
 type
@@ -313,79 +327,89 @@ type
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
     MessageStickerFormat* = enum
-        msfPng =    1
-        msfAPng =   2
+        msfPng    = 1
+        msfAPng   = 2
         msfLottie = 3
     ApplicationCommandOptionType* = enum
-        acotNothing =         0 # Will never popup unless the user shoots themselves in the foot
-        acotSubCommand =      1
+        acotNothing         = 0 # Will never popup unless the user shoots themselves in the foot
+        acotSubCommand      = 1
         acotSubCommandGroup = 2
-        acotStr =             3
-        acotInt =             4
-        acotBool =            5
-        acotUser =            6
-        acotChannel =         7
-        acotRole =            8
-        acotMentionable =     9 ## Includes Users and Roles
-        acotNumber =          10 ## A double
-        acotAttachment =      11
+        acotStr             = 3
+        acotInt             = 4
+        acotBool            = 5
+        acotUser            = 6
+        acotChannel         = 7
+        acotRole            = 8
+        acotMentionable     = 9 ## Includes Users and Roles
+        acotNumber          = 10 ## A double
+        acotAttachment      = 11
     ApplicationCommandType* = enum
         atNothing  = 0 ## Should never appear
         atSlash    = 1 ## CHAT_INPUT
         atUser         ## USER
         atMessage      ## MESSAGE
     ApplicationCommandPermissionType* = enum
-        acptRole =    1
-        acptUser =    2
+        acptRole    = 1
+        acptUser    = 2
         acptChannel = 3
+    RoleConnectionMetadataType* = enum
+        rcmIntegerLessThanOrEqual     = 1
+        rcmIntegerGreaterThanOrEqual  = 2
+        rcmIntegerEqual               = 3
+        rcmIntegerNotEqual            = 4
+        rcmDatetimeLessThanOrEqual    = 5
+        rcmDatetimeGreaterThanOrEqual = 6
+        rcmBooleanEqual               = 7
+        rcmBooleanNotEqual            = 8
     InteractionType* = enum
-        itPing =               1
+        itPing               = 1
         itApplicationCommand = 2
-        itMessageComponent =   3
-        itAutoComplete =       4
-        itModalSubmit =        5
+        itMessageComponent   = 3
+        itAutoComplete       = 4
+        itModalSubmit        = 5
     InteractionDataType* = enum
         idtApplicationCommand
         idtMessageComponent
         idtAutoComplete
         idtModalSubmit
     InteractionResponseType* = enum
-        irtInvalid =                          0
-        irtPong =                             1
-        irtChannelMessageWithSource =         4
+        irtInvalid                          = 0
+        irtPong                             = 1
+        irtChannelMessageWithSource         = 4
         irtDeferredChannelMessageWithSource = 5
-        irtDeferredUpdateMessage =            6
-        irtUpdateMessage =                    7
-        irtAutoCompleteResult =               8
-        irtModal =                            9
+        irtDeferredUpdateMessage            = 6
+        irtUpdateMessage                    = 7
+        irtAutoCompleteResult               = 8
+        irtModal                            = 9
     InviteTargetType* = enum
-        ittStream =              1
+        ittStream              = 1
         ittEmbeddedApplication = 2
     PrivacyLevel* = enum
         plGuildOnly = 2
     UserPremiumType* = enum
-        uptNone =         0
+        uptNone         = 0
         uptNitroClassic = 1
-        uptNitro =        2
+        uptNitro        = 2
+        uptNitroBasic   = 3
     ButtonStyle* = enum
-        Primary =   1
+        Primary   = 1
         Secondary = 2
-        Success =   3
-        Danger =    4
-        Link =      5
+        Success   = 3
+        Danger    = 4
+        Link      = 5
     TextInputStyle* = enum
-        Short =     1
+        Short     = 1
         Paragraph = 2
     MessageComponentType* = enum
-        None =              0 # This should never happen
-        ActionRow =         1
-        Button =            2
-        SelectMenu =        3
-        TextInput =         4
-        UserSelect =        5
-        RoleSelect =        6
+        None              = 0 # This should never happen
+        ActionRow         = 1
+        Button            = 2
+        SelectMenu        = 3
+        TextInput         = 4
+        UserSelect        = 5
+        RoleSelect        = 6
         MentionableSelect = 7
-        ChannelSelect =     8
+        ChannelSelect     = 8
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
@@ -393,29 +417,40 @@ type
         splGuildOnly = 2
     GuildScheduledEventStatus* = enum
         esScheduled = 1
-        esActive =    2
+        esActive    = 2
         esCompleted = 3
-        esCanceled =  4
+        esCanceled  = 4
     EntityType* = enum
         etStageInstance = 1
-        etVoice =         2
-        etExternal =      3
+        etVoice         = 2
+        etExternal      = 3
     ModerationActionType* = enum
-        matBlockMessage =     1
+        matBlockMessage     = 1
         matSendAlertMessage = 2
-        matTimeout =          3
+        matTimeout          = 3
     ModerationTriggerType* = enum
-        mttKeyword =       1
-        mttHarmfulLink =   2
-        mttSpam =          3
+        mttKeyword       = 1
+        mttHarmfulLink   = 2
+        mttSpam          = 3
         mttKeywordPreset = 4
+        mttMentionSpam   = 5
+    KeywordPresetType* = enum
+        kptProfanity =     1
+        kptSexualContent = 2
+        kptSlurs         = 3
     ForumSortOrder* = enum
         fsoLatestActivity = 0
-        fsoCreationDate =   1
+        fsoCreationDate   = 1
     ForumLayout* = enum
-        flNotSet =      0
-        flListView =    1
+        flNotSet      = 0
+        flListView    = 1
         flGalleryView = 2
+    GuildOnboardingMode* = enum
+        omDefault  = 0,
+        omAdvanced = 1
+    GuildOnboardingPromptType* = enum
+        ptMultipleChoice = 0,
+        ptDropdown       = 1
     DispatchEvent* = enum
         deUnknown
         deVoiceStateUpdate              = "VOICE_STATE_UPDATE"
@@ -487,14 +522,25 @@ const
         permReadMessageHistory,
         permMentionEveryone,
         permUseExternalEmojis,
+        permUseExternalStickers,
         permManageRoles,
         permManageWebhooks,
         permUseSlashCommands,
         permManageThreads,
+        permSendMessagesInThreads,
         permUsePublicThreads,
-        permUsePrivateThreads}
+        permUsePrivateThreads,
+        permSendVoiceMessages}
     permAllVoice* = {permCreateInstantInvite,
+        permMentionEveryone,
         permManageChannels,
+        permUseExternalStickers,
+        permUseExternalEmojis,
+        permReadMessageHistory,
+        permSendTTSMessage,
+        permAddReactions,
+        permManageWebhooks,
+        permUseSlashCommands,
         permPrioritySpeaker,
         permVoiceStream,
         permViewChannel,
@@ -504,16 +550,28 @@ const
         permVoiceDeafenMembers,
         permVoiceMoveMembers,
         permUseVAD,
-        permManageRoles}
+        permUseSoundboard,
+        permUseExternalSounds,
+        permStartEmbeddedActivities,
+        permSendVoiceMessages}
     permAllStage* = {permCreateInstantInvite,
+        permUseExternalStickers,
+        permUseSlashCommands,
+        permManageWebhooks,
+        permMentionEveryone,
+        permUseExternalEmojis,
+        permReadMessageHistory,
+        permAddReactions,
         permManageChannels,
+        permSendTTSMessage,
         permViewChannel,
         permVoiceConnect,
         permVoiceMuteMembers,
-        permVoiceDeafenMembers,
         permVoiceMoveMembers,
         permManageRoles,
-        permRequestToSpeak}
+        permRequestToSpeak,
+        permSendVoiceMessages,
+        permVoiceStream}
     permAllChannel* = permAllText + permAllVoice + permAllStage
     permAll* = {permKickMembers,
         permBanMembers,
@@ -523,7 +581,14 @@ const
         permViewGuildInsights,
         permChangeNickname,
         permManageNicknames,
-        permManageEmojis} + permAllChannel
+        permCreateExpressions,
+        permViewCreatorMonetizationInsights,
+        permModerateMembers,
+        permManageExpressions,
+        permManageThreads,
+        permManageEvents,
+        permCreateEvents} + permAllChannel
+    permManageEmojis* = permManageExpressions # ;) no need to thank me
 
 # Logging stuffs
 proc log*(msg: string, info: tuple) =
@@ -546,6 +611,64 @@ proc `$`*(p:PermissionFlags): string=
         re"(^[a-z]|[A-Z]+)[a-z]*"
     ).join" "
 
+# CDN Endpoints
+
+proc cdnGuilds(gid=""): string =
+    result = cdnBase&"guilds"&(if gid!="":"/"&gid else:"")
+
+proc cdnGuildUsers*(gid, uid:string): string =
+    result = cdnGuilds(gid) & "/users/" & uid
+
+proc cdnGuildMemberAvatar*(gid, uid, avatar: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp", "gif"]
+    result = cdnGuildUsers(gid, uid)&"/avatars/"&avatar&"."&fmt
+
+proc cdnGuildMemberBanner*(gid, uid, banner: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp", "gif"]
+    result = cdnGuildUsers(gid, uid)&"/banners/"&banner&"."&fmt
+
+proc cdnGuildScheduledEvents*(eid: string): string =
+    result = cdnBase & "guild-events/" & eid
+
+proc cdnGuildScheduledEventCover*(eid, cover: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnGuildScheduledEvents(eid)&"/"&cover&"."&fmt
+
+proc cdnRoleIcon*(rid, icon: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnRoleIcons&rid&"/"&icon&"."&fmt
+
+proc cdnSticker*(sid: string; fmt = "png"): string =
+    assert fmt in @["png", "lottie", "webp"]
+
+proc cdnTeamIcon*(tid, icon: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnTeamIcons&tid&"/"&icon&"."&fmt
+
+proc cdnAppIcon*(aid, icon: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnAppIcons&aid&"/"&icon&"."&fmt
+
+proc cdnAppAsset*(aid, asid: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnAppAssets&aid&"/"&asid&"."&fmt
+
+proc cdnUserAvatarDecoration*(uid, decoration: string): string =
+    result = cdnAvatarDecorations&uid&"/"&decoration&".png"
+
+proc cdnBanner*(bid, banner: string; fmt = "png"): string =
+    ## `bid` could be user or guild id
+    assert fmt in @["png", "jpg", "webp", "gif"]
+    result = cdnBanners&bid&"/"&banner&"."&fmt
+
+proc cdnGuildSplash*(gid, splash: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnSplashes&gid&"/"&splash&"."&fmt
+
+proc cdnGuildDiscoverySplash*(gid, splash: string; fmt = "png"): string =
+    assert fmt in @["png", "jpg", "webp"]
+    result = cdnDiscoverySplashes&gid&"/"&splash&"."&fmt
+
 # Rest Endpoints
 
 proc endpointUsers*(uid = "@me"): string =
@@ -557,8 +680,8 @@ proc endpointUserChannels*(): string =
 proc endpointVoiceRegions*(): string =
     result = "voice/regions"
 
-proc endpointUserGuilds*(gid: string): string =
-    result = endpointUsers("@me") & "/guilds/" & gid
+proc endpointUserGuilds*(gid=""): string =
+    result = endpointUsers("@me")&"/guilds"&(if gid != "": "/" & gid else: "")
 
 proc endpointUserGuildMember*(gid: string): string =
     result = endpointUserGuilds(gid) & "/member"
@@ -592,12 +715,6 @@ proc endpointGuildAutoModerationRules*(gid: string; rid = ""): string =
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
     result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
-
-proc endpointGuildMemberAvatar*(gid, uid: string): string =
-    result = endpointGuilds(uid) & "/users/" & uid & "/avatars/member_avatar.png"
-
-proc endpointRoleIcon*(rid: string): string =
-    result = cdnRoleIcons & "/" & rid & "/" & "role_icon.png"
 
 proc endpointGuildScheduledEvents*(gid: string; eid = ""): string =
     result = endpointGuilds(gid)&"/scheduled-events"&(if eid!="":"/"&eid else:"")
@@ -646,6 +763,9 @@ proc endpointGuildInvites*(gid: string): string =
 
 proc endpointGuildVanity*(gid: string): string =
     result = endpointGuilds(gid) & "/vanity-url"
+
+proc endpointGuildOnboarding*(gid: string): string =
+    result = endpointGuilds(gid) & "/onboarding"
 
 proc endpointGuildChannels*(gid: string; cid = ""): string =
     result = endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")
@@ -753,6 +873,15 @@ proc endpointGuildCommandPermission*(aid, gid: string; cid = ""): string =
 
 proc endpointInteractionsCallback*(iid, it: string): string =
     result = "interactions/" & iid & "/" & it & "/callback"
+
+proc endpointApplicationRoleConnectionMetadata*(aid: string): string =
+    result = "/applications/"&aid&"/role-connections/metadata"
+
+proc endpointUserApplications*(aid: string): string =
+    result = endpointUsers()&"/applications"&(if aid != "": "/"&aid else: "")
+
+proc endpointUserApplicationRoleConnection*(aid: string): string =
+    result = endpointUserApplicationRoleConnection(aid) & "/role-connection"
 
 proc endpointStickers*(sid: string): string =
     result = "stickers/"&sid

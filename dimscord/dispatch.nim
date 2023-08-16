@@ -942,16 +942,11 @@ proc threadMembersUpdate(s: Shard, data: JsonNode) {.async.} =
         id: data["id"].str,
         guild_id: data["guild_id"].str,
         member_count: data["member_count"].getInt,
-        added_members: data{"added_members"}.getElems.map(
-            proc (x: JsonNode): ThreadMember =
-            x.to(ThreadMember)
+        added_members: data{"added_members"}.getElems.mapIt(
+            it.`$`.fromJson ThreadMember
         ),
-        removed_member_ids: data{"removed_member_ids"}.getElems.mapIt(
-            it.getStr
-        )
+        removed_member_ids: data{"removed_member_ids"}.getElems.mapIt(it.getStr)
     )
-
-    s.checkAndCall(DispatchEvent.ThreadMembersUpdate, e)
 
 proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,

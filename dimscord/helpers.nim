@@ -1,7 +1,8 @@
 # Utilities for every discord object.
 ## It mostly contains `helper` procedures.
-## You can use this for getting an avatar url and permission checking without
+## - You can use this for getting an avatar url and permission checking without
 ## the hassle for doing complicated bitwise work.
+## - Furthermore, you can also use this to wait for a certain event.
 
 import constants, objects, options
 import strformat, strutils, times
@@ -452,18 +453,24 @@ static:
             # Not exported so just ignore it
             if field.kind == nnkIdent: continue
             # Remove the on_ prefix for some events
-            let name = dup($field[1], removePrefix("on_"))
+            let origName = $field[1]
+            let name = if origName == "on_dispatch": "unknown"
+                       else: dup(origName, removePrefix("on_"))
             procsTable[name] = newStmtList(params).copy()
 
 proc params(event: DispatchEvent): NimNode =
     ## Returns the proc type stored for an event
-    procsTable[toLowerAscii($event)].copy()
+    var evt = toLowerAscii($event)
+    if evt.startsWith("de"): evt = evt[2..^1]
+    procsTable[evt].copy()
 
-macro tupleType(event: static[DispatchEvent]): typedesc[tuple] =
-    ## Returns a type that corresponds to the data for an event.
-    ## If ther are multiple parameters for the event then a tuple is
-    ## returned, else just a single value
+proc dataType(event: DispatchEvent): NimNode =
+    ## Returns a tuple type that corresponds to the data for an event.
     result = nnkTupleTy.newTree(toSeq(event.params))
+
+macro dataTypedesc(event: static[DispatchEvent]): typedesc =
+    ## Returns typedesc for data that an event has
+    result = event.dataType
 
 macro passArgs(prc: proc, data: tuple): untyped =
     ## Calls a proc using the fields in a tuple
@@ -494,24 +501,39 @@ using
     msg: Message
     user: User
 
-proc waitForObject*(client; event: static[DispatchEvent],
-                            handler: proc): auto =
-    ## Allows you to define a custom condition to wait for.
-    ## This also returns the object that passed the condition
-    ##
-    ## - See [waitFor] which doesn't return the object
-    type DataType = event.tupleType
-    # For single field tuples, we just want to return the first type
-    when DataType.tupleLen == 1:
-        type FutReturn = DataType.get(0)
-    else:
-        type FutReturn = DataType
+proc handlerType(event: DispatchEvent): NimNode =
+    ## Returns a proc type which corresponds to what a handler
+    ## should look like to handle an event
+    let params = nnkFormalParams.newTree(
+        ident"bool" # Handlers return if they handled the event
+    )
+    # Add parameters for the data
+    for param in event.params:
+        params &= param
+    # Create the proc type
+    result = nnkProcTy.newTree(params, newEmptyNode())
 
-    let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
+macro handlerTypeDesc(x: static[DispatchEvent]): typedesc =
+  ## Returns a typedesc of what proc should be used to handle an event
+  result = x.handlerType
+
+proc waitForInternal*(discord: DiscordClient;
+        event: static[DispatchEvent], handler: proc): auto =
+    ## Internal proc for wait for.
+    ## This is done so the procs can properly be binded to
+    type
+      DataType = event.dataTypedesc
+      # For simplicity, we make the return be the type of the first
+      # item in the tuple if there is only one item
+      FutReturn = (when DataType.tupleLen == 1: DataType.get(0)
+                   else: DataType)
+
+    # For single field tuples, we just want to return the first type
+    let fut = newFuture[FutReturn]("waitFor(" & $event & ")")
     # We wrap the users handler inside another proc.
     # This allows us to abstract creating the future, completing it, handling timeouts, etc
     result = fut
-    client.waits[event] &= proc (data: pointer): bool =
+    discord.waits[event] &= proc (data: pointer): bool =
         if fut.finished(): return true
         let data {.cursor.} = cast[ptr DataType](data)[]
         if handler.passArgs(data):
@@ -521,59 +543,84 @@ proc waitForObject*(client; event: static[DispatchEvent],
                 fut.complete(data[0])
             return true
 
-proc waitFor*[T: proc](client; event: static[DispatchEvent],
-                               handler: T): Future[void] {.async.} =
+template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
+                            handler: untyped): auto =
     ## Allows you to define a custom condition to wait for.
-    ##
-    ## - See [waitForObject] which also returns the object that passed the condition
-    discard await client.waitForObject(event, handler)
+    ## This also returns the object that passed the condition
+    block:
+        # Issue is that we can't refine the handler type to be
+        # different depending on what event is. To get around this
+        # we create a shim template which restricts the proc to only be
+        # of one type
+        template shim(prc: handlerTypeDesc(event)): auto =
+            discord.waitForInternal(event, prc)
+        shim(handler)
 
-proc waitForReply*(client; to: Message): Future[Message] {.async.} =
+proc waitForRaw*(discord: DiscordClient;
+        event: string;
+        handler: proc (data: JsonNode): bool): Future[JsonNode] {.async.} =
+    ## This allows waiting for a dispatch event, except you can specify any string.
+    ## This allows for handling events that aren't implemented in dimscord yet.
+    ## The handler is ran before dimscord handles the event, so items might not be in cache.
+    ## Use [waitFor] if you know the event you want to wait for
+    proc handled(eventKind: string, data: JsonNode): bool =
+        if event == eventKind:
+            return handler(data)
+
+    return (await discord.waitFor(deUnknown, handled)).data
+
+proc waitForReply*(discord: DiscordClient;
+        to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message
-    return await client.waitForObject(deMessageCreate) do (m: Message) -> bool:
+    return await discord.waitFor(deMessageCreate) do (m: Message) -> bool:
         if m.referencedMessage.isSome:
             let referenced = m.referencedMessage.unsafeGet
             return referenced.id == to.id
 
-proc waitForDeletion*(client; msg): Future[void] =
+proc waitForDeletion*(discord: DiscordClient;
+        msg: Message): Future[void] {.async.} =
     ## Waits for a message to be deleted
-    client.waitFor(deMessageDelete) do (m: Message, exists: bool) -> bool:
+    proc event(m: Message, exists: bool): bool =
         m.id == msg.id
+    discard await discord.waitFor(deMessageDelete, event)
 
-proc waitForComponentUse*(client; id: string): Future[Interaction] =
+proc waitForComponentUse*(discord: DiscordClient;
+        id: string): Future[Interaction] =
     ## Waits for a component to be used and returns the interaction.
     ## Data sent in the component can then be extracted.
     ## `id` is the ID that you used when creating the component
-    return client.waitForObject(deInteractionCreate) do (i: Interaction) -> bool:
+    return discord.waitFor(deInteractionCreate) do (i: Interaction) -> bool:
         i.data.isSome and
         i.data.unsafeGet().interactionType == idtMessageComponent and
         i.data.get.custom_id == id
 
-proc waitToJoinVoice*(client; user; guildID: string): Future[VoiceState] {.async.} =
+proc waitToJoinVoice*(discord: DiscordClient;
+        user: User; guildID: string): Future[VoiceState] {.async.} =
     ## Waits for a user to join a voice channel in a guild.
-    assert giGuildVoiceStates in client.intents
+    assert giGuildVoiceStates in discord.intents
 
     proc handleUpdate(vs: VoiceState, o: Option[VoiceState]): bool =
         vs.guildID.isSome() and
         guildID == vs.guildID.unsafeGet() and
         user.id == vs.user_id
 
-    return client
-        .waitForObject(deVoiceStateUpdate, handleUpdate)
+    return discord
+        .waitFor(deVoiceStateUpdate, handleUpdate)
         .await()
         .v
 
-proc waitForReaction*(client; msg; user: User = nil): Future[Emoji] {.async.} =
+proc waitForReaction*(discord: DiscordClient;
+        msg: Message, user: User = nil): Future[Emoji] {.async.} =
     ## Waits for a reaction to a message. Can optionally provide
     ## a user to only wait for a certain user.
     if msg.guild_id.isNone:
-        assert giDirectMessageReactions in client.intents
+        assert giDirectMessageReactions in discord.intents
     else:
-        assert giGuildMessageReactions in client.intents
+        assert giGuildMessageReactions in discord.intents
 
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)
-    return client
-        .waitForObject(deMessageReactionAdd, handleUpdate)
+    return discord
+        .waitFor(deMessageReactionAdd, handleUpdate)
         .await()
         .e

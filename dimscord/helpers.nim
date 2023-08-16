@@ -582,12 +582,12 @@ proc waitForRaw*(discord: DiscordClient;
         if event == eventKind:
             return handler(data)
 
-    return (await discord.waitFor(deUnknown, handled)).data
+    return (await discord.waitFor(Unknown, handled)).data
 
 proc waitForReply*(discord: DiscordClient;
         to: Message): Future[Message] {.async.} =
     ## Waits for a message to reply to a message
-    return await discord.waitFor(deMessageCreate) do (m: Message) -> bool:
+    return await discord.waitFor(MessageCreate) do (m: Message) -> bool:
         if m.referencedMessage.isSome:
             let referenced = m.referencedMessage.unsafeGet
             return referenced.id == to.id
@@ -597,14 +597,14 @@ proc waitForDeletion*(discord: DiscordClient;
     ## Waits for a message to be deleted
     proc event(m: Message, exists: bool): bool =
         m.id == msg.id
-    discard await discord.waitFor(deMessageDelete, event)
+    discard await discord.waitFor(MessageDelete, event)
 
 proc waitForComponentUse*(discord: DiscordClient;
         id: string): Future[Interaction] =
     ## Waits for a component to be used and returns the interaction.
     ## Data sent in the component can then be extracted.
     ## `id` is the ID that you used when creating the component
-    return discord.waitFor(deInteractionCreate) do (i: Interaction) -> bool:
+    return discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
         i.data.isSome and
         i.data.unsafeGet().interactionType == idtMessageComponent and
         i.data.get.custom_id == id
@@ -620,7 +620,7 @@ proc waitToJoinVoice*(discord: DiscordClient;
         user.id == vs.user_id
 
     return discord
-        .waitFor(deVoiceStateUpdate, handleUpdate)
+        .waitFor(VoiceStateUpdate, handleUpdate)
         .await()
         .v
 
@@ -636,6 +636,6 @@ proc waitForReaction*(discord: DiscordClient;
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)
     return discord
-        .waitFor(deMessageReactionAdd, handleUpdate)
+        .waitFor(MessageReactionAdd, handleUpdate)
         .await()
         .e

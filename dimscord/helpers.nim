@@ -542,7 +542,7 @@ proc waitForInternal*(client; event: static[DispatchEvent], handler: proc): auto
                    else: DataType)
 
     # For single field tuples, we just want to return the first type
-    let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
+    let fut = newFuture[FutReturn]("waitFor(" & $event & ")")
     # We wrap the users handler inside another proc.
     # This allows us to abstract creating the future, completing it, handling timeouts, etc
     result = fut

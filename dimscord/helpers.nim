@@ -461,11 +461,13 @@ proc params(event: DispatchEvent): NimNode =
     ## Returns the proc type stored for an event
     procsTable[toLowerAscii($event)].copy()
 
-macro tupleType(event: static[DispatchEvent]): typedesc[tuple] =
-    ## Returns a type that corresponds to the data for an event.
-    ## If ther are multiple parameters for the event then a tuple is
-    ## returned, else just a single value
+proc dataType(event: DispatchEvent): NimNode =
+    ## Returns a tuple type that corresponds to the data for an event.
     result = nnkTupleTy.newTree(toSeq(event.params))
+
+macro dataTypedesc(event: static[DispatchEvent]): typedesc =
+    ## Returns typedesc for data that an event has
+    result = event.dataType
 
 macro passArgs(prc: proc, data: tuple): untyped =
     ## Calls a proc using the fields in a tuple
@@ -473,7 +475,6 @@ macro passArgs(prc: proc, data: tuple): untyped =
         for i in 0..<data.getTypeImpl().len:
             nnkBracketExpr.newTree(data, newLit i)
     result = newCall(prc, args)
-    echo result[0].getImpl().treeRepr
 
 proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.async.} =
     ## Helper that returns `none(T)` if a Future timeouts.
@@ -497,20 +498,35 @@ using
     msg: Message
     user: User
 
-proc waitForObject*(client; event: static[DispatchEvent],
-                            handler: proc): auto =
-    ## Allows you to define a custom condition to wait for.
-    ## This also returns the object that passed the condition
-    ##
-    ## - See [waitFor] which doesn't return the object
-    type DataType = event.tupleType
+
+proc handlerType(event: DispatchEvent): NimNode =
+  ## Returns a proc type which corresponds to what a handler
+  ## should look like to handle an event
+  let params = nnkFormalParams.newTree(
+      ident"bool" # Handlers return if they handled the event
+  )
+  # Add parameters for the data
+  for param in event.params:
+      params &= param
+  # Create the proc type
+  result = nnkProcTy.newTree(params, newEmptyNode())
+
+macro handlerTypeDesc(x: static[DispatchEvent]): typedesc =
+  ## Returns a typedesc of what proc should be used to handle an event
+  result = x.handlerType
+
+
+proc waitForInternal*(client; event: static[DispatchEvent], handler: proc): auto =
+    ## Internal proc for wait for.
+    ## This is done so the procs can properly be binded to
+    type
+      DataType = event.dataTypedesc
+      # For simplicity, we make the return be the type of the first
+      # item in the tuple if there is only one item
+      FutReturn = (when DataType.tupleLen == 1: DataType.get(0)
+                   else: DataType)
+
     # For single field tuples, we just want to return the first type
-    when DataType.tupleLen == 1:
-        type FutReturn = DataType.get(0)
-    else:
-        type FutReturn = DataType
-    static:
-        echo event.tupleType
     let fut = newFuture[FutReturn]("waitForObject(" & $event & ")")
     # We wrap the users handler inside another proc.
     # This allows us to abstract creating the future, completing it, handling timeouts, etc
@@ -524,6 +540,17 @@ proc waitForObject*(client; event: static[DispatchEvent],
             else:
                 fut.complete(data[0])
             return true
+
+template waitForObject*(client; event: static[DispatchEvent],
+                            handler: proc): auto =
+    ## Allows you to define a custom condition to wait for.
+    ## This also returns the object that passed the condition
+    ##
+    ## - See [waitFor] which doesn't return the object
+    block:
+      template shim(prc: handlerTypeDesc(event)): auto =
+        client.waitForInternal(event, prc)
+      shim(handler)
 
 proc waitFor*[T: proc](client; event: static[DispatchEvent],
                                handler: T): Future[void] {.async.} =

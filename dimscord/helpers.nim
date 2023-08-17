@@ -2,7 +2,7 @@
 ## It mostly contains `helper` procedures.
 ## - You can use this for getting an avatar url and permission checking without
 ## the hassle for doing complicated bitwise work.
-## - Furthermore, you can also use this to wait for a certain event.
+## - Furthermore, you can also use this to [waitFor] a certain event.
 
 import constants, objects, options
 import strformat, strutils, times
@@ -355,12 +355,13 @@ proc newActionRow*(components: varargs[MessageComponent]): MessageComponent =
 proc len*(component: MessageComponent): int =
     ## Returns number of items in an ActionRow or number of options in a menu
     case component.kind:
-        of ActionRow:
-            result = component.components.len
-        of SelectMenu:
-            result = component.options.len
-        else:
-            raise newException(ValueError, "Component must be ActionRow or SelectMenu")
+    of ActionRow:
+        result = component.components.len
+    of SelectMenu:
+        result = component.options.len
+    else:
+        raise newException(
+            ValueError, "Component must be ActionRow or SelectMenu")
 
 template optionalEmoji(): untyped {.dirty.} =
     (if emoji.id.isSome() or emoji.name.isSome(): some emoji else: none Emoji)
@@ -440,7 +441,7 @@ proc add*(component: var MessageComponent, item: SelectMenuOption) =
     )
     component.options &= item
 
-## Event Handlers
+# Event Handlers
 
 const procsTable = macrocache.CacheTable"dimscord.handlerTypes"
     ## Stores a mapping of EventName -> parameters for event
@@ -532,9 +533,9 @@ proc waitForInternal*(discord: DiscordClient;
     ## Internal proc for wait for.
     ## This is done so the procs can properly be binded to
     ##
-    ## - The object would be a tuple that have the same parameter names in [Events].
+    ## - The object returned would be a tuple that have the same parameter names in [Events].
     ##   e.g. if you were to waitFor message reaction add, it would be
-    ##   tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]
+    ##   `tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]`
     ##   You can always find which type the parameter fields are by checking the [Events] object.
 
     type
@@ -563,12 +564,15 @@ template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
                             handler: untyped): auto =
     ## Allows you to define a custom condition to wait for.
     ## This also returns the object that passed the condition.
+    ## - Note: some event objects may be same as the event name e.g. GuildMembersChunk, you can write this as [deGuildMembersChunk] instead of having to write `DispatchEvent.GuildMembersChunk`.
     ##
-    ## - The object would be a tuple that have the same parameter names in [Events].
-    ##   e.g. if you were to waitFor message reaction add, it would be
-    ##   tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]
-    ##   You can always find which type the parameter fields are by checking the [Events] object.
-
+    ## - The object returned would be a tuple that have the same parameter names in `Events`.
+    ##   e.g. if you were to `waitFor` `MessageReactionAdd`, it would be
+    ##   `tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]`
+    ##   You can always find which type the parameter fields are by checking the `Events` object.
+    ## 
+    ## See also:
+    ## - [Events](./objects.html#Events)
     block:
         # Issue is that we can't refine the handler type to be
         # different depending on what event is. To get around this

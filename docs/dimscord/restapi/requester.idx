@@ -1,9 +1,11 @@
-request	dimscord/restapi/requester.html#request,RestApi,string,string,string,string,MultipartData	requester: request(api: RestApi; meth, endpoint: string; pl, audit_reason = &quot;&quot;;\n        mp: MultipartData = nil; auth = true): Future[JsonNode]	
-`%`	dimscord/restapi/requester.html#%,tuple[string,int]	requester: `%`(t: tuple[channel_id: string, duration_seconds: int]): JsonNode	
-`%`	dimscord/restapi/requester.html#%,tuple[seq[string],seq[int]]	requester: `%`(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode	
-`%`	dimscord/restapi/requester.html#%,Overwrite	requester: `%`(o: Overwrite): JsonNode	
-`%`	dimscord/restapi/requester.html#%,set[MessageFlags]	requester: `%`(flags: set[MessageFlags]): JsonNode	
-`%`	dimscord/restapi/requester.html#%,set[PermissionFlags]	requester: `%`(flags: set[PermissionFlags]): JsonNode	
-loadOpt	dimscord/restapi/requester.html#loadOpt.m,typed,varargs[untyped]	requester: loadOpt(obj: typed; lits: varargs[untyped]): untyped	
-loadNullableOptStr	dimscord/restapi/requester.html#loadNullableOptStr.m,typed,varargs[untyped]	requester: loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped	
-loadNullableOptInt	dimscord/restapi/requester.html#loadNullableOptInt.m,typed,varargs[untyped]	requester: loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped	
+nimTitle	requester	dimscord/restapi/requester.html	module dimscord/restapi/requester		0
+nim	request	dimscord/restapi/requester.html#request,RestApi,string,string,string,string,MultipartData	proc request(api: RestApi; meth, endpoint: string; pl, audit_reason = "";\n        mp: MultipartData = nil; auth = true): Future[JsonNode]		87
+nim	`%`	dimscord/restapi/requester.html#%,tuple[string,int,Option[string]]	proc `%`(t: tuple[channel_id: string, duration_seconds: int,\n             custom_message: Option[string]]): JsonNode		268
+nim	`%`	dimscord/restapi/requester.html#%,Overwrite	proc `%`(o: Overwrite): JsonNode		281
+nim	`%`	dimscord/restapi/requester.html#%,set[MessageFlags]	proc `%`(flags: set[MessageFlags]): JsonNode		287
+nim	`%`	dimscord/restapi/requester.html#%,set[RoleFlags]	proc `%`(flags: set[RoleFlags]): JsonNode		290
+nim	`%`	dimscord/restapi/requester.html#%,set[PermissionFlags]	proc `%`(flags: set[PermissionFlags]): JsonNode		293
+nim	loadOpt	dimscord/restapi/requester.html#loadOpt.m,typed,varargs[untyped]	macro loadOpt(obj: typed; lits: varargs[untyped]): untyped		296
+nim	loadNullableOptStr	dimscord/restapi/requester.html#loadNullableOptStr.m,typed,varargs[untyped]	macro loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped		304
+nim	loadNullableOptInt	dimscord/restapi/requester.html#loadNullableOptInt.m,typed,varargs[untyped]	macro loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped		312
+nimgrp	%	dimscord/restapi/requester.html#%-procs-all	proc		268

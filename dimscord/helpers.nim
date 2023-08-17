@@ -511,11 +511,6 @@ proc orTimeout*[T](fut: Future[T], time: TimeInterval): Future[Option[T]] {.asyn
     if await fut.withTimeout(int milliseconds):
         result = some await fut
 
-using
-    client: DiscordClient
-    msg: Message
-    user: User
-
 proc handlerType(event: DispatchEvent): NimNode =
     ## Returns a proc type which corresponds to what a handler
     ## should look like to handle an event
@@ -536,6 +531,12 @@ proc waitForInternal*(discord: DiscordClient;
         event: static[DispatchEvent], handler: proc): auto =
     ## Internal proc for wait for.
     ## This is done so the procs can properly be binded to
+    ##
+    ## - The object would be a tuple that have the same parameter names in [Events].
+    ##   e.g. if you were to waitFor message reaction add, it would be
+    ##   tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]
+    ##   You can always find which type the parameter fields are by checking the [Events] object.
+
     type
       DataType = event.dataTypedesc
       # For simplicity, we make the return be the type of the first
@@ -561,7 +562,13 @@ proc waitForInternal*(discord: DiscordClient;
 template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
                             handler: untyped): auto =
     ## Allows you to define a custom condition to wait for.
-    ## This also returns the object that passed the condition
+    ## This also returns the object that passed the condition.
+    ##
+    ## - The object would be a tuple that have the same parameter names in [Events].
+    ##   e.g. if you were to waitFor message reaction add, it would be
+    ##   tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]
+    ##   You can always find which type the parameter fields are by checking the [Events] object.
+
     block:
         # Issue is that we can't refine the handler type to be
         # different depending on what event is. To get around this
@@ -638,4 +645,4 @@ proc waitForReaction*(discord: DiscordClient;
     return discord
         .waitFor(MessageReactionAdd, handleUpdate)
         .await()
-        .e
+        .emj

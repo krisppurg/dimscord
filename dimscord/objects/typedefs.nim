@@ -834,56 +834,57 @@ type
         on_ready*: proc (s: Shard, r: Ready) {.async.}
         on_disconnect*: proc (s: Shard) {.async.}
         on_invalid_session: proc (s: Shard, resumable: bool) {.async.}
-        message_create*: proc (s: Shard, m: Message) {.async.}
-        message_delete*: proc (s: Shard, m: Message, exists: bool) {.async.}
-        message_update*: proc (s: Shard, m: Message,
-                o: Option[Message], exists: bool) {.async.}
+        message_create*: proc (s: Shard, msg: Message) {.async.}
+        message_delete*: proc (s: Shard, msg: Message, exists: bool) {.async.}
+        message_update*: proc (s: Shard, msg: Message,
+                old: Option[Message], exists: bool) {.async.}
         message_reaction_add*: proc (s: Shard,
-                m: Message, u: User, e: Emoji, exists: bool) {.async.}
+                msg: Message, u: User, emj: Emoji, exists: bool) {.async.}
         message_reaction_remove*: proc (s: Shard,
-                m: Message, u: User,
-                r: Reaction, exists: bool) {.async.}
-        message_reaction_remove_all*: proc (s: Shard, m: Message,
+                msg: Message, u: User,
+                rtn: Reaction, exists: bool) {.async.}
+        message_reaction_remove_all*: proc (s: Shard, msg: Message,
                 exists: bool) {.async.}
         message_reaction_remove_emoji*: proc (s: Shard,
-                m: Message, e: Emoji, exists: bool) {.async.}
+                msg: Message, emj: Emoji, exists: bool) {.async.}
         message_delete_bulk*: proc (s: Shard, m: seq[tuple[
                 msg: Message, exists: bool]]) {.async.}
         channel_create*: proc (s: Shard, g: Option[Guild],
-                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
+                c: Option[GuildChannel], dm: Option[DMChannel]) {.async.}
         channel_update*: proc (s: Shard, g: Guild,
-                c: GuildChannel, o: Option[GuildChannel]) {.async.}
+                c: GuildChannel, old: Option[GuildChannel]) {.async.}
         channel_delete*: proc (s: Shard, g: Option[Guild],
-                c: Option[GuildChannel], d: Option[DMChannel]) {.async.}
-        channel_pins_update*: proc (s: Shard, cid: string,
+                c: Option[GuildChannel], dm: Option[DMChannel]) {.async.}
+        channel_pins_update*: proc (s: Shard, chan_id: string,
                 g: Option[Guild], last_pin: Option[string]) {.async.}
         presence_update*: proc (s: Shard, p: Presence,
-                o: Option[Presence]) {.async.}
-        typing_start*: proc (s: Shard, t: TypingStart) {.async.}
-        guild_emojis_update*: proc (s: Shard, g: Guild, e: seq[Emoji]) {.async.}
+                old: Option[Presence]) {.async.}
+        typing_start*: proc (s: Shard, evt: TypingStart) {.async.}
+        guild_emojis_update*: proc (s: Shard, g: Guild;
+                emojis: seq[Emoji]) {.async.}
         guild_ban_add*, guild_ban_remove*: proc (s: Shard, g: Guild,
                 u: User) {.async.}
         guild_audit_log_entry_create*: proc (s: Shard; g: Guild;
-                e: AuditLogEntry) {.async.}
+                entry: AuditLogEntry) {.async.}
         guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
         guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
                 m: Member) {.async.}
         guild_member_update*: proc (s: Shard, g: Guild,
-                m: Member, o: Option[Member]) {.async.}
-        guild_update*: proc (s: Shard, g: Guild, o: Option[Guild]) {.async.}
+                m: Member, old: Option[Member]) {.async.}
+        guild_update*: proc (s: Shard,g: Guild,old: Option[Guild]) {.async.}
         guild_create*, guild_delete*: proc (s: Shard, g: Guild) {.async.}
         guild_members_chunk*: proc (s: Shard, g: Guild,
                 m: GuildMembersChunk) {.async.}
         guild_role_create*, guild_role_delete*: proc (s: Shard, g: Guild,
                 r: Role) {.async.}
         guild_role_update*: proc (s: Shard, g: Guild,
-                r: Role, o: Option[Role]) {.async.}
+                r: Role, old: Option[Role]) {.async.}
         invite_create*: proc (s: Shard, i: InviteCreate) {.async.}
         invite_delete*: proc (s: Shard, g: Option[Guild],
-                cid, code: string) {.async.}
+                chan_id, code: string) {.async.}
         user_update*: proc (s: Shard, u: User) {.async.}
         voice_state_update*: proc (s: Shard, v: VoiceState,
-                o: Option[VoiceState]) {.async.}
+                old: Option[VoiceState]) {.async.}
         voice_server_update*: proc (s: Shard, g: Guild,
                 token: string, endpoint: Option[string], initial: bool) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
@@ -894,29 +895,31 @@ type
                 g: Option[Guild], a: ApplicationCommand) {.async.}
         thread_create*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
         thread_update*: proc (s: Shard, g: Guild,
-                c: GuildChannel, o: Option[GuildChannel]) {.async.}
+                c: GuildChannel, old: Option[GuildChannel]) {.async.}
         thread_delete*: proc (s: Shard, g: Guild,
                 c: GuildChannel, exists: bool) {.async.}
         thread_list_sync*: proc (s: Shard, e: ThreadListSync) {.async.}
-        thread_member_update*: proc (s: Shard, g: Guild, t: ThreadMember) {.async.}
+        thread_member_update*: proc (s: Shard,g: Guild,t: ThreadMember) {.async.}
         thread_members_update*: proc (s: Shard, e: ThreadMembersUpdate) {.async.}
-        stage_instance_create*: proc (s: Shard, g: Guild, i: StageInstance) {.async.}
+        stage_instance_create*: proc (s: Shard, g: Guild;
+                i: StageInstance) {.async.}
         stage_instance_update*: proc (s: Shard, g: Guild,
-                i: StageInstance, o: Option[StageInstance]) {.async.}
+                si: StageInstance, old: Option[StageInstance]) {.async.}
         stage_instance_delete*: proc (s: Shard, g: Guild,
-                i: StageInstance, exists: bool) {.async.}
+                si: StageInstance, exists: bool) {.async.}
         guild_stickers_update*: proc (s: Shard, g: Guild,
                 stickers: seq[Sticker]) {.async.}
         guild_scheduled_event_create*, guild_scheduled_event_delete*: proc (
-                s: Shard, g: Guild, e: GuildScheduledEvent) {.async.}
+                s: Shard, g: Guild, evt: GuildScheduledEvent) {.async.}
         guild_scheduled_event_update*: proc (s: Shard,
-                    g: Guild, e: GuildScheduledEvent, o: Option[GuildScheduledEvent]
+                    g: Guild, evt: GuildScheduledEvent;
+                    old: Option[GuildScheduledEvent]
             ) {.async.}
         guild_scheduled_event_user_add*,guild_scheduled_event_user_remove*: proc(
-                s: Shard, g: Guild, e: GuildScheduledEvent, u: User) {.async.}
-        auto_moderation_rule_create*,auto_moderation_rule_update*: proc(s:Shard,
+            s: Shard, g: Guild, evt: GuildScheduledEvent, u: User) {.async.}
+        auto_moderation_rule_create*,auto_moderation_rule_update*: proc(s:Shard;
             g: Guild, r: AutoModerationRule) {.async.}
-        auto_moderation_rule_delete*: proc(s: Shard,
+        auto_moderation_rule_delete*: proc(s: Shard;
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}

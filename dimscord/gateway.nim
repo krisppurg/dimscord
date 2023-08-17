@@ -343,6 +343,10 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
         "presences": &presences
     }
     if query.isSome:
+        assert(
+            limit.isSome,
+            "You need to specify the limit once you've specified query."
+        )
         payload["query"] = &query
     if limit.isSome:
         payload["limit"] = &limit

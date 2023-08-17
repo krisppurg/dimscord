@@ -872,7 +872,7 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
         )
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
-    assert a.name.len in 3..32
+    assert a.name.len in 1..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api
     let commandKind = if a.kind == atNothing: atSlash else: a.kind

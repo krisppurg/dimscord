@@ -4,7 +4,7 @@
 import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, strutils, ./restapi/user
 import tables, random, times, constants, objects, json
-import nativesockets, helpers, dispatch, sequtils
+import nativesockets, helpers, dispatch {.all.}, sequtils
 
 when defined(discordEtf):
     import etf
@@ -79,7 +79,7 @@ when defined(discordEtf):
                 if useatom:
                     Term(tag: tagAtom, atom: Atom k)
                 else:
-                    binary(k)  
+                    binary(k)
             v.add (
                 key,
                 x[k]
@@ -118,7 +118,7 @@ when defined(discordEtf):
 
                 fld.escapeJson(result)
                 result.add ":"
-                result.toUgly value, fld 
+                result.toUgly value, fld
             result.add "}"
         of tagString:
             var res: seq[int] = @[]
@@ -343,6 +343,10 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
         "presences": &presences
     }
     if query.isSome:
+        assert(
+            limit.isSome,
+            "You need to specify the limit once you've specified query."
+        )
         payload["query"] = &query
     if limit.isSome:
         payload["limit"] = &limit
@@ -352,6 +356,25 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
         payload["nonce"] = &nonce
 
     await s.sendSock(opRequestGuildMembers, payload)
+
+proc getGuildMember*(s: Shard;
+        guild_id, user_id: string;
+        presence = false): Future[Member] {.async.} =
+    ## Gets a guild member by using `requestGuildMembers`.
+    ## - `presence` Have members presence when returned (member.presence).
+    await s.requestGuildMembers(guild_id,
+        user_ids = @[user_id],
+        presences = presence
+    )
+
+    proc handled(g: Guild, e: GuildMembersChunk): bool =
+        return e.members.len >= 0
+
+    let evt = await s.client.waitFor(deGuildMembersChunk, handled)
+
+    if evt.m.members.len == 0: raise newException(Exception, "Member not found")
+    result = evt.m.members[0]
+    if evt.m.presences.len != 0: result.presence = evt.m.presences[0]
 
 proc voiceStateUpdate*(s: Shard,
         guild_id: string, channel_id = none string;
@@ -407,7 +430,9 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
-        asyncCheck s.handleEventDispatch(event, data)
+        s.client.checkIfAwaiting(Unknown, (event, data))
+        let eventKind = parseEnum[DispatchEvent](event, Unknown)
+        asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =
     if (s.reconnecting or not s.stop) and not reconnectable: return

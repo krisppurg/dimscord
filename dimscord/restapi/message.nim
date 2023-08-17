@@ -585,7 +585,7 @@ proc getNitroStickerPacks*(api: RestApi): Future[seq[StickerPack]] {.async.} =
 proc getThreadMembers*(api: RestApi;
         channel_id: string): Future[seq[ThreadMember]] {.async.} =
     ## List thread members.
-    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent 
+    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent
     ## if not enabled on your application.
     result = (await api.request(
         "GET",

@@ -1,28 +1,6 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
 let discord = newDiscordClient("<your bot token goes here>")
 
-proc getGuildMember(s: Shard, guild, user: string): Future[Member] {.async.} =
-    var
-        member: Member
-        waiting = true
-    await s.requestGuildMembers(guild, presences = true, user_ids = @[user])
-
-    discord.events.guild_members_chunk = proc (s: Shard,
-        g: Guild, e: GuildMembersChunk) {.async.} =
-        if e.members.len == 0:
-            raise newException(Exception, "Member was not found.")
-
-        member = e.members[0]
-        if member == nil:
-            raise newException(Exception, "Member was not found.")
-
-        waiting = false
-
-    while member == nil:
-        poll()
-
-    return member
-
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let args = m.content.split(" ") # Splits a message.
     if m.author.bot or not args[0].startsWith("$$"): return

@@ -359,6 +359,12 @@ proc recvDiscovery(v: VoiceClient) {.async.} =
     # Read the port at the end
     v.srcPort = (packet[^2].ord) or (packet[^1].ord shl 8)
 
+proc waitForReady*(v: VoiceClient) {.async.} =
+    ## Wait for when the bot is ready to play audio, this is necessary before
+    ## using `playFFmpeg` or `playYTDL`.
+    while not v.ready:
+        await sleepAsync 0
+
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 

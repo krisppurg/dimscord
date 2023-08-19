@@ -4,12 +4,15 @@
 import httpclient, ws, asyncnet, asyncdispatch
 import strformat, options, strutils, ./restapi/user
 import tables, random, times, constants, objects, json
-import nativesockets, helpers, dispatch
+import nativesockets, helpers, dispatch {.all.}, sequtils
 
-when defined(discordCompress):
-    import zippy
-    # let zlib_suffix = "\x00\x00\xff\xff"
-    # var buffer = ""
+when defined(discordEtf):
+    import etf
+    type DataValue = Term
+else:
+    type DataValue = JsonNode
+
+when defined(discordCompress): import zippy
 
 randomize()
 
@@ -60,21 +63,146 @@ proc logShard(s: Shard, msg: string) =
 proc sockClosed(s: Shard): bool {.used.} =
     return s.connection == nil or s.connection.tcpSocket.isClosed or s.stop
 
-proc sendSock(s: Shard, opcode: int, data: JsonNode;
+when defined(discordEtf):
+    proc term(x: bool): Term = Term(tag: tagAtom, atom: Atom $x)
+    proc term(x: string): Term = binary x
+    proc term(x: int): Term =
+        if x in uint8.low.int..uint8.high.int:
+            term x.uint8
+        else:
+            term x.int32
+
+    proc term(x: Table[string, Term], useatom=false): Term =
+        var v: seq[(Term, DataValue)] = @[]
+        for k in x.keys:
+            let key = block:
+                if useatom:
+                    Term(tag: tagAtom, atom: Atom k)
+                else:
+                    binary(k)
+            v.add (
+                key,
+                x[k]
+            )
+        result = term(toOpenArray(v, v.low, v.high))
+
+    proc term [T: Table[string, Term]](x: seq[T]): Term =
+        term toOpenArray(x.mapIt(term(it,false)), x.low, x.high)
+
+    proc term [T: not Table[string, Term]](x: seq[T]): Term =
+        term toOpenArray(x.mapIt(term(it)), x.low, x.high)
+
+    proc toUgly(result: var string, x: DataValue; fieldname = "") =
+        var comma = false
+
+        case x.tag:
+        of tagList:
+            result.add "["
+            for child in x.lst:
+                if comma: result.add ","
+                else: comma = true
+
+                result.toUgly child
+            result.add "]"
+        of tagMap:
+            result.add "{"
+            for (key, value) in x.map:
+                if comma: result.add ","
+                else: comma = true
+                var fld = ""
+
+                case key.tag:
+                of tagAtom: fld = string(key.atom)
+                of tagBinary: fld = key.bin
+                else: discard
+
+                fld.escapeJson(result)
+                result.add ":"
+                result.toUgly value, fld
+            result.add "}"
+        of tagString:
+            var res: seq[int] = @[]
+            for chr in cast[seq[char]](x.str):
+                res.add(int chr)
+
+            result.toUgly res.term
+        of tagAtom:
+            let v = string x.atom
+
+            case v:
+            of "nil": result.add("null")
+            of "true": result.add("true")
+            of "false": result.add("false")
+            else:
+                escapeJson(v, result)
+        of tagBinary: escapeJson(x.bin, result)
+        of tagInt32: result.addInt(x.i32)
+        of tagUint8: result.addInt(x.u8)
+        of tagSmallBigInt:
+            var u: uint64
+            copyMem(addr u, unsafeAddr x.bigint.data[0], x.bigint.data.len)
+
+            if x.bigint.data.len in 7..8 or "id" in fieldname:
+                result.add('"'&($u)&'"')
+            else:
+                result.add($u)
+        of tagFloat64: result.addFloat(x.f64)
+        of tagNil: result.add "[]"
+        else:
+            discard
+
+    proc len(x: DataValue): int =
+        case x.tag:
+        of tagList: result = x.lst.len
+        of tagMap: result = x.map.len
+        else: discard
+
+    proc toJson(x: DataValue): string =
+        result = newStringOfCap(x.len shl 1)
+        toUgly(result, x)
+
+proc `%%`*(v: openarray[(string, DataValue)]): Table[string, DataValue] =
+    v.toTable
+
+proc toTerm [T: auto](x: T): DataValue =
+    when x is seq:
+        if x.len == 0: term nil
+    else: term x
+
+proc `&`[T: auto](v: T): DataValue =
+    when defined(discordEtf):
+        when v is Option:
+            if v.isSome: term(v.get) else: Term(tag: tagAtom, atom: Atom "nil")
+        else:
+            term(v)
+    else:
+        %*v
+
+proc `$`(p: Table[string, DataValue]): string =
+    when defined(discordEtf): toEtf term(p) else: json.`$`(p)
+
+proc sendSock(s: Shard, opcode: int, data: Table[string, DataValue] | DataValue;
         ignore = false) {.async.} =
     if s.sockClosed: return # I think I finally solved the segfault issue after a long time.
     if not ignore and s.session_id == "": return
 
     s.logShard("Sending OP: " & $opcode)
 
-    if len($data) > 4096:
-        raise newException(Exception,
-            "There was an attempt on sending a payload over 4096 characters.")
+    let payload = %%{
+        "op": &uint8 opcode,
+        "d": when data is not DataValue: &data else: data
+    }
+    var tosend: (string, Opcode)
 
-    let fut = s.connection.send($(%*{
-        "op": opcode,
-        "d": data
-    }))
+    when defined(discordEtf):
+        tosend = (term(payload).toEtf, Opcode.Binary)
+    else:
+        tosend = ($payload, Opcode.Text)
+
+    doAssert(len(tosend[0]) <= 4096,
+        "There was an attempt on sending a payload over 4096 characters."
+    )
+    let fut = s.connection.send(tosend[0], tosend[1])
 
     if not (await withTimeout(fut, 20000)):
         s.logShard("Payload OP " & $opcode & " was taking longer to send. Retrying in 5000ms...")
@@ -116,52 +244,35 @@ proc handleDisconnect(s: Shard, msg: string): bool {.used.} =
         result = false
         log("Fatal error: " & closeData.reason)
 
-proc updateStatus*(s: Shard, activity = none ActivityStatus;
-        status = "online";
-        afk = false) {.async.} =
-    ## Updates the shard's status.
-    if s.sockClosed or not s.ready: return
-    let payload = %*{
-        "since": 0,
-        "afk": afk,
-        "status": status
-    }
-
-    if activity.isSome:
-        var act = %*{
-            "type": %int activity.get.kind,
-            "name": %activity.get.name
-        }
-        if activity.get.url.isSome:
-            act["url"] = %get activity.get.url
-
-        payload["activities"] = %[act]
-
-    await s.sendSock(opStatusUpdate, payload)
-
 proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         status = "online";
         afk = false) {.async.} =
     ## Updates the shard's status.
     if s.sockClosed or not s.ready: return
-    let payload = %*{
-        "since": 0,
-        "afk": afk,
-        "status": status
+    var acts: seq[Table[string, DataValue]] = @[]
+    var payload = %%{
+        "since": &uint8 0,
+        "afk": &afk,
+        "status": &status,
+        "activities": &initTable[string, DataValue]()
     }
 
-    if activities.len > 0:
-        var acts: seq[JsonNode] = @[]
-        for activity in activities:
-            var act = %*{
-                "type": %int activity.kind,
-                "name": %activity.name,
-                "url": %activity.url
-            }
-            acts.add act
-
-        payload["activities"] = %acts
+    payload["activities"] = &activities.mapIt(%%{
+        "type": &uint8 it.kind,
+        "name": &it.name,
+        "url": &it.url
+    })
     await s.sendSock(opStatusUpdate, payload)
+
+proc updateStatus*(s: Shard, activity = none ActivityStatus;
+        status = "online";
+        afk = false) {.async.} =
+    ## Updates the shard's status.
+    await s.updateStatus(
+        activities = (if activity.isSome: @[activity.get] else: @[]),
+        status = status,
+        afk = afk
+    )
 
 proc identify(s: Shard) {.async, used.} =
     if s.authenticating or s.sockClosed: return
@@ -176,25 +287,25 @@ proc identify(s: Shard) {.async, used.} =
 
     s.logShard("Identifying...")
 
-    let payload = %*{
-        "token": s.client.token,
-        "properties": %*{
-            "os": system.hostOS,
-            "browser": libName,
-            "device": libName
-        },
-        "compress": defined(discordCompress),
-        "guild_subscriptions": s.client.guildSubscriptions
+    var payload = %%{
+        "token": &s.client.token,
+        "properties": &(%%{
+            "os": &system.hostOS,
+            "browser": &libName,
+            "device": &libName
+        }),
+        "compress": &defined(discordCompress),
+        "guild_subscriptions": &s.client.guildSubscriptions
     }
 
     if s.client.max_shards > 1:
-        payload["shard"] = %[s.id, s.client.max_shards]
+        payload["shard"] = & @[s.id, s.client.max_shards]
 
     if s.client.largeThreshold >= 50 and s.client.largeThreshold <= 250:
-        payload["large_threshold"] = %s.client.largeThreshold
+        payload["large_threshold"] = &int32 s.client.largeThreshold
 
     if s.client.intents.len > 0:
-        payload["intents"] = %cast[int](s.client.intents)
+        payload["intents"] = &cast[int](s.client.intents)
 
     await s.sendSock(opIdentify, payload, ignore = true)
     if s.client.max_shards > 1 and not invididualShard:
@@ -211,10 +322,10 @@ proc resume*(s: Shard) {.async.} =
         "  session_id: " & s.session_id & "\n" &
         "  sequence: " & $s.sequence
     )
-    await s.sendSock(opResume, %*{
-        "token": s.client.token,
-        "session_id": s.session_id,
-        "seq": s.sequence
+    await s.sendSock(opResume, %%{
+        "token": &s.client.token,
+        "session_id": &s.session_id,
+        "seq": & s.sequence
     })
 
 proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
@@ -227,20 +338,43 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
     if guild_id.len == 0:
         raise newException(Exception, "You need to specify a guild ID.")
 
-    let payload = %*{
-        "guild_id": guild_id,
-        "presences": presences
+    var payload = %%{
+        "guild_id": &guild_id,
+        "presences": &presences
     }
     if query.isSome:
-        payload["query"] = %query
+        assert(
+            limit.isSome,
+            "You need to specify the limit once you've specified query."
+        )
+        payload["query"] = &query
     if limit.isSome:
-        payload["limit"] = %limit
+        payload["limit"] = &limit
     if user_ids.len > 0:
-        payload["user_ids"] = %user_ids
+        payload["user_ids"] = &user_ids
     if nonce != "":
-        payload["nonce"] = %nonce
+        payload["nonce"] = &nonce
 
     await s.sendSock(opRequestGuildMembers, payload)
+
+proc getGuildMember*(s: Shard;
+        guild_id, user_id: string;
+        presence = false): Future[Member] {.async.} =
+    ## Gets a guild member by using `requestGuildMembers`.
+    ## - `presence` Have members presence when returned (member.presence).
+    await s.requestGuildMembers(guild_id,
+        user_ids = @[user_id],
+        presences = presence
+    )
+
+    proc handled(g: Guild, e: GuildMembersChunk): bool =
+        return e.members.len >= 0
+
+    let evt = await s.client.waitFor(deGuildMembersChunk, handled)
+
+    if evt.m.members.len == 0: raise newException(Exception, "Member not found")
+    result = evt.m.members[0]
+    if evt.m.presences.len != 0: result.presence = evt.m.presences[0]
 
 proc voiceStateUpdate*(s: Shard,
         guild_id: string, channel_id = none string;
@@ -252,11 +386,11 @@ proc voiceStateUpdate*(s: Shard,
     if guild_id == "":
         raise newException(Exception, "You need to specify a guild id.")
 
-    await s.sendSock(opVoiceStateUpdate, %*{
-        "guild_id": guild_id,
-        "channel_id": channel_id,
-        "self_mute": self_mute,
-        "self_deaf": self_deaf,
+    await s.sendSock(opVoiceStateUpdate, %%{
+        "guild_id": &guild_id,
+        "channel_id": &channel_id,
+        "self_mute": &self_mute,
+        "self_deaf": &self_deaf,
     })
 
 proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
@@ -296,7 +430,9 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         s.logShard("Successfuly resumed.")
     else:
         asyncCheck s.client.events.on_dispatch(s, event, data)
-        asyncCheck s.handleEventDispatch(event, data)
+        s.client.checkIfAwaiting(Unknown, (event, data))
+        let eventKind = parseEnum[DispatchEvent](event, Unknown)
+        asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =
     if (s.reconnecting or not s.stop) and not reconnectable: return
@@ -305,6 +441,8 @@ proc reconnect(s: Shard) {.async.} =
     s.retry_info.attempts += 1
 
     var url = s.resumeGatewayUrl
+    var query = "?v=" & $s.client.gatewayVersion
+    when defined(discordEtf): query &= "&encoding=etf"
     if not url.endsWith("/"): url &= "/"
 
     if s.retry_info.attempts > 3:
@@ -312,10 +450,10 @@ proc reconnect(s: Shard) {.async.} =
             s.networkError = true
             s.logShard("A potential network error has been detected.")
 
-    s.logShard("Connecting to " & url & "?v=" & $s.client.gatewayVersion)
+    s.logShard("Connecting to " & url & query)
 
     try:
-        let future = newWebSocket(url & "?v=" & $s.client.gatewayVersion)
+        let future = newWebSocket(url & query)
 
         s.reconnecting = false
         s.stop = false
@@ -389,7 +527,7 @@ proc heartbeat(s: Shard, requested = false) {.async.} =
         s.hbAck = false
     s.logShard("Sending heartbeat.")
 
-    await s.sendSock(opHeartbeat, %* s.sequence, ignore = true)
+    await s.sendSock(opHeartbeat, &s.sequence, ignore = true)
     s.lastHBTransmit = getTime().toUnixFloat()
     s.hbSent = true
 
@@ -450,12 +588,16 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 #     return
 
         try:
+            when defined(discordEtf):
+                packet[1] = toJson packet[1].parseEtf
             data = parseJson(packet[1])
         except:
-            if not s.hbAck:
+            if not s.hbAck and not defined(discordEtf):
                 s.logShard("A zombied connection was detected.")
             else:
-                s.logShard("An error occurred while parsing data: "&packet[1])
+                s.logShard(
+                    "An error occurred while parsing data: "&packet[1]
+                )
             autoreconnect = s.handleDisconnect(packet[1])
 
             await s.disconnect(should_reconnect = autoreconnect)
@@ -573,8 +715,11 @@ proc startSession(s: Shard, url, query: string) {.async.} =
 
 proc startSession*(discord: DiscordClient,
             autoreconnect = true;
-            gateway_intents: set[GatewayIntent] = {};
-            large_message_threshold, large_threshold = 50;
+            gateway_intents: set[GatewayIntent] = {
+                    giGuilds, giGuildMessages,
+                    giDirectMessages, giGuildVoiceStates,
+                    giMessageContent
+            }; large_message_threshold, large_threshold = 50;
             max_message_size = 5_000_000;
             gateway_version = 10;
             max_shards = none int; shard_id = 0;
@@ -599,11 +744,9 @@ proc startSession*(discord: DiscordClient,
 
     discord.autoreconnect = autoreconnect
 
+    # assert gateway_intents.len == 0, "Gateway intents cannot be empty."
     discord.intents = gateway_intents
-    if gateway_intents.len == 0:
-        discord.intents = {giGuilds, giGuildMessages,
-                           giDirectMessages, giGuildVoiceStates,
-                           giMessageContent}
+
     if giMessageContent notin discord.intents:
         log("Warning: giMessageContent not specified this might cause issues.")
 
@@ -621,6 +764,9 @@ proc startSession*(discord: DiscordClient,
     var
         query = "/?v=" & $discord.gatewayVersion
         info: GatewayBot
+
+    when defined(discordEtf):
+        query &= "&encoding=etf"
 
     # when defined(discordCompress):
     #     query &= "&compress=zlib-stream"

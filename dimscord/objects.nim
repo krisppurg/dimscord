@@ -4,7 +4,7 @@
 ## * Fields that cannot be assumed. such as bools
 ## * Optional fields for example embeds, which they may not be
 ##   present.
-##   
+##
 ## Some may not be optional, but they can be assumable or always present.
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
@@ -24,6 +24,25 @@ func fullSet*[T](U: typedesc[T]): set[T] {.inline.} =
         {T.low..T.high}
     else: # Hole filled enum
         enumElementsAsSet(T)
+
+proc newInteractionData*(
+        content: string,
+        embeds: seq[Embed],
+        flags: set[MessageFlags],
+        attachments: seq[Attachment],
+        components: seq[MessageComponent],
+        allowed_mentions: AllowedMentions,
+        tts: Option[bool]
+): InteractionCallbackDataMessage =
+    result = InteractionCallbackDataMessage(
+        content: content,
+        embeds:  embeds,
+        allowed_mentions: allowed_mentions,
+        flags: flags,
+        attachments: attachments,
+        components: components,
+        tts: tts
+    )
 
 proc newShard*(id: int, client: DiscordClient): Shard =
     result = Shard(
@@ -45,7 +64,7 @@ proc newDiscordClient*(token: string;
     var auth_token = token
     if not token.startsWith("Bot ") and not token.startsWith("Bearer "):
         auth_token = "Bot " & token
-    
+
     var apiVersion = restVersion
     when defined(discordv9):
         apiVersion = 9
@@ -872,7 +891,7 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
         )
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
-    assert a.name.len in 3..32
+    assert a.name.len in 1..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api
     let commandKind = if a.kind == atNothing: atSlash else: a.kind

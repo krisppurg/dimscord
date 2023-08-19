@@ -1,7 +1,8 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
 
 # In order to enable helper procs, use the `mainClient` pragma to register your client.
-const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
+const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
+
 let discord {.mainClient.} = newDiscordClient(token)
 
 template `!`(awt, code: untyped): auto =
@@ -76,5 +77,5 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
         discard
 
 waitFor discord.startSession(
-    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent, giDirectMessageReactions}
+    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent, giDirectMessageReactions, giGuildMessageReactions}
 )

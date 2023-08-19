@@ -1,11 +1,15 @@
-template prune*(g: Guild;
+import asyncdispatch, options, json
+import ../restapi/[requester]
+import ../objects, ../constants
+
+template beginPrune*(g: Guild;
         days: range[1..30] = 7;
         include_roles: seq[string] = @[];
         compute_prune_count = true): Future[void] =
     ## Begins a guild prune.
     getClient.api.beginGuildPrune(g.id, days, include_roles, compute_prune_count)
 
-template pruneCount*(g: Guild, days: int): Future[int] =
+template getPruneCount*(g: Guild, days: int): Future[int] =
     ## Gets the prune count.
     getClient.api.getGuildPruneCount(g.id, days)
 
@@ -199,26 +203,29 @@ template delete*(gse: GuildScheduledEvent, reason = ""): Future[void] =
    ## Delete a scheduled event in guild.
    getClient.api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
 
-template eventSubscribers*(gse: GuildScheduledEvent;
+template getEventUsers*(gse: GuildScheduledEvent;
         limit = 100, with_member = false;
         before, after = ""
 ): Future[seq[GuildScheduledEventUser]] =
     ## Gets the users and/or members that were subscribed to the scheduled event.
-    getClient.api.getScheduledEventUsers(gse.guild_id, gse.id, limit, with_member, before, after)
+    getClient.api.getScheduledEventUsers(
+        gse.guild_id, gse.id,
+        limit, with_member, before, after
+    )
 
-template rules*(g: Guild): Future[seq[AutoModerationRule]] =
+template getRules*(g: Guild): Future[seq[AutoModerationRule]] =
     ## Get a Guild's current AutoMod Rules
     getClient.api.getAutoModerationRules(g.id)
 
-template rule*(g: Guild, rule_id: string): Future[AutoModerationRule] =
+template getRule*(g: Guild, rule_id: string): Future[AutoModerationRule] =
     ## Get a Guild's specific AutoMod Rule
     getClient.api.getAutoModerationRule(g.id, rule_id)
 
-template delete*(amr: AutoModerationRule): Future[void] =
+template deleteRule*(amr: AutoModerationRule): Future[void] =
     ## deletes automod rule
     getClient.api.deleteAutoModerationRule(amr.guild_id, amr.id)
 
-template edit*(amr: AutoModerationRule;
+template editRule*(g: Guild, amr: AutoModerationRule;
     event_type = none int, name = none string; 
     trigger_type = none ModerationTriggerType;
     trigger_metadata = none tuple[
@@ -232,7 +239,7 @@ template edit*(amr: AutoModerationRule;
     ## Edits an automod rule.
     ## `event_type` is gonna be 1 for SEND_MESSAGE
     getClient.api.editAutoModerationRule(
-        amr.guild_id, amr.id, event_type, 
+        g.id, amr.id, event_type, 
         name, trigger_type,
         trigger_metadata, actions, 
         enabled, exempt_roles, exempt_channels, 

@@ -1,3 +1,7 @@
+import asyncdispatch, options, json
+# import ../restapi/[user, requester]
+import ../objects, ../constants
+
 template getMember*(g: Guild, user_id: string): Future[Member] =
     ## Gets a guild member.
     getClient.api.getGuildMember(g.id, user_id)

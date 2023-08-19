@@ -1,3 +1,7 @@
+import asyncdispatch, options, json
+# import ../restapi/[message, requester]
+import ../objects, ../constants
+
 template send*(ch: SomeChannel;
     content = "", tts = false;
     nonce: Option[string] or Option[int] = none(int);
@@ -93,7 +97,8 @@ template react*(m: Message, emoji: string): Future[void] =
     ## - `emoji` Example: '👀', '💩', `likethis:123456789012345678`
     getClient.api.addMessageReaction(m.channel_id, m.id, emoji)
 
-template removeReaction*(m: Message, emoji: string, user_id = "@me"): Future[void] =
+template removeReaction*(m: Message, emoji: string;
+        user_id = "@me"): Future[void] =
     ## Removes the user's or the bot's message reaction to a Discord message.
     getClient.api.deleteMessageReaction(m.channel_id, m.id, emoji, user_id)
 
@@ -140,7 +145,6 @@ template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
 template remove*(ch: GuildChannel, member: Member | User | string;
         reason = ""): Future[void] =
     ## Removes a member from a thread.
-    assert ch.kind in {ctGuildPublicThread, ctGuildPrivateThread}
     getClient.api.addThreadMember(
         ch.id,
         (
@@ -154,10 +158,10 @@ template remove*(ch: GuildChannel, member: Member | User | string;
         reason
     )
 
-template add*(ch: GuildChannel, member: Member | User | string;
+template addThreadMember*(ch: GuildChannel;
+        member: Member | User | string;
         reason = ""): Future[void] =
     ## Adds a member to a thread.
-    assert ch.kind in {ctGuildPublicThread, ctGuildPrivateThread}
     getClient.api.addThreadMember(
         ch.id,
         (

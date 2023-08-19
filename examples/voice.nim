@@ -45,11 +45,9 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 
     let args = m.content.split(" ")
     let command = args[0]
-    echo "COMMAND: ", command
     case command:
     of "!playmusic":
         let g = s.cache.guilds[m.guildID.get]
-        echo "IN THE COMMAND"
         if m.author.id notin g.voiceStates:
             discard await discord.api.sendMessage(
                 m.channelID,

@@ -149,6 +149,7 @@ proc request*(api: RestApi, meth, endpoint: string;
         if retry_header > r.retry_after:
             r.retry_after = retry_header
 
+        var detailederr = false
         if status >= Http300:
             error = fin & "Client error."
 
@@ -163,7 +164,9 @@ proc request*(api: RestApi, meth, endpoint: string;
                             "Body took too long to parse.")
                     else:
                         data = (await body).parseJson
-                let detailederr = "code" in data and "message" in data
+
+                    if not data.isNil:
+                        detailederr = "code" in data and "message" in data
 
                 case status:
                 of Http400:

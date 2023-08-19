@@ -67,13 +67,6 @@ template getInvites*(ch: GuildChannel): Future[seq[Invite]] =
     ## Gets a list of a channel's invites.
     getClient.api.getChannelInvites(ch.id)
 
-template getChannel*(g: Guild, channel_id: string): Future[SomeChannel] =
-    ## Gets channel by ID.
-    let channel = getClient.api.getChannel(channel_id)
-    if channel[0].isSome:
-        result = channel[0].get
-    elif channel[1].isSome:
-        result = channel[1].get
 
 template getWebhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.

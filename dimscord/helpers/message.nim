@@ -21,21 +21,20 @@ template reply*(m: Message, content = "";
         embeds: seq[Embed] = @[];
         attachments: seq[Attachment] = @[];
         components: seq[MessageComponent] = @[];
-        flags: set[MessageFlags] = {};
         files: seq[DiscordFile] = @[];
         stickers: seq[string] = @[];
         allowed_mentions = none AllowedMentions;
+        nonce: Option[string] or Option[int] = none(int);
         mention, failifnotexists, tts = false): Future[Message] =
     ## Replies to a Message.
-    ## - set `tag` to `true` in order to tag the replied message in Discord.
-    let message_reference = some MessageReference(
-        message_id: some m.id,
-        failIfNotExists: some failifnotexists
-    )
+    ## - set `mention` to `true` in order to mention the replied message in Discord.
+    let message_reference = block:
+        if mention: some m.reference
+        else: none MessageReference
 
     getClient.api.sendMessage(
         m.channel_id,
-        content, tts, flags,
+        content, tts, nonce,
         files, embeds, attachments,
         allowed_mentions, 
         message_reference,
@@ -114,14 +113,6 @@ template getReactions*(m: Message, emoji: string;
 template clearReactions*(m: Message): Future[void] =
     ## Remove all the reactions of a given message.
     getClient.api.deleteAllMessageReactions(m.channel_id, m.id)
-
-template getMessage*(i: Interaction, message_id = "@original"): Future[Message] =
-    ## Get the response (Message) to an Interaction
-    getClient.api.getWebhookMessage(i.application_id, i.token, message_id)
-
-template delete*(i: Interaction, message_id = "@original"): Future[void] =
-    ## Deletes an Interaction Response or Followup Message
-    getClient.api.deleteInteractionResponse(i.application_id, i.token, message_id)
 
 template getThreadMember*(ch: GuildChannel;
         user: User | string): Future[ThreadMember] =

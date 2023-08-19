@@ -116,8 +116,8 @@ template reply*(i: Interaction;
     let flag = if ephemeral: {mfEphemeral} else: {}
 
     getClient.api.interactionResponseMessage(
-        application_id,
-        token,
+        i.application_id,
+        i.token,
         irtChannelMessageWithSource,
         InteractionApplicationCommandCallbackData(
             flags: flag,
@@ -131,19 +131,21 @@ template reply*(i: Interaction;
 template update*(i: Interaction;
         content = "";
         embeds: seq[Embed] = @[];
+        flags: set[MessageFlags] = {};
         attachments: seq[Attachment] = @[];
-        components: seq[MessageComponent] = @[]
+        components: seq[MessageComponent] = @[];
+        allowed_mentions = default(AllowedMentions);
+        tts = none bool
 ): Future[void] =
     ## Updates the message on which an Interaction was received on.
     ## - This acknowledges an Interaction.
     getClient.api.interactionResponseMessage(
-        i.application_id, i.token,
-        kind = irtUpdateMessage,
-        response = InteractionCallbackDataMessage(
-            content: content,
-            embeds: embeds,
-            attachments: attachments,
-            components: components
+        i.id, i.token,
+        irtUpdateMessage,
+        newInteractionData(
+            content, embeds, flags,
+            attachments, components,
+            allowed_mentions, tts
         )
     )
 
@@ -166,30 +168,36 @@ template followup*(i: Interaction;
         flags = (if ephemeral: some mfEphemeral.ord else: none int)
     )
     
-template edit*(i: Interaction, message_id = "@original";
+template edit*(i: Interaction;
         content = none string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         attachments = newSeq[Attachment]();
         files = newSeq[DiscordFile]();
-        components = newSeq[MessageComponent]()
+        components = newSeq[MessageComponent]();
+        message_id = "@original"
 ): Future[Message] =
     ## Edit an interaction response.
-    ## You can actually use this to modify original interaction or followup message.
+    ## You can use this to modify original interaction or followup message.
     ##
     ## - `message_id` can be `@original`
-    getClient.api.editWebhookMessage(
+    getClient.api.editInteractionResponse(
         i.application_id, i.token, message_id,
-        content, i.channel_id,
-        embeds, allowed_mentions,
+        content, embeds, allowed_mentions,
         attachments, files,
         components
     )
 
-template getResponse*(i: Interaction, message_id="@original"): Future[Message] =
-    ## Get the response (Message) to an Interaction
-    getClient.api.getWebhookMessage(i.application_id, i.token, message_id)
 
+template getResponse*(i: Interaction, message_id = "@original"): Future[Message] =
+    ## Get the response (Message) to an Interaction
+    proc msg(): Future[Message] {.async, gensym.} =
+        if i.message.isSome: 
+            result = i.message.get
+        else:
+            result = await getClient.api.getInteractionResponse(i.application_id, i.token, message_id)
+    msg()
+    
 template delete*(i: Interaction, message_id = "@original"): Future[void] =
     ## Deletes an Interaction Response or Followup Message
     getClient.api.deleteInteractionResponse(i.application_id, i.token, message_id)

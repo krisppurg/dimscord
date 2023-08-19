@@ -308,11 +308,11 @@ proc reference*(m: Message): MessageReference =
     result.guild_id   = m.guild_id
 
 proc mention*(parse, roles, users: seq[string];
-    tagged: bool): AllowedMentions =
+    ping: bool): AllowedMentions =
     ## A constructor for AllowedMentions object that performs validation.
     ## - Any value in `parse` is mutually exclusive with a field of the same name. 
     ## - To suppress all mentions, set `parse` to `[]`.
-    ## - `tagged`: set to true if you want a tagged reply to ping the target.
+    ## - `ping`: set to true if you want a mentioned reply to ping the target.
     doAssert(
         not("users" in parse and users.len > 0),
         "Mutually Exclusive: 'users' cannot be used when 'parse' includes 'users'"
@@ -326,7 +326,7 @@ proc mention*(parse, roles, users: seq[string];
     result.parse        = parse
     result.roles        = roles
     result.users        = users
-    result.replied_user = tagged
+    result.replied_user = ping
 
 #
 # Message components

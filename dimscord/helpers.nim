@@ -660,10 +660,15 @@ proc waitForReaction*(discord: DiscordClient;
         msg: Message, user: User = nil): Future[Emoji] {.async.} =
     ## Waits for a reaction to a message. Can optionally provide
     ## a user to only wait for a certain user.
-    if msg.guild_id.isNone:
-        assert giDirectMessageReactions in discord.intents
-    else:
-        assert giGuildMessageReactions in discord.intents
+    ##
+    ## Make sure you have message reaction intents,
+    ## either one of `giGuildMessageReactions` or `giDirectMessageReactions`.
+    let direct = giDirectMessageReactions in discord.intents
+    let guild = giGuildMessageReactions in discord.intents
+    if not direct and not guild:
+        raise newException(Exception,
+            "You need to set either the guild or direct message reaction intents or both."
+        )
 
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)

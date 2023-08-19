@@ -163,7 +163,7 @@ type
 
 const
     libName* =  "Dimscord"
-    libVer* =   "1.4.0"
+    libVer* =   "1.6.0"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v"&libVer&")"
 
     cdnBase* =               "https://cdn.discordapp.com/"

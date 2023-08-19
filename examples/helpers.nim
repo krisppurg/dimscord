@@ -1,7 +1,8 @@
 import dimscord, asyncdispatch, strutils, sequtils, options, tables
 
 # In order to enable helper procs, use the `mainClient` pragma to register your client.
-let discord {.mainClient.} = newDiscordClient("<your bot token goes here or use -d:token=(yourtoken)>")
+const token {.strdefine.} = "<your bot token goes here or use -d:token=(yourtoken)>"
+let discord {.mainClient.} = newDiscordClient(token)
 
 template `!`(awt, code: untyped): auto =
     # simple template to discard awaited results
@@ -22,7 +23,21 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 
         for emj in ["😁", "😩", "😎"]:
             await msg.react(emj) 
-      
+
+        echo "te"
+        let emoji = await discord.waitForReaction(msg, m.author)
+        echo "st"
+
+        case $emoji
+        of "😁":
+            await! ch.send("Today is a nice day, indeed " & @(m.author))
+        of "😩":
+            await! ch.send("Best of luck, champ " & @(m.author))
+        of "😎":
+            await! ch.send("I see you're having one heck of a day " & @(m.author))
+        else:
+            discard
+
     of "highfive": # Simple reply
         await! m.reply("🖐", mention = true)
 
@@ -61,5 +76,5 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
         discard
 
 waitFor discord.startSession(
-    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent}
+    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent, giDirectMessageReactions}
 )

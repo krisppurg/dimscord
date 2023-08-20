@@ -40,6 +40,22 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         else:
             discard
 
+    of "waitfor": # WaitFor
+        await! m.reply("Waiting for an answer [y/n]...")
+
+        var msg: Message = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
+            echo msg.content.toLowerAscii
+            if (msg.channel_id == m.channel_id) and (msg.author.id == m.author.id):
+                return msg.content.toLowerAscii in ["yes", "no"]
+   
+        case msg.content
+        of "yes":
+            await! m.reply("You've said yes!")
+        of "no":
+            await! m.reply("You've said no!")
+        else:
+            discard
+
     of "counter": # Simple Interaction
         let btns = newActionRow @[
             newButton(label = "+", idOrUrl = "addBtn", style = Primary),

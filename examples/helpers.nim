@@ -39,8 +39,6 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             await! ch.send("Best of luck, champ " & @(m.author))
         of "😎":
             await! ch.send("I see you're having one heck of a day " & @(m.author))
-        else:
-            discard
 
     of "waitfor": # WaitFor
         await! m.reply("Waiting for an answer [y/n]...")
@@ -55,10 +53,8 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             await! m.reply("You've said yes!")
         of "no":
             await! m.reply("You've said no!")
-        else:
-            discard
 
-    of "counter": # Simple Interaction
+    of "counter": # Basic Interaction
         let btns = newActionRow @[
             newButton(label = "+", idOrUrl = "addBtn", style = Primary),
             newButton(label = "-", idOrUrl = "subBtn", style = Danger)
@@ -68,8 +64,20 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           "Current Count: 0",
           components = @[btns]
         )
+
+    of "game": # Advanced Messaging
+        let rep = await m.reply("Try to send 3 messages in 5 seconds ! 🕙")
+        var counter: int
+        # will always be false until counter is equal to 3
+        let wait = discord.waitFor(MessageCreate) do (msg: Message) -> bool: # notice we dont `await` the `waitFor` because we're using `withTimeout`
+            if (msg.channel_id == m.channel_id) and (msg.author.id == m.author.id):
+                counter += 1
+                return (counter == 3)
         
- 
+        if (await wait.withTimeout(5 * 1000)):
+            await! rep.edit("You won the game!")
+        else:
+            await! rep.edit("You lost the game!")
 
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
@@ -91,8 +99,6 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
         await! i.edit(
             some "Current Count: " & $(num - 1)
         )    
-    else:
-        discard
 
 
 

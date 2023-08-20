@@ -51,12 +51,14 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           components = @[btns]
         )
         
-        let i = await discord.waitFor(InteractionCreate) do (i: Interaction): bool =
+        let i = await discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
             if (i.member.get.user.id == m.author.id) and (i.channel_id.get == m.channel_id):
                 return true
             else:
                 return false
-        
+
+        await i.deferResponse()
+
         let originalMsg = await i.getResponse()
 
         var 

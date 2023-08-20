@@ -51,7 +51,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           components = @[btns]
         )
         
-        let i = await discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
+        var i = await discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
             if (i.member.get.user.id == m.author.id) and (i.channel_id.get == m.channel_id):
                 return true
             else:
@@ -67,13 +67,13 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 
         case i.data.get.custom_id
         of "addBtn":
-            await i.edit(
-                "Current Count: " & $(num + 1), 
+            await! i.edit(
+                some "Current Count: " & $(num + 1), 
                 components = i.data.get.components
             )
         of "subBtn":
-            await i.edit(
-                "Current Count: " & $(num - 1), 
+            await! i.edit(
+                some "Current Count: " & $(num - 1), 
                 components = i.data.get.components
             )    
         else:

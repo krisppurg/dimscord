@@ -51,35 +51,30 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           components = @[btns]
         )
         
-        var i = await discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
-            if (i.member.get.user.id == m.author.id) and (i.channel_id.get == m.channel_id):
-                return true
-            else:
-                return false
+ 
 
-        await i.deferResponse()
 
-        let originalMsg = await i.getResponse()
+proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
+    let 
+        data = i.data.get()
+        msg = await i.getResponse()
 
-        var 
-            text = originalMsg.content.split(" ")
-            num = text[2].parseInt()
+    var 
+        text = msg.content.split(" ")
+        num = text[2].parseInt()
 
-        case i.data.get.custom_id
-        of "addBtn":
-            await! i.edit(
-                some "Current Count: " & $(num + 1), 
-                components = i.data.get.components
-            )
-        of "subBtn":
-            await! i.edit(
-                some "Current Count: " & $(num - 1), 
-                components = i.data.get.components
-            )    
-        else:
-            discard
-            
-
+    await i.deferResponse(hide = true)
+    case data.custom_id
+    of "addBtn":
+        await! i.edit(
+            some "Current Count: " & $(num + 1)
+        )
+    of "subBtn":
+        await! i.edit(
+            some "Current Count: " & $(num - 1)
+        )    
+    else:
+        discard
 
 
 

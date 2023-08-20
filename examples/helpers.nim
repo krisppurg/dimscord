@@ -19,8 +19,10 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         ch = g.channels[m.channel_id]
 
     case cmd
-    of "highfive": # Simple reply
-        await! m.reply("🖐", mention = true)
+    of "highfive": # Simple reply/edit
+        let msg = await m.reply("🖐", mention = true)
+        await sleepAsync(1000)
+        await! msg.edit("🤙")
 
     of "hello": # Basic Messaging
         let msg = await ch.send("Hey, how's your day ?")
@@ -43,7 +45,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     of "waitfor": # WaitFor
         await! m.reply("Waiting for an answer [y/n]...")
 
-        var msg: Message = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
+        var msg = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
             echo msg.content.toLowerAscii
             if (msg.channel_id == m.channel_id) and (msg.author.id == m.author.id):
                 return msg.content.toLowerAscii in ["yes", "no"]

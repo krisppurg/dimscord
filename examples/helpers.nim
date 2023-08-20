@@ -1,4 +1,4 @@
-import dimscord, asyncdispatch, strutils, sequtils, options, tables, sugar
+import dimscord, asyncdispatch, strutils, sequtils, options, tables, sugar, json
 
 # In order to enable helper procs, use the `mainClient` pragma to register your client.
 const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
@@ -30,7 +30,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         for emj in ["😁", "😩", "😎"]:
             await msg.react(emj) 
 
-        let emoji = await discord.waitForReaction(msg, m.author)
+        let emoji = await discord.waitForReaction(msg, m.author) # helper to wait for reactions on a message
 
         case $emoji
         of "😁":
@@ -40,7 +40,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         of "😎":
             await! ch.send("I see you're having one heck of a day " & @(m.author))
 
-    of "waitfor": # WaitFor
+    of "waitfor": # Basic event waiting
         await! m.reply("Waiting for an answer [y/n]...")
 
         var msg = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
@@ -65,12 +65,12 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           components = @[btns]
         )
 
-    of "game": # Advanced Messaging
+    of "game": # waitForRaw & withTimeout demo
         let rep = await m.reply("Try to send 3 messages in 5 seconds ! 🕙")
-        var counter: int
-        # will always be false until counter is equal to 3
-        let wait = discord.waitFor(MessageCreate) do (msg: Message) -> bool: # notice we dont `await` the `waitFor` because we're using `withTimeout`
-            if (msg.channel_id == m.channel_id) and (msg.author.id == m.author.id):
+        var counter: int # waitForRaw will always be false until counter is equal to 3
+
+        let wait = discord.waitForRaw("MESSAGE_CREATE") do (data: JsonNode) -> bool: # notice we dont `await` the `waitForRaw` because we're using `withTimeout`
+            if (data["channel_id"].str == m.channel_id) and (data["author"]["id"].str == m.author.id):
                 counter += 1
                 return (counter == 3)
         

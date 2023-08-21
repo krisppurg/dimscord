@@ -1,4 +1,9 @@
-import dimscord, asyncdispatch, strutils, sequtils, options, tables, sugar, json, times
+## In this example we demonstrate the use of the mainClient pragma.
+## - With this pragma you can use the helper template functions for sake of conciseness.
+## Additionally in this example we also demonstrate the waitFor template, which is useful.
+
+import dimscord, asyncdispatch, options, tables
+import strutils, sequtils, sugar
 
 const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
 
@@ -41,7 +46,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             await! ch.send("I see you're having one heck of a day " & @(m.author))
 
     of "waitfor": # Basic event waiting
-        await! m.reply("Waiting for an answer [y/n]...")
+        await! m.reply("Waiting for an answer [yes/no]...")
 
         var msg = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
             echo msg.content.toLowerAscii
@@ -73,14 +78,13 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             if (msg.author.id == m.author.id) and (msg.channel_id == m.channel_id):
                 counter += 1
                 return counter == 5
-            
+
         let response = await wait.orTimeout(10.seconds)
         
         if response.isSome:
             await! rep.edit("You won the game, " & @(m.author))
         else:
             await! rep.edit("You lost the game, " & @(m.author))
-
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     let 
@@ -102,8 +106,10 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
             some "Current Count: " & $(num - 1)
         )    
 
-
-
 waitFor discord.startSession(
-    gateway_intents = {giGuildMessages, giGuilds, giGuildMembers, giMessageContent, giDirectMessageReactions, giGuildMessageReactions}
+    gateway_intents = {
+        giGuildMessages, giGuilds, giGuildMembers,
+        giDirectMessageReactions, giGuildMessageReactions,
+        giMessageContent
+    }
 )

@@ -365,6 +365,18 @@ proc waitForReady*(v: VoiceClient) {.async.} =
     while not v.ready:
         await sleepAsync 0
 
+proc updateSpeaking(v: VoiceClient, should_speak: bool) {.async.} =
+    await v.sendSpeaking(should_speak)
+    v.speaking = should_speak
+    asyncCheck v.voice_events.on_speaking(v, should_speak)
+
+proc resume*(v: VoiceClient) {.async.} =
+    ## Continue playing audio
+    await v.updateSpeaking(true)
+    v.paused = false
+    v.start = float64(getMonoTime().ticks.int / 1_000_000_000)
+    v.loops = 0
+
 proc handleSocketMessage(v: VoiceClient) {.async.} =
     var packet: (Opcode, string)
 
@@ -447,12 +459,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             v.ready = true
             if v.migrate:
                 v.migrate = false
-                if v.paused:
-                    v.paused = false
-
-                    v.speaking = true # we should speak as we resume
-                    await v.sendSpeaking(true)
-                    asyncCheck v.voice_events.on_speaking(v, true)
+                if v.paused: await v.resume()# we should speak as we resume
 
             asyncCheck v.voice_events.on_ready(v)
         else: discard
@@ -542,15 +549,11 @@ proc pause*(v: VoiceClient) {.async.} =
         await v.sendAudioPacket silencePacket
         incrementPacketHeaders v
         await sleepAsync idealLength
+    await v.updateSpeaking(false)
 
-proc resume*(v: VoiceClient) =
-    ## Continue playing audio
-    v.paused = false
-
-proc unpause*(v: VoiceClient) =
+proc unpause*(v: VoiceClient) {.async.} =
     ## (Alias) same as resume
-    v.paused = false
-
+    await v.resume()
 
 proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     ## Plays audio data that comes from a stream or process.
@@ -563,9 +566,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     while v.start != 0.0:
         await sleepAsync 20
 
-    await v.sendSpeaking(true)
-    v.speaking = true
-    asyncCheck v.voice_events.on_speaking(v, true)
+    await v.updateSpeaking(true)
 
     when input is Stream:
         let stream = input
@@ -583,8 +584,10 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         counts:  float64
         elapsed: float64
     while (not stream.atEnd() or input.running) and not v.stopped:
-        if v.loops == 0 or v.start == 0.0:
-            v.start = float64(getMonoTime().ticks.int / 1_000_000_000)
+        if v.loops == 0:
+            if v.start == 0.0:
+                v.start = float64(getMonoTime().ticks.int / 1_000_000_000)
+                start = v.start
             start = v.start
 
         v.data = newStringOfCap(dataSize)
@@ -649,7 +652,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         await sleepAsync float(delay * 1000) + offset
 
         while v.paused:
-            await sleepAsync 1000
+            await sleepAsync 1
 
     v.start = 0.0
     v.loops = 0
@@ -665,9 +668,7 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         incrementPacketHeaders v
         await sleepAsync idealLength
 
-    await v.sendSpeaking(false)
-    v.speaking = false
-    asyncCheck v.voice_events.on_speaking(v, false)
+    await v.updateSpeaking(false)
 
 proc exeExists(exe: string): bool =
     ## Returns true if `exe` can be found

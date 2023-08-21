@@ -74,21 +74,21 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         if m.guildID.get notin s.voiceConnections: return
         let vc = s.voiceConnections[m.guildID.get]
         if not vc.ready: return
-        vc.pause()
+        await vc.pause()
 
         discard await discord.api.sendMessage(m.channelID, "Music paused.")
     of "!resume":
         if m.guildID.get notin s.voiceConnections: return
         let vc = s.voiceConnections[m.guildID.get]
         if not vc.ready: return
-        vc.resume()
+        await vc.resume()
 
         discard await discord.api.sendMessage(m.channelID, "Music resumed.")
     of "!stop":
         if m.guildID.get notin s.voiceConnections: return
         let vc = s.voiceConnections[m.guildID.get]
         if not vc.ready: return
-        vc.stopped = true
+        vc.stopPlaying()
         voicesessions[m.guildID.get].ready = false
         await s.voiceStateUpdate( # if channelID is none then we would disconnect
             guildID=m.guildID.get,

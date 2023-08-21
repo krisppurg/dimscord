@@ -1,8 +1,8 @@
-import dimscord, asyncdispatch, strutils, sequtils, options, tables, sugar, json
+import dimscord, asyncdispatch, strutils, sequtils, options, tables, sugar, json, times
 
-# In order to enable helper procs, use the `mainClient` pragma to register your client.
 const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
 
+# In order to enable helper procs, use the `mainClient` pragma to register your client.
 let discord {.mainClient.} = newDiscordClient(token)
 
 template `!`(awt, code: untyped): auto =
@@ -65,19 +65,21 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
           components = @[btns]
         )
 
-    of "game": # waitForRaw & withTimeout demo
-        let rep = await m.reply("Try to send 3 messages in 5 seconds ! 🕙")
-        var counter: int # waitForRaw will always be false until counter is equal to 3
+    of "game": # waitFor & orTimeout demo
+        let rep = await m.reply("Try to send 5 messages in 10 seconds ! 🕙")
+        var counter: int # waitFor will always be false until counter is equal to 3
 
-        let wait = discord.waitForRaw("MESSAGE_CREATE") do (data: JsonNode) -> bool: # notice we dont `await` the `waitForRaw` because we're using `withTimeout`
-            if (data["channel_id"].str == m.channel_id) and (data["author"]["id"].str == m.author.id):
+        let wait = discord.waitFor(MessageCreate) do (msg: Message) -> bool:
+            if (msg.author.id == m.author.id) and (msg.channel_id == m.channel_id):
                 counter += 1
-                return (counter == 3)
+                return counter == 5
+            
+        let response = await wait.orTimeout(10.seconds)
         
-        if (await wait.withTimeout(5 * 1000)):
-            await! rep.edit("You won the game!")
+        if response.isSome:
+            await! rep.edit("You won the game, " & @(m.author))
         else:
-            await! rep.edit("You lost the game!")
+            await! rep.edit("You lost the game, " & @(m.author))
 
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =

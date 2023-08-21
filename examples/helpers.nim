@@ -49,7 +49,6 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         await! m.reply("Waiting for an answer [yes/no]...")
 
         var msg = await discord.waitFor(MessageCreate) do (msg: Message) -> bool:
-            echo msg.content.toLowerAscii
             if (msg.channel_id == m.channel_id) and (msg.author.id == m.author.id):
                 return msg.content.toLowerAscii in ["yes", "no"]
    

@@ -34,25 +34,39 @@ proc getChannelPins*(api: RestApi,
     )).elems.map(newMessage)
 
 proc editGuildChannel*(api: RestApi, channel_id: string;
-            name, parent_id, topic = none string;
+            name, parent_id, topic, rtc_region = none string;
+            default_auto_archive_duration, video_quality_mode = none int;
+            flags = none set[ChannelFlags];
+            available_tags = none seq[ForumTag];
+            default_reaction_emoji = none DefaultForumReaction;
+            default_sort_order, default_forum_layout = none int;
             rate_limit_per_user = none range[0..21600];
+            default_thread_rate_limit_per_user = none range[0..21600];
             bitrate = none range[8000..128000]; user_limit = none range[0..99];
             position = none int; permission_overwrites = none seq[Overwrite];
-            nsfw = none bool; reason = ""): Future[GuildChannel] {.async.} =
+            nsfw = none bool;
+            reason = ""): Future[GuildChannel] {.async.} =
     ## Modify a guild channel.
     let payload = newJObject()
 
-    if name.isSome:
-        assert name.get.len >= 2 and name.get.len <= 100
-    if topic.isSome:
-        assert topic.get.len <= 1024
+    if name.isSome: assert name.get.len in 1..100
+    if topic.isSome: assert topic.get.len in 0..4096
+
+    if default_reaction_emoji.isSome:
+        let dre = default_reaction_emoji.get
+        if dre.emoji_name.isNone and dre.emoji_id.isNone:
+            payload["default_reaction_emoji"] = newJNull()
+        else:
+            payload["default_reaction_emoji"] = %dre
 
     payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user,
-        bitrate, user_limit, permission_overwrites, parent_id)
+        bitrate, user_limit, permission_overwrites, parent_id, flags,
+        default_forum_layout, default_thread_rate_limit_per_user,
+        available_tags)
 
-    payload.loadNullableOptStr(topic, parent_id)
+    payload.loadNullableOptStr(topic, parent_id, rtc_region)
     payload.loadNullableOptInt(position, rate_limit_per_user, bitrate,
-        user_limit)
+        user_limit, video_quality_mode, default_sort_order)
 
     result = (await api.request(
         "PATCH",
@@ -62,19 +76,30 @@ proc editGuildChannel*(api: RestApi, channel_id: string;
     )).newGuildChannel
 
 proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
-            parent_id, topic = none string; nsfw = none bool;
-            rate_limit_per_user, bitrate, position, user_limit = none int;
+            parent_id, topic, rtc_region = none string; nsfw = none bool;
+            position, video_quality_mode = none int;
+            default_sort_order, default_forum_layout = none int;
+            available_tags = none seq[ForumTag];
+            default_reaction_emoji = none DefaultForumReaction;
+            rate_limit_per_user = none range[0..21600];
+            bitrate = none range[8000..128000]; user_limit = none range[0..99];
             permission_overwrites = none seq[Overwrite];
             reason = ""): Future[GuildChannel] {.async.} =
     ## Creates a channel.
     assert name.len in 1..100
     if topic.isSome:
-        assert topic.get.len in 0..1024
+        if kind notin @[int ctGuildForum, int ctGuildMedia]:
+            assert topic.get.len in 0..1024
+        else:
+            assert topic.get.len in 0..4096
 
     let payload = %*{"name": name, "type": kind}
 
     payload.loadOpt(position, topic, nsfw, rate_limit_per_user,
-                    bitrate, user_limit, parent_id, permission_overwrites)
+                    bitrate, user_limit, parent_id, permission_overwrites,
+                    available_tags, default_reaction_emoji, video_quality_mode,
+                    default_sort_order, default_forum_layout)
+    payload.loadNullableOptStr(rtc_region)
 
     result = (await api.request(
         "POST",

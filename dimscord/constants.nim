@@ -111,6 +111,10 @@ type
         mfEphemeral,
         mfLoading,
         mfFailedToMentionSomeRolesInThread
+        mfSuppressNotifications
+        mfIsVoiceMessage
+    AttachmentFlags* = enum
+        afIsRemix = 2
     UserFlags* = enum
         ## Note on this enum:
         ## - The values assigned `n` are equal to `1 shl n`, if
@@ -160,6 +164,8 @@ type
     ChannelFlags* = enum
         cfNone,
         cfPinned = 1
+        cfRequireTag = 4
+        cfHideMediaDownloadOptions = 15
 
 const
     libName* =  "Dimscord"
@@ -210,6 +216,13 @@ type
         mtGuildInviteReminder =                     22
         mtContextMenuCommand =                      23
         mtAutoModerationAction =                    24
+        mtRoleSubscriptionPurchase =                25
+        mtInteractionPremiumUpsell =                26
+        mtStageStart =                              27
+        mtStageEnd =                                28
+        mtStageSpeaker =                            29
+        mtStageTopic =                              31
+        mtGuildApplicationPremiumSubscription =     32
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
@@ -323,6 +336,10 @@ type
         aleAutoModerationRuleUpdate =           141
         aleAutoModerationRuleDelete =           142
         aleAutoModerationBlockMessage =         143
+        aleAutoModerationFlagToChannel =        144
+        aleAutoModerationUserMuted =            145
+        aleCreatorMonetizationRequestCreated =  150
+        aleCreatorMonetizationTermsAccepted =   151
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2

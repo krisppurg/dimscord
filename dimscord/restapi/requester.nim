@@ -287,6 +287,12 @@ proc `%`*(o: Overwrite): JsonNode =
 proc `%`*(flags: set[MessageFlags]): JsonNode =
     %cast[int](flags)
 
+proc `%`*(flags: set[AttachmentFlags]): JsonNode =
+    %cast[int](flags)
+
+proc `%`*(flags: set[ChannelFlags]): JsonNode =
+    %cast[int](flags)
+
 proc `%`*(flags: set[RoleFlags]): JsonNode =
     %cast[int](flags)
 

@@ -160,6 +160,7 @@ type
         thread*: Option[GuildChannel]
         application*: Option[Application]
         interaction*: Option[MessageInteraction]
+        role_subscription_data*: Option[RoleSubscriptionData]
         message_reference*: Option[MessageReference]
         sticker_items*: Table[string, tuple[
             id, name: string,
@@ -197,10 +198,11 @@ type
         ## `file` is used for sending/editing attachments.
         ## `file` is like `body` in DiscordFile, but for attachments.
         id*, filename*: string
-        description*, content_type*: Option[string]
+        description*, content_type*, waveform*: Option[string]
         proxy_url*, url*: string
         file*: string
         height*, width*: Option[int]
+        flags: set[AttachmentFlags]
         ephemeral*: Option[bool]
         size*: int
     Reaction* = object
@@ -233,6 +235,10 @@ type
         stickers*: seq[Sticker]
         sku_id*, banner_asset_id*: string
         cover_sticker_id*: Option[string]
+    RoleSubscriptionData* = object
+        tier_name*, role_susbcription_listing_id*: string
+        total_months_subscribed*: int
+        is_renewal*: bool
     RestApi* = ref object
         token*: string
         endpoints*: Table[string, Ratelimit]
@@ -264,7 +270,8 @@ type
     GuildChannel* = ref object
         id*, name*, guild_id*: string
         nsfw*: bool
-        topic*, parent_id*: Option[string]
+        topic*, parent_id*, owner_id*: Option[string]
+        last_pin_timestamp*: Option[string]
         permission_overwrites*: Table[string, Overwrite]
         position*: Option[int]
         default_auto_archive_duration*: Option[int]
@@ -771,6 +778,8 @@ type
         deprecated*, custom*: bool
     AuditLogOptions* = object
         ## - `kind` ("role" or "member") or (0 or 1)
+        auto_moderation_rule_name*: Option[string]
+        auto_moderation_rule_trigger_type*: Option[string]
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*, role_name*: Option[string]
         id*, message_id*, application_id*: Option[string]
@@ -798,6 +807,7 @@ type
     AuditLog* = object
         webhooks*: seq[Webhook]
         users*: seq[User]
+        application_commands*: seq[ApplicationCommand]
         audit_log_entries*: seq[AuditLogEntry]
         integrations*: seq[Integration]
         threads*: seq[GuildChannel]

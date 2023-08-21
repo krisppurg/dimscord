@@ -494,18 +494,6 @@ proc startSession*(v: VoiceClient) {.async.} =
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
         raise
 
-proc pause*(v: VoiceClient) =
-    ## Pause the current audio
-    v.paused = true
-
-proc resume*(v: VoiceClient) =
-    ## Continue playing audio
-    v.paused = false
-
-proc unpause*(v: VoiceClient) =
-    ## (Alias) same as resume
-    v.paused = false
-
 proc stopPlaying*(v: VoiceClient) =
     ## Stop the current audio
     v.stopped = true
@@ -534,8 +522,6 @@ proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =
 
     if v.encryptMode != Normal:
         packet &= nonce
-    while v.paused:
-        continue
     await v.sendUDPPacket(packet)
 
 proc incrementPacketHeaders(v: VoiceClient) =
@@ -548,6 +534,23 @@ proc incrementPacketHeaders(v: VoiceClient) =
         v.time += 960
     else:
         v.time = 0
+
+proc pause*(v: VoiceClient) {.async.} =
+    ## Pause the current audio
+    v.paused = true
+    for i in 1..5:
+        await v.sendAudioPacket silencePacket
+        incrementPacketHeaders v
+        await sleepAsync idealLength
+
+proc resume*(v: VoiceClient) =
+    ## Continue playing audio
+    v.paused = false
+
+proc unpause*(v: VoiceClient) =
+    ## (Alias) same as resume
+    v.paused = false
+
 
 proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
     ## Plays audio data that comes from a stream or process.
@@ -580,9 +583,6 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
         counts:  float64
         elapsed: float64
     while (not stream.atEnd() or input.running) and not v.stopped:
-        while v.paused:
-            await sleepAsync 1
-
         if v.loops == 0 or v.start == 0.0:
             v.start = float64(getMonoTime().ticks.int / 1_000_000_000)
             start = v.start
@@ -648,6 +648,9 @@ proc play*(v: VoiceClient, input: Stream | Process) {.async.} =
 
         await sleepAsync float(delay * 1000) + offset
 
+        while v.paused:
+            await sleepAsync 1000
+
     v.start = 0.0
     v.loops = 0
     v.stopped = false
@@ -673,9 +676,7 @@ proc exeExists(exe: string): bool =
 proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
     ## Gets audio data by passing input to ffmpeg (so input can be anything that ffmpeg supports).
     ## Requires `ffmpeg` be installed.
-    let args = @[
-        "-reconnect",
-        "1",
+    var args = @[
         "-i",
         path,
         "-loglevel",
@@ -688,9 +689,10 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
         "2",
         "pipe:1"
     ]
-
-    if not path.fileExists and not path.startsWith("http"):
-      raise (ref IOError)(msg: fmt"File {path} does not exist")
+    if path.startsWith("http"):
+        args = concat(@["-reconnect", "1"], args)
+    elif not path.fileExists:
+        raise (ref IOError)(msg: fmt"File {path} does not exist")
 
     doAssert exeExists("ffmpeg"), "Cannot find ffmpeg, make sure it is installed"
     let pid = startProcess("ffmpeg", args = args, options = {

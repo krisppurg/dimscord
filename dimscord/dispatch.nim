@@ -525,7 +525,7 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
             s.cache.users[member["user"]["id"].str] = newUser(member["user"])
 
     let chunk = newGuildMembersChunk(data)
-    s.checkAndCall(DispatchEvent.GuildMembersChunk, guild, chunk)
+    s.checkAndCall(deGuildMembersChunk, guild, chunk)
 
 proc guildMemberAdd(s: Shard, data: JsonNode) {.async.} =
     let
@@ -965,7 +965,7 @@ proc threadMembersUpdate(s: Shard, data: JsonNode) {.async.} =
         removed_member_ids: data{"removed_member_ids"}.getElems.mapIt(it.getStr)
     )
 
-    s.checkAndCall(DispatchEvent.ThreadMembersUpdate, e)
+    s.checkAndCall(deThreadMembersUpdate, e)
 
 proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
@@ -1017,7 +1017,7 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
     of ChannelCreate: await s.channelCreate(data)
     of ChannelUpdate: await s.channelUpdate(data)
     of ChannelDelete: await s.channelDelete(data)
-    of GuildMembersChunk: await s.guildMembersChunk(data)
+    of deGuildMembersChunk: await s.guildMembersChunk(data)
     of GuildMemberAdd: await s.guildMemberAdd(data)
     of GuildMemberUpdate: await s.guildMemberUpdate(data)
     of GuildMemberRemove: await s.guildMemberRemove(data)
@@ -1031,8 +1031,8 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
     of GuildRoleUpdate: await s.guildRoleUpdate(data)
     of GuildRoleDelete: await s.guildRoleDelete(data)
     of WebhooksUpdate: await s.webhooksUpdate(data)
-    of TypingStart: s.checkAndCall(DispatchEvent.TypingStart, newTypingStart(data))
-    of InviteCreate: s.checkAndCall(DispatchEvent.InviteCreate, data.newInviteCreate)
+    of deTypingStart: s.checkAndCall(deTypingStart, newTypingStart(data))
+    of deInviteCreate: s.checkAndCall(deInviteCreate, data.newInviteCreate)
     of InviteDelete: await s.inviteDelete(data)
     of GuildIntegrationsUpdate:
         let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
@@ -1049,12 +1049,11 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
     of ThreadCreate: await s.threadCreate(data)
     of ThreadUpdate: await s.threadUpdate(data)
     of ThreadDelete: await s.threadDelete(data)
-    of ThreadListSync:
+    of deThreadListSync:
         s.checkAndCall(
-          DispatchEvent.ThreadListSync,
-          data.`$`.fromJson(objects.ThreadListSync
-        ))
-    of ThreadMembersUpdate: await s.threadMembersUpdate(data)
+          deThreadListSync,
+          data.`$`.fromJson(objects.ThreadListSync))
+    of deThreadMembersUpdate: await s.threadMembersUpdate(data)
     of ThreadMemberUpdate:
         let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
             Guild(id: data["guild_id"].str)

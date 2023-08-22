@@ -66,10 +66,11 @@ macro optionIf*(check: typed): untyped =
 macro mainClient*(x: typed): untyped =
     ## Register a DiscordClient
     ## - Use this variable to use the helper functions. Can be set only once.
-    runnableExamples "-r:off":
-        # Register the client when declaring it
-        let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
-        # Now you can use the helper functions
+    ##```nim
+    ##  # Register the client when declaring it
+    ##  let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
+    ##  # Now you can use the helper functions
+    ## ```
         
     if clientCache.len > 0:
         error("You must choose one of your client variables to set as your main")

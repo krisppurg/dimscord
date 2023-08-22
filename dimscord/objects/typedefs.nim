@@ -7,6 +7,13 @@ import std/asyncnet
 
 type
     RestError* = object of CatchableError
+    DiscordHttpError* = ref object of CatchableError
+        ## - `code` the status code e.g. 400 for a bad request.
+        ## - `message` the message field from the json e.g. "You are being rate-limited"
+        ## **Note:** if you want exception msg, it's DiscordHttpError.msg
+        code*: int
+        message*: string
+        errors*: JsonNode
     DiscordFile* = ref object
         ## A Discord file.
         name*, body*: string
@@ -966,3 +973,11 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+proc getCurrentDiscordHttpError*(): DiscordHttpError =
+    ## Use this proc instead of getCurrentException() for advanced details.
+    let err = getCurrentException()
+    if err.isNil:
+        result = nil
+    else:
+        result = cast[DiscordHttpError](err)

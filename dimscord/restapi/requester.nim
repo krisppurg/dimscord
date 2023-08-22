@@ -76,8 +76,7 @@ proc discordDetailedErrors(errors: JsonNode, extra = ""): seq[string] =
         discard
 
 proc discordErrors(data: JsonNode): string =
-    result = "[DiscordError]:: " &
-        data["message"].str & " (" & $data["code"].getInt & ")"
+    result = data["message"].str & " (" & $data["code"].getInt & ")"
 
     if "errors" in data:
         result &= "\n" & discordDetailedErrors(data["errors"]).join("\n")
@@ -132,7 +131,8 @@ proc request*(api: RestApi, meth, endpoint: string;
         ))
 
         try:
-            resp = await client.request(url, parseEnum[HttpMethod](meth), pl, multipart=mp)
+            resp = await client.request(url, parseEnum[HttpMethod](meth),
+                    pl, multipart=mp)
         except:
             r.processing = false
             raise
@@ -170,9 +170,9 @@ proc request*(api: RestApi, meth, endpoint: string;
 
                 case status:
                 of Http400:
-                    error = fin & "Bad request.\n"
+                    error = fin & "Bad request."
                     if not data.isNil and not detailederr:#dont want duplicates
-                        error &= data.pretty()
+                        error &= "\n" & data.pretty()
                 of Http401:
                     error = fin & "Invalid authorization."
                     invalid_requests += 1
@@ -202,7 +202,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                     error = fin & "Unknown error"
 
                 if detailederr and not data.isNil:
-                    error &= "\n\n - " & data.discordErrors()
+                    error &= "\n  * " & data.discordErrors()
 
             if status.is5xx:
                 error = fin & "Internal Server Error."
@@ -212,7 +212,13 @@ proc request*(api: RestApi, meth, endpoint: string;
                     error = fin & "Gateway timed out."
 
             if fatalErr:
-                raise newException(RestError, error)
+                raise DiscordHttpError(
+                    msg: error,
+                    code: data{"code"}.getInt(status.int),
+                    message: data{"message"}.getStr(
+                        error[fin.len..^1].split("\n")[0]),
+                    errors: %*data{"errors"}.getFields
+                )
             else:
                 echo error
 
@@ -257,13 +263,7 @@ proc request*(api: RestApi, meth, endpoint: string;
 
         result = data
     except:
-        var err = getCurrentExceptionMsg()
-
-        if error != "":
-            err = error
-
-        if fatalErr:
-            raise newException(RestError, err)
+        raise
 
 proc `%`*(t: tuple[
         channel_id: string, duration_seconds: int,

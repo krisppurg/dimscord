@@ -79,7 +79,7 @@ proc discordErrors(data: JsonNode): string =
     result = data["message"].str & " (" & $data["code"].getInt & ")"
 
     if "errors" in data:
-        result &= "\n" & discordDetailedErrors(data["errors"]).join("\n")
+        result &= discordDetailedErrors(data["errors"]).join("\n")
 
 proc request*(api: RestApi, meth, endpoint: string;
             pl, audit_reason = ""; mp: MultipartData = nil;

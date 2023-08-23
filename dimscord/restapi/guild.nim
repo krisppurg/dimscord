@@ -705,11 +705,10 @@ proc createGuildSticker*(api: RestApi, guild_id: string;
     name, tags, file: string;
     description, reason = ""
 ): Future[Sticker] {.async.} =
-    ## Create a guild sticker. Max `file` size 500KB.
-    assert file.len <= (500 * 1000), "Max file size 500KB"
+    ## Create a guild sticker. Max `file` size 512KB.
+    assert file.len <= (512_000), "Max file size 512KB"
     assert name.len in 2..30 and tags.len in 2..200
-    if description != "":
-        assert description.len in 2..100
+    if description != "": assert description.len in 2..100
 
     let payload = %*{
         "name": name,

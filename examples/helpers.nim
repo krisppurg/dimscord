@@ -3,7 +3,7 @@
 ## Additionally in this example we also demonstrate the waitFor template, which is useful.
 
 import dimscord, asyncdispatch, options, tables
-import strutils, sequtils, sugar
+import strutils, sequtils, sugar, times
 
 const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
 

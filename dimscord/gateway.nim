@@ -432,6 +432,7 @@ proc handleDispatch(s: Shard, event: string, data: JsonNode) {.async, used.} =
         asyncCheck s.client.events.on_dispatch(s, event, data)
         s.client.checkIfAwaiting(Unknown, (event, data))
         let eventKind = parseEnum[DispatchEvent](event, Unknown)
+
         asyncCheck s.handleEventDispatch(eventKind, data)
 
 proc reconnect(s: Shard) {.async.} =

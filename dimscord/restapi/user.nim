@@ -490,15 +490,12 @@ proc getUserApplicationRoleConnection*(
 proc updateUserApplicationRoleConnection*(api: RestApi,
     application_id: string;
     platform_name, platform_username = none string;
-    metadata = none ApplicationRoleConnectionMetadata
+    metadata = none Table[string, string]
 ): Future[ApplicationRoleConnectionMetadata] {.async.} =
     var payload = %*{}
     payload.loadOpt(platform_name, platform_username)
 
-    if metadata.isSome:
-        payload["metadata"] = %metadata.get
-        payload["metadata"]["type"] = %metadata.get.kind
-        payload["metadata"].delete("kind")
+    if metadata.isSome: payload["metadata"] = %metadata.get
 
     result = (await api.request(
         "PUT",

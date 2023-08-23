@@ -1,5 +1,4 @@
 import asyncdispatch, options, json
-# import ../restapi/[message, requester]
 import ../objects, ../constants
 
 template send*(ch: SomeChannel;

@@ -347,6 +347,7 @@ type
         msfPng    = 1
         msfAPng   = 2
         msfLottie = 3
+        msfGif    = 4
     ApplicationCommandOptionType* = enum
         acotNothing         = 0 # Will never popup unless the user shoots themselves in the foot
         acotSubCommand      = 1

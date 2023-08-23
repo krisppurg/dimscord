@@ -419,7 +419,7 @@ proc handleSocketMessage(v: VoiceClient) {.async.} =
             dataVoiceOp = VoiceOp(data["op"].num)
 
         case dataVoiceOp
-        of Hello: # TODO: resume (after v1.4.0)
+        of Hello: # TODO: resume (after v1.6.0)
             logVoice "Received 'HELLO' from the voice gateway."
             v.interval = int data["d"]["heartbeat_interval"].getFloat
 

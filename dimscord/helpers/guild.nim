@@ -1,5 +1,4 @@
 import asyncdispatch, options, json
-import ../restapi/[requester]
 import ../objects, ../constants
 
 template beginPrune*(g: Guild;
@@ -13,9 +12,9 @@ template getPruneCount*(g: Guild, days: int): Future[int] =
     ## Gets the prune count.
     getClient.api.getGuildPruneCount(g.id, days)
 
-template edit*(g: Guild, lvl: MFALevel): Future[MFALevel] =
+template edit*(g: Guild, lvl: MFALevel; reason = ""): Future[MFALevel] =
     ## Modify Guild MFA Level, requiring guild ownership.
-    getClient.api.editGuildMFALevel(g.id, lvl)
+    getClient.api.editGuildMFALevel(g.id, lvl, reason)
 
 template delete*(g: Guild): Future[void] =
     ## Deletes a guild. Requires guild ownership.
@@ -179,7 +178,7 @@ template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 
-template edit*(gse: GuildScheduledEvent;
+template edit*(g: Guild, gse: GuildScheduledEvent;
         name, start_time, image = none string;
         channel_id, end_time, desc = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;
@@ -191,7 +190,7 @@ template edit*(gse: GuildScheduledEvent;
     ## Update a scheduled event in a guild.
     ## Read more: https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event-json-params
     getClient.api.editScheduledEvent(
-        gse.guild_id, gse.id, name,
+        g.id, gse.id, name,
         start_time, image,
         channel_id, end_time, desc,
         privacy_level, entity_type,
@@ -221,9 +220,9 @@ template getRule*(g: Guild, rule_id: string): Future[AutoModerationRule] =
     ## Get a Guild's specific AutoMod Rule
     getClient.api.getAutoModerationRule(g.id, rule_id)
 
-template deleteRule*(amr: AutoModerationRule): Future[void] =
+template deleteRule*(g: Guild, amr: AutoModerationRule): Future[void] =
     ## deletes automod rule
-    getClient.api.deleteAutoModerationRule(amr.guild_id, amr.id)
+    getClient.api.deleteAutoModerationRule(g.id, amr.id)
 
 template editRule*(g: Guild, amr: AutoModerationRule;
     event_type = none int, name = none string; 

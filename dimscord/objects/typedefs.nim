@@ -369,10 +369,12 @@ type
         icon*, splash*, discovery_splash*: Option[string]
         afk_channel_id*, vanity_url_code*, application_id*: Option[string]
         widget_channel_id*, system_channel_id*, joined_at*: Option[string]
+        safety_alerts_channel_id*: Option[string]
         system_channel_flags*: set[SystemChannelFlags]
         permissions*: set[PermissionFlags]
         premium_progress_bar_enabled*, nsfw*, owner*, widget_enabled*: bool
         large*, unavailable*: Option[bool]
+        max_stage_video_channel_uses*: Option[int]
         max_video_channel_uses*, afk_timeout*, member_count*: Option[int]
         approximate_member_count*, approximate_presence_count*: Option[int]
         max_presences*, max_members*, premium_subscription_count*: Option[int]
@@ -409,7 +411,7 @@ type
         privacy_level*: GuildScheduledEventPrivacyLevel
         status*: GuildScheduledEventStatus
         entity_type*: EntityType
-        entity_metadata*: EntityMetadata
+        entity_metadata*: Option[EntityMetadata]
         creator*: Option[User]
         user_count*: Option[int]
     GuildScheduledEventUser* = object
@@ -554,6 +556,9 @@ type
         key*, name*, description*: string
         name_localizations*: Option[Table[string, string]]
         description_localizations*: Option[Table[string, string]]
+    ApplicationRoleConnection* = object
+        platform_name*, platform_username*: Option[string]
+        metadata*: Table[string, string]
     ApplicationCommandOption* = object
         kind*: ApplicationCommandOptionType
         name*, description*: string

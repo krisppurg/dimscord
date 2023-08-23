@@ -7,8 +7,7 @@ import constants, objects, options
 import strformat, strutils, times, asyncdispatch
 import tables, regex
 import sugar, sequtils
-import typetraits
-import json
+import typetraits, json
 import std/[macros, macrocache]
 include ./helpers/[channel, guild, message, user]
 

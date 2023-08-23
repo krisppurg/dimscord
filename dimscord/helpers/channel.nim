@@ -1,5 +1,4 @@
 import asyncdispatch, options, json
-# import ../restapi/[channel, requester]
 import ../objects, ../constants
 
 template pin*(m: Message, reason = ""): Future[void] =
@@ -10,37 +9,53 @@ template removePin*(m: Message, reason = ""): Future[void]  =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
 
-template pins*(ch: SomeChannel): Future[seq[Message]] =
+template getPins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.
     getClient.api.getChannelPins(ch.id)
 
 template edit*(ch: GuildChannel;
-    name, parent_id, topic = none string;
+    name, parent_id, topic, rtc_region = none string;
+    default_auto_archive_duration, video_quality_mode = none int;
+    flags = none set[ChannelFlags];
+    available_tags = none seq[ForumTag];
+    default_reaction_emoji = none DefaultForumReaction;
+    default_sort_order, default_forum_layout = none int;
     rate_limit_per_user = none range[0..21600];
+    default_thread_rate_limit_per_user = none range[0..21600];
     bitrate = none range[8000..128000]; user_limit = none range[0..99];
     position = none int; permission_overwrites = none seq[Overwrite];
     nsfw = none bool; reason = ""
 ): Future[GuildChannel] =
     ## Modify a guild channel.
     getClient.api.editGuildChannel(
-        ch.id, name, parent_id, 
-        topic, rate_limit_per_user, bitrate, 
-        user_limit, position, permission_overwrites, 
+        ch.id, name, parent_id, name, parent_id, topic, rtc_region,
+        default_auto_archive_duration, video_quality_mode, flags, available_tags,
+        default_reaction_emoji, default_sort_order, default_forum_layout,
+        rate_limit_per_user, default_thread_rate_limit_per_user,
+        bitrate, user_limit, position, permission_overwrites,
         nsfw, reason
     )
 
 template createChannel*(g: Guild;
     name: string; kind = 0;
-    parent_id, topic = none string; nsfw = none bool;
-    rate_limit_per_user, bitrate, position, user_limit = none int;
+    parent_id, topic, rtc_region = none string; nsfw = none bool;
+    position, video_quality_mode = none int;
+    default_sort_order, default_forum_layout = none int;
+    available_tags = none seq[ForumTag];
+    default_reaction_emoji = none DefaultForumReaction;
+    rate_limit_per_user = none range[0..21600];
+    bitrate = none range[8000..128000]; user_limit = none range[0..99];
     permission_overwrites = none seq[Overwrite];
     reason = ""
 ): Future[GuildChannel]  =
     ## Creates a channel.
     getClient.api.createGuildChannel(
-        g.id, name, kind, parent_id, topic, nsfw,
-        rate_limit_per_user, bitrate, position, 
-        user_limit, permission_overwrites, reason
+        g.id, name, kind, parent_id, topic,
+        rtc_region, nsfw, position, video_quality_mode,
+        default_sort_order, default_forum_layout,
+        available_tags, default_reaction_emoji,
+        rate_limit_per_user, bitrate, user_limit,
+        permission_overwrites, reason
     )
 
 template deleteChannel*(ch: SomeChannel, reason = ""): Future[void] =

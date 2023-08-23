@@ -10,12 +10,10 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
             ApplicationCommand( # Just say who they high fived
                 name: "High Five",
                 kind: atUser,
-                default_permission: true
             ),
             ApplicationCommand( # Echo a message back
                 name: "Echo",
                 kind: atMessage,
-                default_permission: true
             )
         ],
         guild_id = "479193574341214208"

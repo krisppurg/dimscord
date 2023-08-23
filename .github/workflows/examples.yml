@@ -1,0 +1,23 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: iffy/install-nim@v4
+      with:
+        version: binary:stable
+    - name: Install dimscord
+      run: nimble install -y
+
+    - name: Compile examples
+      run: |
+        for file in examples/*.nim
+        do
+          nim c -d:dimscordVoice $file
+        done

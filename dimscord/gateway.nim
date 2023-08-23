@@ -161,7 +161,7 @@ when defined(discordEtf):
         result = newStringOfCap(x.len shl 1)
         toUgly(result, x)
 
-proc `%%`*(v: openarray[(string, DataValue)]): Table[string, DataValue] =
+proc `%%`(v: openarray[(string, DataValue)]): Table[string, DataValue] =
     v.toTable
 
 proc toTerm [T: auto](x: T): DataValue =

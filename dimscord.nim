@@ -29,6 +29,7 @@
 ##   @ify channels, users, roles, etc, this includes iconUrls too. There's also
 ##   helper restapi procs, e.g. `guild.editRole(name=some "something")`, `channel.send("..")`.
 ##   Which'd be useful for shortening code, you can use `discord.api` as an alternate.
+##   Additionally, there's also a `waitFor`/`waitForRaw` which is incredibly useful for waiting for events.
 ## 
 ## - `constants` Say if you were to check what verification level is the guild
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,
@@ -36,7 +37,7 @@
 ##   permCreateInstantInvite, etc. Intents are also included there.
 ## 
 ## - `voice` Allows you to connect to the voice gateway,
-##    play audio in voice channel, etc.
+##    play audio in voice channel, etc. [Look at examples/voice.nim for reference](https://github.com/krisppurg/dimscord/blob/master/examples/voice.nim)
 ##
 ##   For joining/leaving a voice channel, see `gateway`.
 ## 
@@ -69,6 +70,7 @@
 ## - `-d:discordCompress` Compress gateway payloads, by using zippy.
 ## - `-d:discordv9` Discord API v9 is used for threads (as in discord's channel type).
 ## - `-d:dimscordVoice` Enables the voice module. Requires libsodium and libopus
+## - `-d:discordEtf` Enables etf support for gateway, currently not the fastest as dimscord relies on json.
 
 {.define: ssl.}
 

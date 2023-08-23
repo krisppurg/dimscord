@@ -1,116 +1,121 @@
-RestError	dimscord/objects/typedefs.html#RestError	typedefs: RestError	
-DiscordFile	dimscord/objects/typedefs.html#DiscordFile	typedefs: DiscordFile	
-AllowedMentions	dimscord/objects/typedefs.html#AllowedMentions	typedefs: AllowedMentions	
-DiscordClient	dimscord/objects/typedefs.html#DiscordClient	typedefs: DiscordClient	
-Shard	dimscord/objects/typedefs.html#Shard	typedefs: Shard	
-Normal	dimscord/objects/typedefs.html#Normal	VoiceEncryptionMode.Normal	
-Suffix	dimscord/objects/typedefs.html#Suffix	VoiceEncryptionMode.Suffix	
-Lite	dimscord/objects/typedefs.html#Lite	VoiceEncryptionMode.Lite	
-VoiceEncryptionMode	dimscord/objects/typedefs.html#VoiceEncryptionMode	typedefs: VoiceEncryptionMode	
-VoiceClient	dimscord/objects/typedefs.html#VoiceClient	typedefs: VoiceClient	
-VoiceEvents	dimscord/objects/typedefs.html#VoiceEvents	typedefs: VoiceEvents	
-CacheTable	dimscord/objects/typedefs.html#CacheTable	typedefs: CacheTable	
-CacheTablePrefs	dimscord/objects/typedefs.html#CacheTablePrefs	typedefs: CacheTablePrefs	
-CacheError	dimscord/objects/typedefs.html#CacheError	typedefs: CacheError	
-Embed	dimscord/objects/typedefs.html#Embed	typedefs: Embed	
-EmbedThumbnail	dimscord/objects/typedefs.html#EmbedThumbnail	typedefs: EmbedThumbnail	
-EmbedVideo	dimscord/objects/typedefs.html#EmbedVideo	typedefs: EmbedVideo	
-EmbedImage	dimscord/objects/typedefs.html#EmbedImage	typedefs: EmbedImage	
-EmbedProvider	dimscord/objects/typedefs.html#EmbedProvider	typedefs: EmbedProvider	
-EmbedAuthor	dimscord/objects/typedefs.html#EmbedAuthor	typedefs: EmbedAuthor	
-EmbedFooter	dimscord/objects/typedefs.html#EmbedFooter	typedefs: EmbedFooter	
-EmbedField	dimscord/objects/typedefs.html#EmbedField	typedefs: EmbedField	
-MentionChannel	dimscord/objects/typedefs.html#MentionChannel	typedefs: MentionChannel	
-MessageReference	dimscord/objects/typedefs.html#MessageReference	typedefs: MessageReference	
-Message	dimscord/objects/typedefs.html#Message	typedefs: Message	
-User	dimscord/objects/typedefs.html#User	typedefs: User	
-Member	dimscord/objects/typedefs.html#Member	typedefs: Member	
-Attachment	dimscord/objects/typedefs.html#Attachment	typedefs: Attachment	
-Reaction	dimscord/objects/typedefs.html#Reaction	typedefs: Reaction	
-Emoji	dimscord/objects/typedefs.html#Emoji	typedefs: Emoji	
-PartialUser	dimscord/objects/typedefs.html#PartialUser	typedefs: PartialUser	
-Sticker	dimscord/objects/typedefs.html#Sticker	typedefs: Sticker	
-StickerPack	dimscord/objects/typedefs.html#StickerPack	typedefs: StickerPack	
-RestApi	dimscord/objects/typedefs.html#RestApi	typedefs: RestApi	
-Ratelimit	dimscord/objects/typedefs.html#Ratelimit	typedefs: Ratelimit	
-UnavailableGuild	dimscord/objects/typedefs.html#UnavailableGuild	typedefs: UnavailableGuild	
-Ready	dimscord/objects/typedefs.html#Ready	typedefs: Ready	
-DMChannel	dimscord/objects/typedefs.html#DMChannel	typedefs: DMChannel	
-DefaultForumReaction	dimscord/objects/typedefs.html#DefaultForumReaction	typedefs: DefaultForumReaction	
-ForumTag	dimscord/objects/typedefs.html#ForumTag	typedefs: ForumTag	
-GuildChannel	dimscord/objects/typedefs.html#GuildChannel	typedefs: GuildChannel	
-StageInstance	dimscord/objects/typedefs.html#StageInstance	typedefs: StageInstance	
-ThreadMetadata	dimscord/objects/typedefs.html#ThreadMetadata	typedefs: ThreadMetadata	
-ThreadMember	dimscord/objects/typedefs.html#ThreadMember	typedefs: ThreadMember	
-ThreadListSync	dimscord/objects/typedefs.html#ThreadListSync	typedefs: ThreadListSync	
-ThreadMembersUpdate	dimscord/objects/typedefs.html#ThreadMembersUpdate	typedefs: ThreadMembersUpdate	
-ActivityAssets	dimscord/objects/typedefs.html#ActivityAssets	typedefs: ActivityAssets	
-GameAssets	dimscord/objects/typedefs.html#GameAssets	typedefs: GameAssets	
-Activity	dimscord/objects/typedefs.html#Activity	typedefs: Activity	
-Presence	dimscord/objects/typedefs.html#Presence	typedefs: Presence	
-WelcomeChannel	dimscord/objects/typedefs.html#WelcomeChannel	typedefs: WelcomeChannel	
-Guild	dimscord/objects/typedefs.html#Guild	typedefs: Guild	
-VoiceState	dimscord/objects/typedefs.html#VoiceState	typedefs: VoiceState	
-GuildScheduledEvent	dimscord/objects/typedefs.html#GuildScheduledEvent	typedefs: GuildScheduledEvent	
-GuildScheduledEventUser	dimscord/objects/typedefs.html#GuildScheduledEventUser	typedefs: GuildScheduledEventUser	
-EntityMetadata	dimscord/objects/typedefs.html#EntityMetadata	typedefs: EntityMetadata	
-Role	dimscord/objects/typedefs.html#Role	typedefs: Role	
-RoleTag	dimscord/objects/typedefs.html#RoleTag	typedefs: RoleTag	
-TriggerMetadata	dimscord/objects/typedefs.html#TriggerMetadata	typedefs: TriggerMetadata	
-AutoModerationRule	dimscord/objects/typedefs.html#AutoModerationRule	typedefs: AutoModerationRule	
-ModerationAction	dimscord/objects/typedefs.html#ModerationAction	typedefs: ModerationAction	
-ModerationActionExecution	dimscord/objects/typedefs.html#ModerationActionExecution	typedefs: ModerationActionExecution	
-GuildOnboarding	dimscord/objects/typedefs.html#GuildOnboarding	typedefs: GuildOnboarding	
-GuildOnboardingPrompt	dimscord/objects/typedefs.html#GuildOnboardingPrompt	typedefs: GuildOnboardingPrompt	
-GuildOnboardingPromptOption	dimscord/objects/typedefs.html#GuildOnboardingPromptOption	typedefs: GuildOnboardingPromptOption	
-GuildTemplate	dimscord/objects/typedefs.html#GuildTemplate	typedefs: GuildTemplate	
-ActivityStatus	dimscord/objects/typedefs.html#ActivityStatus	typedefs: ActivityStatus	
-Overwrite	dimscord/objects/typedefs.html#Overwrite	typedefs: Overwrite	
-PermObj	dimscord/objects/typedefs.html#PermObj	typedefs: PermObj	
-PartialGuild	dimscord/objects/typedefs.html#PartialGuild	typedefs: PartialGuild	
-PartialChannel	dimscord/objects/typedefs.html#PartialChannel	typedefs: PartialChannel	
-SomeChannel	dimscord/objects/typedefs.html#SomeChannel	typedefs: SomeChannel	
-Channel	dimscord/objects/typedefs.html#Channel	typedefs: Channel	
-TeamMember	dimscord/objects/typedefs.html#TeamMember	typedefs: TeamMember	
-Team	dimscord/objects/typedefs.html#Team	typedefs: Team	
-Application	dimscord/objects/typedefs.html#Application	typedefs: Application	
-ApplicationCommand	dimscord/objects/typedefs.html#ApplicationCommand	typedefs: ApplicationCommand	
-GuildApplicationCommandPermissions	dimscord/objects/typedefs.html#GuildApplicationCommandPermissions	typedefs: GuildApplicationCommandPermissions	
-ApplicationCommandPermission	dimscord/objects/typedefs.html#ApplicationCommandPermission	typedefs: ApplicationCommandPermission	
-ApplicationRoleConnectionMetadata	dimscord/objects/typedefs.html#ApplicationRoleConnectionMetadata	typedefs: ApplicationRoleConnectionMetadata	
-ApplicationCommandOption	dimscord/objects/typedefs.html#ApplicationCommandOption	typedefs: ApplicationCommandOption	
-ApplicationCommandOptionChoice	dimscord/objects/typedefs.html#ApplicationCommandOptionChoice	typedefs: ApplicationCommandOptionChoice	
-MessageInteraction	dimscord/objects/typedefs.html#MessageInteraction	typedefs: MessageInteraction	
-Interaction	dimscord/objects/typedefs.html#Interaction	typedefs: Interaction	
-ApplicationCommandInteractionData	dimscord/objects/typedefs.html#ApplicationCommandInteractionData	typedefs: ApplicationCommandInteractionData	
-ResolvedChannel	dimscord/objects/typedefs.html#ResolvedChannel	typedefs: ResolvedChannel	
-ApplicationCommandResolution	dimscord/objects/typedefs.html#ApplicationCommandResolution	typedefs: ApplicationCommandResolution	
-ApplicationCommandInteractionDataOption	dimscord/objects/typedefs.html#ApplicationCommandInteractionDataOption	typedefs: ApplicationCommandInteractionDataOption	
-InteractionResponse	dimscord/objects/typedefs.html#InteractionResponse	typedefs: InteractionResponse	
-InteractionApplicationCommandCallbackData	dimscord/objects/typedefs.html#InteractionApplicationCommandCallbackData	typedefs: InteractionApplicationCommandCallbackData	
-InteractionCallbackDataMessage	dimscord/objects/typedefs.html#InteractionCallbackDataMessage	typedefs: InteractionCallbackDataMessage	
-InteractionCallbackDataAutocomplete	dimscord/objects/typedefs.html#InteractionCallbackDataAutocomplete	typedefs: InteractionCallbackDataAutocomplete	
-InteractionCallbackDataModal	dimscord/objects/typedefs.html#InteractionCallbackDataModal	typedefs: InteractionCallbackDataModal	
-Invite	dimscord/objects/typedefs.html#Invite	typedefs: Invite	
-InviteMetadata	dimscord/objects/typedefs.html#InviteMetadata	typedefs: InviteMetadata	
-InviteCreate	dimscord/objects/typedefs.html#InviteCreate	typedefs: InviteCreate	
-TypingStart	dimscord/objects/typedefs.html#TypingStart	typedefs: TypingStart	
-GuildMembersChunk	dimscord/objects/typedefs.html#GuildMembersChunk	typedefs: GuildMembersChunk	
-GuildBan	dimscord/objects/typedefs.html#GuildBan	typedefs: GuildBan	
-Webhook	dimscord/objects/typedefs.html#Webhook	typedefs: Webhook	
-Integration	dimscord/objects/typedefs.html#Integration	typedefs: Integration	
-SelectMenuOption	dimscord/objects/typedefs.html#SelectMenuOption	typedefs: SelectMenuOption	
-MessageComponent	dimscord/objects/typedefs.html#MessageComponent	typedefs: MessageComponent	
-GuildPreview	dimscord/objects/typedefs.html#GuildPreview	typedefs: GuildPreview	
-VoiceRegion	dimscord/objects/typedefs.html#VoiceRegion	typedefs: VoiceRegion	
-AuditLogOptions	dimscord/objects/typedefs.html#AuditLogOptions	typedefs: AuditLogOptions	
-AuditLogChangeValue	dimscord/objects/typedefs.html#AuditLogChangeValue	typedefs: AuditLogChangeValue	
-AuditLogEntry	dimscord/objects/typedefs.html#AuditLogEntry	typedefs: AuditLogEntry	
-AuditLog	dimscord/objects/typedefs.html#AuditLog	typedefs: AuditLog	
-GuildWidgetJson	dimscord/objects/typedefs.html#GuildWidgetJson	typedefs: GuildWidgetJson	
-GatewaySession	dimscord/objects/typedefs.html#GatewaySession	typedefs: GatewaySession	
-GatewayBot	dimscord/objects/typedefs.html#GatewayBot	typedefs: GatewayBot	
-Events	dimscord/objects/typedefs.html#Events	typedefs: Events	
-kind	dimscord/objects/typedefs.html#kind,CacheTable,string	typedefs: kind(c: CacheTable; channel_id: string): ChannelType	
-clear	dimscord/objects/typedefs.html#clear,CacheTable	typedefs: clear(c: CacheTable)	
-`$`	dimscord/objects/typedefs.html#$,Emoji	typedefs: `$`(e: Emoji): string	
+nimTitle	typedefs	dimscord/objects/typedefs.html	module dimscord/objects/typedefs		0
+nim	RestError	dimscord/objects/typedefs.html#RestError	object RestError		9
+nim	DiscordHttpError	dimscord/objects/typedefs.html#DiscordHttpError	type DiscordHttpError		10
+nim	DiscordFile	dimscord/objects/typedefs.html#DiscordFile	type DiscordFile		17
+nim	AllowedMentions	dimscord/objects/typedefs.html#AllowedMentions	object AllowedMentions		20
+nim	DiscordClient	dimscord/objects/typedefs.html#DiscordClient	type DiscordClient		25
+nim	Shard	dimscord/objects/typedefs.html#Shard	type Shard		34
+nim	Normal	dimscord/objects/typedefs.html#Normal	VoiceEncryptionMode.Normal		53
+nim	Suffix	dimscord/objects/typedefs.html#Suffix	VoiceEncryptionMode.Suffix		53
+nim	Lite	dimscord/objects/typedefs.html#Lite	VoiceEncryptionMode.Lite		53
+nim	VoiceEncryptionMode	dimscord/objects/typedefs.html#VoiceEncryptionMode	enum VoiceEncryptionMode		53
+nim	VoiceClient	dimscord/objects/typedefs.html#VoiceClient	type VoiceClient		57
+nim	VoiceEvents	dimscord/objects/typedefs.html#VoiceEvents	type VoiceEvents		89
+nim	CacheTable	dimscord/objects/typedefs.html#CacheTable	type CacheTable		95
+nim	CacheTablePrefs	dimscord/objects/typedefs.html#CacheTablePrefs	object CacheTablePrefs		101
+nim	CacheError	dimscord/objects/typedefs.html#CacheError	object CacheError		105
+nim	Embed	dimscord/objects/typedefs.html#Embed	object Embed		106
+nim	EmbedThumbnail	dimscord/objects/typedefs.html#EmbedThumbnail	object EmbedThumbnail		117
+nim	EmbedVideo	dimscord/objects/typedefs.html#EmbedVideo	object EmbedVideo		121
+nim	EmbedImage	dimscord/objects/typedefs.html#EmbedImage	object EmbedImage		124
+nim	EmbedProvider	dimscord/objects/typedefs.html#EmbedProvider	object EmbedProvider		128
+nim	EmbedAuthor	dimscord/objects/typedefs.html#EmbedAuthor	object EmbedAuthor		130
+nim	EmbedFooter	dimscord/objects/typedefs.html#EmbedFooter	object EmbedFooter		134
+nim	EmbedField	dimscord/objects/typedefs.html#EmbedField	object EmbedField		137
+nim	MentionChannel	dimscord/objects/typedefs.html#MentionChannel	object MentionChannel		140
+nim	MessageReference	dimscord/objects/typedefs.html#MessageReference	object MessageReference		143
+nim	Message	dimscord/objects/typedefs.html#Message	type Message		147
+nim	User	dimscord/objects/typedefs.html#User	type User		177
+nim	Member	dimscord/objects/typedefs.html#Member	type Member		190
+nim	Attachment	dimscord/objects/typedefs.html#Attachment	object Attachment		204
+nim	Reaction	dimscord/objects/typedefs.html#Reaction	object Reaction		215
+nim	Emoji	dimscord/objects/typedefs.html#Emoji	object Emoji		219
+nim	PartialUser	dimscord/objects/typedefs.html#PartialUser	object PartialUser		225
+nim	Sticker	dimscord/objects/typedefs.html#Sticker	object Sticker		230
+nim	StickerPack	dimscord/objects/typedefs.html#StickerPack	object StickerPack		240
+nim	RoleSubscriptionData	dimscord/objects/typedefs.html#RoleSubscriptionData	object RoleSubscriptionData		245
+nim	RestApi	dimscord/objects/typedefs.html#RestApi	type RestApi		249
+nim	Ratelimit	dimscord/objects/typedefs.html#Ratelimit	type Ratelimit		253
+nim	UnavailableGuild	dimscord/objects/typedefs.html#UnavailableGuild	object UnavailableGuild		256
+nim	Ready	dimscord/objects/typedefs.html#Ready	object Ready		259
+nim	DMChannel	dimscord/objects/typedefs.html#DMChannel	type DMChannel		266
+nim	DefaultForumReaction	dimscord/objects/typedefs.html#DefaultForumReaction	object DefaultForumReaction		271
+nim	ForumTag	dimscord/objects/typedefs.html#ForumTag	object ForumTag		273
+nim	GuildChannel	dimscord/objects/typedefs.html#GuildChannel	type GuildChannel		277
+nim	StageInstance	dimscord/objects/typedefs.html#StageInstance	object StageInstance		309
+nim	ThreadMetadata	dimscord/objects/typedefs.html#ThreadMetadata	object ThreadMetadata		315
+nim	ThreadMember	dimscord/objects/typedefs.html#ThreadMember	object ThreadMember		321
+nim	ThreadListSync	dimscord/objects/typedefs.html#ThreadListSync	object ThreadListSync		326
+nim	ThreadMembersUpdate	dimscord/objects/typedefs.html#ThreadMembersUpdate	object ThreadMembersUpdate		331
+nim	ActivityAssets	dimscord/objects/typedefs.html#ActivityAssets	object ActivityAssets		336
+nim	GameAssets	dimscord/objects/typedefs.html#GameAssets	type GameAssets		341
+nim	Activity	dimscord/objects/typedefs.html#Activity	object Activity		342
+nim	Presence	dimscord/objects/typedefs.html#Presence	type Presence		355
+nim	WelcomeChannel	dimscord/objects/typedefs.html#WelcomeChannel	object WelcomeChannel		360
+nim	Guild	dimscord/objects/typedefs.html#Guild	type Guild		363
+nim	VoiceState	dimscord/objects/typedefs.html#VoiceState	type VoiceState		401
+nim	GuildScheduledEvent	dimscord/objects/typedefs.html#GuildScheduledEvent	type GuildScheduledEvent		407
+nim	GuildScheduledEventUser	dimscord/objects/typedefs.html#GuildScheduledEventUser	object GuildScheduledEventUser		417
+nim	EntityMetadata	dimscord/objects/typedefs.html#EntityMetadata	object EntityMetadata		421
+nim	Role	dimscord/objects/typedefs.html#Role	object Role		423
+nim	RoleTag	dimscord/objects/typedefs.html#RoleTag	object RoleTag		431
+nim	TriggerMetadata	dimscord/objects/typedefs.html#TriggerMetadata	object TriggerMetadata		436
+nim	AutoModerationRule	dimscord/objects/typedefs.html#AutoModerationRule	object AutoModerationRule		441
+nim	ModerationAction	dimscord/objects/typedefs.html#ModerationAction	object ModerationAction		452
+nim	ModerationActionExecution	dimscord/objects/typedefs.html#ModerationActionExecution	object ModerationActionExecution		459
+nim	GuildOnboarding	dimscord/objects/typedefs.html#GuildOnboarding	object GuildOnboarding		465
+nim	GuildOnboardingPrompt	dimscord/objects/typedefs.html#GuildOnboardingPrompt	object GuildOnboardingPrompt		471
+nim	GuildOnboardingPromptOption	dimscord/objects/typedefs.html#GuildOnboardingPromptOption	object GuildOnboardingPromptOption		476
+nim	GuildTemplate	dimscord/objects/typedefs.html#GuildTemplate	object GuildTemplate		481
+nim	ActivityStatus	dimscord/objects/typedefs.html#ActivityStatus	object ActivityStatus		489
+nim	Overwrite	dimscord/objects/typedefs.html#Overwrite	object Overwrite		494
+nim	PermObj	dimscord/objects/typedefs.html#PermObj	object PermObj		499
+nim	PartialGuild	dimscord/objects/typedefs.html#PartialGuild	object PartialGuild		501
+nim	PartialChannel	dimscord/objects/typedefs.html#PartialChannel	object PartialChannel		504
+nim	SomeChannel	dimscord/objects/typedefs.html#SomeChannel	type SomeChannel		507
+nim	Channel	dimscord/objects/typedefs.html#Channel	object Channel		508
+nim	TeamMember	dimscord/objects/typedefs.html#TeamMember	object TeamMember		512
+nim	Team	dimscord/objects/typedefs.html#Team	object Team		517
+nim	Application	dimscord/objects/typedefs.html#Application	object Application		522
+nim	ApplicationCommand	dimscord/objects/typedefs.html#ApplicationCommand	object ApplicationCommand		537
+nim	GuildApplicationCommandPermissions	dimscord/objects/typedefs.html#GuildApplicationCommandPermissions	object GuildApplicationCommandPermissions		547
+nim	ApplicationCommandPermission	dimscord/objects/typedefs.html#ApplicationCommandPermission	object ApplicationCommandPermission		550
+nim	ApplicationRoleConnectionMetadata	dimscord/objects/typedefs.html#ApplicationRoleConnectionMetadata	object ApplicationRoleConnectionMetadata		554
+nim	ApplicationRoleConnection	dimscord/objects/typedefs.html#ApplicationRoleConnection	object ApplicationRoleConnection		559
+nim	ApplicationCommandOption	dimscord/objects/typedefs.html#ApplicationCommandOption	object ApplicationCommandOption		562
+nim	ApplicationCommandOptionChoice	dimscord/objects/typedefs.html#ApplicationCommandOptionChoice	object ApplicationCommandOptionChoice		573
+nim	MessageInteraction	dimscord/objects/typedefs.html#MessageInteraction	object MessageInteraction		577
+nim	Interaction	dimscord/objects/typedefs.html#Interaction	object Interaction		582
+nim	ApplicationCommandInteractionData	dimscord/objects/typedefs.html#ApplicationCommandInteractionData	type ApplicationCommandInteractionData		598
+nim	ResolvedChannel	dimscord/objects/typedefs.html#ResolvedChannel	object ResolvedChannel		620
+nim	ApplicationCommandResolution	dimscord/objects/typedefs.html#ApplicationCommandResolution	object ApplicationCommandResolution		627
+nim	ApplicationCommandInteractionDataOption	dimscord/objects/typedefs.html#ApplicationCommandInteractionDataOption	object ApplicationCommandInteractionDataOption		639
+nim	InteractionResponse	dimscord/objects/typedefs.html#InteractionResponse	object InteractionResponse		655
+nim	InteractionApplicationCommandCallbackData	dimscord/objects/typedefs.html#InteractionApplicationCommandCallbackData	object InteractionApplicationCommandCallbackData		667
+nim	InteractionCallbackDataMessage	dimscord/objects/typedefs.html#InteractionCallbackDataMessage	type InteractionCallbackDataMessage		677
+nim	InteractionCallbackDataAutocomplete	dimscord/objects/typedefs.html#InteractionCallbackDataAutocomplete	object InteractionCallbackDataAutocomplete		678
+nim	InteractionCallbackDataModal	dimscord/objects/typedefs.html#InteractionCallbackDataModal	object InteractionCallbackDataModal		680
+nim	Invite	dimscord/objects/typedefs.html#Invite	object Invite		683
+nim	InviteMetadata	dimscord/objects/typedefs.html#InviteMetadata	object InviteMetadata		698
+nim	InviteCreate	dimscord/objects/typedefs.html#InviteCreate	object InviteCreate		703
+nim	TypingStart	dimscord/objects/typedefs.html#TypingStart	object TypingStart		712
+nim	GuildMembersChunk	dimscord/objects/typedefs.html#GuildMembersChunk	object GuildMembersChunk		717
+nim	GuildBan	dimscord/objects/typedefs.html#GuildBan	object GuildBan		724
+nim	Webhook	dimscord/objects/typedefs.html#Webhook	object Webhook		727
+nim	Integration	dimscord/objects/typedefs.html#Integration	object Integration		735
+nim	SelectMenuOption	dimscord/objects/typedefs.html#SelectMenuOption	object SelectMenuOption		749
+nim	MessageComponent	dimscord/objects/typedefs.html#MessageComponent	object MessageComponent		755
+nim	GuildPreview	dimscord/objects/typedefs.html#GuildPreview	object GuildPreview		781
+nim	VoiceRegion	dimscord/objects/typedefs.html#VoiceRegion	object VoiceRegion		788
+nim	AuditLogOptions	dimscord/objects/typedefs.html#AuditLogOptions	object AuditLogOptions		792
+nim	AuditLogChangeValue	dimscord/objects/typedefs.html#AuditLogChangeValue	object AuditLogChangeValue		800
+nim	AuditLogEntry	dimscord/objects/typedefs.html#AuditLogEntry	type AuditLogEntry		814
+nim	AuditLog	dimscord/objects/typedefs.html#AuditLog	object AuditLog		820
+nim	GuildWidgetJson	dimscord/objects/typedefs.html#GuildWidgetJson	object GuildWidgetJson		829
+nim	GatewaySession	dimscord/objects/typedefs.html#GatewaySession	object GatewaySession		842
+nim	GatewayBot	dimscord/objects/typedefs.html#GatewayBot	object GatewayBot		845
+nim	Events	dimscord/objects/typedefs.html#Events	type Events		849
+nim	kind	dimscord/objects/typedefs.html#kind,CacheTable,string	proc kind(c: CacheTable; channel_id: string): ChannelType		961
+nim	clear	dimscord/objects/typedefs.html#clear,CacheTable	proc clear(c: CacheTable)		970
+nim	`$`	dimscord/objects/typedefs.html#$,Emoji	proc `$`(e: Emoji): string		977
+nim	getCurrentDiscordHttpError	dimscord/objects/typedefs.html#getCurrentDiscordHttpError	proc getCurrentDiscordHttpError(): DiscordHttpError		983

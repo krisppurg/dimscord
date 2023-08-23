@@ -507,8 +507,7 @@ proc stopPlaying*(v: VoiceClient) =
     v.data = ""
 
 proc elapsed*(v: VoiceClient): float =
-    ## Shows the elapsed time
-    ## Note: this may be inaccurate.
+    ## Shows the elapsed time in seconds.
     (v.sent*20)/1000
 
 proc sendAudioPacket*(v: VoiceClient, data: string) {.async.} =

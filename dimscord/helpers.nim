@@ -1,7 +1,7 @@
 ## Utilities and helper functions for every discord object.
-## It mostly contains `helper` procedures.
-## - You can use this for getting an avatar url and permission checking without
+## - You can use this for getting avatars, icons, get timestamp from id, permission checking without
 ## the hassle for doing complicated bitwise work.
+## - Furthermore, you can also use this to [waitFor] a certain event and [waitForRaw] for raw json handling before dimscord handles them.
 
 import constants, objects, options
 import strformat, strutils, times, asyncdispatch

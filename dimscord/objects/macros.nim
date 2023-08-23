@@ -1,4 +1,6 @@
-import std/macros
+import std/[macros, genasts, macrocache], typedefs
+
+const clientCache = CacheSeq"dimscord.client"
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -60,3 +62,28 @@ macro optionIf*(check: typed): untyped =
 
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
+
+macro mainClient*(x: typed): untyped =
+    ## Register a DiscordClient
+    ## - Use this variable to use the helper functions. Can be set only once.
+    ##```nim
+    ##  # Register the client when declaring it
+    ##  let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
+    ##  # Now you can use the helper functions
+    ## ```
+        
+    if clientCache.len > 0:
+        error("You must choose one of your client variables to set as your main")
+    elif x.kind notin {nnkLetSection, nnkVarSection}:
+        error("let/var must be used when declaring the variable")
+    else:
+        clientCache &= x[0][0]
+        result = x
+
+macro getClient*(): DiscordClient = 
+    ## Fetch a registered DiscordClient that would be used as the main variable for helper functions.
+    ## - You must use `mainClient` before using this macro!
+    if clientCache.len == 0:
+        error("Client not registered")
+    result = clientCache[0]
+

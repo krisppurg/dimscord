@@ -1,17 +1,17 @@
-# Utilities for every discord object.
+## Utilities and helper functions for every discord object.
 ## It mostly contains `helper` procedures.
 ## - You can use this for getting an avatar url and permission checking without
 ## the hassle for doing complicated bitwise work.
-## - Furthermore, you can also use this to [waitFor] a certain event.
 
 import constants, objects, options
-import strformat, strutils, times
+import strformat, strutils, times, asyncdispatch
 import tables, regex
-import asyncdispatch
 import sugar, sequtils
 import typetraits
 import json
 import std/[macros, macrocache]
+include ./helpers/[channel, guild, message, user]
+
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.
@@ -306,6 +306,27 @@ proc reference*(m: Message): MessageReference =
     result.channel_id = some m.channel_id
     result.message_id = some m.id
     result.guild_id   = m.guild_id
+
+proc mention*(parse, roles, users: seq[string];
+    ping: bool): AllowedMentions =
+    ## A constructor for AllowedMentions object that performs validation.
+    ## - Any value in `parse` is mutually exclusive with a field of the same name. 
+    ## - To suppress all mentions, set `parse` to `[]`.
+    ## - `ping`: set to true if you want a mentioned reply to ping the target.
+    doAssert(
+        not("users" in parse and users.len > 0),
+        "Mutually Exclusive: 'users' cannot be used when 'parse' includes 'users'"
+    )
+
+    doAssert(
+        not("roles" in parse and roles.len > 0),
+        "Mutually Exclusive: 'roles' cannot be used when 'parse' includes 'roles'"
+    )
+
+    result.parse        = parse
+    result.roles        = roles
+    result.users        = users
+    result.replied_user = ping
 
 #
 # Message components
@@ -639,10 +660,15 @@ proc waitForReaction*(discord: DiscordClient;
         msg: Message, user: User = nil): Future[Emoji] {.async.} =
     ## Waits for a reaction to a message. Can optionally provide
     ## a user to only wait for a certain user.
-    if msg.guild_id.isNone:
-        assert giDirectMessageReactions in discord.intents
-    else:
-        assert giGuildMessageReactions in discord.intents
+    ##
+    ## Make sure you have message reaction intents,
+    ## either one of `giGuildMessageReactions` or `giDirectMessageReactions`.
+    let direct = giDirectMessageReactions in discord.intents
+    let guild = giGuildMessageReactions in discord.intents
+    if not direct and not guild:
+        raise newException(Exception,
+            "You need to set either the guild or direct message reaction intents or both."
+        )
 
     proc handleUpdate(m: Message, u: User, emoji: Emoji, exists: bool): bool =
         return msg.id == m.id and (user == nil or user.id == u.id)

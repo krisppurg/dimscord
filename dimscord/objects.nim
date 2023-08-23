@@ -25,6 +25,25 @@ func fullSet*[T](U: typedesc[T]): set[T] {.inline.} =
     else: # Hole filled enum
         enumElementsAsSet(T)
 
+proc newInteractionData*(
+        content: string,
+        embeds: seq[Embed],
+        flags: set[MessageFlags],
+        attachments: seq[Attachment],
+        components: seq[MessageComponent],
+        allowed_mentions: AllowedMentions,
+        tts: Option[bool]
+): InteractionCallbackDataMessage =
+    result = InteractionCallbackDataMessage(
+        content: content,
+        embeds:  embeds,
+        allowed_mentions: allowed_mentions,
+        flags: flags,
+        attachments: attachments,
+        components: components,
+        tts: tts
+    )
+
 proc newShard*(id: int, client: DiscordClient): Shard =
     result = Shard(
         id: id,

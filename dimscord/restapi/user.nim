@@ -292,7 +292,7 @@ proc deleteApplicationCommand*(
         endpoint
     )
 
-proc `%`(o: set[UserFlags]): JsonNode =
+proc `%`*(o: set[UserFlags]): JsonNode =
     %cast[int](o)
 
 proc createInteractionResponse*(api: RestApi,

@@ -189,7 +189,7 @@ proc createGuildRole*(api: RestApi, guild_id: string;
     ## Creates a guild role.
     result = (await api.request("POST", endpointGuildRoles(guild_id), $(%*{
         "name": name, "unicode_emoji": unicode_emoji,
-        "icon": icon, "permissions": %($permissions.perms),
+        "icon": icon, "permissions": %($perms(permissions)),
         "color": color, "hoist": hoist,
         "mentionable": mentionable
     }), audit_reason = reason)).newRole

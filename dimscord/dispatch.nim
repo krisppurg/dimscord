@@ -525,7 +525,7 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
             s.cache.users[member["user"]["id"].str] = newUser(member["user"])
 
     let chunk = newGuildMembersChunk(data)
-    s.checkAndCall(DispatchEvent.GuildMembersChunk, guild, chunk)
+    s.checkAndCall(deGuildMembersChunk, guild, chunk)
 
 proc guildMemberAdd(s: Shard, data: JsonNode) {.async.} =
     let
@@ -965,7 +965,7 @@ proc threadMembersUpdate(s: Shard, data: JsonNode) {.async.} =
         removed_member_ids: data{"removed_member_ids"}.getElems.mapIt(it.getStr)
     )
 
-    s.checkAndCall(DispatchEvent.ThreadMembersUpdate, e)
+    s.checkAndCall(deThreadMembersUpdate, e)
 
 proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
     let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,

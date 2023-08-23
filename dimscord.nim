@@ -26,7 +26,9 @@
 ##   (`OAuth2` support will be added)
 ## 
 ## - `helpers` Includes helper methods such as mentioning a user
-##   @ify channels, users, roles, etc, this includes iconUrls too.
+##   @ify channels, users, roles, etc, this includes iconUrls too. There's also
+##   helper restapi procs, e.g. `guild.editRole(name=some "something")`, `channel.send("..")`.
+##   Which'd be useful for shortening code, you can use `discord.api` as an alternate.
 ## 
 ## - `constants` Say if you were to check what verification level is the guild
 ##   you can use the constants like vlHigh, vlLow, vlVeryHigh, vlMedium,

@@ -70,7 +70,7 @@ waitFor discord.startSession()
 Please note that you need to define `-d:ssl` if you are importing httpclient before importing dimscord.
 You can use -d:dimscordDebug, if you want to debug.
 
-If you want to use voice then you can use `-d:dimscordVoice`, this requires libsodium, libopus, ffmpeg and optionally youtube-dl (by default)
+If you want to use voice then you can use `-d:dimscordVoice`, this requires libsodium, libopus, ffmpeg and optionally yt-dlp (by default)
 
 ## Contributing
 * If you are interested in contributing to Dimscord, I'd recommend reading the CONTRIBUTING.md file.

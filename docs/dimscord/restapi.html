@@ -1018,8 +1018,8 @@
 </ul>
 <ul class="simple nested-toc-section">getUserApplicationRoleConnection
   <li><a class="reference" href="#getUserApplicationRoleConnection%2CRestApi%2Cstring" title="getUserApplicationRoleConnection(api: RestApi; application_id: string): Future[
-    ApplicationRoleConnectionMetadata]">getUserApplicationRoleConnection(api: RestApi; application_id: string): Future[
-    ApplicationRoleConnectionMetadata]</a></li>
+    ApplicationRoleConnection]">getUserApplicationRoleConnection(api: RestApi; application_id: string): Future[
+    ApplicationRoleConnection]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getVoiceRegions
@@ -1206,10 +1206,10 @@
   <li><a class="reference" href="#updateUserApplicationRoleConnection%2CRestApi%2Cstring" title="updateUserApplicationRoleConnection(api: RestApi; application_id: string;
     platform_name, platform_username = none string;
                                     metadata = none Table[string, string]): Future[
-    ApplicationRoleConnectionMetadata]">updateUserApplicationRoleConnection(api: RestApi; application_id: string;
+    ApplicationRoleConnection]">updateUserApplicationRoleConnection(api: RestApi; application_id: string;
     platform_name, platform_username = none string;
                                     metadata = none Table[string, string]): Future[
-    ApplicationRoleConnectionMetadata]</a></li>
+    ApplicationRoleConnection]</a></li>
 
 </ul>
 
@@ -3596,9 +3596,10 @@
 <div id="getUserApplicationRoleConnection-procs-all">
   <div id="getUserApplicationRoleConnection,RestApi,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#getUserApplicationRoleConnection%2CRestApi%2Cstring"><span class="Identifier">getUserApplicationRoleConnection</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="objects.html#ApplicationRoleConnectionMetadata"><span class="Identifier">ApplicationRoleConnectionMetadata</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <a href="objects.html#ApplicationRoleConnection"><span class="Identifier">ApplicationRoleConnection</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
+                                 <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -4052,10 +4053,10 @@
   <div id="updateUserApplicationRoleConnection,RestApi,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#updateUserApplicationRoleConnection%2CRestApi%2Cstring"><span class="Identifier">updateUserApplicationRoleConnection</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">application_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
     <span class="Identifier">platform_name</span><span class="Other">,</span> <span class="Identifier">platform_username</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
-    <span class="Identifier">metadata</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="objects.html#ApplicationRoleConnectionMetadata"><span class="Identifier">ApplicationRoleConnectionMetadata</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">metadata</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#ApplicationRoleConnection"><span class="Identifier">ApplicationRoleConnection</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span>
+    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -4076,7 +4077,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-08-23 18:14:04 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-08-24 17:26:38 UTC</small>
       </div>
     </div>
   </div>

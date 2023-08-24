@@ -96,8 +96,8 @@
 
 </ul>
 <ul class="simple nested-toc-section">playYTDL
-  <li><a class="reference" href="#playYTDL%2CVoiceClient%2Cstring%2Cstring" title="playYTDL(v: VoiceClient; url: string; command = &quot;youtube-dl&quot;): owned(
-    Future[void])">playYTDL(v: VoiceClient; url: string; command = &quot;youtube-dl&quot;): owned(
+  <li><a class="reference" href="#playYTDL%2CVoiceClient%2Cstring%2Cstring" title="playYTDL(v: VoiceClient; url: string; command = &quot;yt-dlp&quot;): owned(
+    Future[void])">playYTDL(v: VoiceClient; url: string; command = &quot;yt-dlp&quot;): owned(
     Future[void])</a></li>
 
 </ul>
@@ -273,13 +273,13 @@
 </div>
 <div id="playYTDL-procs-all">
   <div id="playYTDL,VoiceClient,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#playYTDL%2CVoiceClient%2Cstring%2Cstring"><span class="Identifier">playYTDL</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="StringLit">&quot;youtube-dl&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#playYTDL%2CVoiceClient%2Cstring%2Cstring"><span class="Identifier">playYTDL</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="objects.html#VoiceClient"><span class="Identifier">VoiceClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="StringLit">&quot;yt-dlp&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Plays a youtube link using youtube-dl by default Requires <tt class="docutils literal"><span class="pre"><span class="Identifier">youtube</span><span class="Operator">-</span><span class="Identifier">dl</span></span></tt> to be installed, if you want to use yt-dlp, then you can specify it.
+    Plays a youtube link using yt-dlp by default Requires <tt class="docutils literal"><span class="pre"><span class="Identifier">yt</span><span class="Operator">-</span><span class="Identifier">dlp</span></span></tt> to be installed, if you want to use youtube-dl, then you can specify it.
     <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/voice.nim#L703" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/voice.nim#L703" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
@@ -429,7 +429,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-08-23 18:14:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-08-24 17:26:36 UTC</small>
       </div>
     </div>
   </div>

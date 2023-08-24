@@ -481,17 +481,17 @@ proc updateApplicationRoleConnectionMetadataRecords*(
 
 proc getUserApplicationRoleConnection*(
     api: RestApi; application_id: string
-): Future[ApplicationRoleConnectionMetadata] {.async.} =
+): Future[ApplicationRoleConnection] {.async.} =
     result = (await api.request(
         "GET",
         endpointUserApplicationRoleConnection(application_id)
-    )).`$`.fromJson(ApplicationRoleConnectionMetadata)
+    )).`$`.fromJson(ApplicationRoleConnection)
 
 proc updateUserApplicationRoleConnection*(api: RestApi,
     application_id: string;
     platform_name, platform_username = none string;
     metadata = none Table[string, string]
-): Future[ApplicationRoleConnectionMetadata] {.async.} =
+): Future[ApplicationRoleConnection] {.async.} =
     var payload = %*{}
     payload.loadOpt(platform_name, platform_username)
 
@@ -501,4 +501,4 @@ proc updateUserApplicationRoleConnection*(api: RestApi,
         "PUT",
         endpointUserApplicationRoleConnection(application_id),
         $payload
-    )).`$`.fromJson(ApplicationRoleConnectionMetadata)
+    )).`$`.fromJson(ApplicationRoleConnection)

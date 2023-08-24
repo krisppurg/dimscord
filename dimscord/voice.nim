@@ -700,9 +700,9 @@ proc playFFMPEG*(v: VoiceClient, path: string) {.async.} =
     defer: pid.close()
     await v.play(pid)
 
-proc playYTDL*(v: VoiceClient, url: string; command = "youtube-dl") {.async.} =
-    ## Plays a youtube link using youtube-dl by default
-    ## Requires `youtube-dl` to be installed, if you want to use yt-dlp, then you can specify it.
+proc playYTDL*(v: VoiceClient, url: string; command = "yt-dlp") {.async.} =
+    ## Plays a youtube link using yt-dlp by default
+    ## Requires `yt-dlp` to be installed, if you want to use youtube-dl, then you can specify it.
     doAssert exeExists(command), "You need to install " & command
 
     let output = execProcess(

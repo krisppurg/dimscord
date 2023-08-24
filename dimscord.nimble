@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.4.0"
+version       = "1.6.0"
 author        = "KrispPurg"
 description   = "A Discord Bot & REST Library for Nim."
 license       = "MIT"

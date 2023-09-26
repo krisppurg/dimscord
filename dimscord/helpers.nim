@@ -11,6 +11,41 @@ import typetraits, json
 import std/[macros, macrocache]
 include ./helpers/[channel, guild, message, user]
 
+const
+    procsTable = macrocache.CacheTable"dimscord.handlerTypes"
+        ## Stores a mapping of EventName -> parameters for event
+        ## Note:: The shared parameter is removed from them
+    dimscordEvents = macrocache.CacheTable"dimscord.eventNames"
+        ## Stores names of events that exist. Basically
+        ## a HashSet
+
+# Build up the procsTable
+static:
+    # getTypleImpl returns `ref ObjSym` so we need to get the impl of ObjSym
+    let impl = Events.getTypeImpl()[0].getImpl()
+    for identDefs in impl[2][2]:
+        var typ = identDefs[^2]
+
+        # Desym all the parameters
+        var params = newSeq[NimNode]()
+        # Skip return type and shard parameter
+        for identDef in typ[0][2 .. ^1]:
+            var newDef = nnkIdentDefs.newTree()
+            for param in identDef[0 ..< ^2]:
+                newDef &= ident $param
+            newDef &= identDef[^2]
+            newDef &= identDef[^1]
+            params &= newDef
+
+        for field in identDefs[0 ..< ^2]:
+            # Not exported so just ignore it
+            if field.kind == nnkIdent: continue
+            # Remove the on_ prefix for some events
+            let origName = $field[1]
+            let name = if origName == "on_dispatch": "unknown"
+                       else: dup(origName, removePrefix("on_"))
+            procsTable[name] = newStmtList(params).copy()
+            dimscordEvents[origName.nimIdentNormalize()] = newEmptyNode()
 
 macro event*(discord: DiscordClient, fn: untyped): untyped =
     ## Sugar for registering an event handler.

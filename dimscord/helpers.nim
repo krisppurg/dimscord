@@ -65,19 +65,17 @@ macro event*(discord: DiscordClient, fn: untyped): untyped =
         newEmptyNode(),
         body
     )
-    anonFn.copyLineInfo(fn)
 
     if pragmas.findChild(it.strVal == "async").kind == nnkNilLit:
         anonFn.addPragma ident("async")
     # Check the event is valid, give proper error if it isn't
     if eventName.strVal.nimIdentNormalize() notin dimscordEvents:
-        fmt"{eventName} is not a valid dimscord event".error(eventName)
-    # Manually create the assignment so the line info is kept
-    # discord.events.`eventName` = anonFn
-    result = nnkAsgn.newTree(
-        discord.newDotExpr(ident"events").newDotExpr(ident $eventName),
-        anonFn
-    )
+        fmt"'{eventName}' is not a valid dimscord event".error(eventName)
+
+    result = quote:
+        `discord`.events.`eventName` = `anonFn`
+    # Make sure the `anonFn` keeps its line info
+    result[1].copyLineInfo(fn)
 
 proc defaultAvatarUrl*(u: User): string =
     ## Returns the default avatar for a user.

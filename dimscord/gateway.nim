@@ -262,12 +262,13 @@ proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         "name": &it.name,
         "url": &it.url
     })
-
-    case it.kind
-    of atCustom:
-      payload["activities"]["state"] = &it.state
-    else:
-      payload["activities"]["name"] = &it.name
+    
+    for activity in activities:
+      case activity.kind
+      of atCustom:
+        payload["activities"]["state"] = activity.state
+      else:
+        payload["activities"]["name"] = activity.state
 
     await s.sendSock(opStatusUpdate, payload)
 

@@ -491,6 +491,7 @@ type
         name*: string
         kind*: ActivityType
         url*: Option[string]
+        state*: Option[string]  ## Only required when a custom activity type is set.
     Overwrite* = object
         ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string

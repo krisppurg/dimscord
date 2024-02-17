@@ -260,8 +260,10 @@ proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
     payload["activities"] = &activities.mapIt(%%{
         "type": &uint8 it.kind,
         "name": &it.name,
-        "url": &it.url
+        "url": &it.url,
+        "state": &it.state
     })
+    
     await s.sendSock(opStatusUpdate, payload)
 
 proc updateStatus*(s: Shard, activity = none ActivityStatus;

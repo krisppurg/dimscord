@@ -261,8 +261,7 @@ proc updateStatus*(s: Shard, activities: seq[ActivityStatus] = @[];
         "type": &uint8 it.kind,
         "name": &it.name,
         "url": &it.url,
-        "state": &it.state,
-        "name": &it.name
+        "state": &it.state
     })
     
     await s.sendSock(opStatusUpdate, payload)

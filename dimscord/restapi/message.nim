@@ -221,17 +221,26 @@ proc getChannelMessage*(api: RestApi, channel_id,
     )).newMessage
 
 proc bulkDeleteMessages*(api: RestApi, channel_id: string;
-        message_ids: seq[string]; reason = "") {.async.} =
+        message_ids: seq[string] | seq[Message]; reason = "") {.async.} =
     ## Bulk deletes messages.
-    assert message_ids.len in 1..100
-    discard await api.request(
-        "POST",
-        endpointBulkDeleteMessages(channel_id),
-        $(%*{
-            "messages": message_ids
-        }),
-        audit_reason = reason
-    )
+    template req(data: untyped) {.dirty.} =
+        assert message_ids.len in 1..100
+        discard await api.request(
+            "POST",
+            endpointBulkDeleteMessages(channel_id),
+            $(%*{
+                "messages": data
+            }),
+            audit_reason = reason
+        )
+    when message_ids is seq[string]: 
+        req(message_ids)
+    elif message_ids is seq[Message]:
+        var ids = newSeqOfCap[string](message_ids.len)
+        for msg in messages_ids:
+            ids.add(msg.id)
+        req(ids)
+        
 
 proc addMessageReaction*(api: RestApi,
         channel_id, message_id, emoji: string) {.async.} =

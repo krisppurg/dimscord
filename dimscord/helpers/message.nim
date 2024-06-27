@@ -61,20 +61,15 @@ template edit*(m: Message;
         components
     )
 
-template delete*(m: Message | seq[Message] | seq[string];
-        reason = ""): Future[void] =
-    ## Deletes one or multiple Message(s).
-    when m is Message:
-        getClient.api.deleteMessage(m.channel_id, m.id, reason)
-    elif m is seq[string]:
-        getClient.api.bulkDeleteMessages(m[0].channel_id, m, reason)     
-    elif m is seq[Message]:
-        getClient.api.bulkDeleteMessages(
-            m[0].channel_id, 
-            (collect(newSeqOfCap m.len): 
-                for msg in m.items: msg.id),
-            reason
-        )
+template delete*(m: Message; reason = ""): Future[void] =
+    ## Deletes a discord Message.
+    getClient.api.deleteMessage(m.channel_id, m.id, reason)  
+
+template delete*(msgs: seq[Message]; reason = ""): Future[void] =
+    ## Bulk deletes messages.
+    ## Note: the length of `msg` MUST superior to 0 and inferior to 101.
+    getClient.api.bulkDeleteMessages(m[0].channel_id, msgs)
+
 
 template getMessages*(ch: SomeChannel;
         around, before, after = "";

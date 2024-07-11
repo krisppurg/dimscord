@@ -58,6 +58,8 @@ type
         permCreateEvents
         permUseExternalSounds
         permSendVoiceMessages
+        permUsePolls = 49
+        permUseExternalApps
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
@@ -77,7 +79,9 @@ type
         giMessageContent,
         giGuildScheduledEvents = 16,
         giAutoModerationConfiguration = 20,
-        giAutoModerationExecution
+        giAutoModerationExecution,
+        giGuildMessagePolls = 24,
+        giDirectMessagePolls
     AuditLogChangeType* = enum
         alcString,
         alcInt,
@@ -223,6 +227,11 @@ type
         mtStageSpeaker =                            29
         mtStageTopic =                              31
         mtGuildApplicationPremiumSubscription =     32
+        mtGuildIncidentAlertModeEnabled =           36
+        mtGuildIncidentAlertModeDisabled =          37
+        mtGuildIncidentReportRaid =                 38
+        mtGuildIncidentReportFalseAlarm =           39
+        mtPurchaseNotification =                    44
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
@@ -243,8 +252,14 @@ type
         ctGuildDirectory =     14
         ctGuildForum =         15
         ctGuildMedia =         16
+    VideoQualityMode* = enum
+        vqmAuto        = 0
+        vqmFull        = 1
+    ReactionType* = enum
+        rtNormal        = 0
+        rtBurst        = 1
     MessageNotificationLevel* = enum
-        mnlAllMessages =  0
+        mnlAllMessages  = 0
         mnlOnlyMentions = 1
     ExplicitContentFilter* = enum
         ecfDisabled =            0
@@ -270,12 +285,13 @@ type
         ptTier2 = 2
         ptTier3 = 3
     ActivityType* = enum
-        atPlaying =   0
-        atStreaming = 1
-        atListening = 2
-        atWatching =  3
-        atCustom =    4
-        atCompeting = 5
+        atPlaying =     0
+        atStreaming =   1
+        atListening =   2
+        atWatching =    3
+        atCustom =      4
+        atCompeting =   5
+        atCustomState = 6
     WebhookType* = enum
         whIncoming =    1
         whFollower =    2
@@ -332,14 +348,21 @@ type
         aleThreadUpdate =                       111
         aleThreadDelete =                       112
         aleApplicationCommandPermissionUpdate = 121
-        aleAutoModerationRuleCreate =           140
-        aleAutoModerationRuleUpdate =           141
-        aleAutoModerationRuleDelete =           142
-        aleAutoModerationBlockMessage =         143
-        aleAutoModerationFlagToChannel =        144
-        aleAutoModerationUserMuted =            145
-        aleCreatorMonetizationRequestCreated =  150
-        aleCreatorMonetizationTermsAccepted =   151
+        aleAutoModerationRuleCreate           = 140
+        aleAutoModerationRuleUpdate           = 141
+        aleAutoModerationRuleDelete           = 142
+        aleAutoModerationBlockMessage         = 143
+        aleAutoModerationFlagToChannel        = 144
+        aleAutoModerationUserMuted            = 145
+        aleCreatorMonetizationRequestCreated  = 150
+        aleCreatorMonetizationTermsAccepted   = 151
+        aleOnboardingPromptCreate             = 163
+        aleOnboardingPromptUpdate             = 164
+        aleOnboardingPromptDelete             = 165
+        aleOnboardingCreate                   = 166
+        aleOnboardingUpdate                   = 167
+        aleHomeSettingsCreate                 = 190
+        aleHomeSettingsUpdate                 = 191
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
@@ -399,6 +422,13 @@ type
         irtUpdateMessage                    = 7
         irtAutoCompleteResult               = 8
         irtModal                            = 9
+    ApplicationIntegrationType* = enum
+        aitGuildInstall = 0
+        aitUserInstall  = 1
+    InviteType* = enum
+        itGuild   = 0
+        itGroupDm = 1
+        itFriend  = 2
     InviteTargetType* = enum
         ittStream              = 1
         ittEmbeddedApplication = 2
@@ -431,6 +461,8 @@ type
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
+    PollLayoutType* = enum
+        plDefault = 1
     GuildScheduledEventPrivacyLevel* = enum
         splGuildOnly = 2
     GuildScheduledEventStatus* = enum
@@ -469,6 +501,15 @@ type
     GuildOnboardingPromptType* = enum
         ptMultipleChoice = 0,
         ptDropdown       = 1
+    EntitlementType* = enum
+        etPurchase = 1
+        etPremiumSubscription,
+        etDeveloperGift,
+        etTestModePurchase,
+        etFreePurchase,
+        etUserGift,
+        etPremiumPurchase,
+        etApplicationSubscription
     DispatchEvent* = enum
         Unknown
         VoiceStateUpdate              = "VOICE_STATE_UPDATE"
@@ -526,6 +567,14 @@ type
         AutoModerationRuleUpdate      = "AUTO_MODERATION_RULE_UPDATE"
         AutoModerationRuleDelete      = "AUTO_MODERATION_RULE_DELETE"
         AutoModerationActionExecution = "AUTO_MODERATION_ACTION_EXECUTION"
+        MessagePollVoteAdd            = "MESSAGE_POLL_VOTE_ADD"
+        MessagePollVoteRemove         = "MESSAGE_POLL_VOTE_REMOVE"
+        IntegrationCreate             = "INTEGRATION_CREATE"
+        IntegrationUpdate             = "INTEGRATION_UPDATE"
+        IntegrationDelete             = "INTEGRATION_DELETE"
+        EntitlementCreate             = "ENTITLEMENT_CREATE"
+        EntitlementUpdate             = "ENTITLEMENT_UPDATE"
+        EntitlementDelete             = "ENTITLEMENT_DELETE"
 
 const
     deGuildMembersChunk*   = DispatchEvent.GuildMembersChunk
@@ -850,6 +899,12 @@ proc endpointChannelThreadsMembers*(cid: string; uid = ""): string =
     if uid != "":
         result = result & "/" & uid
 
+proc endpointChannelPollsAnswer*(cid, mid, aid: string): string =
+    result = endpointChannels(cid) & "/polls/" & mid & "/answers/" & aid
+
+proc endpointChannelPollsExpire*(cid, mid: string): string =
+    result = endpointChannels(cid) & "/polls/" & mid & "/expire"
+
 proc endpointChannelMessagesCrosspost*(cid, mid: string): string =
     result = endpointChannelMessages(cid, mid) & "/crosspost"
 
@@ -858,6 +913,9 @@ proc endpointChannelInvites*(cid: string): string =
 
 proc endpointChannelPermissions*(cid, oid: string): string =
     result = endpointChannels(cid) & "/permissions/" & oid
+
+proc endpointGuildBanBulk*(gid: string; uid = ""): string =
+    result = endpointGuilds(gid) & "/bulk-ban"
 
 proc endpointGuildBans*(gid: string; uid = ""): string =
     result = endpointGuilds(gid) & "/bans" & (if uid != "": "/" & uid else: "")
@@ -883,8 +941,17 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     if uid != "":
         result = result & "/" & uid
 
+proc endpointApplications*(aid="@me"): string =
+    result = "applications/"&aid
+
 proc endpointOAuth2Application*(): string =
     result = "oauth2/applications/@me"
+
+proc endpointEntitlements*(aid: string; eid = ""): string =
+    result = "applications/"&aid&"/entitlements"&(if eid!="":"/"&eid else:"")
+
+proc endpointEntitlementConsume*(aid, eid: string): string =
+    result = endpointEntitlements(aid, eid) & "/consume"
 
 proc endpointGlobalCommands*(aid: string; cid = ""): string =
     result = "applications/" & aid & "/commands" & (if cid!="":"/"&cid else:"")

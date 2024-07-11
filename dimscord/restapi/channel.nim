@@ -79,6 +79,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             parent_id, topic, rtc_region = none string; nsfw = none bool;
             position, video_quality_mode = none int;
             default_sort_order, default_forum_layout = none int;
+            default_thread_rate_limit_per_user = none int;
             available_tags = none seq[ForumTag];
             default_reaction_emoji = none DefaultForumReaction;
             rate_limit_per_user = none range[0..21600];
@@ -98,7 +99,8 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
     payload.loadOpt(position, topic, nsfw, rate_limit_per_user,
                     bitrate, user_limit, parent_id, permission_overwrites,
                     available_tags, default_reaction_emoji, video_quality_mode,
-                    default_sort_order, default_forum_layout)
+                    default_sort_order, default_forum_layout,
+                    default_thread_rate_limit_per_user)
     payload.loadNullableOptStr(rtc_region)
 
     result = (await api.request(

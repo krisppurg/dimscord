@@ -284,16 +284,10 @@ proc `%`*(o: Overwrite): JsonNode =
         "allow": %cast[int](o.allow),
         "deny": %cast[int](o.deny)}
 
-proc `%`*(flags: set[MessageFlags]): JsonNode =
-    %cast[int](flags)
+type SomeFlags = (set[MessageFlags] | set[AttachmentFlags] | set[
+    ChannelFlags] | set[UserFlags] | set[RoleFlags]) # dont judge the line break lol
 
-proc `%`*(flags: set[AttachmentFlags]): JsonNode =
-    %cast[int](flags)
-
-proc `%`*(flags: set[ChannelFlags]): JsonNode =
-    %cast[int](flags)
-
-proc `%`*(flags: set[RoleFlags]): JsonNode =
+proc `%`*(flags: SomeFlags): JsonNode =
     %cast[int](flags)
 
 proc `%`*(flags: set[PermissionFlags]): JsonNode =

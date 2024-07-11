@@ -502,3 +502,58 @@ proc updateUserApplicationRoleConnection*(api: RestApi,
         endpointUserApplicationRoleConnection(application_id),
         $payload
     )).`$`.fromJson(ApplicationRoleConnection)
+
+proc getEntitlements*(api: RestApi, application_id: string;
+    user_id, before, after, guild_id = none string;
+    sku_ids = none seq[string];
+    limit: range[1..100] = 100;
+    exclude_ended = false
+): Future[seq[Entitlement]] {.async.} =
+    ## Returns all entitlements for a given app, active and expired.
+    var endpoint = endpointEntitlements(application_id) & "?limit=" & $limit
+
+    if before.isSome: endpoint &= "&before="&before.get
+    if after.isSome: endpoint &= "&after="&after.get
+    if user_id.isSome: endpoint &= "&user_id="&user_id.get
+    if guild_id.isSome: endpoint &= "&guild_id="&guild_id.get
+    if sku_ids.isSome: endpoint &= "&sku_ids="&sku_ids.get.join(",")
+    if exclude_ended: endpoint &= "&exclude_ended=" & $exclude_ended
+
+    result = (await api.request(
+        "GET",
+        endpoint
+    )).getElems.mapIt(it.`$`.fromJson(Entitlement))
+
+proc consumeEntitlement*(api: RestApi,
+    application_id, entitlement_id: string) {.async.} =
+    ## For One-Time Purchase consumable SKUs, marks a given entitlement for the user as consumed.
+    discard await api.request(
+        "POST",
+        endpointEntitlementConsume(application_id, entitlement_id)
+    )
+
+proc deleteEntitlement*(api: RestApi,
+    application_id, entitlement_id: string) {.async.} =
+    ## Deletes a currently-active test entitlement.
+    ## Discord will act as though that user or guild no longer has entitlement to your premium offering.
+    discard await api.request(
+        "DELETE",
+        endpointEntitlements(application_id, entitlement_id)
+    )
+
+proc createTestEntitlement*(api: RestApi,
+    application_id: string;
+    sku_id, owner_id: string; owner_type: range[1..2]) {.async.} =
+    ## Creates a test entitlement to a given SKU for a given guild or user.
+    ## Discord will act as though that user or guild has entitlement to your premium offering.
+    ## * `owner_type` - `1` for a guild subscription, `2` for a user subscription.
+
+    discard await api.request(
+        "POST",
+        endpointEntitlements(application_id),
+        $(%*{
+            "sku_id": sku_id,
+            "owner_id": owner_id,
+            "owner_type": owner_type
+        })
+    )

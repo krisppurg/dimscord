@@ -313,13 +313,29 @@ proc getGuildBans*(api: RestApi,
         endpointGuildBans(guild_id)
     )).elems.map(newGuildBan)
 
+proc bulkGuildBan*(api: RestApi, guild_id: string;
+        user_ids: seq[string];
+        delete_message_seconds = 0;
+        reason = ""
+): Future[tuple[banned_users, failed_users: seq[string]]] {.async.} =
+    ## Creates a guild ban.
+    assert user_ids.len <= 200
+
+    discard await api.request(
+        "POST", endpointGuildBanBulk(guild_id),
+        $(%*{
+            "user_ids": %user_ids,
+            "delete_message_seconds": delete_message_seconds
+        }), audit_reason = reason)
+
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     discard await api.request(
         "PUT", endpointGuildBans(guild_id, user_id),
         $(%*{
-            "delete_message_days": deletemsgdays
+            "delete_message_days": deletemsgdays,
+            "reason": reason
         }), audit_reason = reason)
 
 proc removeGuildBan*(api: RestApi,

@@ -195,6 +195,7 @@ proc messageCreate(s: Shard, data: JsonNode) {.async.} =
 
         asyncCheck chan.addMsg(msg, $data, s.cache.preferences)
         chan.last_message_id = msg.id
+        s.cache.guild(chan).channels[chan.id] = chan # because it's updated.
 
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
@@ -247,11 +248,17 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
 
         if data["user_id"].str == s.user.id:
             reaction.reacted = true
+            reaction.me_burst = data["burst"].getBool
 
         msg.reactions[$emoji] = reaction
     else:
         reaction.count += 1
         reaction.reacted = data["user_id"].str == s.user.id
+        reaction.burst = data["burst"].getBool
+        reaction.me_burst = reaction.reacted and reaction.burst
+        if "burst_colors" in data:
+            reaction.burst_colors=data["burst_colors"].getElems.mapIt(it.getStr)
+
         msg.reactions[$emoji] = reaction
 
     s.checkAndCall(MessageReactionAdd, msg, user, emoji, exists)
@@ -292,6 +299,7 @@ proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
 
         if data["user_id"].str == s.user.id:
             reaction.reacted = false
+            if reaction.burst: reaction.me_burst = false
 
         msg.reactions[$emoji] = reaction
     else:
@@ -576,6 +584,13 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
     member.roles = @[]
     for role in data["roles"].elems:
         member.roles.add(role.str)
+
+    if "flags" in data and data["flags"].kind != JNull:
+        member.flags = cast[set[GuildMemberFlags]](data["flags"].getInt)
+    if "avatar_decoration_data" in data and data["avatar_decoration_data"].kind!=JNull:
+        member.avatar_decoration_data=($data["avatar_decoration_data"]).fromJson(
+            typeof(member.avatar_decoration_data)
+        )
 
     s.checkAndCall(GuildMemberUpdate, guild, member, oldMember)
 
@@ -999,6 +1014,116 @@ proc voiceServerUpdate(s: Shard, data: JsonNode) {.async.} =
                    guild, data["token"].str,
                    endpoint, initial)
 
+proc messagePollVoteAdd(s: Shard, data: JsonNode) {.async.} =
+    var
+        gc: GuildChannel = nil
+        dm: DMChannel = nil
+        user = s.cache.users.getOrDefault(data["user_id"].str,
+            User(id: data["user_id"].str))
+        msg = Message(id: data["message_id"].str,
+                      channel_id: data["channel_id"].str)
+        counts: seq[PollAnswerCount] = @[]
+
+    if "guild_id" in data:
+        let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        msg.guild_id = some guild.id
+
+        if msg.channel_id in guild.channels:
+            gc = guild.channels[msg.channel_id]
+            if msg.id in gc.messages:
+                msg = gc.messages[msg.id]
+                counts = msg.poll.get.results.get(PollResults()).answer_counts
+
+    elif msg.channel_id in s.cache.dmChannels:
+        dm = s.cache.dmchannels[msg.channel_id]
+        msg = dm.messages.getOrDefault(msg.id, msg)
+
+        counts = msg.poll.get.results.get(PollResults()).answer_counts
+
+    for ac in counts:
+        if ac.id != data["answer_id"].getInt: continue
+        ac.count += 1
+        ac.me_voted = user.id == s.user.id
+
+    if msg.poll.isSome: # just fyi, it will always be true for cached messages only both dm and guild.
+        if gc != nil:
+            gc.messages[msg.id] = msg
+            s.cache.gchannel(msg).messages[msg.id] = msg
+        else:
+            dm.messages[msg.id] = msg
+
+    s.checkAndCall(MessagePollVoteAdd,
+                   data["answer_id"].getInt, msg, user)
+
+proc messagePollVoteRemove(s: Shard, data: JsonNode) {.async.} =
+    var
+        gc: GuildChannel = nil
+        dm: DMChannel = nil
+        user = s.cache.users.getOrDefault(data["user_id"].str,
+            User(id: data["user_id"].str))
+        msg = Message(id: data["message_id"].str,
+                      channel_id: data["channel_id"].str)
+        counts: seq[PollAnswerCount] = @[]
+
+    if "guild_id" in data:
+        let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+            Guild(id: data["guild_id"].str)
+        )
+        msg.guild_id = some guild.id
+
+        if msg.channel_id in guild.channels:
+            gc = guild.channels[msg.channel_id]
+            msg = gc.messages.getOrDefault(msg.id, msg)
+            counts = msg.poll.get.results.get(PollResults()).answer_counts
+
+    elif msg.channel_id in s.cache.dmChannels:
+        dm = s.cache.dmchannels[msg.channel_id]
+        msg = dm.messages.getOrDefault(msg.id, msg)
+
+        counts = msg.poll.get.results.get(PollResults()).answer_counts
+
+    for ac in counts:
+        if ac.id != data["answer_id"].getInt: continue
+        if ac.count != 0: ac.count -= 1
+        ac.me_voted = user.id == s.user.id
+
+    if msg.poll.isSome:
+        if gc != nil:
+            gc.messages[msg.id] = msg
+            s.cache.gchannel(msg).messages[msg.id] = msg
+        else:
+            dm.messages[msg.id] = msg
+
+    s.checkAndCall(MessagePollVoteRemove,
+                   data["answer_id"].getInt, msg, user)
+
+proc integrationCreate(s: Shard, data: JsonNode) {.async.} =
+    let user = newUser(data["user"])
+    if user.id in s.cache.users: s.cache.users[user.id] = user
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    s.checkAndCall(IntegrationCreate, user, guild)
+
+proc integrationUpdate(s: Shard, data: JsonNode) {.async.} =
+    let user = newUser(data["user"])
+    if user.id in s.cache.users: s.cache.users[user.id] = user
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    s.checkAndCall(IntegrationUpdate, user, guild)
+
+proc integrationDelete(s: Shard, data: JsonNode) {.async.} =
+    var app_id = none(string)
+    if "application_id" in data and data["application_id"].kind != JNull:
+        app_id = some data["application_id"].str
+    let guild = s.cache.guilds.getOrDefault(data["guild_id"].str,
+        Guild(id: data["guild_id"].str)
+    )
+    s.checkAndCall(IntegrationDelete, data["id"].str, guild, app_id)
+
 proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} =
     case event:
     of VoiceStateUpdate: await s.voiceStateUpdate(data)
@@ -1075,4 +1200,15 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
     of AutoModerationRuleDelete: await s.autoModerationRuleDelete data
     of AutoModerationActionExecution:
         await s.autoModerationActionExecution(data)
+    of MessagePollVoteAdd: await s.messagePollVoteAdd(data)
+    of MessagePollVoteRemove: await s.messagePollVoteRemove(data)
+    of IntegrationCreate: await s.integrationCreate(data)
+    of IntegrationUpdate: await s.integrationUpdate(data)
+    of IntegrationDelete: await s.integrationDelete(data)
+    of EntitlementCreate:
+        s.checkAndCall(EntitlementCreate, newEntitlement(data))
+    of EntitlementUpdate:
+        s.checkAndCall(EntitlementUpdate, newEntitlement(data))
+    of EntitlementDelete:
+        s.checkAndCall(EntitlementDelete, newEntitlement(data))
     of Unknown: discard

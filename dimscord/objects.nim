@@ -123,6 +123,12 @@ proc newDiscordClient*(token: string;
                     e: AuditLogEntry) {.async.} = discard,
             guild_integrations_update: proc (s: Shard,
                     g: Guild) {.async.} = discard,
+            integration_create: proc (s: Shard, u: User,
+                    g: Guild) {.async.} = discard,
+            integration_update: proc (s: Shard, u: User,
+                    g: Guild) {.async.} = discard,
+            integration_delete: proc (s: Shard, integ_id: string, g: Guild,
+                    app_id: Option[string]) {.async.} = discard,
             guild_member_add: proc (s: Shard, g: Guild,
                     m: Member) {.async.} = discard,
             guild_member_remove: proc (s: Shard, g: Guild,
@@ -194,8 +200,18 @@ proc newDiscordClient*(token: string;
             auto_moderation_rule_delete: proc(s: Shard,
                 g: Guild, r: AutoModerationRule) {.async.} = discard,
             auto_moderation_action_execution: proc(s: Shard,
-                g: Guild, e: ModerationActionExecution) {.async.} = discard
+                g: Guild, e: ModerationActionExecution) {.async.} = discard,
+            message_poll_vote_add: proc(s: Shard, ans_id: int,
+                    m: Message, u: User){.async.} = discard,
+            message_poll_vote_remove: proc(s: Shard, ans_id: int,
+                    m: Message, u: User){.async.} = discard,
+            entitlement_create: proc(s: Shard, e: Entitlement){.async.} = discard,
+            entitlement_update: proc(s: Shard, e: Entitlement){.async.} = discard,
+            entitlement_delete: proc(s: Shard, e: Entitlement) {.async.} = discard
         ))
+
+proc renameHook(s: var (object | tuple), fieldName: var string) =
+    if fieldName == "type": fieldName="kind"
 
 proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
     var number: BiggestInt
@@ -241,6 +257,11 @@ proc parseHook(s: string, i: var int, v: var set[ActivityFlags]) =
     v = cast[set[ActivityFlags]](number)
 
 proc newPresence*(data: JsonNode): Presence =
+    if data{"activities"}.getElems != @[]:
+        for act in data["activities"].getElems:
+            let keycheck = "application_id" in act
+            if keycheck and act["application_id"].kind == JInt:
+                act["application_id"] = %($act["application_id"].getInt)
     result = ($data).fromJson(Presence)
 
 proc parseHook*(s: string, i: var int, v: var set[PermissionFlags]) =
@@ -364,7 +385,7 @@ proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
     for r in reactions:
         v[$r.emoji] = r
 
-proc renameHook(s: var MessageInteraction, fieldName: var string) =
+proc renameHook(s: var MessageInteractionMetadata, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
 
@@ -397,7 +418,7 @@ proc parseHook(s: string, i: var int, v: var BiggestFloat) =
     parseHook(s, i, data)
     if data.kind == JInt:
         v = toBiggestFloat data.num
-    elif data.kind == JInt:
+    elif data.kind == JFloat:
         v = BiggestFloat data.fnum
 
 proc parseHook(s: string, i: var int;
@@ -419,6 +440,10 @@ proc newActivity*(data: JsonNode): Activity =
 proc renameHook(v: var AuditLogEntry, fieldName: var string) {.used.} =
     if fieldName == "options":
         fieldName = "opts"
+
+proc renameHook(v: var AuditLogOptions, fieldName: var string) {.used.} =
+    if fieldName == "type":
+        fieldName = "kind"
 
 proc parseHook(s: string, i: var int, v: var Table[string, Role]) {.used.} =
     var roles: seq[Role]
@@ -675,7 +700,7 @@ proc newStickerPack*(data: JsonNode): StickerPack =
 proc newGuildTemplate*(data: JsonNode): GuildTemplate =
     result = ($data).fromJson(GuildTemplate)
 
-proc parseHook(s: string, i: var int,v: var (Option[string], Option[int]))=
+proc parseHook(s:string,i:var int,v:var (Option[string],Option[int])) {.used.} =
     var value: JsonNode
     parseHook(s, i, value)
 
@@ -849,6 +874,9 @@ proc renameHook(v: var ApplicationCommandOption, fieldName: var string) {.used.}
 proc renameHook(v: var ApplicationCommand, fieldName: var string) {.used.} =
     if fieldName == "type":
         fieldName = "kind"
+
+proc newEntitlement*(data: JsonNode): Entitlement = 
+    result = data.`$`.fromJson(Entitlement)
 
 proc newApplicationCommandInteractionData*(
     data: JsonNode

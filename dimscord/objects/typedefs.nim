@@ -140,6 +140,9 @@ type
     MentionChannel* = object
         id*, guild_id*, name*: string
         kind*: ChannelType
+    MessageCall* = object
+        participants*: seq[string]
+        ended_timestamp*: Option[string]
     MessageReference* = object
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
@@ -166,7 +169,7 @@ type
         activity*: Option[tuple[kind: int, party_id: string]]
         thread*: Option[GuildChannel]
         application*: Option[Application]
-        interaction*: Option[MessageInteraction]
+        interaction_metadata*: Option[MessageInteractionMetadata]
         role_subscription_data*: Option[RoleSubscriptionData]
         message_reference*: Option[MessageReference]
         sticker_items*: Table[string, tuple[
@@ -174,6 +177,9 @@ type
             format_type: MessageStickerFormat
         ]]
         referenced_message*: Option[Message]
+        resolved*: Option[ResolvedData]
+        poll*: Option[Poll]
+        call*: Option[MessageCall]
     User* = ref object
         ## The fields for bot and system are false by default
         ## simply because they are assumable.
@@ -192,6 +198,7 @@ type
         ## Be aware that Member.user could be nil in some cases.
         user*: User
         nick*, premium_since*, avatar*: Option[string]
+        avatar_decoration_data*: Option[tuple[asset, sku_id: string]]
         communication_disabled_until*: Option[string]
         joined_at*: string
         roles*: seq[string]
@@ -202,9 +209,9 @@ type
         presence*: Presence
         voice_state*: Option[VoiceState]
     Attachment* = object
-        ## `file` is used for sending/editing attachments.
-        ## `file` is like `body` in DiscordFile, but for attachments.
-        id*, filename*: string
+        ## `DiscordFile` is used for sending/editing attachments.
+        ## `DiscordFile` is like `body` in DiscordFile, but for attachments.
+        id*, filename*, title*: string
         description*, content_type*, waveform*: Option[string]
         proxy_url*, url*: string
         file*: string
@@ -214,18 +221,44 @@ type
         size*: int
     Reaction* = object
         count*: int
+        count_details*: tuple[burst, normal: int]
         emoji*: Emoji
-        reacted*: bool
+        burst_colors*: seq[string]
+        reacted*, me_burst*, burst*: bool
     Emoji* = object
         id*, name*: Option[string]
         require_colons*, animated*: Option[bool]
         managed*, available*: Option[bool]
         user*: Option[User]
         roles*: seq[string]
+    PollAnswer* = object
+        answer_id*: int
+        poll_media*: PollMedia
+    Poll* = ref object
+        question*: PollMedia
+        answers*: seq[PollAnswer]
+        expiry*: Option[string]
+        allow_multiselect*: bool
+        layout_type*: PollLayoutType
+        results*: Option[PollResults]
+    PollRequest* = object
+        question*: PollMedia
+        answers*: seq[PollAnswer]
+        duration*: int
+        layout_type*: PollLayoutType
+    PollResults* = ref object
+        is_finalized*: bool
+        answer_counts*: seq[PollAnswerCount]
+    PollAnswerCount* = ref object
+        id*, count*: int
+        me_voted*: bool
+    PollMedia* = object
+        text*: Option[string]
+        emoji*: Option[Emoji]
     PartialUser* = object
         id*, username*, discriminator*: string
         avatar*: Option[string]
-        public_flags*: set[UserFlags]
+        public_flags*, flags*: set[UserFlags]
         bot*: bool
     Sticker* = object
         id*: string
@@ -289,7 +322,7 @@ type
         case kind*: ChannelType
         of ctGuildVoice, ctGuildStageVoice:
             rtc_region*: Option[string]
-            video_quality_mode*: Option[int]
+            video_quality_mode*: Option[VideoQualityMode]
             bitrate*, user_limit*: int
         of ctGuildPublicThread, ctGuildPrivateThread, ctGuildNewsThread:
             message_count*, member_count*: Option[int]
@@ -343,7 +376,8 @@ type
         name*: string
         kind*: ActivityType
         flags*: set[ActivityFlags]
-        url*, application_id*, details*, state*: Option[string]
+        application_id*: Option[string]
+        url*, details*, state*: Option[string]
         created_at*: BiggestFloat
         timestamps*: Option[tuple[start, final: BiggestFloat]]
         emoji*: Option[Emoji]
@@ -360,6 +394,13 @@ type
     WelcomeChannel* = object
         channel_id*, description*: string
         emoji_id*, emoji_name*: Option[string]
+    Entitlement* = ref object
+        id*, sku_id*, application_id*: string
+        user_id*, guild_id*: Option[string]
+        starts_at*, ends_at*: Option[string]
+        kind*: EntitlementType
+        deleted*: bool
+        consumed*: Option[bool]
     Guild* = ref object
         id*, name*, owner_id*: string
         preferred_locale*: string
@@ -475,9 +516,10 @@ type
         single_select*, required*, in_onboarding*: bool
     GuildOnboardingPromptOption* = object
         id*, title*: string
-        description*: Option[string]
+        description*, emoji_name*, emoji_id*: Option[string]
         channel_ids*, role_ids*: seq[string]
-        emoji*: Emoji
+        emoji*: Option[Emoji]
+        emoji_animated*: Option[bool]
     GuildTemplate* = object
         code*, name*, creator_id*: string
         description*: Option[string]
@@ -520,17 +562,26 @@ type
         name*: string
         id*, owner_user_id*: string
         members*: seq[TeamMember]
+    ApplicationInstallParams* = object
+        scopes*: seq[string]
+        permissions*: set[PermissionFlags]
+    ApplicationIntegrationTypeConfig* = object
+        oauth2_install_params*: Option[ApplicationInstallParams]
     Application* = object
         id*, description*, name*: string
         summary*, verify_key*: string
         rpc_origins*, tags*: seq[string]
+        redirect_uris*: Option[seq[string]]
         approximate_guild_count*: Option[int]
         bot_public*, bot_require_code_grant*: bool
         terms_of_service_url*, privacy_policy_url*: Option[string]
+        interactions_endpoint_url*: Option[string]
         guild_id*, custom_install_url*: Option[string]
         icon*, primary_sku_id*, slug*, cover_image*: Option[string]
         role_connections_verification_url*: Option[string]
-        owner*: User
+        interactions_type_config*: Table[ApplicationIntegrationType,
+            ApplicationIntegrationTypeConfig]
+        owner*, bot*: PartialUser
         guild*: PartialGuild
         team*: Option[Team]
         flags*: set[ApplicationFlags]
@@ -575,11 +626,13 @@ type
         name*: string
         name_localizations*: Option[Table[string, string]]
         value*: (Option[string], Option[int])
-    MessageInteraction* = object
+    MessageInteractionMetadata* = object
         id*, name*: string
         kind*: InteractionType
         user*: User
-        member*: Option[Member]
+        authorizing_integration_owners*: Table[string, JsonNode]
+        interacted_message_id*, original_response_message_id*: Option[string]
+        triggering_interaction_metadata*: JsonNode ## Because Nim hates recursion types -_- 
     Interaction* = object
         ## if `member` is present, then that means the interaction is in guild,
         ## and `user` is therefore not present.
@@ -625,6 +678,13 @@ type
         permissions*: set[PermissionFlags]
         thread_metadata*: Option[ThreadMetadata]
         parent_id*: Option[string]
+    ResolvedData* = object
+        users*: Table[string, User]
+        attachments*: Table[string, Attachment]
+        members*: Table[string, Member]
+        roles*: Table[string, Role]
+        channels*: Table[string, ResolvedChannel]
+        messages*: Table[string, Message]
     ApplicationCommandResolution* = object
         users*: Table[string, User]
         attachments*: Table[string, Attachment]
@@ -682,6 +742,7 @@ type
         custom_id*, title*: string
         components*: seq[MessageComponent]
     Invite* = object
+        kind*: InviteType
         code*: string
         guild*: Option[PartialGuild]
         channel*: Option[PartialChannel]
@@ -690,11 +751,7 @@ type
         target_application*: Option[Application]
         approximate_presence_count*, approximate_member_count*: Option[int]
         expires_at*: Option[string]
-        # stage_instance*: Option[tuple[
-        #     members: seq[Member],
-        #     topic: string,
-        #     participant_count, speaker_count: int
-        # ]] deprecated
+        ## this is going to be deprecated in the near future.
         guild_scheduled_event*: Option[GuildScheduledEvent]
     InviteMetadata* = object
         code*, created_at*: string
@@ -891,6 +948,10 @@ type
         guild_audit_log_entry_create*: proc (s: Shard; g: Guild;
                 entry: AuditLogEntry) {.async.}
         guild_integrations_update*: proc (s: Shard, g: Guild) {.async.}
+        integration_create*: proc (s: Shard, u: User, g: Guild) {.async.}
+        integration_update*: proc (s: Shard, u: User, g: Guild) {.async.}
+        integration_delete*: proc (s: Shard, integ_id: string, g: Guild,
+                app_id: Option[string]) {.async.}
         guild_member_add*, guild_member_remove*: proc (s: Shard, g: Guild,
                 m: Member) {.async.}
         guild_member_update*: proc (s: Shard, g: Guild,
@@ -947,6 +1008,13 @@ type
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
+        message_poll_vote_add*: proc(s: Shard, ans_id: int,
+                m: Message, u: User){.async.}
+        message_poll_vote_remove*: proc(s: Shard, ans_id: int,
+                m: Message, u: User){.async.}
+        entitlement_create*: proc(s: Shard, e: Entitlement){.async.}
+        entitlement_update*: proc(s: Shard, e: Entitlement){.async.}
+        entitlement_delete*: proc(s: Shard, e: Entitlement) {.async.}
 
     WaitHandler = proc (data: pointer): bool {.closure.}
       ## This proc will filter an object to see what it should do.
@@ -957,7 +1025,7 @@ type
       ## Parameters are the same as the normal handlers except without the shard parameter
     WaitTable = array[DispatchEvent, seq[WaitHandler]]
       ## Mapping of event to handlers that are awaiting for something to happen via that event.
-      ## e.g. MessageCreate: @[waitingForDeletiong(), waitingForResponse()]
+      ## e.g. MessageCreate: @[waitingForDeleting(), waitingForResponse()]
 
 proc kind*(c: CacheTable, channel_id: string): ChannelType =
     ## Checks for a channel kind. (Shortcut)
@@ -967,6 +1035,29 @@ proc kind*(c: CacheTable, channel_id: string): ChannelType =
         result = c.guildChannels[channel_id].kind
     else:
         raise newException(CacheError, "Channel doesn't exist in cache.")
+
+proc guild*(c: CacheTable, obj: ref object | object): Guild =
+    ## Get guild from respective object via cache.
+    ## This is a nice shortcut.
+    assert compiles(obj.guild_id), "guild_id field does not exist in " & $typeof(obj)
+    when obj.guild_id is Option[string]:
+        assert obj.guild_id.isSome, typeof(obj) & ".guild_id is none!"
+        c.guilds[obj.guild_id.get]
+    else:
+        c.guilds[obj.guild_id]
+
+proc gchannel*(c: CacheTable, obj: ref object | object): GuildChannel =
+    ## Get channel from respective object via cache.
+    ## This is a nice shortcut.
+    assert(
+        compiles(obj.channel_id),
+        "channel_id field does not exist in " & $typeof(obj)
+    )
+    when obj.channel_id is Option[string]: 
+        assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
+        c.guildChannels[obj.channel_id.get]
+    else:
+        c.guildChannels[obj.channel_id]
 
 proc clear*(c: CacheTable) =
     ## Empties cache.

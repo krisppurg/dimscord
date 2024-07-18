@@ -68,7 +68,7 @@ template delete*(m: Message; reason = ""): Future[void] =
 template delete*(msgs: seq[Message]; reason = ""): Future[void] =
     ## Bulk deletes messages.
     ## Note: the length of `msg` MUST superior to 0 and inferior to 101.
-    getClient.api.bulkDeleteMessages(m[0].channel_id, msgs)
+    getClient.api.bulkDeleteMessages(msgs[0].channel_id, msgs)
 
 
 template getMessages*(ch: SomeChannel;

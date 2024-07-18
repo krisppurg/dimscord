@@ -28,7 +28,7 @@ template edit*(ch: GuildChannel;
 ): Future[GuildChannel] =
     ## Modify a guild channel.
     getClient.api.editGuildChannel(
-        ch.id, name, parent_id, name, parent_id, topic, rtc_region,
+        ch.id, name, parent_id, topic, rtc_region,
         default_auto_archive_duration, video_quality_mode, flags, available_tags,
         default_reaction_emoji, default_sort_order, default_forum_layout,
         rate_limit_per_user, default_thread_rate_limit_per_user,
@@ -95,14 +95,14 @@ template deleteWebhook*(w: Webhook | string, reason = ""): Future[void] =
     let wid = when w is Webhook: w.id else: w
     getClient.api.deleteWebhook(wid, reason)
 
-template edit*(w: Webhook,
+template editWebhook*(w: Webhook,
         name, avatar = none string;
         reason = ""): Future[void] =
     let chan = w.channel_id
     if chan.isSome:
         getClient.api.editWebhook(w.id, name, avatar, w.channel_id, reason)
     else:
-        raise newException(CatchableError, "Webhook is not in a channel")
+        raise newException(CatchableError, "Webhook is not in a channel") # TODO: i think editWebhook can work with none(channel_id) ?
 
 template newThread*(ch: GuildChannel;
     name: string;

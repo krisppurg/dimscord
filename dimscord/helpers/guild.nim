@@ -104,9 +104,9 @@ template removeMember*(g: Guild, m: Member, reason = ""): Future[void] =
     ## Removes a guild member.
     getClient.api.removeGuildMember(g.id, m.user.id, reason)
 
-template getBan*(g: Guild, m: Member): Future[GuildBan] =
+template getBan*(g: Guild, m: Member | string): Future[GuildBan] =
     ## Gets guild ban.
-    getClient.api.getGuildBan(g.id, m.user.id)
+    getClient.api.getGuildBan(g.id, (when m is Member: m.user.id else: m))
 
 template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.

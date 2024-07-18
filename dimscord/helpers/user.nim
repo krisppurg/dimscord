@@ -84,7 +84,7 @@ template bulkRegisterCommands*(app: Application;
         app.id, commands, guild_id
     )
 
-template edit*(apc: ApplicationCommand;
+template editAC*(apc: ApplicationCommand;
         name, desc = "";
         name_localizations,description_localizations = none Table[string,string];
         default_member_permissions = none PermissionFlags;

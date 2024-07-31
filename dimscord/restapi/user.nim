@@ -1,7 +1,7 @@
 import asyncdispatch, json, options, jsony, httpclient
 import ../objects, ../constants
-import tables, sequtils, strutils, os, mimetypes
-import requester
+import tables, sequtils, strutils
+import requester, base64
 
 proc getInvite*(api: RestApi, code: string;
         with_counts, with_expiration = false;
@@ -152,6 +152,36 @@ proc getCurrentApplication*(api: RestApi): Future[Application] {.async.} =
         endpointOAuth2Application()
     )).newApplication
 
+proc editCurrentApplication*(api: RestApi;
+        custom_install_url, description, icon = none string;
+        role_connections_verification_url = none string;
+        install_params = none ApplicationInstallParams;
+        flags = none set[PermissionFlags];
+        cover_image, interactions_endpoint_url = none string;
+        tags = none seq[string];
+        integration_types_config = none Table[ApplicationIntegrationType,
+            ApplicationIntegrationTypeConfig];
+        ): Future[Application] {.async.} =
+    ## Edits the current application for the current user (bot user).
+    let payload = %*{}
+    payload.loadOpt(custom_install_url, description, icon,
+        role_connections_verification_url,
+        install_params, cover_image, interactions_endpoint_url)
+    if tags.isSome:
+        payload["tags"] = %* some tags.get.mapIt(%*it)
+    if integration_types_config.isSome:
+        for k in integration_types_config.get.keys:
+            payload["integration_types_config"][$(int k)]=
+                %* integration_types_config.get[k]
+    if flags.isSome:
+        payload["flags"] = %*($cast[BiggestInt](get flags))
+
+    result = (await api.request(
+        "PATCH",
+        endpointOAuth2Application(),
+        $payload
+    )).newApplication
+
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         name: string; description, guild_id = "";
         name_localizations,description_localizations=none Table[string,string];
@@ -295,125 +325,37 @@ proc deleteApplicationCommand*(
 proc `%`*(o: set[UserFlags]): JsonNode =
     %cast[int](o)
 
-proc createInteractionResponse*(api: RestApi,
-        interaction_id, interaction_token: string;
-        response: InteractionResponse) {.async.} =
-    ## Create an interaction response.
-    ## `response.kind` is required.
-    var data = newJObject()
-    case response.kind:
-    of irtPong,
-       irtChannelMessageWithSource,
-       irtDeferredChannelMessageWithSource,
-       irtDeferredUpdateMessage,
-       irtUpdateMessage:
-        if response.data.isSome:
-            data = %*(response.data.get)
-            if response.data.get.flags.len!=0:
-                data["flags"] = %response.data.get.flags
-            if response.data.get.components.len > 0:
-                data["components"] = newJArray()
-                for component in response.data.get.components:
-                    data["components"] &= %%*component
-    of irtAutoCompleteResult:
-        let choices = %response.choices.map(
-            proc (x: ApplicationCommandOptionChoice): JsonNode =
-                result = %*{"name": x.name}
-                if x.value[0].isSome:
-                    result["value"] = %x.value[0]
-                if x.value[1].isSome:
-                    result["value"] = %x.value[1]
-        )
-        data["choices"] = %*choices
-    of irtInvalid:
-        raise newException(ValueError, "Invalid interaction respons type")
-    of irtModal:
-        data["custom_id"] = %*response.custom_id
-        data["title"] = %*response.title
-
-        if response.components.len > 0:
-            data["components"] = newJArray()
-            for component in response.components:
-                data["components"] &= %%*component
-
-    discard await api.request(
-        "POST",
-        endpointInteractionsCallback(interaction_id, interaction_token),
-        $(%*{
-            "type": int response.kind,
-            "data": %data
-        })
-    )
-
 proc interactionResponseMessage*(api: RestApi,
         interaction_id, interaction_token: string;
         kind: InteractionResponseType,
         response: InteractionCallbackDataMessage) {.async.} =
     ## Create an interaction response.
     ## `response.kind` is required.
-    var data = newJObject()
-    case kind:
-    of irtPong,
-       irtChannelMessageWithSource,
-       irtDeferredChannelMessageWithSource,
-       irtDeferredUpdateMessage,
-       irtUpdateMessage:
-        data = %*(response)
-        if response.flags.len!=0:
-            data["flags"] = %response.flags
-    else:
-        raise newException(ValueError,
-            "Invalid reponse kind for a message-based interaction response"
-        )
+    var payload = %*{"type":int kind, "data": newJObject()}
+    var mpd: MultipartData = nil
+    if response != nil:
+        case kind:
+        of irtPong,
+            irtChannelMessageWithSource,
+            irtDeferredChannelMessageWithSource,
+            irtDeferredUpdateMessage,
+            irtUpdateMessage:
+            payload["data"] = %*(response)
+            if response.flags.len!=0:
+                payload["data"]["flags"] = %response.flags
+        else:
+            raise newException(ValueError,
+                "Invalid reponse kind for a message-based interaction response"
+            )
 
-    if response.attachments.len > 0:
-        var mpd = newMultipartData()
-        data["attachments"] = %[]
-        for i, a in response.attachments:
-            data["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
+        if response.attachments.len > 0:
+            mpd.append(response.attachments, payload, true)
 
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        let pl = %*{
-            "type": int kind,
-            "data": %data
-        }
-
-        mpd.add("payload_json", $pl, contentType = "application/json")
-        discard await api.request(
-            "POST",
-            endpointInteractionsCallback(interaction_id, interaction_token),
-            $pl,
-            mp = mpd
-        )
-        return 
     discard await api.request(
         "POST",
         endpointInteractionsCallback(interaction_id, interaction_token),
-        $(%*{
-            "type": int kind,
-            "data": %data
-        })
+        $payload,
+        mp = mpd
     )
 
 proc interactionResponseAutocomplete*(api: RestApi,
@@ -462,6 +404,44 @@ proc interactionResponseModal*(api: RestApi,
             "data": %data
         })
     )
+
+proc createInteractionResponse*(api: RestApi,
+        interaction_id, interaction_token: string;
+        response: InteractionResponse) {.async.} =
+    ## Creates a generic interaction response.
+    ## Can be used for anything related to interaction responses.
+    ## `response.kind` is required.
+    ## 
+    ## Look at:
+    ## * [interactionResponseMessage] for replies to interactions
+    ## * [interactionResponseAutocomplete] for autocomplete
+    ## * [interactionResponseModal] for modals
+    ## * As well as the objects mentioned such as [InteractionResponse].
+    var data = newJObject()
+    case response.kind:
+    of irtPong,
+       irtChannelMessageWithSource,
+       irtDeferredChannelMessageWithSource,
+       irtDeferredUpdateMessage,
+       irtUpdateMessage:
+        await api.interactionResponseMessage(
+            interaction_id, interaction_token,
+            response.kind, (if response.data.isSome:response.data.get else: nil)
+        )
+    of irtAutoCompleteResult:
+        await api.interactionResponseAutocomplete(interaction_id,
+            interaction_token,InteractionCallbackDataAutocomplete(
+                choices: response.choices
+            ))
+    of irtInvalid:
+        raise newException(ValueError, "Invalid interaction response type")
+    of irtModal:
+        await api.interactionResponseModal(interaction_id,
+            interaction_token, InteractionCallbackDataModal(
+                custom_id: response.custom_id,
+                title: response.title,
+                components: response.components
+            ))
 
 proc getApplicationRoleConnectionMetadataRecords*(
     api: RestApi; application_id: string
@@ -557,3 +537,58 @@ proc createTestEntitlement*(api: RestApi,
             "owner_type": owner_type
         })
     )
+
+proc getApplicationEmojis*(api: RestApi,
+        application_id: string): Future[seq[Emoji]] {.async.} =
+    ## lists emojis made by a bot user application,
+    result = (await api.request(
+        "GET",
+        endpointApplicationEmojis(application_id)
+    ))["items"].getElems.map(newEmoji)
+
+proc getApplicationEmojis*(api: RestApi): Future[seq[Emoji]] {.async.} =
+    ## lists emojis made the current user application,
+    await api.getApplicationEmojis(decode(api.token.split(".")[0]))
+
+proc createApplicationEmoji*(api: RestApi;
+        application_id: string = decode(api.token.split(".")[0]);
+        name, image: string): Future[Emoji] {.async.} =
+    ## Creates an application emoji.
+    result = (await api.request(
+        "POST",
+        endpointApplicationEmojis(application_id),
+        $(%*{
+            "name": name,
+            "image": image
+        })
+    )).newEmoji
+
+proc editApplicationEmoji*(api: RestApi;
+        application_id: string = decode(api.token.split(".")[0]);
+        name: string): Future[Emoji] {.async.} =
+    ## Edits an application emoji.
+    result = (await api.request(
+        "PATCH",
+        endpointApplicationEmojis(application_id),
+        $(%*{
+            "name": name
+        })
+    )).newEmoji
+
+proc deleteApplicationEmoji*(api: RestApi;
+        application_id: string = decode(api.token.split(".")[0])
+): Future[Emoji] {.async.} =
+    ## Deletes an application emoji.
+    discard await api.request(
+        "DELETE",
+        endpointApplicationEmojis(application_id),
+    )
+
+proc listSKUs*(api: RestApi;
+    application_id: string = decode(api.token.split(".")[0])
+): Future[seq[Sku]] {.async.} =
+    ## Lists out SKUs for a given application.
+    result = (await api.request(
+        "GET",
+        endpointListSkus(application_id)
+    )).getElems.mapIt(it.`$`.fromJson(Sku))

@@ -308,10 +308,6 @@ proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
     v = cast[set[MessageFlags]](number)
 
 proc newOverwrite*(data: JsonNode): Overwrite =
-    proc parseHook(s: string, i: var int, v: var int or string) =
-        if s.contains("kind"):
-            var str: string
-            parseHook(s, i, str)
     result = ($data).fromJson(Overwrite)
 
 proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
@@ -388,6 +384,12 @@ proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
 proc renameHook(s: var MessageInteractionMetadata, fieldName: var string) =
     if fieldName == "type":
         fieldName = "kind"
+
+proc parseHook(s: string, i: var int, v: var Table[string, Message]) =
+    var msgs: seq[Message]
+    parseHook(s, i, msgs)
+    for m in msgs:
+        v[m.id] = m
 
 proc newMessage*(data: JsonNode): Message =
     result = data.`$`.fromJson(Message)
@@ -927,6 +929,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         "name": a.name,
         "type": commandKind.ord
     }
+    if a.nsfw.isSome: result["nsfw"] = %*a.nsfw.get
     if a.name_localizations.isSome:
         result["name_localizations"] = %*a.name_localizations
     if commandKind == atSlash:

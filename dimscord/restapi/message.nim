@@ -1,4 +1,4 @@
-import httpclient, mimetypes, asyncdispatch, options
+import httpclient, asyncdispatch, options
 import ../objects, ../constants
 import tables, os, json, sequtils, jsony
 import uri, ../helpers, requester
@@ -14,13 +14,12 @@ proc sendMessage*(api: RestApi, channel_id: string;
         components = newSeq[MessageComponent]();
         sticker_ids = newSeq[string]();
         poll = none PollRequest,
-        enforce_nonce = none bool
-        ): Future[Message] {.async.} =
+        enforce_nonce = none bool): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     assert content.len in 0..2000, "Message too long to send :: "&($content.len)
     assert sticker_ids.len in 0..3
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts,
     }
@@ -48,61 +47,14 @@ proc sendMessage*(api: RestApi, channel_id: string;
     var mpd: MultipartData
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception,
-                    "File name needs to be provided."
-                )
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request(
         "POST",
         endpointChannelMessages(channel_id),
-        pl = $payload,
+        $payload,
         mp = mpd
     )).newMessage
 
@@ -113,7 +65,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts,
         "flags": %flags
@@ -122,63 +74,15 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
-
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"] &= %%*component
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception,
-                    "File name needs to be provided."
-                )
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request(
         "PATCH",
@@ -293,7 +197,7 @@ proc getMessageReactions*(api: RestApi,
     if after != "":
         url = url & "after=" & after & "&"
 
-    url = url & "type="& $kind & "&limit=" & $limit
+    url = url & "type=" & $kind & "&limit=" & $limit
 
     result = (await api.request(
         "GET",
@@ -333,7 +237,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
 
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts
     }
@@ -358,55 +262,10 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         payload["poll"] = %poll.get
         payload["poll"]["layout_type"] = %int(poll.get.layout_type)
 
-    if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
-
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception, "File name needs to be provided.")
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-            mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(files, payload)
+    if attachments.len > 0:
+        mpd.append(attachments, payload, is_interaction=false)
 
     rawResult = (await api.request("POST", url, $payload, mp = mpd))
 
@@ -466,7 +325,7 @@ proc editWebhookMessage*(api: RestApi;
     var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
 
-    let payload = %*{
+    var payload = %*{
         "content": %content,
         "embeds": %embeds,
         "allowed_mentions": %(%allowed_mentions)
@@ -479,55 +338,9 @@ proc editWebhookMessage*(api: RestApi;
             payload["components"].add %%*component
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception, "File name needs to be provided.")
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-            mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
 

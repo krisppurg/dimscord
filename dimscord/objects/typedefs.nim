@@ -144,6 +144,7 @@ type
         participants*: seq[string]
         ended_timestamp*: Option[string]
     MessageReference* = object
+        kind*: MessageReferenceType
         channel_id*: Option[string]
         message_id*, guild_id*: Option[string]
         fail_if_not_exists*: Option[bool]
@@ -172,6 +173,7 @@ type
         interaction_metadata*: Option[MessageInteractionMetadata]
         role_subscription_data*: Option[RoleSubscriptionData]
         message_reference*: Option[MessageReference]
+        message_snapshots*: Table[string, Message]
         sticker_items*: Table[string, tuple[
             id, name: string,
             format_type: MessageStickerFormat
@@ -208,7 +210,7 @@ type
         permissions*: set[PermissionFlags]
         presence*: Presence
         voice_state*: Option[VoiceState]
-    Attachment* = object
+    Attachment* = ref object
         ## `DiscordFile` is used for sending/editing attachments.
         ## `DiscordFile` is like `body` in DiscordFile, but for attachments.
         id*, filename*, title*: string
@@ -318,6 +320,7 @@ type
         rate_limit_per_user*: Option[int]
         permissions*: set[PermissionFlags]
         messages*: Table[string, Message]
+        icon_emoji*: Option[Emoji]
         last_message_id*: string
         case kind*: ChannelType
         of ctGuildVoice, ctGuildStageVoice:
@@ -394,13 +397,19 @@ type
     WelcomeChannel* = object
         channel_id*, description*: string
         emoji_id*, emoji_name*: Option[string]
-    Entitlement* = ref object
+    Entitlement* = object
         id*, sku_id*, application_id*: string
         user_id*, guild_id*: Option[string]
         starts_at*, ends_at*: Option[string]
         kind*: EntitlementType
         deleted*: bool
         consumed*: Option[bool]
+    Sku* = object
+        id*, name*, slug*, application_id*: string
+        dependent_sku_id*, release_date*, manifest_labels*: Option[string]
+        show_age_gate*, premium*: bool
+        kind*: SkuType
+        flags*: set[SkuFlags]
     Guild* = ref object
         id*, name*, owner_id*: string
         preferred_locale*: string
@@ -537,7 +546,7 @@ type
     Overwrite* = object
         ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string
-        kind*: int #.
+        kind*: int
         allow*, deny*: set[PermissionFlags]
     PermObj* = object
         allowed*, denied*: set[PermissionFlags]
@@ -554,8 +563,7 @@ type
         id*, kind*: int
     TeamMember* = object
         membership_state*: TeamMembershipState
-        permissions*: seq[string] ## always would be @["*"]
-        team_id*: string
+        team_id*, role*: string
         user*: User
     Team* = object
         icon*: Option[string]
@@ -569,7 +577,7 @@ type
         oauth2_install_params*: Option[ApplicationInstallParams]
     Application* = object
         id*, description*, name*: string
-        summary*, verify_key*: string
+        verify_key*: string
         rpc_origins*, tags*: seq[string]
         redirect_uris*: Option[seq[string]]
         approximate_guild_count*: Option[int]
@@ -585,7 +593,7 @@ type
         guild*: PartialGuild
         team*: Option[Team]
         flags*: set[ApplicationFlags]
-        install_params*: tuple[scopes: seq[string], permissions: string]
+        install_params*: ApplicationInstallParams
     ApplicationCommand* = object
         id*, application_id*, version*: string
         guild_id*: Option[string]
@@ -596,6 +604,8 @@ type
         default_member_permissions*: Option[set[PermissionFlags]]
         default_permission*, nsfw*, dm_permission*: Option[bool]
         options*: seq[ApplicationCommandOption]
+        integration_types*: Option[seq[ApplicationIntegrationType]]
+        contexts*: Option[seq[InteractionContextType]]
     GuildApplicationCommandPermissions* = object
         id*, application_id*, guild_id*: string
         permissions*: seq[ApplicationCommandPermission]
@@ -649,6 +659,9 @@ type
         token*: string
         data*: Option[ApplicationCommandInteractionData]
         version*: int
+        entitlements*: seq[Entitlement]
+        authorizing_integration_owners*: Table[string, JsonNode]
+        contexts*: Option[InteractionContextType]
     ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
         case interaction_type*: InteractionDataType
@@ -696,7 +709,6 @@ type
             channels*: Table[string, ResolvedChannel]
             messages*: Table[string, Message]
         else: discard
-
     ApplicationCommandInteractionDataOption* = object
         name*: string
         case kind*: ApplicationCommandOptionType
@@ -718,14 +730,14 @@ type
         of irtPong, irtChannelMessageWithSource,
            irtDeferredChannelMessageWithSource, irtDeferredUpdateMessage,
            irtUpdateMessage:
-            data*: Option[InteractionApplicationCommandCallbackData]
+            data*: Option[InteractionCallbackDataMessage]
         of irtAutoCompleteResult:
             choices*: seq[ApplicationCommandOptionChoice]
         of irtInvalid: discard
         of irtModal:
             custom_id*, title*: string
             components*: seq[MessageComponent]
-    InteractionApplicationCommandCallbackData* = object
+    InteractionCallbackDataMessage* = ref object
         ## if you are setting message flags, there are limited amount.
         ## e.g. `mfEphemeral` and `mfSuppressEmbeds`.
         tts*: Option[bool]
@@ -735,7 +747,7 @@ type
         flags*: set[MessageFlags]
         attachments*: seq[Attachment]
         components*: seq[MessageComponent]
-    InteractionCallbackDataMessage* = InteractionApplicationCommandCallbackData
+    # InteractionCallbackDataMessage* = InteractionApplicationCommandCallbackData
     InteractionCallbackDataAutocomplete* = object
         choices*: seq[ApplicationCommandOptionChoice]
     InteractionCallbackDataModal* = object
@@ -751,7 +763,6 @@ type
         target_application*: Option[Application]
         approximate_presence_count*, approximate_member_count*: Option[int]
         expires_at*: Option[string]
-        ## this is going to be deprecated in the near future.
         guild_scheduled_event*: Option[GuildScheduledEvent]
     InviteMetadata* = object
         code*, created_at*: string
@@ -1071,6 +1082,12 @@ proc `$`*(e: Emoji): string =
             e.name.get("?") & ":" & e.id.get
         else:
             e.name.get("?")
+
+proc `$`*(m: Message): string =
+    $m[]
+
+proc `$`*(a: Attachment): string =
+    $a[]
 
 proc getCurrentDiscordHttpError*(): DiscordHttpError =
     ## Use this proc instead of getCurrentException() for advanced details.

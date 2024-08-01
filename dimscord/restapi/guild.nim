@@ -435,7 +435,9 @@ proc searchGuildMembers*(api: RestApi;
     ## Search for guild members.
     result = (await api.request("GET",
         endpointGuildMembersSearch(guild_id)&"?query="&query&"&limit="&($limit),
-    )).elems.map(newMember)
+    )).getElems.map(proc (x: JsonNode): Member =
+                        x["guild_id"] = %*guild_id
+                        x.newMember)
 
 proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
         nick = none string;
@@ -455,7 +457,7 @@ proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
     )
 
     if member.kind == JNull:
-        result = (Member(), true)
+        result = (Member(user: User(id: user_id), guild_id: guild_id), true)
     else:
         result = (newMember(member), false)
 

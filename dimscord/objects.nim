@@ -568,6 +568,7 @@ proc parseHook(s: string, i: var int, g: var Guild) =
     g.id = data["id"].str # just in case
 
     for v in data{"members"}.getElems:
+        v["guild_id"] = %*g.id
         let member = v.newMember
         g.members[member.user.id] = member
 
@@ -886,6 +887,10 @@ proc newApplicationCommandInteractionData*(
     result = data.`$`.fromJson(ApplicationCommandInteractionData)
 
 proc newInteraction*(data: JsonNode): Interaction =
+    let memcheck = "member" in data and data["member"].kind != JNull
+    if "guild_id" in data and memcheck:
+        data["member"]["guild_id"] = data["guild_id"]
+
     result = data.`$`.fromJson(Interaction)
 
 proc newApplicationCommandOption*(data: JsonNode): ApplicationCommandOption =

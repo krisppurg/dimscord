@@ -199,6 +199,7 @@ type
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.
         user*: User
+        guild_id*: string
         nick*, premium_since*, avatar*: Option[string]
         avatar_decoration_data*: Option[tuple[asset, sku_id: string]]
         communication_disabled_until*: Option[string]
@@ -464,7 +465,7 @@ type
         entity_metadata*: Option[EntityMetadata]
         creator*: Option[User]
         user_count*: Option[int]
-    GuildScheduledEventUser* = object
+    GuildScheduledEventUser* = object # todo: member.guild_id appendings?
         guild_scheduled_event_id*: string
         user*: User
         member*: Option[Member]

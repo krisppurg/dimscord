@@ -166,10 +166,12 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
             oldPresence = some move guild.presences[presence.user.id]
 
         let member = guild.members.getOrDefault(presence.user.id, Member(
+            guild_id: presence.guild_id,
             user: User(
                 id: data["user"]["id"].str,
             ),
             presence: Presence(
+                guild_id: presence.guild_id,
                 status: "offline",
                 client_status: ("offline", "offline", "offline")
             )
@@ -188,7 +190,10 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
     s.checkAndCall(PresenceUpdate, presence, oldPresence)
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
-    let msg = newMessage(data)
+    var msg = newMessage(data)
+
+    if msg.guild_id.isSome and msg.member.isSome:
+        msg.member.get.guild_id = get msg.guild_id
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -239,9 +244,10 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
             msg = chan.messages[msg.id]
             exists = true
 
-    if "guild_id" in data:
+    if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
         msg.member = some newMember(data["member"])
+        msg.member.get.guild_id = get msg.guild_id
 
     if $emoji in msg.reactions:
         reaction.count = msg.reactions[$emoji].count + 1
@@ -291,8 +297,9 @@ proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
             msg = chan.messages[msg.id]
             exists = true
 
-    if "guild_id" in data:
+    if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
+        if msg.member.isSome: msg.member.get.guild_id = get msg.guild_id
 
     if $emoji in msg.reactions and msg.reactions[$emoji].count > 1:
         reaction.count = msg.reactions[$emoji].count - 1
@@ -328,8 +335,9 @@ proc messageReactionRemoveEmoji(s: Shard, data: JsonNode) {.async.} =
             msg = chan.messages[msg.id]
             exists = true
 
-    if "guild_id" in data:
+    if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
+        if msg.member.isSome: msg.member.get.guild_id = get msg.guild_id
 
     msg.reactions.del($emoji)
     s.checkAndCall(MessageReactionRemoveEmoji, msg, emoji, exists)
@@ -354,8 +362,9 @@ proc messageReactionRemoveAll(s: Shard, data: JsonNode) {.async.} =
             msg = chan.messages[msg.id]
             exists = true
 
-    if "guild_id" in data:
+    if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
+        if msg.member.isSome: msg.member.get.guild_id = get msg.guild_id
 
     if msg.reactions.len > 0:
         msg.reactions.clear()
@@ -369,8 +378,9 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
             channel_id: data["channel_id"].str)
         exists = false
 
-    if "guild_id" in data:
+    if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
+        if msg.member.isSome: msg.member.get.guild_id = get msg.guild_id
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -527,6 +537,7 @@ proc guildMembersChunk(s: Shard, data: JsonNode) {.async.} =
     let cacheuser = s.cache.preferences.cache_users
 
     for member in data["members"].elems:
+        member["guild_id"] = data["guild_id"]
         if member["user"]["id"].str notin guild.members and cacheuser:
             guild.members[member["user"]["id"].str] = newMember(member)
 
@@ -693,6 +704,7 @@ proc guildCreate(s: Shard, data: JsonNode) {.async.} =
 
     if s.cache.preferences.cache_users:
         for m in data["members"].elems:
+            data["guild_id"] = %*guild.id
             s.cache.users[m["user"]["id"].str] = newUser(m["user"])
 
     s.checkAndCall(GuildCreate, guild)
@@ -890,7 +902,6 @@ proc guildScheduledEventUpdate(s: Shard, data: JsonNode) {.async.} =
 
     let
       event = data.`$`.fromJson(GuildScheduledEvent)
-      eventID = event.id
 
     var oldEvent: Option[GuildScheduledEvent]
 
@@ -1156,7 +1167,10 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
     of GuildRoleUpdate: await s.guildRoleUpdate(data)
     of GuildRoleDelete: await s.guildRoleDelete(data)
     of WebhooksUpdate: await s.webhooksUpdate(data)
-    of deTypingStart: s.checkAndCall(deTypingStart, newTypingStart(data))
+    of deTypingStart:
+        if "member" in data and data["member"].kind != JNull:
+            data["member"]["guild_id"] = data["guild_id"]
+        s.checkAndCall(deTypingStart, newTypingStart(data))
     of deInviteCreate: s.checkAndCall(deInviteCreate, data.newInviteCreate)
     of InviteDelete: await s.inviteDelete(data)
     of GuildIntegrationsUpdate:

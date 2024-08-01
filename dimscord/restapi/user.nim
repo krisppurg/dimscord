@@ -27,6 +27,7 @@ proc getGuildMember*(api: RestApi,
         "GET",
         endpointGuildMembers(guild_id, user_id)
     )).newMember
+    result.guild_id = guild_id
 
 proc getGuildMembers*(api: RestApi, guild_id: string;
         limit: range[1..1000] = 1, after = "0"): Future[seq[Member]] {.async.} =
@@ -34,7 +35,9 @@ proc getGuildMembers*(api: RestApi, guild_id: string;
     result = ((await api.request(
         "GET",
         endpointGuildMembers(guild_id) & "?limit=" & $limit & "&after=" & after
-    ))).elems.map(newMember)
+    ))).elems.map(proc (x: JsonNode): Member =
+                    x["guild_id"] = %*guild_id
+                    x.newMember)
 
 proc editCurrentMember*(api: RestApi, guild_id: string;
         nick = none string; reason = "") {.async.} =
@@ -87,6 +90,7 @@ proc getCurrentGuildMember*(api: RestApi;
         "GET",
         endpointUserGuildMember(guild_id)
     )).newMember
+    result.guild_id=guild_id
 
 proc getCurrentUserGuilds*(api: RestApi;
         before, after = none string; with_counts = false;
@@ -546,12 +550,8 @@ proc getApplicationEmojis*(api: RestApi,
         endpointApplicationEmojis(application_id)
     ))["items"].getElems.map(newEmoji)
 
-proc getApplicationEmojis*(api: RestApi): Future[seq[Emoji]] {.async.} =
-    ## lists emojis made the current user application,
-    await api.getApplicationEmojis(decode(api.token.split(".")[0]))
-
 proc createApplicationEmoji*(api: RestApi;
-        application_id: string = decode(api.token.split(".")[0]);
+        application_id: string,
         name, image: string): Future[Emoji] {.async.} =
     ## Creates an application emoji.
     result = (await api.request(
@@ -564,7 +564,7 @@ proc createApplicationEmoji*(api: RestApi;
     )).newEmoji
 
 proc editApplicationEmoji*(api: RestApi;
-        application_id: string = decode(api.token.split(".")[0]);
+        application_id: string,
         name: string): Future[Emoji] {.async.} =
     ## Edits an application emoji.
     result = (await api.request(
@@ -576,7 +576,7 @@ proc editApplicationEmoji*(api: RestApi;
     )).newEmoji
 
 proc deleteApplicationEmoji*(api: RestApi;
-        application_id: string = decode(api.token.split(".")[0])
+        application_id: string
 ): Future[Emoji] {.async.} =
     ## Deletes an application emoji.
     discard await api.request(
@@ -584,9 +584,7 @@ proc deleteApplicationEmoji*(api: RestApi;
         endpointApplicationEmojis(application_id),
     )
 
-proc listSKUs*(api: RestApi;
-    application_id: string = decode(api.token.split(".")[0])
-): Future[seq[Sku]] {.async.} =
+proc listSKUs*(api:RestApi, application_id:string): Future[seq[Sku]] {.async.} =
     ## Lists out SKUs for a given application.
     result = (await api.request(
         "GET",

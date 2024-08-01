@@ -790,7 +790,7 @@ proc webhooksUpdate(s: Shard, data: JsonNode) {.async.} =
         )
         chan = s.cache.guildChannels.getOrDefault(
             data["channel_id"].str,
-            GuildChannel(id: data["channel_id"].str)
+            GuildChannel(id: data["channel_id"].str, guild_id: guild.id)
         )
 
     s.checkAndCall(WebhooksUpdate, guild, chan)

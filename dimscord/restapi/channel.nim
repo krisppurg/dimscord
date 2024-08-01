@@ -109,6 +109,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
         $payload,
         audit_reason = reason
     )).newGuildChannel
+    result.guild_id = guild_id
 
 proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     ## Deletes or closes a channel.
@@ -222,7 +223,9 @@ proc getGuildChannels*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildChannels(guild_id)
-    )).elems.map(newGuildChannel)
+    )).elems.map(proc (x: JsonNode): GuildChannel =
+                    x["guild_id"] = %*guild_id
+                    x.newGuildChannel)
 
 proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
         position = none int; parent_id = none string; lock_permissions = false;

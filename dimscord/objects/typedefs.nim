@@ -198,6 +198,7 @@ type
     Member* = ref object
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.
+        ## ALso if `joined_at` appears to be "" that's usually due to the fact that the member is a guest.
         user*: User
         guild_id*: string
         nick*, premium_since*, avatar*: Option[string]

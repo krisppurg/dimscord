@@ -68,9 +68,10 @@ macro event*(discord: DiscordClient, fn: untyped): untyped =
 
     if pragmas.findChild(it.strVal == "async").kind == nnkNilLit:
         anonFn.addPragma ident("async")
-    # Check the event is valid, give proper error if it isn't
-    if eventName.strVal.nimIdentNormalize() notin dimscordEvents:
-        fmt"'{eventName}' is not a valid dimscord event".error(eventName)
+    when (NimMajor, NimMinor, NimPatch) >= (2, 0, 0):
+        # Check the event is valid, give proper error if it isn't
+        if eventName.strVal.nimIdentNormalize() notin dimscordEvents:
+            fmt"'{eventName}' is not a valid dimscord event".error(eventName)
 
     result = quote:
         `discord`.events.`eventName` = `anonFn`

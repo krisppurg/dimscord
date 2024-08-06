@@ -24,9 +24,18 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "tts": tts,
     }
     if message_reference.isSome:
-        payload["message_reference"] = %*{
-          "fail_if_not_exists":message_reference.get.fail_if_not_exists.get true
+        var mf = %*{
+            "type": int message_reference.get.kind,
+            "fail_if_not_exists":message_reference.get.fail_if_not_exists.get true
         }
+        if message_reference.get.channel_id.isSome:
+            mf["channel_id"] = %message_reference.get.channel_id.get
+        if message_reference.get.message_id.isSome:
+            mf["message_id"] = %message_reference.get.message_id.get
+        if message_reference.get.guild_id.isSome:
+            mf["guild_id"] = %message_reference.get.guild_id.get
+
+        payload["message_reference"] = mf
 
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
     if embeds.len > 0: payload["embeds"] = %embeds
@@ -37,7 +46,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
         payload["poll"] = %poll.get
         payload["poll"]["layout_type"] = %int(poll.get.layout_type)
     if enforce_nonce.isSome: payload["enforce_nonce"] = %enforce_nonce.get
-    payload.loadOpt(allowed_mentions, nonce, message_reference)
+    payload.loadOpt(allowed_mentions, nonce)
 
     if components.len > 0:
         payload["components"] = newJArray()

@@ -301,7 +301,7 @@ proc `%`*(flags: set[PermissionFlags]): JsonNode =
     %($cast[int](flags))
 
 proc `%`*(r: MessageReferenceType): JsonNode =
-    %(int r)
+    json.`%*`(int r)
 
 macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()

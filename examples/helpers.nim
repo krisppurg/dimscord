@@ -97,11 +97,11 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     await i.deferResponse(hide = true)
     case data.custom_id
     of "addBtn":
-        await! i.edit(
+        await! i.editInteraction(
             some "Current Count: " & $(num + 1)
         )
     of "subBtn":
-        await! i.edit(
+        await! i.editInteraction(
             some "Current Count: " & $(num - 1)
         )    
 

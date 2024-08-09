@@ -12,7 +12,7 @@ template getPruneCount*(g: Guild, days: int): Future[int] =
     ## Gets the prune count.
     getClient.api.getGuildPruneCount(g.id, days)
 
-template edit*(g: Guild, lvl: MFALevel; reason = ""): Future[MFALevel] =
+template editMFA*(g: Guild, lvl: MFALevel; reason = ""): Future[MFALevel] =
     ## Modify Guild MFA Level, requiring guild ownership.
     getClient.api.editGuildMFALevel(g.id, lvl, reason)
 

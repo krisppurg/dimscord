@@ -171,7 +171,7 @@ template followup*(i: Interaction;
         flags = (if ephemeral: some mfEphemeral.ord else: none int)
     )
     
-template edit*(i: Interaction;
+template editInteraction*(i: Interaction;
         content = none string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;

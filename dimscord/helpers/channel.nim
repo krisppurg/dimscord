@@ -13,7 +13,7 @@ template getPins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.
     getClient.api.getChannelPins(ch.id)
 
-template edit*(ch: GuildChannel;
+template editChannel*(ch: GuildChannel;
     name, parent_id, topic, rtc_region = none string;
     default_auto_archive_duration, video_quality_mode = none int;
     flags = none set[ChannelFlags];

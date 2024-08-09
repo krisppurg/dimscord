@@ -31,16 +31,12 @@ template reply*(m: Message, content = "";
         mention, failifnotexists, tts = false): Future[Message] =
     ## Replies to a Message.
     ## - set `mention` to `true` in order to mention the replied message in Discord.
-    let message_reference = block:
-        if mention: some m.reference
-        else: none MessageReference
-
     getClient.api.sendMessage(
         m.channel_id,
         content, tts, nonce,
         files, embeds, attachments,
         allowed_mentions, 
-        message_reference,
+        (if mention: some m.reference else: none MessageReference),
         components, stickers
     )
 

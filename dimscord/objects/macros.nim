@@ -83,10 +83,10 @@ template getClient*: DiscordClient =
   when (declared(s)) and (typeof(s) is Shard):
     var dc {.cursor.} = s.client
     when defined(dimscordDebug): 
-      if dc.isNil: raise (ref AccessViolationDefect)(msg: "Client is Nil") # add a more descriptive error ?
+      if dc.isNil: raise (ref AccessViolationDefect)(msg: "Client is nil: Please check if you have a properly initialized client.") 
     dc
   else:
-    {.error: "Error: Cannot find any Shard in scope.\nHelpers must have the 's' variable in scope in order to work".}
+    {.error: "Error: Cannot find any Shard in scope. Helpers must have a 's' variable of type `Shard` in the current scope in order to work".}
 
 
 

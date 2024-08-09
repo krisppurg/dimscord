@@ -313,13 +313,29 @@ proc getGuildBans*(api: RestApi,
         endpointGuildBans(guild_id)
     )).elems.map(newGuildBan)
 
+proc bulkGuildBan*(api: RestApi, guild_id: string;
+        user_ids: seq[string];
+        delete_message_seconds = 0;
+        reason = ""
+): Future[tuple[banned_users, failed_users: seq[string]]] {.async.} =
+    ## Creates a guild ban.
+    assert user_ids.len <= 200
+
+    discard await api.request(
+        "POST", endpointGuildBanBulk(guild_id),
+        $(%*{
+            "user_ids": %user_ids,
+            "delete_message_seconds": delete_message_seconds
+        }), audit_reason = reason)
+
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
         deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     discard await api.request(
         "PUT", endpointGuildBans(guild_id, user_id),
         $(%*{
-            "delete_message_days": deletemsgdays
+            "delete_message_days": deletemsgdays,
+            "reason": reason
         }), audit_reason = reason)
 
 proc removeGuildBan*(api: RestApi,
@@ -419,7 +435,9 @@ proc searchGuildMembers*(api: RestApi;
     ## Search for guild members.
     result = (await api.request("GET",
         endpointGuildMembersSearch(guild_id)&"?query="&query&"&limit="&($limit),
-    )).elems.map(newMember)
+    )).getElems.map(proc (x: JsonNode): Member =
+                        x["guild_id"] = %*guild_id
+                        x.newMember)
 
 proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
         nick = none string;
@@ -439,7 +457,7 @@ proc addGuildMember*(api: RestApi, guild_id, user_id, access_token: string;
     )
 
     if member.kind == JNull:
-        result = (Member(), true)
+        result = (Member(user: User(id: user_id), guild_id: guild_id), true)
     else:
         result = (newMember(member), false)
 

@@ -1,7 +1,7 @@
 import httpclient, asyncdispatch, json, options
 import ../objects, ../constants
 import tables, regex, times, os, sequtils, strutils
-import uri, macros
+import uri, macros, mimetypes
 
 var
     fatalErr = true
@@ -47,10 +47,10 @@ proc handleRoute(api: RestApi, glbal = false; route = "") {.async.} =
 
     if rl.ratelimited:
         log "Delaying " & (if global: "all" else: "HTTP") &
-            " requests in (" & $(int(rl.retry_after * 1000) + 250) &
+            " requests in (" & $(int(rl.retry_after * 1000)) &
             "ms) [" & (if glbal: "global" else: route) & "]"
 
-        await sleepAsync int(rl.retry_after * 1000) + 250
+        await sleepAsync int(rl.retry_after * 1000)
 
         if not glbal:
             api.endpoints[route].ratelimited = false
@@ -84,6 +84,13 @@ proc discordErrors(data: JsonNode): string =
 proc request*(api: RestApi, meth, endpoint: string;
             pl, audit_reason = ""; mp: MultipartData = nil;
             auth = true): Future[JsonNode] {.async.} =
+    ## Makes HTTP requests to the Discord API.
+    ##
+    ## * `pl` - stringified json payload.
+    ## * `audit_reason` - audit log reason for any action
+    ## * `mp` - multipart data which is used to attach files
+    ## * `auth` - if authentication is needed.
+    ## * `meth` - method of http request. definitely not illegal ;).
     if api.token == "Bot  ":
         raise newException(Exception, "The token you specified was empty.")
     let route = endpoint.parseRoute(meth)
@@ -142,7 +149,7 @@ proc request*(api: RestApi, meth, endpoint: string;
         let
             retry_header = resp.headers.getOrDefault(
                 "X-RateLimit-Reset-After",
-                @["0.250"].HttpHeaderValues).parseFloat
+                @["0.125"].HttpHeaderValues).parseFloat
             status = resp.code
             fin = "[" & $status.int & "] "
 
@@ -284,20 +291,17 @@ proc `%`*(o: Overwrite): JsonNode =
         "allow": %cast[int](o.allow),
         "deny": %cast[int](o.deny)}
 
-proc `%`*(flags: set[MessageFlags]): JsonNode =
-    %cast[int](flags)
+type SomeFlags = (set[MessageFlags] | set[AttachmentFlags] | set[
+    ChannelFlags] | set[UserFlags] | set[RoleFlags]) # dont judge the line break lol
 
-proc `%`*(flags: set[AttachmentFlags]): JsonNode =
-    %cast[int](flags)
-
-proc `%`*(flags: set[ChannelFlags]): JsonNode =
-    %cast[int](flags)
-
-proc `%`*(flags: set[RoleFlags]): JsonNode =
+proc `%`*(flags: SomeFlags): JsonNode =
     %cast[int](flags)
 
 proc `%`*(flags: set[PermissionFlags]): JsonNode =
     %($cast[int](flags))
+
+proc `%`*(r: MessageReferenceType): JsonNode =
+    json.`%*`(int r)
 
 macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()
@@ -322,3 +326,58 @@ macro loadNullableOptInt*(obj: typed, lits: varargs[untyped]): untyped =
         result.add quote do:
             if `lit`.isSome and get(`lit`) == -1:
                 `obj`[`fieldName`] = newJNull()
+
+proc append*(mpd: var MultipartData;
+        attachments: seq[Attachment];
+        pl: var JsonNode; is_interaction = false) =
+    ## Appends discord attachment items to multipart data.
+    ## Internal use only, but you can use it if you want.
+
+    if mpd.isNil: mpd = newMultipartData()
+
+    var asgn = if is_interaction: pl["data"] else: pl
+    asgn["attachments"] = %[]
+    for i, a in attachments:
+        if a.id == "": a.id = $i
+        asgn["attachments"].add %a
+
+    for i, a in attachments:
+        var
+            contenttype = ""
+            body = a.file
+            name = "files[" & $i & "]"
+
+        assert a.filename != "", "Attachment name needs to be provided."
+
+        let att = splitFile(a.filename)
+
+        if att.ext != "":
+            let ext = att.ext[1..high(att.ext)]
+            contenttype = newMimetypes().getMimetype(ext)
+
+        if body == "": body = readFile(a.filename)
+        mpd.add(name, body, a.filename, contenttype, useStream=false)
+
+    mpd.add("payload_json", $pl, contentType = "application/json")
+
+proc append*(mpd: var MultipartData;
+        files: seq[DiscordFile];
+        pl: var JsonNode) =
+    ## Appends discord file items to multipart data.
+    ## Internal use only, but you can use it if you want.
+    if mpd.isNil: mpd = newMultipartData()
+
+    for file in files:
+        var contenttype = ""
+        assert file.name != "", "file name needs to be provided."
+
+        let fil = splitFile(file.name)
+
+        if fil.ext != "":
+            let ext = fil.ext[1..high(fil.ext)]
+            contenttype = newMimetypes().getMimetype(ext)
+
+        if file.body == "": file.body = readFile(file.name)
+        mpd.add(fil.name, file.body, file.name, contenttype, useStream=false)
+
+    mpd.add("payload_json", $pl, contentType = "application/json")

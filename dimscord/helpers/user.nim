@@ -16,10 +16,13 @@ template setNickname*(g: Guild, nick: string, reason = ""): Future[void] =
     ## - Set `nick` to "" to reset nickname.
     getClient.api.setGuildNick(g.id, nick, reason)
 
-# template addRole*(mb: Member, r: Role | string, reason = ""): Future[void] =
-#     ## Assigns a member's role.
-#     let id = when r is Role: r.id else: r
-#     getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
+template addRole*(mb: Member, r: Role | string, reason = ""): Future[void] =
+    ## Assigns a member's role.
+    let id = when r is Role: r.id else: r
+    assert(
+        mb.guild_id != "", "Your member.guild_id is empty, use addGuildMemberRole instead."
+    )
+    getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
 
 # template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
 #     ## Removes a member's role.

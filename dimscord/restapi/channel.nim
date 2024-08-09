@@ -79,6 +79,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             parent_id, topic, rtc_region = none string; nsfw = none bool;
             position, video_quality_mode = none int;
             default_sort_order, default_forum_layout = none int;
+            default_thread_rate_limit_per_user = none int;
             available_tags = none seq[ForumTag];
             default_reaction_emoji = none DefaultForumReaction;
             rate_limit_per_user = none range[0..21600];
@@ -98,7 +99,8 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
     payload.loadOpt(position, topic, nsfw, rate_limit_per_user,
                     bitrate, user_limit, parent_id, permission_overwrites,
                     available_tags, default_reaction_emoji, video_quality_mode,
-                    default_sort_order, default_forum_layout)
+                    default_sort_order, default_forum_layout,
+                    default_thread_rate_limit_per_user)
     payload.loadNullableOptStr(rtc_region)
 
     result = (await api.request(
@@ -107,6 +109,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
         $payload,
         audit_reason = reason
     )).newGuildChannel
+    result.guild_id = guild_id
 
 proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     ## Deletes or closes a channel.
@@ -220,7 +223,9 @@ proc getGuildChannels*(api: RestApi,
     result = (await api.request(
         "GET",
         endpointGuildChannels(guild_id)
-    )).elems.map(newGuildChannel)
+    )).elems.map(proc (x: JsonNode): GuildChannel =
+                    x["guild_id"] = %*guild_id
+                    x.newGuildChannel)
 
 proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
         position = none int; parent_id = none string; lock_permissions = false;

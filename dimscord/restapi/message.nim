@@ -1,4 +1,4 @@
-import httpclient, mimetypes, asyncdispatch, options
+import httpclient, asyncdispatch, options
 import ../objects, ../constants
 import tables, os, json, sequtils, jsony
 import uri, ../helpers, requester
@@ -12,24 +12,41 @@ proc sendMessage*(api: RestApi, channel_id: string;
         allowed_mentions = none AllowedMentions;
         message_reference = none MessageReference;
         components = newSeq[MessageComponent]();
-        sticker_ids = newSeq[string]()): Future[Message] {.async.} =
+        sticker_ids = newSeq[string]();
+        poll = none PollRequest,
+        enforce_nonce = none bool): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     assert content.len in 0..2000, "Message too long to send :: "&($content.len)
     assert sticker_ids.len in 0..3
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts,
     }
     if message_reference.isSome:
-        payload["message_reference"] = %*{
-          "fail_if_not_exists":message_reference.get.fail_if_not_exists.get true
+        var mf = %*{
+            "type": int message_reference.get.kind,
+            "fail_if_not_exists":message_reference.get.fail_if_not_exists.get true
         }
+        if message_reference.get.channel_id.isSome:
+            mf["channel_id"] = %message_reference.get.channel_id.get
+        if message_reference.get.message_id.isSome:
+            mf["message_id"] = %message_reference.get.message_id.get
+        if message_reference.get.guild_id.isSome:
+            mf["guild_id"] = %message_reference.get.guild_id.get
+
+        payload["message_reference"] = mf
 
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
     if embeds.len > 0: payload["embeds"] = %embeds
-
-    payload.loadOpt(allowed_mentions, nonce, message_reference)
+    if poll.isSome:
+        assert poll.get.duration in 1..768
+        assert(poll.get.layout_type.int != 0,
+            "Must include 'layout_type' field in PollRequest object or set value to plDefault.")
+        payload["poll"] = %poll.get
+        payload["poll"]["layout_type"] = %int(poll.get.layout_type)
+    if enforce_nonce.isSome: payload["enforce_nonce"] = %enforce_nonce.get
+    payload.loadOpt(allowed_mentions, nonce)
 
     if components.len > 0:
         payload["components"] = newJArray()
@@ -39,61 +56,14 @@ proc sendMessage*(api: RestApi, channel_id: string;
     var mpd: MultipartData
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception,
-                    "File name needs to be provided."
-                )
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request(
         "POST",
         endpointChannelMessages(channel_id),
-        pl = $payload,
+        $payload,
         mp = mpd
     )).newMessage
 
@@ -104,7 +74,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
     assert content.len <= 2000
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts,
         "flags": %flags
@@ -113,63 +83,15 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
 
     if embeds.len > 0:
         payload["embeds"] = %embeds
-
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"] &= %%*component
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception,
-                    "File name needs to be provided."
-                )
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request(
         "PATCH",
@@ -279,8 +201,8 @@ proc deleteMessageReactionEmoji*(api: RestApi,
 
 proc getMessageReactions*(api: RestApi,
         channel_id, message_id, emoji: string;
-        before, after = "";
-        limit: range[1..100] = 25): Future[seq[User]] {.async.} =
+        kind = ReactionType.rtNormal;
+        after = ""; limit: range[1..100] = 25): Future[seq[User]] {.async.} =
     ## Get all user message reactions on the emoji provided.
     var emj = emoji
     var url = endpointReactions(channel_id, message_id, e=emj, uid="@me") & "?"
@@ -288,12 +210,12 @@ proc getMessageReactions*(api: RestApi,
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
 
-    if before != "":
-        url = url & "before=" & before & "&"
+    # if before != "":
+    #     url = url & "before=" & before & "&"
     if after != "":
         url = url & "after=" & after & "&"
 
-    url = url & "limit=" & $limit
+    url = url & "type=" & $kind & "&limit=" & $limit
 
     result = (await api.request(
         "GET",
@@ -309,14 +231,16 @@ proc deleteAllMessageReactions*(api: RestApi,
     )
 
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
-        wait = true; thread_id = none string;
+        wait = true; thread_id, thread_name = none string;
         content = ""; tts = false; flags = none int;
         files = newSeq[DiscordFile]();
         attachments = newSeq[Attachment]();
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         username, avatar_url = none string;
-        components = newSeq[MessageComponent]()
+        components = newSeq[MessageComponent]();
+        applied_tags: seq[string] = @[];
+        poll = none PollRequest;
 ): Future[Option[Message]] {.async.} =
     ## Executes a webhook or create a followup message.
     ## - `webhook_id` can be used as application id
@@ -331,69 +255,35 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
 
-    let payload = %*{
+    var payload = %*{
         "content": content,
         "tts": tts
     }
 
-    payload.loadOpt(username, avatar_url, allowed_mentions, flags)
+    payload.loadOpt(username, avatar_url,
+        allowed_mentions, flags,
+        thread_id, thread_name)
 
     if embeds.len > 0: payload["embeds"] = %embeds
+    if applied_tags.len > 0: payload["applied_tags"] = %applied_tags
 
     if components.len > 0:
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
 
-    if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
+    if poll.isSome:
+        assert poll.get.duration in 1..768
+        assert(poll.get.layout_type.int != 0,
+            "Must include 'layout_type' field in PollRequest object or set value to plDefault.")
 
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        payload["poll"] = %poll.get
+        payload["poll"]["layout_type"] = %int(poll.get.layout_type)
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception, "File name needs to be provided.")
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-            mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(files, payload)
+    if attachments.len > 0:
+        mpd.append(attachments, payload, is_interaction=false)
 
     rawResult = (await api.request("POST", url, $payload, mp = mpd))
 
@@ -410,9 +300,13 @@ proc createFollowupMessage*(api: RestApi,
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         components = newSeq[MessageComponent]();
-        flags = none int): Future[Message] {.async.} =
+        flags = none int;
+        thread_id, thread_name = none string;
+        applied_tags: seq[string] = @[];
+        poll = none PollRequest;
+        ): Future[Message] {.async.} =
     ## Create a followup message.
-    ## - `flags` can set the followup message as ephemeral.
+    ## - `flags` can set the followup message as ephemeral (which can be 64).
     result = get(await api.executeWebhook(
         application_id, interaction_token,
         content = content,
@@ -423,6 +317,10 @@ proc createFollowupMessage*(api: RestApi,
         components = components,
         attachments = attachments,
         flags = flags,
+        applied_tags=applied_tags,
+        thread_name=thread_name,
+        thread_id=thread_id,
+        poll = poll,
         wait = true
     ))
 
@@ -445,7 +343,7 @@ proc editWebhookMessage*(api: RestApi;
     var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
 
-    let payload = %*{
+    var payload = %*{
         "content": %content,
         "embeds": %embeds,
         "allowed_mentions": %(%allowed_mentions)
@@ -458,55 +356,9 @@ proc editWebhookMessage*(api: RestApi;
             payload["components"].add %%*component
 
     if files.len > 0:
-        mpd = newMultipartData()
-        for file in files:
-            var contenttype = ""
-            if file.name == "":
-                raise newException(Exception, "File name needs to be provided.")
-
-            let fil = splitFile(file.name)
-
-            if fil.ext != "":
-                let ext = fil.ext[1..high(fil.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if file.body == "":
-                file.body = readFile(file.name)
-
-            mpd.add(fil.name, file.body, file.name,
-                contenttype, useStream = false)
-
-            mpd.add("payload_json", $payload, contentType = "application/json")
-
+        mpd.append(files, payload)
     if attachments.len > 0:
-        mpd = newMultipartData()
-        payload["attachments"] = %[]
-
-        for i, a in attachments:
-            payload["attachments"].add %a
-            var
-                contenttype = ""
-                body = a.file
-                name = "files[" & $i & "]"
-
-            if a.filename == "":
-                raise newException(
-                    Exception,
-                    "Attachment name needs to be provided."
-                )
-
-            let att = splitFile(a.filename)
-
-            if att.ext != "":
-                let ext = att.ext[1..high(att.ext)]
-                contenttype = newMimetypes().getMimetype(ext)
-
-            if body == "":
-                body = readFile(a.filename)
-            mpd.add(name, body, a.filename,
-                contenttype, useStream = false)
-
-        mpd.add("payload_json", $payload, contentType = "application/json")
+        mpd.append(attachments, payload, is_interaction=false)
 
     result = (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
 
@@ -592,13 +444,14 @@ proc getNitroStickerPacks*(api: RestApi): Future[seq[StickerPack]] {.async.} =
     )).elems.map(newStickerPack)
 
 proc getThreadMembers*(api: RestApi;
-        channel_id: string): Future[seq[ThreadMember]] {.async.} =
+        channel_id: string;
+        with_member = true): Future[seq[ThreadMember]] {.async.} =
     ## List thread members.
     ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent
     ## if not enabled on your application.
     result = (await api.request(
         "GET",
-        endpointChannelThreadsMembers(channel_id)
+        endpointChannelThreadsMembers(channel_id)&"?with_member=" & $with_member
     )).getElems.mapIt(($it).fromJson(ThreadMember))
 
 proc removeThreadMember*(api: RestApi;
@@ -622,11 +475,13 @@ proc addThreadMember*(api: RestApi;
     )
 
 proc getThreadMember*(api: RestApi;
-        channel_id, user_id: string): Future[ThreadMember] {.async.} =
+        channel_id, user_id: string;
+        with_member = true): Future[ThreadMember] {.async.} =
     ## Get a thread member.
     result = (await api.request(
         "GET",
-        endpointChannelThreadsMembers(channel_id, user_id)
+        endpointChannelThreadsMembers(channel_id,
+            user_id) & "?with_member=" & $with_member
     )).`$`.fromJson(ThreadMember)
 
 proc leaveThread*(api: RestApi; channel_id: string) {.async.} =
@@ -660,3 +515,19 @@ proc startThreadWithMessage*(api: RestApi,
         }),
         audit_reason = reason
     )).newGuildChannel
+
+proc getPollAnswerVoters*(api: RestApi;
+    channel_id, message_id, answer_id: string;
+    after = none string; limit: range[1..100] = 25): Future[seq[User]] {.async.} =
+    var endpoint = endpointChannelPollsAnswer(channel_id, message_id, answer_id)
+
+    endpoint &= "?limit=" & $limit
+    if after.isSome: endpoint &= "&after="&after.get
+
+    result = (await api.request("GET", endpoint)).elems.map(newUser)
+
+proc endPoll*(api: RestApi, channel_id, message_id: string) {.async.} =
+    discard await api.request(
+        "POST",
+        endpointChannelPollsExpire(channel_id, message_id)
+    )

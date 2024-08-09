@@ -58,6 +58,8 @@ type
         permCreateEvents
         permUseExternalSounds
         permSendVoiceMessages
+        permUsePolls = 49
+        permUseExternalApps
     GatewayIntent* = enum
         giGuilds,
         giGuildMembers,
@@ -77,7 +79,9 @@ type
         giMessageContent,
         giGuildScheduledEvents = 16,
         giAutoModerationConfiguration = 20,
-        giAutoModerationExecution
+        giAutoModerationExecution,
+        giGuildMessagePolls = 24,
+        giDirectMessagePolls
     AuditLogChangeType* = enum
         alcString,
         alcInt,
@@ -166,6 +170,10 @@ type
         cfPinned = 1
         cfRequireTag = 4
         cfHideMediaDownloadOptions = 15
+    SkuFlags* = enum
+        sfAvailable         = 2
+        sfGuildSubscription = 7
+        sfUserSubscription  = 8
 
 const
     libName* =  "Dimscord"
@@ -223,11 +231,19 @@ type
         mtStageSpeaker =                            29
         mtStageTopic =                              31
         mtGuildApplicationPremiumSubscription =     32
+        mtGuildIncidentAlertModeEnabled =           36
+        mtGuildIncidentAlertModeDisabled =          37
+        mtGuildIncidentReportRaid =                 38
+        mtGuildIncidentReportFalseAlarm =           39
+        mtPurchaseNotification =                    44
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
         matListen =      3
         matJoinRequest = 5 # nice skip
+    MessageReferenceType* = enum
+        mrtDefault = 0
+        mrtForward = 1
     ChannelType* = enum
         ctGuildText =          0
         ctDirect =             1
@@ -243,8 +259,14 @@ type
         ctGuildDirectory =     14
         ctGuildForum =         15
         ctGuildMedia =         16
+    VideoQualityMode* = enum
+        vqmAuto        = 0
+        vqmFull        = 1
+    ReactionType* = enum
+        rtNormal        = 0
+        rtBurst        = 1
     MessageNotificationLevel* = enum
-        mnlAllMessages =  0
+        mnlAllMessages  = 0
         mnlOnlyMentions = 1
     ExplicitContentFilter* = enum
         ecfDisabled =            0
@@ -270,12 +292,13 @@ type
         ptTier2 = 2
         ptTier3 = 3
     ActivityType* = enum
-        atPlaying =   0
-        atStreaming = 1
-        atListening = 2
-        atWatching =  3
-        atCustom =    4
-        atCompeting = 5
+        atPlaying =     0
+        atStreaming =   1
+        atListening =   2
+        atWatching =    3
+        atCustom =      4
+        atCompeting =   5
+        atCustomState = 6
     WebhookType* = enum
         whIncoming =    1
         whFollower =    2
@@ -332,14 +355,21 @@ type
         aleThreadUpdate =                       111
         aleThreadDelete =                       112
         aleApplicationCommandPermissionUpdate = 121
-        aleAutoModerationRuleCreate =           140
-        aleAutoModerationRuleUpdate =           141
-        aleAutoModerationRuleDelete =           142
-        aleAutoModerationBlockMessage =         143
-        aleAutoModerationFlagToChannel =        144
-        aleAutoModerationUserMuted =            145
-        aleCreatorMonetizationRequestCreated =  150
-        aleCreatorMonetizationTermsAccepted =   151
+        aleAutoModerationRuleCreate           = 140
+        aleAutoModerationRuleUpdate           = 141
+        aleAutoModerationRuleDelete           = 142
+        aleAutoModerationBlockMessage         = 143
+        aleAutoModerationFlagToChannel        = 144
+        aleAutoModerationUserMuted            = 145
+        aleCreatorMonetizationRequestCreated  = 150
+        aleCreatorMonetizationTermsAccepted   = 151
+        aleOnboardingPromptCreate             = 163
+        aleOnboardingPromptUpdate             = 164
+        aleOnboardingPromptDelete             = 165
+        aleOnboardingCreate                   = 166
+        aleOnboardingUpdate                   = 167
+        aleHomeSettingsCreate                 = 190
+        aleHomeSettingsUpdate                 = 191
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
@@ -399,6 +429,17 @@ type
         irtUpdateMessage                    = 7
         irtAutoCompleteResult               = 8
         irtModal                            = 9
+    ApplicationIntegrationType* = enum
+        aitGuildInstall = 0
+        aitUserInstall  = 1
+    InteractionContextType* = enum
+        ictGuild          = 0
+        ictBotDm          = 1
+        ictPrivateChannel = 2
+    InviteType* = enum
+        itGuild   = 0
+        itGroupDm = 1
+        itFriend  = 2
     InviteTargetType* = enum
         ittStream              = 1
         ittEmbeddedApplication = 2
@@ -431,6 +472,8 @@ type
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
+    PollLayoutType* = enum
+        plDefault = 1
     GuildScheduledEventPrivacyLevel* = enum
         splGuildOnly = 2
     GuildScheduledEventStatus* = enum
@@ -469,6 +512,20 @@ type
     GuildOnboardingPromptType* = enum
         ptMultipleChoice = 0,
         ptDropdown       = 1
+    EntitlementType* = enum
+        etPurchase = 1
+        etPremiumSubscription,
+        etDeveloperGift,
+        etTestModePurchase,
+        etFreePurchase,
+        etUserGift,
+        etPremiumPurchase,
+        etApplicationSubscription
+    SkuType* = enum
+        stDurable           = 2
+        stConsumable        = 3
+        stSubscription      = 5
+        stSubscriptionGroup = 6
     DispatchEvent* = enum
         Unknown
         VoiceStateUpdate              = "VOICE_STATE_UPDATE"
@@ -526,6 +583,14 @@ type
         AutoModerationRuleUpdate      = "AUTO_MODERATION_RULE_UPDATE"
         AutoModerationRuleDelete      = "AUTO_MODERATION_RULE_DELETE"
         AutoModerationActionExecution = "AUTO_MODERATION_ACTION_EXECUTION"
+        MessagePollVoteAdd            = "MESSAGE_POLL_VOTE_ADD"
+        MessagePollVoteRemove         = "MESSAGE_POLL_VOTE_REMOVE"
+        IntegrationCreate             = "INTEGRATION_CREATE"
+        IntegrationUpdate             = "INTEGRATION_UPDATE"
+        IntegrationDelete             = "INTEGRATION_DELETE"
+        EntitlementCreate             = "ENTITLEMENT_CREATE"
+        EntitlementUpdate             = "ENTITLEMENT_UPDATE"
+        EntitlementDelete             = "ENTITLEMENT_DELETE"
 
 const
     deGuildMembersChunk*   = DispatchEvent.GuildMembersChunk
@@ -556,7 +621,8 @@ const
         permSendMessagesInThreads,
         permUsePublicThreads,
         permUsePrivateThreads,
-        permSendVoiceMessages}
+        permSendVoiceMessages,
+        permUsePolls}
     permAllVoice* = {permCreateInstantInvite,
         permMentionEveryone,
         permManageChannels,
@@ -579,7 +645,8 @@ const
         permUseSoundboard,
         permUseExternalSounds,
         permStartEmbeddedActivities,
-        permSendVoiceMessages}
+        permSendVoiceMessages,
+        permUsePolls}
     permAllStage* = {permCreateInstantInvite,
         permUseExternalStickers,
         permUseSlashCommands,
@@ -613,6 +680,7 @@ const
         permManageExpressions,
         permManageThreads,
         permManageEvents,
+        permUseExternalApps,
         permCreateEvents} + permAllChannel
     permManageEmojis* = permManageExpressions # ;) no need to thank me
 
@@ -698,175 +766,184 @@ proc cdnGuildDiscoverySplash*(gid, splash: string; fmt = "png"): string =
 # Rest Endpoints
 
 proc endpointUsers*(uid = "@me"): string =
-    result = "users/" & uid
+    "users/" & uid
 
 proc endpointUserChannels*(): string =
-    result = endpointUsers("@me") & "/channels"
+    endpointUsers("@me") & "/channels"
 
 proc endpointVoiceRegions*(): string =
-    result = "voice/regions"
+    "voice/regions"
 
 proc endpointUserGuilds*(gid=""): string =
-    result = endpointUsers("@me")&"/guilds"&(if gid != "": "/" & gid else: "")
+    endpointUsers("@me")&"/guilds"&(if gid != "": "/" & gid else: "")
 
 proc endpointUserGuildMember*(gid: string): string =
-    result = endpointUserGuilds(gid) & "/member"
+    endpointUserGuilds(gid) & "/member"
 
 proc endpointChannels*(cid = ""): string =
-    result = "channels"&(if cid != "": "/" & cid else: "")
+    "channels"&(if cid != "": "/" & cid else: "")
 
 proc endpointStageInstances*(cid = ""): string =
-    result = "stage-instances" & (if cid != "": "/" & cid else: "")
+    "stage-instances" & (if cid != "": "/" & cid else: "")
 
 proc endpointGuilds*(gid = ""): string =
-    result = "guilds" & (if gid != "": "/" & gid else: "")
+    "guilds" & (if gid != "": "/" & gid else: "")
 
 proc endpointGuildStickers*(gid: string; sid=""): string =
-    result = endpointGuilds(gid)&"/stickers"&(if sid != "": "/"&sid else: "")
+    endpointGuilds(gid)&"/stickers"&(if sid != "": "/"&sid else: "")
 
 proc endpointGuildPreview*(gid: string): string =
-    result = endpointGuilds(gid) & "/preview"
+    endpointGuilds(gid) & "/preview"
 
 proc endpointGuildRegions*(gid: string): string =
-    result = endpointGuilds(gid) & "/regions"
+    endpointGuilds(gid) & "/regions"
 
 proc endpointGuildMFA*(gid: string): string =
-    result = endpointGuilds(gid) & "/mfa"
+    endpointGuilds(gid) & "/mfa"
 
 proc endpointGuildAuditLogs*(gid: string): string =
-    result = endpointGuilds(gid) & "/audit-logs"
+    endpointGuilds(gid) & "/audit-logs"
 
 proc endpointGuildAutoModerationRules*(gid: string; rid = ""): string =
     endpointGuilds(gid)&"/auto-moderation/rules"&(if rid!="":"/"&rid else:"")
 
 proc endpointGuildMembers*(gid: string; mid = ""): string =
-    result = endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
+    endpointGuilds(gid) & "/members" & (if mid != "":"/"&mid else: "")
 
 proc endpointGuildScheduledEvents*(gid: string; eid = ""): string =
-    result = endpointGuilds(gid)&"/scheduled-events"&(if eid!="":"/"&eid else:"")
+    endpointGuilds(gid)&"/scheduled-events"&(if eid!="":"/"&eid else:"")
 
 proc endpointGuildScheduledEventUsers*(gid, eid: string): string =
-    result = endpointGuildScheduledEvents(gid, eid) & "/users"
+    endpointGuildScheduledEvents(gid, eid) & "/users"
 
 proc endpointGuildMembersSearch*(gid: string): string =
-    result = endpointGuildMembers(gid) & "/search"
+    endpointGuildMembers(gid) & "/search"
 
 proc endpointGuildMembersNick*(gid: string; mid = "@me"): string =
-    result = endpointGuildMembers(gid, mid) & "/nick"
+    endpointGuildMembers(gid, mid) & "/nick"
 
 proc endpointGuildMembersRole*(gid, mid, rid: string): string =
-    result = endpointGuildMembers(gid, mid) & "/roles/" & rid
+    endpointGuildMembers(gid, mid) & "/roles/" & rid
 
 proc endpointGuildIntegrations*(gid: string; iid = ""): string =
-    result = endpointGuilds(gid)&"/integrations"&(if iid!="":"/"&iid else:"")
+    endpointGuilds(gid)&"/integrations"&(if iid!="":"/"&iid else:"")
 
 proc endpointGuildVoiceStatesUser*(gid, uid = "@me"): string =
-    result = endpointGuilds(gid) & "/voice-states/" & uid
+    endpointGuilds(gid) & "/voice-states/" & uid
 
 proc endpointGuildWelcomeScreen*(gid: string): string =
-    result = endpointGuilds(gid) & "/welcome-screen"
+    endpointGuilds(gid) & "/welcome-screen"
 
 proc endpointGuildIntegrationsSync*(gid, iid: string): string =
-    result = endpointGuildIntegrations(gid, iid) & "/sync"
+    endpointGuildIntegrations(gid, iid) & "/sync"
 
 proc endpointGuildWidget*(gid: string): string =
-    result = endpointGuilds(gid) & "/widget"
+    endpointGuilds(gid) & "/widget"
 
 proc endpointGuildEmojis*(gid: string; eid = ""): string =
-    result = endpointGuilds(gid)&"/emojis"&(if eid != "": "/" & eid else: "")
+    endpointGuilds(gid)&"/emojis"&(if eid != "": "/" & eid else: "")
 
 proc endpointGuildRoles*(gid: string; rid = ""): string =
-    result = endpointGuilds(gid) & "/roles" & (if rid!="": "/" & rid else: "")
+    endpointGuilds(gid) & "/roles" & (if rid!="": "/" & rid else: "")
 
 proc endpointGuildPrune*(gid: string): string =
-    result = endpointGuilds(gid) & "/prune"
+    endpointGuilds(gid) & "/prune"
 
 proc endpointInvites*(code = ""): string =
-    result = "invites" & (if code != "": "/" & code else: "")
+    "invites" & (if code != "": "/" & code else: "")
 
 proc endpointGuildInvites*(gid: string): string =
-    result = endpointGuilds(gid) & "/" & endpointInvites()
+    endpointGuilds(gid) & "/" & endpointInvites()
 
 proc endpointGuildVanity*(gid: string): string =
-    result = endpointGuilds(gid) & "/vanity-url"
+    endpointGuilds(gid) & "/vanity-url"
 
 proc endpointGuildOnboarding*(gid: string): string =
-    result = endpointGuilds(gid) & "/onboarding"
+    endpointGuilds(gid) & "/onboarding"
 
 proc endpointGuildChannels*(gid: string; cid = ""): string =
-    result = endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")
+    endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")
 
 proc endpointChannelOverwrites*(cid, oid: string): string =
-    result = endpointChannels(cid) & "/permissions/" & oid
+    endpointChannels(cid) & "/permissions/" & oid
 
 proc endpointWebhooks*(wid: string): string =
-    result = "webhooks/" & wid
+    "webhooks/" & wid
 
 proc endpointChannelWebhooks*(cid: string): string =
-    result = endpointChannels(cid) & "/webhooks"
+    endpointChannels(cid) & "/webhooks"
 
 proc endpointGuildTemplates*(gid, tid = ""): string =
-    result = endpointGuilds(gid) & "/templates" & (if tid!="": "/"&tid else:"")
+    endpointGuilds(gid) & "/templates" & (if tid!="": "/"&tid else:"")
 
 proc endpointGuildWebhooks*(gid: string): string =
-    result = endpointGuilds(gid) & "/webhooks"
+    endpointGuilds(gid) & "/webhooks"
 
 proc endpointWebhookToken*(wid, tok: string): string =
-    result = endpointWebhooks(wid) & "/" & tok
+    endpointWebhooks(wid) & "/" & tok
 
 proc endpointWebhookMessage*(wid, tok, mid: string): string =
-    result = endpointWebhookToken(wid, tok) & "/messages/" & mid
+    endpointWebhookToken(wid, tok) & "/messages/" & mid
 
 proc endpointWebhookTokenSlack*(wid, tok: string): string =
-    result = endpointWebhookToken(wid, tok) & "/slack"
+    endpointWebhookToken(wid, tok) & "/slack"
 
 proc endpointWebhookTokenGithub*(wid, tok: string): string =
-    result = endpointWebhookToken(wid, tok) & "/github"
+    endpointWebhookToken(wid, tok) & "/github"
 
 proc endpointChannelMessages*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/messages"
-    if mid != "": result = result & "/" & mid
+    if mid != "": result &= "/" & mid
 
 proc endpointChannelMessagesThreads*(cid, mid: string): string =
-    result = endpointChannelMessages(cid, mid) & "/threads"
+    endpointChannelMessages(cid, mid) & "/threads"
 
 proc endpointChannelThreads*(cid: string): string =
-    result = endpointChannels(cid) & "/threads"
+    endpointChannels(cid) & "/threads"
 
 proc endpointGuildThreads*(gid: string): string =
-    result = endpointGuilds(gid) & "/threads"
+    endpointGuilds(gid) & "/threads"
 
 proc endpointGuildThreadsActive*(gid: string): string =
-    result = endpointGuildThreads(gid) & "/active"
+    endpointGuildThreads(gid) & "/active"
 
 proc endpointChannelThreadsArchived*(cid, typ: string): string =
-    result = endpointChannelThreads(cid) & "/archived/" & typ
+    endpointChannelThreads(cid) & "/archived/" & typ
 
 proc endpointChannelUsersThreadsArchived*(cid, typ: string): string =
-    result = endpointChannels(cid) & endpointUsers() & "/archived/" & typ
+    endpointChannels(cid) & "/" & endpointUsers() & "/archived/" & typ
 
 proc endpointChannelThreadsMembers*(cid: string; uid = ""): string =
     result = endpointChannels(cid) & "/thread-members"
     if uid != "":
         result = result & "/" & uid
 
+proc endpointChannelPollsAnswer*(cid, mid, aid: string): string =
+    endpointChannels(cid) & "/polls/" & mid & "/answers/" & aid
+
+proc endpointChannelPollsExpire*(cid, mid: string): string =
+    endpointChannels(cid) & "/polls/" & mid & "/expire"
+
 proc endpointChannelMessagesCrosspost*(cid, mid: string): string =
-    result = endpointChannelMessages(cid, mid) & "/crosspost"
+    endpointChannelMessages(cid, mid) & "/crosspost"
 
 proc endpointChannelInvites*(cid: string): string =
-    result = endpointChannels(cid) & "/invites"
+    endpointChannels(cid) & "/invites"
 
 proc endpointChannelPermissions*(cid, oid: string): string =
-    result = endpointChannels(cid) & "/permissions/" & oid
+    endpointChannels(cid) & "/permissions/" & oid
+
+proc endpointGuildBanBulk*(gid: string; uid = ""): string =
+    endpointGuilds(gid) & "/bulk-ban"
 
 proc endpointGuildBans*(gid: string; uid = ""): string =
-    result = endpointGuilds(gid) & "/bans" & (if uid != "": "/" & uid else: "")
+    endpointGuilds(gid) & "/bans" & (if uid != "": "/" & uid else: "")
 
 proc endpointBulkDeleteMessages*(cid: string): string =
-    result = endpointChannelMessages(cid) & "/bulk-delete"
+    endpointChannelMessages(cid) & "/bulk-delete"
 
 proc endpointTriggerTyping*(cid: string): string =
-    result = endpointChannels(cid) & "/typing"
+    endpointChannels(cid) & "/typing"
 
 proc endpointChannelPins*(cid: string; mid = ""): string =
     result = endpointChannels(cid) & "/pins"
@@ -874,7 +951,7 @@ proc endpointChannelPins*(cid: string; mid = ""): string =
         result = result & "/" & mid
 
 proc endpointGroupRecipient*(cid, rid: string): string =
-    result = endpointChannels(cid) & "/recipients/" & rid
+    endpointChannels(cid) & "/recipients/" & rid
 
 proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     result = endpointChannels(cid) & "/messages/" & mid & "/reactions"
@@ -883,34 +960,49 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
     if uid != "":
         result = result & "/" & uid
 
+proc endpointApplications*(aid:string): string =
+    "applications/"&aid
+
+proc endpointApplicationEmojis*(aid:string, eid=""): string =
+    endpointApplications(aid)&"/emojis"&(if eid!="":"/"&eid else:"")
+
 proc endpointOAuth2Application*(): string =
-    result = "oauth2/applications/@me"
+    "oauth2/applications/@me"
+
+proc endpointEntitlements*(aid: string; eid = ""): string =
+    endpointApplications(aid)&"/entitlements"&(if eid!="":"/"&eid else:"")
+
+proc endpointEntitlementConsume*(aid, eid: string): string =
+    endpointEntitlements(aid, eid) & "/consume"
+
+proc endpointListSkus*(aid: string): string =
+    endpointApplications(aid) & "/skus"
 
 proc endpointGlobalCommands*(aid: string; cid = ""): string =
-    result = "applications/" & aid & "/commands" & (if cid!="":"/"&cid else:"")
+    endpointApplications(aid)&"/commands"&(if cid!="":"/"&cid else:"")
 
 proc endpointGuildCommands*(aid, gid: string; cid = ""): string =
-    result = "applications/" & aid & "/guilds/" & gid & "/commands"
+    result = endpointApplications(aid)&"/guilds/"&gid&"/commands"
     if cid != "":
         result &= "/" & cid
 
 proc endpointGuildCommandPermission*(aid, gid: string; cid = ""): string =
-    result = endpointGuildCommands(aid, gid, cid) & "/permissions"
+    endpointGuildCommands(aid, gid, cid) & "/permissions"
 
 proc endpointInteractionsCallback*(iid, it: string): string =
-    result = "interactions/" & iid & "/" & it & "/callback"
+    "interactions/" & iid & "/" & it & "/callback"
 
 proc endpointApplicationRoleConnectionMetadata*(aid: string): string =
-    result = "/applications/"&aid&"/role-connections/metadata"
+    "applications/"&aid&"/role-connections/metadata"
 
 proc endpointUserApplications*(aid: string): string =
-    result = endpointUsers()&"/applications"&(if aid != "": "/"&aid else: "")
+    endpointUsers()&"/applications"&(if aid != "": "/"&aid else: "")
 
 proc endpointUserApplicationRoleConnection*(aid: string): string =
-    result = endpointUserApplicationRoleConnection(aid) & "/role-connection"
+    endpointUserApplicationRoleConnection(aid) & "/role-connection"
 
 proc endpointStickers*(sid: string): string =
-    result = "stickers/"&sid
+    "stickers/"&sid
 
 proc endpointStickerPacks*(): string =
-    result = "sticker-packs"
+    "sticker-packs"

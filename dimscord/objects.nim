@@ -934,6 +934,10 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
         "name": a.name,
         "type": commandKind.ord
     }
+    if a.contexts.isSome:
+        result["contexts"] = %a.contexts.get.mapIt(ord it)
+    if a.integration_types.isSome:
+        result["integration_types"] = %a.integration_types.get.mapIt(ord it)
     if a.nsfw.isSome: result["nsfw"] = %*a.nsfw.get
     if a.name_localizations.isSome:
         result["name_localizations"] = %*a.name_localizations

@@ -296,8 +296,7 @@ proc identify(s: Shard) {.async, used.} =
             "browser": &libName,
             "device": &libName
         }),
-        "compress": &defined(discordCompress),
-        "guild_subscriptions": &s.client.guildSubscriptions
+        "compress": &defined(discordCompress)
     }
 
     if s.client.max_shards > 1:
@@ -735,7 +734,7 @@ proc startSession*(discord: DiscordClient,
     ##    `giGuilds, giGuildMessages, giDirectMessages, giGuildVoiceStates, giMessageContent`
     ##
     ## - `large_threshold` The number that would be considered a large guild (50-250).
-    ## - `guild_subscriptions` Whether or not to receive presence_update, typing_start events.
+    ## - `guild_subscriptions` **DEPRECATED** Whether or not to receive presence_update, typing_start events.
     ## - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
     ## - `max_message_size` Max message JSON size (MESSAGE_CREATE) the client should cache in bytes.
     ## - `large_message_threshold` Max message limit (MESSAGE_CREATE)
@@ -754,7 +753,15 @@ proc startSession*(discord: DiscordClient,
         log("Warning: giMessageContent not specified this might cause issues.")
 
     discord.largeThreshold = large_threshold
-    discord.guildSubscriptions = guild_subscriptions
+    if guild_subscriptions:
+        log("Warning: guild_subscriptions is deprecated.")
+        discord.intents = discord.intents + {
+            giGuildMessageTyping,
+            giDirectMessageTyping,
+            giGuildPresences
+        }
+        discord.guildSubscriptions = true
+
     discord.max_shards = max_shards.get(-1)
     discord.gatewayVersion = gateway_version
     # when defined(discordv8):

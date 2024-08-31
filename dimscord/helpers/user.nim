@@ -24,9 +24,9 @@ template addRole*(mb: Member, r: Role | string, reason = ""): Future[void] =
     )
     getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
 
-template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
-    ## Removes a member's role.
-    getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+# template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
+#     ## Removes a member's role.
+#     getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
 
 template leave*(g: Guild): Future[void] =
     ## Leaves a guild.
@@ -87,7 +87,7 @@ template bulkRegisterCommands*(app: Application;
         app.id, commands, guild_id
     )
 
-template edit*(apc: ApplicationCommand;
+template editAppCmd*(apc: ApplicationCommand;
         name, desc = "";
         name_localizations,description_localizations = none Table[string,string];
         default_member_permissions = none PermissionFlags;
@@ -111,27 +111,23 @@ template reply*(i: Interaction;
         content = "";
         embeds: seq[Embed] = @[];
         components: seq[MessageComponent] = @[];
-        attachments: seq[Attachment] = @[];             
-        ephemeral = false
+        attachments: seq[Attachment] = @[];
+        allowed_mentions = default(AllowedMentions);           
+        tts = none bool; ephemeral = false
 ): Future[void] =
     ## Respond to an Interaction.
     ## - Do NOT use this if you used `defer` or if you already sent a `reply`. 
     ## - This is a "response" to an Interaction.
     ## Use `followup`, `createFollowupMessage` or `edit` if you already responded.
     ## - Set `ephemeral` to true to send ephemeral responses.
-
-    let flag = if ephemeral: {mfEphemeral} else: {}
-
     getClient.api.interactionResponseMessage(
         i.application_id,
         i.token,
         irtChannelMessageWithSource,
-        InteractionApplicationCommandCallbackData(
-            flags: flag,
-            content: content,
-            components: components,
-            attachments: attachments,
-            embeds: embeds
+        newInteractionData(
+            content, embeds, (if ephemeral: {mfEphemeral} else: {}),
+            attachments, components, 
+            allowed_mentions, tts
         )
     )
 
@@ -175,7 +171,7 @@ template followup*(i: Interaction;
         flags = (if ephemeral: some mfEphemeral.ord else: none int)
     )
     
-template edit*(i: Interaction;
+template editResponse*(i: Interaction;
         content = none string;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
@@ -209,8 +205,7 @@ template delete*(i: Interaction, message_id = "@original"): Future[void] =
     ## Deletes an Interaction Response or Followup Message
     getClient.api.deleteInteractionResponse(i.application_id, i.token, message_id)
 
-template deferResponse*(i: Interaction;
-        ephemeral, hide = false): Future[void] =
+template deferResponse*(i: Interaction; ephemeral, hide = false): Future[void] =
     ## Defers the response/update to an Interaction.
     ## - You must use `followup()` or `edit()` after calling `defer()`.
     ## - Set `ephemeral` to `true` to make the Interaction ephemeral.
@@ -220,23 +215,17 @@ template deferResponse*(i: Interaction;
         i.id, 
         i.token, 
         InteractionResponse(
-            kind: (if hide: irtDeferredUpdateMessage
-            else: irtDeferredChannelMessageWithSource),
-            data: some InteractionCallbackDataMessage(
-                flags: if ephemeral: {mfEphemeral} else: {}
-            )
+            kind: (if hide: irtDeferredUpdateMessage else: irtDeferredChannelMessageWithSource),
+            data: some InteractionCallbackDataMessage(flags: (if ephemeral: {mfEphemeral} else: {}))
         )
     )
 
-template suggest*(i: Interaction;
-        choices: seq[ApplicationCommandOptionChoice]
-): Future[void] =
+template suggest*(i: Interaction; opts: seq[ApplicationCommandOptionChoice]): Future[void] =
     ## Create an interaction response which is an autocomplete response.
     getClient.api.interactionResponseAutocomplete(
-        i.id, i.token, InteractionCallbackDataAutocomplete(choices: choices))
+        i.id, i.token, InteractionCallbackDataAutocomplete(choices: opts)
+    )
 
-template sendModal*(i: Interaction;
-        response: InteractionCallbackDataModal
-): Future[void] =
+template sendModal*(i: Interaction; response: InteractionCallbackDataModal): Future[void] =
     ## Create an interaction response which is a modal.
     getClient.api.interactionResponseModal(i.id, i.token, response)

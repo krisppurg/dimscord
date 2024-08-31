@@ -71,19 +71,24 @@ macro mainClient*(x: typed): untyped =
     ##  let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
     ##  # Now you can use the helper functions
     ## ```
-        
-    if clientCache.len > 0:
-        error("You must choose one of your client variables to set as your main")
-    elif x.kind notin {nnkLetSection, nnkVarSection}:
+    # NOTE: Don't deprecate `mainClient` but reserve it for future use.
+    if x.kind notin {nnkLetSection, nnkVarSection}:
         error("let/var must be used when declaring the variable")
     else:
-        clientCache &= x[0][0]
         result = x
 
-macro getClient*(): DiscordClient = 
-    ## Fetch a registered DiscordClient that would be used as the main variable for helper functions.
-    ## - You must use `mainClient` before using this macro!
-    if clientCache.len == 0:
-        error("Client not registered")
-    result = clientCache[0]
+template getClient*: DiscordClient = 
+  ## Tries to access DiscordClient by using a Shard. Internal use only.
+  # WIP: move to another module
+  when (declared(s)) and (typeof(s) is Shard):
+    var dc {.cursor.} = s.client
+    when defined(dimscordDebug): 
+      if dc.isNil: raise (ref AccessViolationDefect)(msg: "Client is nil: Please check if you have a properly initialized client.") 
+    dc
+  else:
+    {.error: "Error: Cannot find any Shard in scope. Helpers must have a 's' variable of type `Shard` in the current scope in order to work".}
+
+
+
+
 

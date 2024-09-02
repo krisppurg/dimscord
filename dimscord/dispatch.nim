@@ -191,7 +191,6 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
     var msg = newMessage(data)
-
     if msg.guild_id.isSome and msg.member.isSome:
         msg.member.get.guild_id = get msg.guild_id
 
@@ -411,16 +410,14 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         msg = Message(
             id: data["id"].str,
             channel_id: data["channel_id"].str)
-        oldMessage: Option[Message]
-        exists = false
+        oldMessageObj: Option[typeof(Message()[])]
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
 
         if msg.id in chan.messages:
+            oldMessageObj = some chan.messages[msg.id][]
             msg = chan.messages[msg.id]
-            oldMessage = some move chan.messages[msg.id]
-            exists = true
 
         msg = msg.updateMessage(data)
         if msg.id in chan.messages: chan.messages[msg.id] = msg
@@ -428,14 +425,16 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         let chan = s.cache.dmChannels[msg.channel_id]
 
         if msg.id in chan.messages:
+            oldMessageObj = some chan.messages[msg.id][]
             msg = chan.messages[msg.id]
-            oldMessage = some move chan.messages[msg.id]
-            exists = true
 
         msg = msg.updateMessage(data)
         if msg.id in chan.messages: chan.messages[msg.id] = msg
 
-    s.checkAndCall(MessageUpdate, msg, oldMessage, exists)
+    var oldMessage = new Message
+    if oldMessageObj.isSome:
+      oldMessage[] = oldMessageObj.unsafeGet()
+    s.checkAndCall(MessageUpdate, msg, option(oldMessage), oldMessageObj.isSome)
 
 proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =
     var mids: seq[tuple[msg: Message, exists: bool]] = @[]

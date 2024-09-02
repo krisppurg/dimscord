@@ -423,7 +423,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         oldMsg = if exists: messages[msg.id] else: nil
         # Update the message from cache, or just use what we have
         newMsg = if exists: oldMsg.updateMessage(data) else: msg
-    # Update the messages
+    # Update the messages cache
     if exists:
         messages[msg.id] = newMsg
     s.checkAndCall(MessageUpdate, newMsg, option(oldMsg), exists)

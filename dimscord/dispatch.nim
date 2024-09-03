@@ -406,10 +406,10 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
     s.checkAndCall(MessageDelete, msg, exists)
 
 proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
-    var
-        msg = Message(
-            id: data["id"].str,
-            channel_id: data["channel_id"].str)
+    let msg = Message(
+        id: data["id"].str,
+        channel_id: data["channel_id"].str
+    )
     # Get the messages table if the channel is in the cache
     var messages {.cursor.} =
         if msg.channel_id in s.cache.guildChannels:
@@ -422,10 +422,9 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         # Use the version from cache if we can
         oldMsg = if exists: messages[msg.id] else: nil
         # Update the message from cache, or just use what we have
-        newMsg = if exists: oldMsg.updateMessage(data) else: msg
+        newMsg = newMessage(data)
     # Update the messages cache
-    if exists:
-        messages[msg.id] = newMsg
+    messages[msg.id] = newMsg
     s.checkAndCall(MessageUpdate, newMsg, option(oldMsg), exists)
 
 proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =

@@ -191,7 +191,6 @@ proc presenceUpdate(s: Shard, data: JsonNode) {.async.} =
 
 proc messageCreate(s: Shard, data: JsonNode) {.async.} =
     var msg = newMessage(data)
-
     if msg.guild_id.isSome and msg.member.isSome:
         msg.member.get.guild_id = get msg.guild_id
 
@@ -407,35 +406,26 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
     s.checkAndCall(MessageDelete, msg, exists)
 
 proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
-    var
-        msg = Message(
-            id: data["id"].str,
-            channel_id: data["channel_id"].str)
-        oldMessage: Option[Message]
-        exists = false
-
-    if msg.channel_id in s.cache.guildChannels:
-        let chan = s.cache.guildChannels[msg.channel_id]
-
-        if msg.id in chan.messages:
-            msg = chan.messages[msg.id]
-            oldMessage = some move chan.messages[msg.id]
-            exists = true
-
-        msg = msg.updateMessage(data)
-        if msg.id in chan.messages: chan.messages[msg.id] = msg
-    elif msg.channel_id in s.cache.dmChannels:
-        let chan = s.cache.dmChannels[msg.channel_id]
-
-        if msg.id in chan.messages:
-            msg = chan.messages[msg.id]
-            oldMessage = some move chan.messages[msg.id]
-            exists = true
-
-        msg = msg.updateMessage(data)
-        if msg.id in chan.messages: chan.messages[msg.id] = msg
-
-    s.checkAndCall(MessageUpdate, msg, oldMessage, exists)
+    let msg = Message(
+        id: data["id"].str,
+        channel_id: data["channel_id"].str
+    )
+    # Get the messages table if the channel is in the cache
+    var messages {.cursor.} =
+        if msg.channel_id in s.cache.guildChannels:
+            s.cache.guildChannels[msg.channel_id].messages
+        elif msg.channel_id in s.cache.dmChannels:
+            s.cache.dmChannels[msg.channel_id].messages
+        else: initTable[string, Message](0)
+    let
+        exists = msg.id in messages
+        # Use the version from cache if we can
+        oldMsg = if exists: messages[msg.id] else: nil
+        # Update the message from cache, or just use what we have
+        newMsg = newMessage(data)
+    # Update the messages cache
+    messages[msg.id] = newMsg
+    s.checkAndCall(MessageUpdate, newMsg, option(oldMsg), exists)
 
 proc messageDeleteBulk(s: Shard, data: JsonNode) {.async.} =
     var mids: seq[tuple[msg: Message, exists: bool]] = @[]

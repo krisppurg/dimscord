@@ -655,7 +655,9 @@ proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = data.`$`.fromJson(InviteMetadata)
 
 proc updateMessage*(m: Message, data: JsonNode): Message =
-    result = m
+    ## Copies `m` and returns a new instance with updated fields from `data`
+    result = new Message
+    result[] = m[]
 
     with result:
         mention_users = data{"mentions"}.getElems.map(newUser)
@@ -878,7 +880,7 @@ proc renameHook(v: var ApplicationCommand, fieldName: var string) {.used.} =
     if fieldName == "type":
         fieldName = "kind"
 
-proc newEntitlement*(data: JsonNode): Entitlement = 
+proc newEntitlement*(data: JsonNode): Entitlement =
     result = data.`$`.fromJson(Entitlement)
 
 proc newApplicationCommandInteractionData*(

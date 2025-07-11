@@ -878,7 +878,7 @@ proc renameHook(v: var ApplicationCommand, fieldName: var string) {.used.} =
     if fieldName == "type":
         fieldName = "kind"
 
-proc newEntitlement*(data: JsonNode): Entitlement = 
+proc newEntitlement*(data: JsonNode): Entitlement =
     result = data.`$`.fromJson(Entitlement)
 
 proc newApplicationCommandInteractionData*(
@@ -942,7 +942,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     if a.name_localizations.isSome:
         result["name_localizations"] = %*a.name_localizations
     if commandKind == atSlash:
-        assert a.description.len in 1..100
+        assert a.description.len in 1..100, $a.description.len & " characters in 1..100 description: " & a.description
         result["description"] = %a.description
         if a.description_localizations.isSome:
             result["description_localizations"] = %*a.description_localizations

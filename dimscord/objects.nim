@@ -649,6 +649,11 @@ proc newInvite*(data: JsonNode): Invite =
 proc newInviteCreate*(data: JsonNode): InviteCreate =
     result = ($data).fromJson(InviteCreate)
 
+proc parseHook(s: string, i: var int, v: var set[AttachmentFlags]) {.used.} =
+    var number: BiggestInt
+    parseHook(s, i, number)
+    v = cast[set[AttachmentFlags]](number)
+
 proc parseHook(s: string;
     i: var int;
     v: var tuple[id: string, flags: set[ApplicationFlags]]

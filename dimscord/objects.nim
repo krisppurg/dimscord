@@ -545,6 +545,28 @@ proc newAuditLogEntry*(data: JsonNode): AuditLogEntry =
 proc newWebhook*(data: JsonNode): Webhook =
     result = ($data).fromJson(Webhook)
 
+proc parseHook(s:string,i:var int,v:var (Option[string],Option[int])) {.used.} =
+    var value: JsonNode
+    parseHook(s, i, value)
+
+    case value.kind:
+    of JString:
+        v = (some value.str, none int)
+    of JInt:
+        v = (none string, some value.getInt)
+    else: discard
+
+proc parseHook(s:string,i:var int,v:var (Option[BiggestInt], Option[float])) {.used.} =
+    var value: JsonNode
+    parseHook(s, i, value)
+
+    case value.kind:
+    of JInt:
+        v = (some value.num, none float)
+    of JFloat:
+        v = (none BiggestInt, some value.fnum)
+    else: discard
+
 proc newAuditLog*(data: JsonNode): AuditLog =
     result = ($data).fromJson(AuditLog)
 
@@ -703,17 +725,6 @@ proc newStickerPack*(data: JsonNode): StickerPack =
 proc newGuildTemplate*(data: JsonNode): GuildTemplate =
     result = ($data).fromJson(GuildTemplate)
 
-proc parseHook(s:string,i:var int,v:var (Option[string],Option[int])) {.used.} =
-    var value: JsonNode
-    parseHook(s, i, value)
-
-    case value.kind:
-    of JString:
-        v = (some value.str, none int)
-    of JInt:
-        v = (none string, some value.getInt)
-    else: discard
-
 proc newApplicationCommandInteractionDataOption(
     data: JsonNode
 ): ApplicationCommandInteractionDataOption =
@@ -741,7 +752,10 @@ proc newApplicationCommandInteractionDataOption(
             result.mention_id = value.getStr
         of acotAttachment:
             result.aval       = value.getStr
+        of acotNumber:
+            result.fval       = value.getFloat
         else: discard
+
         if "focused" in data: result.focused = some data{"focused"}.getBool
     else:
         # Convert the array of sub options into a key value table

@@ -635,6 +635,15 @@ type
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
     ApplicationCommandOptionChoice* = object
+        ## For some clarification on the `value` field and accessing values
+        ## 
+        ## ```nim
+        ## let choice_value = choice.value # returns a tuple e.g. (some "...", none int)
+        ## if choice_value[0].isSome:
+        ##     echo choice_value[0].get, " is your stringified value"
+        ## else: # the second value (1th element) must not be none given that 0th one is none
+        ##     echo choice_value[1].get, " is your numerical value"
+        ## ```
         name*: string
         name_localizations*: Option[Table[string, string]]
         value*: (Option[string], Option[int])

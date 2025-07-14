@@ -681,46 +681,6 @@ proc newGuildPreview*(data: JsonNode): GuildPreview =
 proc newInviteMetadata*(data: JsonNode): InviteMetadata =
     result = data.`$`.fromJson(InviteMetadata)
 
-proc updateMessage*(m: Message, data: JsonNode): Message =
-    result = m
-
-    with result:
-        mention_users = data{"mentions"}.getElems.map(newUser)
-        attachments = data{"attachments"}.getElems.map(newAttachment)
-        embeds = data{"embeds"}.getElems.mapIt(it.`$`.fromJson(Embed))
-    if result.referenced_message.isSome and "referenced_message" in data:
-        result.referenced_message = some data["referenced_message"].newMessage
-    if result.messageReference.isSome:
-        if "message_reference"in data and data["message_reference"].kind!=JNull:
-            result.message_reference = some ($data{"message_reference"}).fromJson(
-                MessageReference
-            )
-
-    with data:
-        keyCheckStr(result, content, timestamp)
-        keyCheckOptStr(result, edited_timestamp, guild_id, nonce)
-        keyCheckBool(result, mention_everyone, pinned, tts)
-
-    if "type" in data and data["type"].kind != JNull:
-        if MessageType(data["type"].getInt) in fullSet(MessageType):
-            result.kind = MessageType data["type"].getInt
-        else:
-            result.kind = mtDefault
-
-    if "flags" in data and data["flags"].kind != JNull:
-        result.flags = cast[set[MessageFlags]](data["flags"].getInt)
-    if "author" in data:
-        result.author = data["author"].newUser
-    if "activity" in data:
-        let activity = data["activity"]
-
-        result.activity = some (
-            kind: activity["type"].getInt,
-            party_id: activity{"party_id"}.getStr
-        )
-    if "application" in data:
-        result.application = some data["application"].newApplication
-
 proc newSticker*(data: JsonNode): Sticker =
     result = ($data).fromJson(Sticker)
 

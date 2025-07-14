@@ -81,7 +81,10 @@ proc voiceStateUpdate(s: Shard, data: JsonNode) {.async.} =
     let voiceState = newVoiceState(data)
     var oldVoiceState: Option[VoiceState]
     if guild.id in s.cache.guilds and voiceState.user_id in guild.members:
-        guild.members[voiceState.user_id].voice_state = some voiceState
+        let member = guild.members[voiceState.user_id]
+        member.voice_state = some voiceState
+        member.mute = voiceState.mute
+        member.deaf = voiceState.deaf
 
     if guild.voice_states.hasKeyOrPut(voiceState.user_id, voiceState):
         if voiceState.channel_id.isSome:
@@ -422,8 +425,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
             oldMessage = some move chan.messages[msg.id]
             exists = true
 
-        msg = msg.updateMessage(data)
-        if msg.id in chan.messages: chan.messages[msg.id] = msg
+        msg = data.newMessage
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
@@ -432,8 +434,7 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
             oldMessage = some move chan.messages[msg.id]
             exists = true
 
-        msg = msg.updateMessage(data)
-        if msg.id in chan.messages: chan.messages[msg.id] = msg
+        msg = data.newMessage
 
     s.checkAndCall(MessageUpdate, msg, oldMessage, exists)
 
@@ -569,39 +570,30 @@ proc guildMemberUpdate(s: Shard, data: JsonNode) {.async.} =
             Guild(id: data["guild_id"].str)
         )
 
-        member = guild.members.getOrDefault(data["user"]["id"].str, Member(
-            user: User(
-                id: data["user"]["id"].str
-            )
-        ))
-
+    var member = data.newMember
     var oldMember: Option[Member]
-
-    if member.user.id in guild.members:
-        oldMember = some move guild.members[member.user.id]
-
-        guild.members[member.user.id] = member
-
-    member.user = newUser(data["user"])
 
     if s.cache.preferences.cache_users and member.user.id notin s.cache.users:
         s.cache.users[member.user.id] = member.user
 
-    if "nick" in data and data["nick"].kind != JNull:
-        member.nick = some data["nick"].str
-    if "premium_since" in data and data["premium_since"].kind != JNull:
-        member.premium_since = some data["premium_since"].str
+    if member.user.id in guild.members:
+        oldMember = some move guild.members[member.user.id]
 
-    member.roles = @[]
-    for role in data["roles"].elems:
-        member.roles.add(role.str)
+        if "mute" notin data:
+            member.mute = oldMember.get.mute
+        if "deaf" notin data:
+            member.deaf = oldMember.get.deaf
+        if "flags" notin data:
+            member.flags = oldMember.get.flags
+        if "permissions" notin data:
+            member.permissions = oldMember.get.permissions
+        member.presence = oldMember.get.presence
+        member.voice_state = oldMember.get.voice_state
+        # these are the ones that should be kept unchanged and not defaulted
+        # I noticed that the raw json data includes the stuff that we need to know
+        # but doesnt include the stuff that we may already know e.g. mute/deaf
 
-    if "flags" in data and data["flags"].kind != JNull:
-        member.flags = cast[set[GuildMemberFlags]](data["flags"].getInt)
-    if "avatar_decoration_data" in data and data["avatar_decoration_data"].kind!=JNull:
-        member.avatar_decoration_data=($data["avatar_decoration_data"]).fromJson(
-            typeof(member.avatar_decoration_data)
-        )
+        guild.members[member.user.id] = member
 
     s.checkAndCall(GuildMemberUpdate, guild, member, oldMember)
 

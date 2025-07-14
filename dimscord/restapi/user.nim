@@ -370,10 +370,9 @@ proc interactionResponseAutocomplete*(api: RestApi,
     let choices = %response.choices.map(
         proc (x: ApplicationCommandOptionChoice): JsonNode =
             result = %*{"name": x.name}
-            if x.value[0].isSome:
-                result["value"] = %x.value[0]
-            if x.value[1].isSome:
-                result["value"] = %x.value[1]
+            result["value"] = case x.kind:
+                of appCmdOpChStr: %x.valueStr
+                of appCmdOpChNum: %x.valueNum
     )
     data["choices"] = %*choices
 
@@ -415,7 +414,7 @@ proc createInteractionResponse*(api: RestApi,
     ## Creates a generic interaction response.
     ## Can be used for anything related to interaction responses.
     ## `response.kind` is required.
-    ## 
+    ##
     ## Look at:
     ## * [interactionResponseMessage] for replies to interactions
     ## * [interactionResponseAutocomplete] for autocomplete

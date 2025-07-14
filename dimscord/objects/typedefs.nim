@@ -634,17 +634,21 @@ type
         min_length*, max_length*: Option[int]
         choices*: seq[ApplicationCommandOptionChoice]
         options*: seq[ApplicationCommandOption]
+    ApplicationCommandOptionChoiceKind* = enum
+        appCmdOpChStr, appCmdOpChNum
     ApplicationCommandOptionChoice* = object
         name*: string
         name_localizations*: Option[Table[string, string]]
-        value*: (Option[string], Option[int])
+        case kind*: ApplicationCommandOptionChoiceKind:
+            of appCmdOpChStr: valueStr*: Option[string]
+            of appCmdOpChNum: valueNum*: Option[int]
     MessageInteractionMetadata* = object
         id*, name*: string
         kind*: InteractionType
         user*: User
         authorizing_integration_owners*: Table[string, JsonNode]
         interacted_message_id*, original_response_message_id*: Option[string]
-        triggering_interaction_metadata*: JsonNode ## Because Nim hates recursion types -_- 
+        triggering_interaction_metadata*: JsonNode ## Because Nim hates recursion types -_-
     Interaction* = object
         ## if `member` is present, then that means the interaction is in guild,
         ## and `user` is therefore not present.
@@ -1066,7 +1070,7 @@ proc gchannel*(c: CacheTable, obj: ref object | object): GuildChannel =
         compiles(obj.channel_id),
         "channel_id field does not exist in " & $typeof(obj)
     )
-    when obj.channel_id is Option[string]: 
+    when obj.channel_id is Option[string]:
         assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
         c.guildChannels[obj.channel_id.get]
     else:

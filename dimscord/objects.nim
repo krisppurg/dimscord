@@ -913,10 +913,9 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
                 let json = %*{"name": %x.name}
                 if x.name_localizations.isSome:
                     json["name_localizations"] = %*x.name_localizations
-                if x.value[0].isSome:
-                    json["value"] = %x.value[0]
-                if x.value[1].isSome:
-                    json["value"] = %x.value[1]
+                json["value"] = case x.kind:
+                    of appCmdOpChStr: % x.valueStr
+                    of appCmdOpChNum: % x.valueNum
                 return json
         )
     if a.options.len > 0:

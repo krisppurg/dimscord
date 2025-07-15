@@ -411,9 +411,7 @@ proc messageDelete(s: Shard, data: JsonNode) {.async.} =
 
 proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
     var
-        msg = Message(
-            id: data["id"].str,
-            channel_id: data["channel_id"].str)
+        msg = data.newMessage
         oldMessage: Option[Message]
         exists = false
 
@@ -421,20 +419,16 @@ proc messageUpdate(s: Shard, data: JsonNode) {.async.} =
         let chan = s.cache.guildChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            msg = chan.messages[msg.id]
             oldMessage = some move chan.messages[msg.id]
+            chan.messages[msg.id] = msg
             exists = true
-
-        msg = data.newMessage
     elif msg.channel_id in s.cache.dmChannels:
         let chan = s.cache.dmChannels[msg.channel_id]
 
         if msg.id in chan.messages:
-            msg = chan.messages[msg.id]
             oldMessage = some move chan.messages[msg.id]
+            chan.messages[msg.id] = msg
             exists = true
-
-        msg = data.newMessage
 
     s.checkAndCall(MessageUpdate, msg, oldMessage, exists)
 

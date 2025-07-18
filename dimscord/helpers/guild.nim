@@ -12,7 +12,7 @@ template getPruneCount*(g: Guild, days: int): Future[int] =
     ## Gets the prune count.
     getClient.api.getGuildPruneCount(g.id, days)
 
-template edit*(g: Guild, lvl: MFALevel; reason = ""): Future[MFALevel] =
+template editMFA*(g: Guild, lvl: MFALevel; reason = ""): Future[MFALevel] =
     ## Modify Guild MFA Level, requiring guild ownership.
     getClient.api.editGuildMFALevel(g.id, lvl, reason)
 
@@ -20,7 +20,7 @@ template delete*(g: Guild): Future[void] =
     ## Deletes a guild. Requires guild ownership.
     getClient.api.deleteGuild(g.id)
 
-template edit*(g: Guild;
+template editGuild*(g: Guild;  # TODO: template overloading bug
         name, description, region, afk_channel_id, icon = none string;
         discovery_splash, owner_id, splash, banner = none string;
         system_channel_id, rules_channel_id = none string;
@@ -35,11 +35,11 @@ template edit*(g: Guild;
     ## Modifies a guild.
     ## Icon needs to be a base64 image.
     ## (See: https://nim-lang.org/docs/base64.html)
-    ## 
-    ## 
-    ## Read more at: 
+    ##
+    ##
+    ## Read more at:
     ## https://discord.com/developers/docs/resources/guild#modify-guild
-    getClient.api.editGuild(    
+    getClient.api.editGuild(
         g.id, name, description, region, afk_channel_id, icon,
         discovery_splash, owner_id, splash, banner,
         system_channel_id, rules_channel_id,
@@ -50,7 +50,7 @@ template edit*(g: Guild;
         features, premium_progress_bar_enabled
     )
 
-template getAuditLogs*(g: Guild; 
+template getAuditLogs*(g: Guild;
         user_id, before = "", action_type = -1;
         limit: range[1..100] = 50
 ): Future[AuditLog] =
@@ -82,7 +82,7 @@ template getInvites*(g: Guild): Future[seq[InviteMetadata]] =
     getClient.api.getGuildInvites(g.id)
 
 template getVanity*(g: Guild): Future[tuple[code: Option[string], uses: int]] =
-    ## Get the guild vanity url. Requires the MANAGE_GUILD permission. 
+    ## Get the guild vanity url. Requires the MANAGE_GUILD permission.
     ## `code` will be null if a vanity url for the guild is not set.
     getClient.api.getGuildVanityUrl(g.id)
 
@@ -91,7 +91,7 @@ template editMember*(g: Guild, m: Member;
         roles = none seq[string];
         mute, deaf = none bool;
         reason = ""
-): Future[void] = 
+): Future[void] =
     ## Modifies a guild member
     ## Note:
     ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
@@ -104,22 +104,22 @@ template removeMember*(g: Guild, m: Member, reason = ""): Future[void] =
     ## Removes a guild member.
     getClient.api.removeGuildMember(g.id, m.user.id, reason)
 
-template getBan*(g: Guild, user_id: string): Future[GuildBan] =
+template getBan*(g: Guild, m: Member | string): Future[GuildBan] =
     ## Gets guild ban.
-    getClient.api.getGuildBan(g.id, mb.user.id)
+    getClient.api.getGuildBan(g.id, (when m is Member: m.user.id else: m))
 
 template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.
     getClient.api.getGuildBans(g.id)
 
-template ban*(g: Guild, m: Member, deletemsgdays: range[0..7] = 0;
+template ban*(g: Guild, m: Member, delete_msg_days: range[0..7] = 0;
         reason = ""): Future[void] =
     ## Creates a guild ban.
-    getClient.api.createGuildBan(g.id, m.user.id, deletemsgdays, reason)
+    getClient.api.createGuildBan(g.id, m.user.id, delete_msg_days, reason)
 
-template removeBan*(g: Guild, mb: Member, reason = ""): Future[void] =
+template removeBan*(g: Guild, m: Member, reason = ""): Future[void] =
     ## Removes a guild ban.
-    getClient.api.removeGuildBan(mb.guild_id, mb.user.id, reason)
+    getClient.api.removeGuildBan(g.id, m.user.id, reason)
 
 template getIntegrations*(g: Guild): Future[seq[Integration]] =
     ## Gets a list of guild integrations.
@@ -166,7 +166,7 @@ template editSticker*(g: Guild, s: Sticker;
 
 template deleteSticker*(g: Guild, sk: Sticker, reason = ""): Future[Sticker] =
     ## Deletes a guild sticker.
-    getClient.api.deleteGuildSticker(sk.guild_id.get, sk.id, reason)
+    getClient.api.deleteGuildSticker(sk.guild_id.get, sk.id, reason) # TODO: assert sk.guild_id.isSome, "Cannot delete Sticker: the bot is probably not in the sticker's owning guild."
 
 template getScheduledEvent*(g: Guild;
         event_id: string, with_user_count = false
@@ -178,7 +178,7 @@ template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 
-template edit*(g: Guild, gse: GuildScheduledEvent;
+template editGSE*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloading bug
         name, start_time, image = none string;
         channel_id, end_time, desc = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;
@@ -198,7 +198,7 @@ template edit*(g: Guild, gse: GuildScheduledEvent;
         reason
     )
 
-template delete*(gse: GuildScheduledEvent, reason = ""): Future[void] =
+template deleteGSE*(gse: GuildScheduledEvent, reason = ""): Future[void] =
    ## Delete a scheduled event in guild.
    getClient.api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
 
@@ -225,7 +225,7 @@ template deleteRule*(g: Guild, amr: AutoModerationRule): Future[void] =
     getClient.api.deleteAutoModerationRule(g.id, amr.id)
 
 template editRule*(g: Guild, amr: AutoModerationRule;
-    event_type = none int, name = none string; 
+    event_type = none int, name = none string;
     trigger_type = none ModerationTriggerType;
     trigger_metadata = none tuple[
         keyword_filter: seq[string],
@@ -238,9 +238,9 @@ template editRule*(g: Guild, amr: AutoModerationRule;
     ## Edits an automod rule.
     ## `event_type` is gonna be 1 for SEND_MESSAGE
     getClient.api.editAutoModerationRule(
-        g.id, amr.id, event_type, 
+        g.id, amr.id, event_type,
         name, trigger_type,
-        trigger_metadata, actions, 
-        enabled, exempt_roles, exempt_channels, 
-        reason 
+        trigger_metadata, actions,
+        enabled, exempt_roles, exempt_channels,
+        reason
     )

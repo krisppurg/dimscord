@@ -31,16 +31,12 @@ template reply*(m: Message, content = "";
         mention, failifnotexists, tts = false): Future[Message] =
     ## Replies to a Message.
     ## - set `mention` to `true` in order to mention the replied message in Discord.
-    let message_reference = block:
-        if mention: some m.reference
-        else: none MessageReference
-
     getClient.api.sendMessage(
         m.channel_id,
         content, tts, nonce,
         files, embeds, attachments,
-        allowed_mentions, 
-        message_reference,
+        allowed_mentions,
+        (if mention: some m.reference else: none MessageReference),
         components, stickers
     )
 
@@ -61,20 +57,15 @@ template edit*(m: Message;
         components
     )
 
-template delete*(m: Message | seq[Message] | seq[string];
-        reason = ""): Future[void] =
-    ## Deletes one or multiple Message(s).
-    when m is Message:
-        getClient.api.deleteMessage(m.channel_id, m.id, reason)
-    elif m is seq[string]:
-        getClient.api.bulkDeleteMessages(m[0].channel_id, m, reason)     
-    elif m is seq[Message]:
-        getClient.api.bulkDeleteMessages(
-            m[0].channel_id, 
-            (collect(newSeqOfCap m.len): 
-                for msg in m.items: msg.id),
-            reason
-        )
+template delete*(m: Message; reason = ""): Future[void] =
+    ## Deletes a discord Message.
+    getClient.api.deleteMessage(m.channel_id, m.id, reason)
+
+template bulkDelete*(msgs: seq[Message]; reason = ""): Future[void] =
+    ## Bulk deletes messages.
+    ## Note: the length of `msg` MUST superior to 0 and inferior to 101.
+    getClient.api.bulkDeleteMessages(msgs[0].channel_id, msgs)
+
 
 template getMessages*(ch: SomeChannel;
         around, before, after = "";
@@ -127,7 +118,7 @@ template getThreadMember*(ch: GuildChannel;
 
 template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
     ## List thread members.
-    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent 
+    ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent
     ## if not enabled on your application.
     # assert giGuildMembers in getClient.intents
     getClient.api.getThreadMembers(ch.id)

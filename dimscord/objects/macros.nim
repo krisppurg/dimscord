@@ -1,6 +1,6 @@
 import std/[macros, macrocache], typedefs
 
-const clientCache = CacheSeq"dimscord.client"
+#const clientCache = CacheSeq"dimscord.client"
 
 macro keyCheckOptInt*(obj: typed, obj2: typed,
                         lits: varargs[untyped]): untyped =
@@ -63,32 +63,39 @@ macro optionIf*(check: typed): untyped =
     result = quote do:
         if `check`: none `varType` else: some (`variable`)
 
-macro mainClient*(x: typed): untyped =
-    ## Register a DiscordClient
-    ## - Use this variable to use the helper functions. Can be set only once.
-    ##```nim
-    ##  # Register the client when declaring it
-    ##  let discord* {.mainClient.} = newDiscordClient("YOUR_TOKEN")
-    ##  # Now you can use the helper functions
-    ## ```
-    # NOTE: Don't deprecate `mainClient` but reserve it for future use.
-    if x.kind notin {nnkLetSection, nnkVarSection}:
-        error("let/var must be used when declaring the variable")
-    else:
-        result = x
-
-template getClient*: DiscordClient = 
-  ## Tries to access DiscordClient by using a Shard. Internal use only.
-  # WIP: move to another module
-  when (declared(s)) and (typeof(s) is Shard):
-    var dc {.cursor.} = s.client
-    when defined(dimscordDebug): 
-      if dc.isNil: raise (ref AccessViolationDefect)(msg: "Client is nil: Please check if you have a properly initialized client.") 
-    dc
+macro mainClient*(x: typed) =
+  ## Registers a DiscordClient for helper templates
+  ## Usage: `let discord {.mainClient.} = newDiscordClient("TOKEN")`
+  let tname = ident("dimscordPrivateClient")
+  var vname: NimNode
+  if (x.kind == nnkLetSection) or (x.kind == nnkVarSection):
+    vname = x[0][0]
   else:
-    {.error: "Error: Cannot find any Shard in scope. Helpers must have a 's' variable of type `Shard` in the current scope in order to work".}
+    # TODO: check for `newDiscordClient` presence
+    error("Invalid usage, macro expects a let or var statement")
+  result = newStmtList()
+  result.add(x)
+  result.add(quote do:
+    template `tname`*(): DiscordClient {.dirty.} =
+      `vname`
+  )
 
-
-
-
-
+template getClient*: DiscordClient =
+  ## Gets registered client or shard client
+  when declared(dimscordPrivateClient):
+    var dc {.cursor.} = dimscordPrivateClient() # note: is safe in async code ?
+    when defined(dimscordDebug):
+      if dc.isNil:
+        raise (ref AccessViolationDefect)(
+          msg: "Client is nil: Check client initialization"
+        )
+    dc
+  elif declared(s) and (s is Shard):
+    when defined(dimscordDebug):
+      if s.client.isNil:
+        raise (ref AccessViolationDefect)(
+          msg: "Client is nil: Check shard initialization"
+        )
+    s.client
+  else:
+    {.error: "No client found. Use `mainClient` or ensure 's' Shard exists".}

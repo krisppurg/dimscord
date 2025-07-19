@@ -159,7 +159,7 @@ proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         req(message_ids)
     elif message_ids is seq[Message]:
         var ids = newSeqOfCap[string](message_ids.len)
-        for msg in messages_ids:
+        for msg in message_ids:
             ids.add(msg.id)
         req(ids)
 

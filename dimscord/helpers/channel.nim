@@ -4,7 +4,7 @@ import ../objects, ../constants
 template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
     getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
-        
+
 template removePin*(m: Message, reason = ""): Future[void]  =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
@@ -41,6 +41,7 @@ template createChannel*(g: Guild;
     parent_id, topic, rtc_region = none string; nsfw = none bool;
     position, video_quality_mode = none int;
     default_sort_order, default_forum_layout = none int;
+    default_thread_rate_limit_per_user = none int;
     available_tags = none seq[ForumTag];
     default_reaction_emoji = none DefaultForumReaction;
     rate_limit_per_user = none range[0..21600];
@@ -53,6 +54,7 @@ template createChannel*(g: Guild;
         g.id, name, kind, parent_id, topic,
         rtc_region, nsfw, position, video_quality_mode,
         default_sort_order, default_forum_layout,
+        default_thread_rate_limit_per_user,
         available_tags, default_reaction_emoji,
         rate_limit_per_user, bitrate, user_limit,
         permission_overwrites, reason

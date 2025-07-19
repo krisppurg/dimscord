@@ -96,13 +96,13 @@ template removeReactionEmoji*(m: Message, emoji: string): Future[void] =
     getClient.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
 
 template getReactions*(m: Message, emoji: string;
-        before, after = "";
+        after = "";
         limit: range[1..100] = 25
 ): Future[seq[User]] =
     ## Get all user message reactions on the emoji provided.
     getClient.api.getMessageReactions(
         m.channel_id, m.id, emoji,
-        before, after, limit
+        ReactionType.rtNormal, after, limit
     )
 
 template clearReactions*(m: Message): Future[void] =
@@ -113,6 +113,7 @@ template getThreadMember*(ch: GuildChannel;
         user: User | string): Future[ThreadMember] =
     ## Get a thread member.
     getClient.api.getThreadMember(
+        ch.id,
         when user is User: user.id else: user
     )
 
@@ -126,7 +127,7 @@ template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
 template remove*(ch: GuildChannel, member: Member | User | string;
         reason = ""): Future[void] =
     ## Removes a member from a thread.
-    getClient.api.addThreadMember(
+    getClient.api.removeThreadMember(
         ch.id,
         (
         when member is Member:

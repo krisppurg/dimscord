@@ -147,11 +147,13 @@ template editEmoji*(g: Guild, e: Emoji, name = none string;
         reason = ""
 ): Future[Emoji] =
     ## Modifies a guild emoji.
-    getClient.api.editGuildEmoji(g.id, e.id, name, roles, reason)
+    assert e.id.isSome, "Cannot edit Emoji: the emoji might not be custom"
+    getClient.api.editGuildEmoji(g.id, e.id.unsafeGet(), name, roles, reason)
 
 template deleteEmoji*(g: Guild, e: Emoji, reason = ""): Future[void] =
     ## Deletes a guild emoji.
-    getClient.api.deleteGuildEmoji(g.id, e.id, reason)
+    assert e.id.isSome, "Cannot delete Emoji: the emoji might not be custom"
+    getClient.api.deleteGuildEmoji(g.id, e.id.unsafeGet(), reason)
 
 template getRegions*(g: Guild): Future[seq[VoiceRegion]] =
     ## Gets a guild's voice regions.

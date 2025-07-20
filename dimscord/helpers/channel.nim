@@ -5,7 +5,7 @@ template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
     getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
         
-template removePin*(m: Message, reason = ""): Future[void]  =
+template unpin*(m: Message, reason = ""): Future[void]  =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
 
@@ -13,7 +13,7 @@ template getPins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.
     getClient.api.getChannelPins(ch.id)
 
-template editChannel*(ch: GuildChannel;
+template edit*(ch: GuildChannel;
     name, parent_id, topic, rtc_region = none string;
     default_auto_archive_duration, video_quality_mode = none int;
     flags = none set[ChannelFlags];
@@ -41,6 +41,7 @@ template createChannel*(g: Guild;
     parent_id, topic, rtc_region = none string; nsfw = none bool;
     position, video_quality_mode = none int;
     default_sort_order, default_forum_layout = none int;
+    default_thread_rate_limit_per_user = none int;
     available_tags = none seq[ForumTag];
     default_reaction_emoji = none DefaultForumReaction;
     rate_limit_per_user = none range[0..21600];
@@ -58,7 +59,7 @@ template createChannel*(g: Guild;
         permission_overwrites, reason
     )
 
-template deleteChannel*(ch: SomeChannel, reason = ""): Future[void] =
+template delete*(ch: SomeChannel, reason = ""): Future[void] =
     ## Deletes or closes a channel
     getClient.api.deleteChannel(ch.id, reason)
 
@@ -90,19 +91,19 @@ template getWebhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getChannelWebhooks(ch.id)
 
-template deleteWebhook*(w: Webhook | string, reason = ""): Future[void] =
+template delete*(w: Webhook | string, reason = ""): Future[void] =
     ## Deletes a webhook.
     let wid = when w is Webhook: w.id else: w
     getClient.api.deleteWebhook(wid, reason)
 
-template editWebhook*(w: Webhook,
+template edit*(w: Webhook,
         name, avatar = none string;
         reason = ""): Future[void] =
     let chan = w.channel_id
     if chan.isSome:
         getClient.api.editWebhook(w.id, name, avatar, w.channel_id, reason)
     else:
-        raise newException(CatchableError, "Webhook is not in a channel") # TODO: i think editWebhook can work with none(channel_id) ?
+        raise newException(CatchableError, "Webhook is not in a channel") # TODO: i think editWebhook can work with none(channel_id)? no.
 
 template newThread*(ch: GuildChannel;
     name: string;
@@ -122,15 +123,13 @@ template createStageInstance*(ch: GuildChannel;
     ## Create a stage instance.
     getClient.api.createStageInstance(ch.id, topic, privacy, reason)
 
-template editStageInstance*(si: StageInstance | string,
+template editStageInstance*(si: StageInstance,
         topic = none string;
         privacy = none int; reason = ""): Future[StageInstance] =
     ## Modify a stage instance.
-    let st = when si is StageInstance: si.channel_id else: si
-    getClient.api.editStageInstance(st, topic, privacy, reason)
+    getClient.api.editStageInstance(si.channel_id, topic, privacy, reason)
 
-template deleteStageInstance*(si: StageInstance | string,
+template deleteStageInstance*(si: StageInstance,
         reason = ""): Future[void] =
     ## Delete the stage instance.
-    let st = when si is StageInstance: si.channel_id else: si
-    getClient.api.deleteStageInstance(st, reason)
+    getClient.api.deleteStageInstance(si.channel_id, reason)

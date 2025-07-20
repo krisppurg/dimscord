@@ -20,7 +20,7 @@ template delete*(g: Guild): Future[void] =
     ## Deletes a guild. Requires guild ownership.
     getClient.api.deleteGuild(g.id)
 
-template editGuild*(g: Guild;  # TODO: template overloading bug
+template edit*(g: Guild;  # TODO: template overloading bug
         name, description, region, afk_channel_id, icon = none string;
         discovery_splash, owner_id, splash, banner = none string;
         system_channel_id, rules_channel_id = none string;
@@ -112,6 +112,13 @@ template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.
     getClient.api.getGuildBans(g.id)
 
+template bulkBan*(g: Guild, m: Member,
+        user_ids: seq[string];
+        delete_message_seconds = 0;
+        reason = ""): Future[void] =
+    ## Creates a guild bulk ban.
+    getClient.api.bulkGuildBan(g.id, user_ids, delete_message_seconds, reason)
+
 template ban*(g: Guild, m: Member, delete_msg_days: range[0..7] = 0;
         reason = ""): Future[void] =
     ## Creates a guild ban.
@@ -178,7 +185,7 @@ template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 
-template editGSE*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloading bug 
+template editEvent*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloading bug 
         name, start_time, image = none string;
         channel_id, end_time, desc = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;

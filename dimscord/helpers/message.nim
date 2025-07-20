@@ -10,14 +10,16 @@ template send*(ch: SomeChannel;
     allowed_mentions = none AllowedMentions;
     message_reference = none MessageReference;
     components = newSeq[MessageComponent]();
-    sticker_ids = newSeq[string]()): Future[Message] =
+    sticker_ids = newSeq[string]();
+    poll = none PollRequest;
+    enforce_nonce = none bool): Future[Message] =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
     getClient.api.sendMessage(
         ch.id, content, tts,
         nonce, files, embeds,
         attachments, allowed_mentions, message_reference,
-        components, sticker_ids
+        components, sticker_ids, poll, enforce_nonce
     )
 
 template reply*(m: Message, content = "";
@@ -35,9 +37,25 @@ template reply*(m: Message, content = "";
         m.channel_id,
         content, tts, nonce,
         files, embeds, attachments,
-        allowed_mentions,
+        allowed_mentions, 
         (if mention: some m.reference else: none MessageReference),
         components, stickers
+    )
+
+template editMessage*(c: SomeChannel, m: Message;
+        content = "";
+        embeds: seq[Embed] = @[];
+        attachments: seq[Attachment] = @[];
+        components: seq[MessageComponent] = @[];
+        files: seq[DiscordFile] = @[];
+        tts = false;
+        flags = none int): Future[Message]  =
+    ## Edits a Message.
+    getClient.api.editMessage(
+        c.id, m.id,
+        content, tts, flags,
+        files, embeds, attachments,
+        components
     )
 
 template edit*(m: Message;
@@ -47,8 +65,7 @@ template edit*(m: Message;
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
         tts = false;
-        flags = none int
-        ): Future[Message]  =
+        flags = none int): Future[Message]  =
     ## Edits a Message.
     getClient.api.editMessage(
         m.channel_id, m.id,
@@ -59,13 +76,12 @@ template edit*(m: Message;
 
 template delete*(m: Message; reason = ""): Future[void] =
     ## Deletes a discord Message.
-    getClient.api.deleteMessage(m.channel_id, m.id, reason)
+    getClient.api.deleteMessage(m.channel_id, m.id, reason)  
 
-template bulkDelete*(msgs: seq[Message]; reason = ""): Future[void] =
+template delete*(msgs: seq[Message]; reason = ""): Future[void] =
     ## Bulk deletes messages.
     ## Note: the length of `msg` MUST superior to 0 and inferior to 101.
     getClient.api.bulkDeleteMessages(msgs[0].channel_id, msgs)
-
 
 template getMessages*(ch: SomeChannel;
         around, before, after = "";
@@ -96,6 +112,7 @@ template removeReactionEmoji*(m: Message, emoji: string): Future[void] =
     getClient.api.deleteMessageReactionEmoji(m.channel_id, m.id, emoji)
 
 template getReactions*(m: Message, emoji: string;
+        kind: ReactionType = ReactionType.rtNormal;
         after = "";
         limit: range[1..100] = 25
 ): Future[seq[User]] =
@@ -110,11 +127,10 @@ template clearReactions*(m: Message): Future[void] =
     getClient.api.deleteAllMessageReactions(m.channel_id, m.id)
 
 template getThreadMember*(ch: GuildChannel;
-        user: User | string): Future[ThreadMember] =
+        user: User | string; with_member = true): Future[ThreadMember] =
     ## Get a thread member.
     getClient.api.getThreadMember(
-        ch.id,
-        when user is User: user.id else: user
+        when user is User: user.id else: user, with_member
     )
 
 template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
@@ -124,7 +140,7 @@ template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
     # assert giGuildMembers in getClient.intents
     getClient.api.getThreadMembers(ch.id)
 
-template remove*(ch: GuildChannel, member: Member | User | string;
+template removeFromThread*(ch: GuildChannel, member: Member | User | string;
         reason = ""): Future[void] =
     ## Removes a member from a thread.
     getClient.api.removeThreadMember(
@@ -174,3 +190,16 @@ template startThread*(m: Message, name: string;
         m.channel_id, m.id, name,
         auto_archive_duration, reason
     )
+
+template endPoll*(m: Message, name: string;
+    auto_archive_duration: range[60..10080], reason = ""
+): Future[void] =
+    ## Ends poll.
+    getClient.api.endPoll(m.channel_id, m.id)
+
+template getPollAnswerVoters*(m: Message;
+    answer_id: string;
+    after = none string; limit: range[1..100] = 25
+): Future[seq[User]] =
+    ## Ends poll.
+    getClient.api.getPollAnswerVoters(m.channel_id, m.id, answer_id, after, limit)

@@ -20,7 +20,7 @@ template delete*(g: Guild): Future[void] =
     ## Deletes a guild. Requires guild ownership.
     getClient.api.deleteGuild(g.id)
 
-template editGuild*(g: Guild;  # TODO: template overloading bug
+template edit*(g: Guild;  # TODO: template overloading bug
         name, description, region, afk_channel_id, icon = none string;
         discovery_splash, owner_id, splash, banner = none string;
         system_channel_id, rules_channel_id = none string;
@@ -117,9 +117,16 @@ template ban*(g: Guild, m: Member, delete_msg_days: range[0..7] = 0;
     ## Creates a guild ban.
     getClient.api.createGuildBan(g.id, m.user.id, delete_msg_days, reason)
 
-template removeBan*(g: Guild, m: Member, reason = ""): Future[void] =
+template bulkBan*(g: Guild,
+        user_ids: seq[string];
+        delete_message_seconds = 0;
+        reason = ""): Future[void] =
+    ## Creates a guild bulk ban.
+    getClient.api.bulkGuildBan(g.id, user_ids, delete_message_seconds, reason)
+
+template removeBan*(g: Guild, u: User | string, reason = ""): Future[void] =
     ## Removes a guild ban.
-    getClient.api.removeGuildBan(g.id, m.user.id, reason)
+    getClient.api.removeGuildBan(g.id, if u is User: u.id else: u, reason)
 
 template getIntegrations*(g: Guild): Future[seq[Integration]] =
     ## Gets a list of guild integrations.
@@ -180,7 +187,7 @@ template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 
-template editGSE*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloading bug
+template editEvent*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloading bug
         name, start_time, image = none string;
         channel_id, end_time, desc = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;
@@ -200,7 +207,7 @@ template editGSE*(g: Guild, gse: GuildScheduledEvent; # TODO: template overloadi
         reason
     )
 
-template deleteGSE*(gse: GuildScheduledEvent, reason = ""): Future[void] =
+template delete*(gse: GuildScheduledEvent, reason = ""): Future[void] =
    ## Delete a scheduled event in guild.
    getClient.api.deleteScheduledEvent(gse.guild_id, gse.id, reason)
 

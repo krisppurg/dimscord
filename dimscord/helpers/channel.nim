@@ -5,7 +5,7 @@ template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
     getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
 
-template removePin*(m: Message, reason = ""): Future[void]  =
+template unpin*(m: Message, reason = ""): Future[void]  =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
 
@@ -13,7 +13,7 @@ template getPins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.
     getClient.api.getChannelPins(ch.id)
 
-template editChannel*(ch: GuildChannel;
+template edit*(ch: GuildChannel;
     name, parent_id, topic, rtc_region = none string;
     default_auto_archive_duration, video_quality_mode = none int;
     flags = none set[ChannelFlags];
@@ -92,19 +92,15 @@ template getWebhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getChannelWebhooks(ch.id)
 
-template deleteWebhook*(w: Webhook | string, reason = ""): Future[void] =
+template delete*(w: Webhook | string, reason = ""): Future[void] =
     ## Deletes a webhook.
     let wid = when w is Webhook: w.id else: w
     getClient.api.deleteWebhook(wid, reason)
 
-template editWebhook*(w: Webhook,
-        name, avatar = none string;
+template edit*(w: Webhook,
+        name, avatar, channel_id = none string;
         reason = ""): Future[void] =
-    let chan = w.channel_id
-    if chan.isSome:
-        getClient.api.editWebhook(w.id, name, avatar, w.channel_id, reason)
-    else:
-        raise newException(CatchableError, "Webhook is not in a channel") # TODO: i think editWebhook can work with none(channel_id) ?
+    getClient.api.editWebhook(w.id, name, avatar, channel_id, reason)
 
 template newThread*(ch: GuildChannel;
     name: string;

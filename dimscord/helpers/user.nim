@@ -24,9 +24,9 @@ template addRole*(mb: Member, r: Role | string, reason = ""): Future[void] =
     )
     getClient.api.addGuildMemberRole(mb.guild_id, mb.user.id, id, reason)
 
-# template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
-#     ## Removes a member's role.
-#     getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
+template removeRole*(mb: Member, r: Role, reason = ""): Future[void] =
+    ## Removes a member's role.
+    getClient.api.removeGuildMemberRole(mb.guild_id, mb.user.id, r.id, reason)
 
 template leave*(g: Guild): Future[void] =
     ## Leaves a guild.
@@ -87,7 +87,7 @@ template bulkRegisterCommands*(app: Application;
         app.id, commands, guild_id
     )
 
-template editAppCmd*(apc: ApplicationCommand;
+template editCommand*(apc: ApplicationCommand;
         name, desc = "";
         name_localizations,description_localizations = none Table[string,string];
         default_member_permissions = none PermissionFlags;
@@ -159,7 +159,10 @@ template followup*(i: Interaction;
         attachments: seq[Attachment] = @[];
         files: seq[DiscordFile] = @[];
         allowed_mentions = none AllowedMentions;
-        tts, ephemeral = false): Future[Message] =
+        tts, ephemeral = false;
+        thread_id, thread_name = none string;
+        applied_tags: seq[string] = @[];
+        poll = none PollRequest): Future[Message] =
     ## Follow-up to an Interaction.
     ## - Use this function when sending messages to acknowledged Interactions.
     getClient.api.createFollowupMessage(
@@ -168,7 +171,11 @@ template followup*(i: Interaction;
         files, attachments,
         embeds, allowed_mentions,
         components,
-        flags = (if ephemeral: some mfEphemeral.ord else: none int)
+        flags = (if ephemeral: some mfEphemeral.ord else: none int),
+        applied_tags=applied_tags,
+        thread_name=thread_name,
+        thread_id=thread_id,
+        poll = poll
     )
     
 template editResponse*(i: Interaction;
@@ -190,7 +197,6 @@ template editResponse*(i: Interaction;
         attachments, files,
         components
     )
-
 
 template getResponse*(i: Interaction, message_id = "@original"): Future[Message] =
     ## Get the response (Message) to an Interaction
@@ -229,3 +235,5 @@ template suggest*(i: Interaction; opts: seq[ApplicationCommandOptionChoice]): Fu
 template sendModal*(i: Interaction; response: InteractionCallbackDataModal): Future[void] =
     ## Create an interaction response which is a modal.
     getClient.api.interactionResponseModal(i.id, i.token, response)
+
+# todo application ??    

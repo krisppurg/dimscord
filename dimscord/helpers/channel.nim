@@ -5,7 +5,7 @@ template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
     getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
 
-template unpin*(m: Message, reason = ""): Future[void]  =
+template unpin*(m: Message, reason = ""): Future[void] =
     ## Remove pinned message.
     getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
 
@@ -79,10 +79,9 @@ template createInvite*(ch: GuildChannel;
         target_type, reason
     )
 
-template delete*(inv: Invite | string, reason = ""): Future[void] =
+template delete*(inv: Invite, reason = ""): Future[void] =
     ## Delete a guild invite.
-    let code = when inv is Invite: inv.code else: inv
-    getClient.api.deleteInvite(code, reason)
+    getClient.api.deleteInvite(inv.code, reason)
 
 template getInvites*(ch: GuildChannel): Future[seq[Invite]] =
     ## Gets a list of a channel's invites.
@@ -92,10 +91,9 @@ template getWebhooks*(ch: GuildChannel): Future[seq[Webhook]] =
     ## Gets a list of a channel's webhooks.
     getClient.api.getChannelWebhooks(ch.id)
 
-template delete*(w: Webhook | string, reason = ""): Future[void] =
+template delete*(w: Webhook, reason = ""): Future[void] =
     ## Deletes a webhook.
-    let wid = when w is Webhook: w.id else: w
-    getClient.api.deleteWebhook(wid, reason)
+    getClient.api.deleteWebhook(w.id, reason)
 
 template edit*(w: Webhook,
         name, avatar, channel_id = none string;
@@ -132,3 +130,4 @@ template deleteStageInstance*(si: StageInstance | string,
     ## Delete the stage instance.
     let st = when si is StageInstance: si.channel_id else: si
     getClient.api.deleteStageInstance(st, reason)
+

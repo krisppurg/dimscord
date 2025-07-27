@@ -704,7 +704,8 @@ proc startSession(s: Shard, url, query: string) {.async.} =
             return
         s.connection = await future
         s.hbAck = true
-        s.logShard("Socket state:\n  ->  " & $s.connection[])
+        s.logShard("Socket connection established.")
+        # s.logShard("Socket state:\n  ->  " & $s.connection[])
     except:
         s.stop = true
         raise

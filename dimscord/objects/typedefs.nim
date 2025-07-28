@@ -672,7 +672,8 @@ type
         version*: int
         entitlements*: seq[Entitlement]
         authorizing_integration_owners*: Table[string, JsonNode]
-        contexts*: Option[InteractionContextType]
+        context*: Option[ApplicationIntegrationType]
+        attachment_size_limit*: int
     ApplicationCommandInteractionData* = ref object
         ## `options` Table[option_name, obj]
         case interaction_type*: InteractionDataType

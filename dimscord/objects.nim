@@ -201,10 +201,10 @@ proc newDiscordClient*(token: string;
                 g: Guild, r: AutoModerationRule) {.async.} = discard,
             auto_moderation_action_execution: proc(s: Shard,
                 g: Guild, e: ModerationActionExecution) {.async.} = discard,
-            message_poll_vote_add: proc(s: Shard, ans_id: int,
-                    m: Message, u: User){.async.} = discard,
-            message_poll_vote_remove: proc(s: Shard, ans_id: int,
-                    m: Message, u: User){.async.} = discard,
+            message_poll_vote_add: proc(s: Shard, m: Message, u: User,
+                    ans_id: int){.async.} = discard,
+            message_poll_vote_remove: proc(s: Shard, m: Message, u: User,
+                    ans_id: int){.async.} = discard,
             entitlement_create: proc(s: Shard, e: Entitlement){.async.} = discard,
             entitlement_update: proc(s: Shard, e: Entitlement){.async.} = discard,
             entitlement_delete: proc(s: Shard, e: Entitlement) {.async.} = discard
@@ -482,6 +482,7 @@ proc `[]=`(obj: ref object, fld: string, val: JsonNode) =
         if name == fld:
             field = ($val).fromJson(typeof(field))
 
+    
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     case data.kind:
     of JString:
@@ -750,17 +751,35 @@ proc renameHook(v: var ApplicationCommandInteractionDataOption,
     if fieldName == "type":
         fieldName = "kind"
 
-proc renameHook(v: var MessageComponent, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc parseHook(s: string, i: var int, v: var MessageComponentType) =
-    var number: int
-    parseHook(s, i, number)
+    var data: int
+    parseHook(s, i, data)
     try:
-        v = MessageComponentType number
+        v = MessageComponentType(data)
     except:
-        v = MessageComponentType 1
+        v = mctNone
+
+proc parseHook(s: string, i: var int, v: var MessageComponent) =
+    var data: JsonNode
+    parseHook(s, i, data)
+
+    v = MessageComponent(
+        kind: ($data["type"].getInt).fromJson(MessageComponentType)
+    )
+    data.delete("type") # we dont want any potential rewrites if type is at end instead of start
+
+    for k, val in data.fields:
+        var field = k
+        if v.kind == mctTextInput:
+            case k
+            of "style": field = "input_style"
+            of "label": field = "input_label"
+            else:
+                discard
+        elif v.kind == mctSection:
+            if k == "components": field = "sect_components"
+
+        v[field] = val
 
 proc parseHook(s: string, i: var int, v: var ApplicationCommandType) =
     var number: int
@@ -781,7 +800,8 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
     if "component_type" in data:
         a = ApplicationCommandInteractionData(
             interactionType: idtMessageComponent,
-            component_type: MessageComponentType data["component_type"].getInt 1,
+            component_type: ($data["component_type"].getInt).fromJson(
+                MessageComponentType),
             custom_id: data["custom_id"].str
         )
         # if a.component_type == SelectMenu:
@@ -839,7 +859,7 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
             if k != "resolved": a[k] = val
         else:
             discard
-    if a.interaction_type == idtModalSubmit: a.component_type = TextInput
+    if a.interaction_type == idtModalSubmit: a.component_type = mctTextInput
 
 proc renameHook(v: var Interaction, fieldName: var string) {.used.} =
     if fieldName == "type":
@@ -968,52 +988,64 @@ proc `%`(option: SelectMenuOption): JsonNode =
     if option.emoji.isSome:
         result["emoji"] = option.emoji.get.toPartial
 
-proc `%`*(permission: ApplicationCommandPermission): JsonNode =
-    result = %*{
-        "id": %permission.id,
-        "type": %ord permission.kind,
-        "permission": %permission.permission
-    }
+proc `%`*(p: ApplicationCommandPermission): JsonNode =
+    %*{"id": %p.id,
+       "type": %ord p.kind,
+       "permission": %p.permission}
+
+proc `%`*(d: tuple[id, kind: string]): JsonNode = %*{"id": d.id, "type": d.kind}
+
+proc `+`(a, b: JsonNode): JsonNode =
+    result = %*{}
+    for k, v in a.pairs:
+        result[k] = v
+    for k, v in b.pairs:
+        result[k] = v
+
+
+proc `&=`(a: var JsonNode, b: JsonNode) =
+    a = a+b
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
-    if comp.disabled.isSome:
-        result["disabled"] = %comp.disabled.get
+
+    result.loadOpts(comp, spoiler, placeholder, disabled, id)
     case comp.kind:
-        of None: discard
-        of ActionRow:
-            result["components"] = newJArray()
-            for child in comp.components:
-                result["components"] &= %%* child
-        of Button:
-            if comp.custom_id.isSome:
-                result["custom_id"] = %comp.custom_id.get
-            result["label"] = %comp.label
-            result["style"] = %comp.style.ord
-            if comp.url.isSome:
-                result["url"] = %comp.url.get
-            if comp.emoji.isSome:
-                result["emoji"] =   comp.emoji.get.toPartial
-        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
-            result["custom_id"] =   %comp.custom_id.get
-            result["options"] =     %comp.options
-            result["placeholder"] = %comp.placeholder
-            result["min_values"] =  %comp.minValues
-            result["max_values"] =  %comp.maxValues
-            if comp.channel_types.len > 0:
-                result["channel_types"] = newJArray()
-                for channel_type in comp.channel_types:
-                    result["channel_types"] &= %channel_type.ord
-        of TextInput:
-            result["custom_id"] =   %comp.custom_id.get
-            result["placeholder"] =    %comp.placeholder
-            result["style"] =          %int comp.input_style.get
-            result["label"] =          %comp.input_label.get
-            if comp.value.isSome:
-                result["value"] =      %comp.value.get
-            if comp.required.isSome:
-                result["required"] =   %comp.required.get
-            if comp.min_length.isSome:
-                result["min_length"] = %comp.min_length.get
-            if comp.max_length.isSome:
-                result["max_length"] = %comp.max_length.get
+    of mctNone: discard
+    of mctActionRow, mctContainer:
+        result["components"] = %comp.components.mapIt(%%*it)
+        result.loadOpts(comp, accent_color)
+    of mctButton:
+        result &= %*{"label": comp.label, "style": comp.style.ord}
+        
+        result.loadOpts(comp, custom_id, url, sku_id)
+        if comp.emoji.isSome:
+            result["emoji"]     = comp.emoji.get.toPartial
+    of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
+        result &= %*{"custom_id":   comp.custom_id.get,
+                    "options":     comp.options,
+                    "placeholder": comp.placeholder,
+                    "min_values":  comp.minValues,
+                    "max_values":  comp.maxValues,
+                    "channel_types": comp.channel_types.mapIt(it.ord),
+                    "default_values": comp.default_values.mapIt(%it)}
+    of mctTextInput:
+        result &= %*{"custom_id":   comp.custom_id.get,
+                     "placeholder": comp.placeholder,
+                     "style":       ord comp.input_style.get,
+                     "label":       comp.input_label.get}
+
+        result.loadOpts(comp, value, required, min_length, max_length)
+    of mctThumbnail:
+        result &= %*{"media": %comp.media}
+        result.loadOpts(comp, description)
+    of mctSection:
+        result &= %*{"components": comp.sect_components.mapIt(%it),
+                     "accessory": %%*comp.accessory}
+    of mctMediaGallery: result["items"] = %comp.items.mapIt(%it)
+    of mctFile:
+        result &= %*{"file": %comp.file,
+                     "name": comp.name,
+                     "size": comp.size}
+    of mctSeparator: result.loadOpts(comp, divider, spacing)
+    of mctTextDisplay: result["content"] = %comp.content

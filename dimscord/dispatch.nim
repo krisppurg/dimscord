@@ -217,31 +217,34 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
     var
         msg = Message(
             id: data["message_id"].str,
-            channel_id: data["channel_id"].str
-            )
-
+            channel_id: data["channel_id"].str)
         user = s.cache.users.getOrDefault(data["user_id"].str,
             User(id: data["user_id"].str)
         )
 
         emoji = newEmoji(data["emoji"])
-        reaction = Reaction(emoji: emoji)
+        reaction = Reaction(
+            emoji: emoji,
+            kind: some ReactionType data["type"].getInt,
+            reacted: data["user_id"].str == s.user.id,
+            burst: data["burst"].getBool,
+        )
         exists = false
 
-    if data{"message_author_id"}.getStr != "":
+    if "message_author_id" in data:
         msg.author = s.cache.users.getOrDefault(
             data["message_author_id"].str,
             User(id: data["message_author_id"].str)
         )
 
     if msg.channel_id in s.cache.guildChannels:
-        let chan = s.cache.guildChannels[msg.channel_id]
+        let chan = s.cache.gchannel(msg)
 
         if msg.id in chan.messages:
             msg = chan.messages[msg.id]
             exists = true
     elif msg.channel_id in s.cache.dmChannels:
-        let chan = s.cache.dmChannels[msg.channel_id]
+        let chan = s.cache.dm(msg)
 
         if msg.id in chan.messages:
             msg = chan.messages[msg.id]
@@ -249,26 +252,20 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
 
     if "guild_id" in data and data["guild_id"].kind != JNull:
         msg.guild_id = some data["guild_id"].str
-        msg.member = some newMember(data["member"])
-        msg.member.get.guild_id = get msg.guild_id
+
+        if msg.member.isSome: msg.member.get.guild_id = get msg.guild_id
 
     if $emoji in msg.reactions:
         reaction.count = msg.reactions[$emoji].count + 1
-
-        if data["user_id"].str == s.user.id:
-            reaction.reacted = true
-            reaction.me_burst = data["burst"].getBool
-
-        msg.reactions[$emoji] = reaction
     else:
         reaction.count += 1
-        reaction.reacted = data["user_id"].str == s.user.id
-        reaction.burst = data["burst"].getBool
-        reaction.me_burst = reaction.reacted and reaction.burst
-        if "burst_colors" in data:
-            reaction.burst_colors=data["burst_colors"].getElems.mapIt(it.getStr)
 
-        msg.reactions[$emoji] = reaction
+    reaction.me_burst = reaction.reacted and reaction.burst
+
+    if "burst_colors" in data:
+        reaction.burst_colors=data["burst_colors"].getElems.mapIt(it.getStr)
+
+    msg.reactions[$emoji] = reaction
 
     s.checkAndCall(MessageReactionAdd, msg, user, emoji, exists)
 
@@ -283,9 +280,12 @@ proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
             User(id: data["user_id"].str)
         )
 
-        reaction = Reaction(emoji: emoji)
+        reaction = Reaction(
+            emoji: emoji,
+            kind: some data["type"].getInt.ReactionType,
+            burst: data["burst"].getBool
+        )
         exists = false
-
 
     if msg.channel_id in s.cache.guildChannels:
         let chan = s.cache.guildChannels[msg.channel_id]
@@ -1051,8 +1051,7 @@ proc messagePollVoteAdd(s: Shard, data: JsonNode) {.async.} =
         else:
             dm.messages[msg.id] = msg
 
-    s.checkAndCall(MessagePollVoteAdd,
-                   data["answer_id"].getInt, msg, user)
+    s.checkAndCall(MessagePollVoteAdd, msg, user, data["answer_id"].getInt)
 
 proc messagePollVoteRemove(s: Shard, data: JsonNode) {.async.} =
     var
@@ -1093,8 +1092,7 @@ proc messagePollVoteRemove(s: Shard, data: JsonNode) {.async.} =
         else:
             dm.messages[msg.id] = msg
 
-    s.checkAndCall(MessagePollVoteRemove,
-                   data["answer_id"].getInt, msg, user)
+    s.checkAndCall(MessagePollVoteRemove, msg, user, data["answer_id"].getInt)
 
 proc integrationCreate(s: Shard, data: JsonNode) {.async.} =
     let user = newUser(data["user"])

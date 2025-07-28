@@ -4,6 +4,7 @@ import ../objects, ../constants
 template send*(ch: SomeChannel;
     content = "", tts = false;
     nonce: Option[string] or Option[int] = none(int);
+    flags: set[MessageFlags] = {};
     files: seq[DiscordFile] = @[];
     embeds: seq[Embed] = @[];
     attachments: seq[Attachment] = @[];
@@ -15,7 +16,7 @@ template send*(ch: SomeChannel;
     ## - `nonce` This can be used for optimistic message sending
     getClient.api.sendMessage(
         ch.id, content, tts,
-        nonce, files, embeds,
+        nonce, flags, files, embeds,
         attachments, allowed_mentions, message_reference,
         components, sticker_ids
     )

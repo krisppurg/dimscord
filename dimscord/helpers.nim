@@ -380,7 +380,7 @@ proc checkActionRow*(row: MessageComponent) =
     ## - If a row contiains a select menu, then there can only be one select
     ##   menu
     ## Throws an `AssertionDefect` if any of these checks fail
-    doAssert row.kind == ActionRow, "Only action rows can be checked"
+    doAssert row.kind == mctActionRow, "Only action rows can be checked"
     # Keep count of every message component
     var contains: CountTable[MessageComponentType]
     for component in row.components:
@@ -388,17 +388,17 @@ proc checkActionRow*(row: MessageComponent) =
     # Beware, this check might be invalid in future when more
     # components are added
     assert contains.len <= 1, "Action rows can only contain one type"
-    if SelectMenu in contains:
+    if mctSelectMenu in contains:
         assert(
-            contains[SelectMenu] == 1,
+            contains[mctSelectMenu] == 1,
             "Can only have one select menu per action row"
         )
         assert row.components[0].options.len > 0, "Menu must have options"
-    elif Button in contains:
-        assert contains[Button] <= 5, "Can only have <= 5 buttons per row"
+    elif mctButton in contains:
+        assert contains[mctButton] <= 5, "Can only have <= 5 buttons per row"
     else:
         assert(
-            ActionRow notin contains,
+            mctActionRow notin contains,
             "Action row cannot contain an action row"
         )
 
@@ -407,7 +407,7 @@ proc newActionRow*(components: varargs[MessageComponent]): MessageComponent =
     ## It is recommended to use this over raw objects since this
     ## does validation of the row as you add objects
     result = MessageComponent(
-        kind: ActionRow,
+        kind: mctActionRow,
         components: @components
     )
     if components.len > 0:
@@ -416,9 +416,9 @@ proc newActionRow*(components: varargs[MessageComponent]): MessageComponent =
 proc len*(component: MessageComponent): int =
     ## Returns number of items in an ActionRow or number of options in a menu
     case component.kind:
-    of ActionRow:
+    of mctActionRow:
         result = component.components.len
-    of SelectMenu:
+    of mctSelectMenu:
         result = component.options.len
     else:
         raise newException(
@@ -427,19 +427,19 @@ proc len*(component: MessageComponent): int =
 template optionalEmoji(): untyped {.dirty.} =
     (if emoji.id.isSome() or emoji.name.isSome(): some emoji else: none Emoji)
 
-proc newButton*(label, idOrUrl: string, style = Primary, emoji = Emoji(),
+proc newButton*(label, idOrUrl: string, style = bsPrimary, emoji = Emoji(),
                 disabled = false): MessageComponent =
     ## Creates a new button.
     ## - If the buttons style is NOT Link then it requires a customID
     ## - If the buttons style is Link then it requires a url
     result = MessageComponent(
-        kind: Button,
+        kind: mctButton,
         label: optionIf(label == ""), # Don't send label if it's empty
         style: style,
         emoji: optionalEmoji(),
         disabled: some disabled
     )
-    if style == Link:
+    if style == bsLink:
         result.url = some idOrUrl
     else:
         result.customID = some idOrUrl
@@ -477,7 +477,7 @@ proc newSelectMenu*(custom_id: string; options: openArray[SelectmenuOption];
         "maxValues must be between 1 and 25 (inclusive)"
     )
     result = MessageComponent(
-        kind: SelectMenu,
+        kind: mctSelectMenu,
         customID: some customID,
         options: @options,
         placeholder: optionIf(placeholder == ""),
@@ -488,7 +488,7 @@ proc newSelectMenu*(custom_id: string; options: openArray[SelectmenuOption];
 proc add*(component: var MessageComponent, item: MessageComponent) =
     ## Add another component onto an ActionRow
     assert(
-        component.kind == ActionRow,
+        component.kind == mctActionRow,
         "Can only add components onto an ActionRow."
     )
     component.components &= item
@@ -497,7 +497,7 @@ proc add*(component: var MessageComponent, item: MessageComponent) =
 proc add*(component: var MessageComponent, item: SelectMenuOption) =
     ## Add another menu option onto the select menu
     assert(
-        component.kind == SelectMenu,
+        component.kind == mctSelectMenu,
         "Can only add menu options to a SelectMenu."
     )
     component.options &= item

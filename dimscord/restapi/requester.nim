@@ -1,7 +1,7 @@
 import httpclient, asyncdispatch, json, options
 import ../objects, ../constants
-import tables, regex, times, os, sequtils, strutils
-import uri, macros, mimetypes
+import tables, regex, os, sequtils, strutils
+import uri, mimetypes
 
 var
     fatalErr = true
@@ -285,6 +285,12 @@ proc `%`*(t: tuple[
 # proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
 #     %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
 
+proc `%`*(o: tuple[sku_id, asset: string]): JsonNode =
+    %*{"sku_id": o.sku_id, "asset": o.asset}
+
+proc `%`*(o: tuple[nameplate: Nameplate]): JsonNode =
+    %*{"nameplate": %o.nameplate}# this is to shut the compiler up
+
 proc `%`*(o: Overwrite): JsonNode =
     %*{"id": o.id,
         "type": %o.kind,
@@ -302,30 +308,6 @@ proc `%`*(flags: set[PermissionFlags]): JsonNode =
 
 proc `%`*(r: MessageReferenceType): JsonNode =
     json.`%*`(int r)
-
-macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
-    result = newStmtList()
-    for lit in lits:
-        let fieldName = lit.strVal
-        result.add quote do:
-            if `lit`.isSome:
-                `obj`[`fieldName`] = %*get(`lit`)
-
-macro loadNullableOptStr*(obj: typed, lits: varargs[untyped]): untyped =
-    result = newStmtList()
-    for lit in lits:
-        let fieldName = lit.strVal
-        result.add quote do:
-            if `lit`.isSome and get(`lit`) == "":
-                `obj`[`fieldName`] = newJNull()
-
-macro loadNullableOptInt*(obj: typed, lits: varargs[untyped]): untyped =
-    result = newStmtList()
-    for lit in lits:
-        let fieldName = lit.strVal
-        result.add quote do:
-            if `lit`.isSome and get(`lit`) == -1:
-                `obj`[`fieldName`] = newJNull()
 
 proc append*(mpd: var MultipartData;
         attachments: seq[Attachment];

@@ -182,6 +182,11 @@ type
         resolved*: Option[ResolvedData]
         poll*: Option[Poll]
         call*: Option[MessageCall]
+    PrimaryGuild* = object
+        identity_guild_id*, tag*, badge*: Option[string]
+        identity_enabled: Option[bool]
+    Nameplate* = object
+        sku_id*, asset*, label*, palette*: string
     User* = ref object
         ## The fields for bot and system are false by default
         ## simply because they are assumable.
@@ -195,6 +200,9 @@ type
         flags*: set[UserFlags]
         public_flags*: set[UserFlags]
         avatar*, avatar_decoration*, locale*: Option[string]
+        primary_guild*: Option[PrimaryGuild]
+        avatar_decoration_data*: Option[tuple[sku_id, asset: string]]
+        collectibles*: Option[tuple[nameplate: Nameplate]]
     Member* = ref object
         ## - `permissions` Returned in the interaction object.
         ## Be aware that Member.user could be nil in some cases.
@@ -224,6 +232,7 @@ type
         ephemeral*: Option[bool]
         size*: int
     Reaction* = object
+        kind*: Option[ReactionType] ## will return a some(...) for reaction events.
         count*: int
         count_details*: tuple[burst, normal: int]
         emoji*: Emoji
@@ -249,6 +258,7 @@ type
         question*: PollMedia
         answers*: seq[PollAnswer]
         duration*: int
+        allow_multiselect*: bool
         layout_type*: PollLayoutType
     PollResults* = ref object
         is_finalized*: bool
@@ -453,9 +463,36 @@ type
     VoiceState* = ref object
         guild_id*, channel_id*: Option[string]
         user_id*, session_id*: string
+        member*: Option[Member]
         deaf*, mute*, suppress*: bool
-        self_deaf*, self_mute*, self_stream*: bool
+        self_deaf*, self_mute*: bool
+        self_stream*: Option[bool]
         request_to_speak_timestamp*: Option[string]
+    VoiceChannelEffectSend* = object
+        channel_id*, guild_id*, user_id*: string
+        emoji*: Option[Emoji]
+        animation_type*, animation_id*: Option[int]
+        sound_id*: JsonNode
+        sound_volume*: Option[BiggestFloat]
+    RecurrenceRuleNWeekday* = object
+        n*: int
+        day*: RecurrenceRuleWeekday
+    RecurrenceRule* = ref object
+        ## Read for more information
+        ## https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object
+        ## 
+        ## Ranges:
+        ## - `by_n_weekday` - (1,5)
+        ## - `by_year_day` - (1,364)
+        start*: string
+        `end`*: Option[string]
+        frequency*: RecurrenceRuleFrequency
+        interval*: int
+        by_weekday*: Option[seq[RecurrenceRuleWeekday]]
+        by_n_weekday*: Option[seq[RecurrenceRuleNWeekday]]
+        by_month*: Option[seq[RecurrenceRuleMonth]]
+        by_month_day*, by_year_day*: Option[seq[int]]
+        count*: Option[int]
     GuildScheduledEvent* = ref object
         id*, guild_id*, name*, scheduled_start_time*: string
         channel_id*, creator_id*, scheduled_end_time*: Option[string]
@@ -466,6 +503,7 @@ type
         entity_metadata*: Option[EntityMetadata]
         creator*: Option[User]
         user_count*: Option[int]
+        recurrence_rule*: RecurrenceRule
     GuildScheduledEventUser* = object # todo: member.guild_id appendings?
         guild_scheduled_event_id*: string
         user*: User
@@ -539,6 +577,13 @@ type
         source_guild_id*, updated_at*, created_at*: string
         serialized_source_guild*: PartialGuild
         is_dirty*: Option[bool]
+    Subscription* = object
+        id*, user_id*: string
+        sku_ids*, entitlement_ids*: seq[string]
+        renewal_sku_ids*: Option[seq[string]]
+        current_period_start*, current_period_end*: string
+        canceled_at*, country*: Option[string]
+        status*: SubscriptionStatus
     ActivityStatus* = object
         ## This is used for status updates.
         name*: string
@@ -653,6 +698,8 @@ type
         user*: User
         authorizing_integration_owners*: Table[string, JsonNode]
         interacted_message_id*, original_response_message_id*: Option[string]
+        target_user*: Option[User]
+        target_message_id*: Option[string]
         triggering_interaction_metadata*: JsonNode ## Because Nim hates recursion types -_- 
     Interaction* = object
         ## if `member` is present, then that means the interaction is in guild,
@@ -688,7 +735,7 @@ type
             of atNothing: discard
         of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
-            of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
+            of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
                 values*: seq[string]
             else: discard
             custom_id*: string
@@ -832,32 +879,68 @@ type
         description*: Option[string]
         emoji*: Option[Emoji]
         default*: Option[bool]
-    MessageComponent* = object
-        # custom_id is only needed for things other than action row
-        # but the new case object stuff isn't implemented in nim
-        # so it can't be shared
-        # same goes with disabled
+    TextDisplay* = object
+        kind*: MessageComponentType
+        id*: Option[int]
+        content*: string
+    UnfurledMediaItem* = object
+        url*: string
+        proxy_url*, content_type*: Option[string]
+        attachment_id*: Option[string]
+        height*, width*: Option[int]
+    MediaGallery* = object
+        media*: UnfurledMediaItem
+        description*: Option[string]
+        spoiler*: Option[bool]
+    MessageComponent* = ref object
+        ## `custom_id` is only needed for things other than action row
+        ## but the new case object stuff isn't implemented in nim
+        ## so it can't be shared
+        ## same goes with disabled.
+        ## `id` is not to be confused with custom_id.
+        ## It's used to identify components in the response from an interaction
+        id*: Option[int]
         custom_id*: Option[string]
         disabled*: Option[bool]
         placeholder*: Option[string]
+        spoiler*: Option[bool]
         case kind*: MessageComponentType
-        of None: discard
-        of ActionRow:
+        of mctNone: discard
+        of mctActionRow, mctContainer:
             components*: seq[MessageComponent]
-        of Button: # Message Component
+            accent_color*: Option[int] ## container only
+        of mctButton: # Message Component
             style*: ButtonStyle
             label*: Option[string]
             emoji*: Option[Emoji]
-            url*: Option[string]
-        of SelectMenu, UserSelect, RoleSelect, MentionableSelect, ChannelSelect:
+            url*, sku_id*: Option[string]
+        of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
+            default_values*: seq[tuple[id, kind: string]] # !
             options*: seq[SelectMenuOption]
-            channel_types*: seq[ChannelType]
+            channel_types*: seq[ChannelType] # !
             min_values*, max_values*: Option[int]
-        of TextInput:
-            input_style*: Option[TextInputStyle]
-            input_label*, value*: Option[string]
+        of mctTextInput:
+            input_style*: Option[TextInputStyle] # also known as "style"
+            input_label*, value*: Option[string] # also known as "label"
             required*: Option[bool]
             min_length*, max_length*: Option[int]
+        of mctThumbnail:
+            media*: UnfurledMediaItem
+            description*: Option[string]
+        of mctSection:
+            sect_components*: seq[TextDisplay]
+            accessory*: MessageComponent
+        of mctMediaGallery:
+            items*: seq[MediaGallery]
+        of mctFile:
+            file*: UnfurledMediaItem
+            name*: string
+            size*: int
+        of mctSeparator: # prolly is gonna be deprecated due to how niche it is lol
+            divider*: Option[bool]
+            spacing*: Option[int]
+        of mctTextDisplay:
+            content*: string
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]
@@ -870,13 +953,15 @@ type
         vip*, optimal*: bool
         deprecated*, custom*: bool
     AuditLogOptions* = object
-        ## - `kind` ("role" or "member") or (0 or 1)
+        ## - `kind` represents overwritten entity. -> ("0" or "1")
+        ## 
+        ## `"0"` is role and `"1"` is member
         auto_moderation_rule_name*: Option[string]
         auto_moderation_rule_trigger_type*: Option[string]
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*, role_name*: Option[string]
         id*, message_id*, application_id*: Option[string]
-        kind*: Option[string] #.
+        kind*, integration_type*: Option[string] #.
     AuditLogChangeValue* = object
         case kind*: AuditLogChangeType
         of alcString:
@@ -1030,10 +1115,8 @@ type
             g: Guild, r: AutoModerationRule) {.async.}
         auto_moderation_action_execution*: proc(s: Shard,
             g: Guild, e: ModerationActionExecution) {.async.}
-        message_poll_vote_add*: proc(s: Shard, ans_id: int,
-                m: Message, u: User){.async.}
-        message_poll_vote_remove*: proc(s: Shard, ans_id: int,
-                m: Message, u: User){.async.}
+        message_poll_vote_add*, message_poll_vote_remove*: proc(s: Shard, m: Message;
+                u: User, ans_id: int){.async.}
         entitlement_create*: proc(s: Shard, e: Entitlement){.async.}
         entitlement_update*: proc(s: Shard, e: Entitlement){.async.}
         entitlement_delete*: proc(s: Shard, e: Entitlement) {.async.}
@@ -1068,18 +1151,39 @@ proc guild*(c: CacheTable, obj: ref object | object): Guild =
     else:
         c.guilds[obj.guild_id]
 
-proc gchannel*(c: CacheTable, obj: ref object | object): GuildChannel =
+proc gchannel*(c: CacheTable, obj: ref object | object | string): GuildChannel =
     ## Get channel from respective object via cache.
     ## This is a nice shortcut.
-    assert(
-        compiles(obj.channel_id),
-        "channel_id field does not exist in " & $typeof(obj)
-    )
-    when obj.channel_id is Option[string]: 
-        assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
-        c.guildChannels[obj.channel_id.get]
+    when not (obj is string):
+        assert(
+            compiles(obj.channel_id),
+            "channel_id field does not exist in " & $typeof(obj)
+        )
+    
+        when obj.channel_id is Option[string]: 
+            assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
+            c.guildchannels[obj.channel_id.get]
+        else:
+            c.guildchannels[obj.channel_id]
     else:
-        c.guildChannels[obj.channel_id]
+        c.guildchannels[obj]
+
+proc dm*(c: CacheTable, obj: ref object | object | string): DMChannel =
+    ## Get dm channel from respective object via cache.
+    ## This is a nice shortcut.
+    when not (obj is string):
+        assert(
+            compiles(obj.channel_id),
+            "channel_id field does not exist in " & $typeof(obj)
+        )
+    
+        when obj.channel_id is Option[string]: 
+            assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
+            c.dmchannels[obj.channel_id.get]
+        else:
+            c.dmchannels[obj.channel_id]
+    else:
+        c.dmchannels[obj]
 
 proc clear*(c: CacheTable) =
     ## Empties cache.
@@ -1098,6 +1202,9 @@ proc `$`*(m: Message): string =
     $m[]
 
 proc `$`*(a: Attachment): string =
+    $a[]
+
+proc `$`*(a: ref object): string =
     $a[]
 
 proc getCurrentDiscordHttpError*(): DiscordHttpError =

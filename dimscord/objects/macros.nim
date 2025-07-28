@@ -47,6 +47,38 @@ macro keyCheckStr*(obj: typed, obj2: typed,
             if `fieldName` in `obj` and `obj`[`fieldName`].kind != JNull:
                 `obj2`.`lit` = `obj`[`fieldName`].getStr
 
+macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `lit`.isSome:
+                `obj`[`fieldName`] = %*get(`lit`)
+
+macro loadOpts*(res, parent: typed, lits: varargs[untyped]): untyped =
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `parent`.`lit`.isSome:
+                `res`[`fieldName`] = %*get(`parent`.`lit`)
+
+macro loadNullableOptStr*(obj: typed, lits: varargs[untyped]): untyped =
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `lit`.isSome and get(`lit`) == "":
+                `obj`[`fieldName`] = newJNull()
+
+macro loadNullableOptInt*(obj: typed, lits: varargs[untyped]): untyped =
+    result = newStmtList()
+    for lit in lits:
+        let fieldName = lit.strVal
+        result.add quote do:
+            if `lit`.isSome and get(`lit`) == -1:
+                `obj`[`fieldName`] = newJNull()
+
 macro optionIf*(check: typed): untyped =
     ## Runs `check` to see if a variable is considered empty
     ## - if check is true, then it returns None[T]

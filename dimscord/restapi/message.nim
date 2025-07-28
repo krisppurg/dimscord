@@ -6,6 +6,7 @@ import uri, ../helpers, requester
 proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false;
         nonce: Option[string] or Option[int] = none(int);
+        flags: set[MessageFlags] = {};
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed]();
         attachments = newSeq[Attachment]();
@@ -23,6 +24,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         "content": content,
         "tts": tts,
     }
+    if flags != {}: payload["flags"] = %cast[int](flags)
+
     if message_reference.isSome:
         var mf = %*{
             "type": int message_reference.get.kind,
@@ -68,7 +71,7 @@ proc sendMessage*(api: RestApi, channel_id: string;
     )).newMessage
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
-        content = ""; tts = false; flags = none int;
+        content = ""; tts = false; flags: set[MessageFlags] = {};
         files = newSeq[DiscordFile]();
         embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
@@ -77,8 +80,10 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
     var payload = %*{
         "content": content,
         "tts": tts,
-        "flags": %flags
     }
+    if flags != {}:
+        payload["flags"] = %cast[int](flags)
+
     var mpd: MultipartData
 
     if embeds.len > 0:
@@ -222,7 +227,8 @@ proc deleteAllMessageReactions*(api: RestApi,
     )
 
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
-        wait = true; thread_id, thread_name = none string;
+        wait = true; with_components = false;
+        thread_id, thread_name = none string;
         content = ""; tts = false; flags = none int;
         files = newSeq[DiscordFile]();
         attachments = newSeq[Attachment]();
@@ -245,6 +251,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         mpd: MultipartData
 
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
+    if with_components: url &= "&with_components=" & $with_components
 
     var payload = %*{
         "content": content,

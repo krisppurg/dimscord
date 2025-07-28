@@ -106,7 +106,7 @@ type
         vsfSoundshare,
         vsfPriority
     MessageFlags* = enum
-        mfCrossposted,
+        mfCrossposted = 0
         mfIsCrosspost,
         mfSuppressEmbeds,
         mfSourceMessageDeleted,
@@ -115,8 +115,10 @@ type
         mfEphemeral,
         mfLoading,
         mfFailedToMentionSomeRolesInThread
-        mfSuppressNotifications
-        mfIsVoiceMessage
+        mfSuppressNotifications = 12
+        mfIsVoiceMessage,
+        mfHasSnapshot,
+        mfIsComponentsV2
     AttachmentFlags* = enum
         afIsRemix = 2
     UserFlags* = enum
@@ -174,7 +176,10 @@ type
         sfAvailable         = 2
         sfGuildSubscription = 7
         sfUserSubscription  = 8
-
+    SubscriptionStatus* = enum
+        ssActive = 0
+        ssEnding,
+        ssInactive
 const
     libName* =  "Dimscord"
     libVer* =   "1.6.0"
@@ -236,6 +241,7 @@ type
         mtGuildIncidentReportRaid =                 38
         mtGuildIncidentReportFalseAlarm =           39
         mtPurchaseNotification =                    44
+        mtPollResult =                              46
     MessageActivityType* = enum
         matJoin =        1
         matSpectate =    2
@@ -451,24 +457,32 @@ type
         uptNitro        = 2
         uptNitroBasic   = 3
     ButtonStyle* = enum
-        Primary   = 1
-        Secondary = 2
-        Success   = 3
-        Danger    = 4
-        Link      = 5
+        bsPrimary   = 1
+        bsSecondary = 2
+        bsSuccess   = 3
+        bsDanger    = 4
+        bsLink      = 5
+        bsPremium   = 6
     TextInputStyle* = enum
-        Short     = 1
-        Paragraph = 2
+        tisShort     = 1
+        tisParagraph = 2
     MessageComponentType* = enum
-        None              = 0 # This should never happen
-        ActionRow         = 1
-        Button            = 2
-        SelectMenu        = 3
-        TextInput         = 4
-        UserSelect        = 5
-        RoleSelect        = 6
-        MentionableSelect = 7
-        ChannelSelect     = 8
+        mctNone              = 0 # This should never happen
+        mctActionRow         = 1
+        mctButton            = 2
+        mctSelectMenu        = 3
+        mctTextInput         = 4
+        mctUserSelect        = 5
+        mctRoleSelect        = 6
+        mctMentionableSelect = 7
+        mctChannelSelect     = 8
+        mctSection           = 9
+        mctTextDisplay       = 10
+        mctThumbnail         = 11
+        mctMediaGallery      = 12
+        mctFile              = 13
+        mctSeparator         = 14
+        mctContainer         = 17
     StickerType* = enum
         stStandard = 1
         stGuild    = 2
@@ -485,6 +499,35 @@ type
         etStageInstance = 1
         etVoice         = 2
         etExternal      = 3
+    RecurrenceRuleFrequency* = enum
+        rrfYearly  = 0
+        rrfMonthly = 1
+        rrfWeekly  = 2
+        rrfDaily   = 3
+    RecurrenceRuleWeekday* = enum
+        rrwMonday    = 0,
+        rrwTuesday   = 1
+        rrwWednesday = 2
+        rrwThursday  = 3
+        rrwFriday    = 4
+        rrwSaturday  = 5
+        rrwSunday    = 6
+    RecurrenceRuleMonth* = enum
+        rrmJanuary    = 1,
+        rrmFebruary   = 2
+        rrmMarch      = 3
+        rrmApril      = 4
+        rrmMay        = 5
+        rrmJune       = 6
+        rrmJuly       = 7
+        rrmAugust     = 8
+        rrmSeptember  = 9
+        rrmOctober    = 10
+        rrmNovember   = 11
+        rrmDecember   = 12
+    AnimationType* = enum
+        atPremium = 0
+        atBasic   = 1
     ModerationActionType* = enum
         matBlockMessage     = 1
         matSendAlertMessage = 2
@@ -563,6 +606,7 @@ type
         InviteDelete                  = "INVITE_DELETE"
         GuildIntegrationsUpdate       = "GUILD_INTEGRATIONS_UPDATE"
         VoiceServerUpdate             = "VOICE_SERVER_UPDATE"
+        # VoiceChannelEffectSend        = "VOICE_CHANNEL_EFFECT_SEND" TODO!!
         UserUpdate                    = "USER_UPDATE"
         InteractionCreate             = "INTERACTION_CREATE"
         ThreadCreate                  = "THREAD_CREATE"
@@ -946,7 +990,7 @@ proc endpointTriggerTyping*(cid: string): string =
     endpointChannels(cid) & "/typing"
 
 proc endpointChannelPins*(cid: string; mid = ""): string =
-    result = endpointChannels(cid) & "/pins"
+    result = endpointChannels(cid) & "/messages/pins"
     if mid != "":
         result = result & "/" & mid
 
@@ -959,6 +1003,9 @@ proc endpointReactions*(cid, mid: string; e, uid = ""): string =
         result = result & "/" & e
     if uid != "":
         result = result & "/" & uid
+
+proc endpointSkuSubscriptions*(skid: string, sid=""): string =
+    "skus/" & skid & "/subscriptions" & (if sid != "": "/"&sid else:"")
 
 proc endpointApplications*(aid:string): string =
     "applications/"&aid

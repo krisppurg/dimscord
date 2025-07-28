@@ -590,3 +590,25 @@ proc listSKUs*(api:RestApi, application_id:string): Future[seq[Sku]] {.async.} =
         "GET",
         endpointListSkus(application_id)
     )).getElems.mapIt(it.`$`.fromJson(Sku))
+
+proc listSkuSubscriptions*(api:RestApi, sku_id:string;
+        before, after, user_id = none(string);
+        limit = 50
+        ): Future[seq[Subscription]] {.async.} =
+    ## Lists out SKUs for a given application.
+    var endpoint = endpointSkuSubscriptions(sku_id) & "?limit=" & $limit
+    if before.isSome: endpoint &= "&before=" & before.get 
+    if after.isSome: endpoint &= "&after=" & after.get 
+    if user_id.isSome: endpoint &= "&user_id=" & user_id.get 
+    result = (await api.request(
+        "GET",
+        endpoint
+    )).getElems.mapIt(it.`$`.fromJson(Subscription))
+
+proc getSkuSubscription*(api:RestApi;
+        sku_id, subscription_id: string): Future[Subscription] {.async.} =
+    ## Lists out SKUs for a given application.
+    result = (await api.request(
+        "GET",
+        endpointSkuSubscriptions(sku_id, subscription_id)
+    )).`$`.fromJson(Subscription)

@@ -813,6 +813,7 @@ proc createScheduledEvent*(api: RestApi; guild_id: string;
         privacy_level: GuildScheduledEventPrivacyLevel;
         entity_type: EntityType;
         entity_metadata = none EntityMetadata;
+        recurrence_rule = none RecurrenceRule;
         reason = ""
 ): Future[GuildScheduledEvent] {.async.} =
     ## Create a scheduled event in a guild.
@@ -831,6 +832,9 @@ proc createScheduledEvent*(api: RestApi; guild_id: string;
         payload["entity_metadata"] = %*{
             "location": entity_metadata.get.location.get
         }
+    if recurrence_rule.isSome:
+        payload["recurrence_rule"] = %recurrence_rule.get
+    
     result = (await api.request(
         "POST",
         endpointGuildScheduledEvents(guild_id),
@@ -845,6 +849,7 @@ proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
         entity_type = none EntityType;
         entity_metadata = none EntityMetadata;
         status = none GuildScheduledEventStatus;
+        recurrence_rule = none RecurrenceRule;
         reason = ""
 ): Future[GuildScheduledEvent] {.async.} =
     ## Update a scheduled event in a guild.
@@ -855,7 +860,7 @@ proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
     let payload = newJObject()
     payload.loadNullableOptStr(channel_id, image)
     payload.loadOpt(scheduled_end_time, scheduled_start_time,
-        description, entity_type, status, privacy_level)
+        description, entity_type, status, privacy_level, recurrence_rule)
 
     if entity_type.isSome and entity_type.get == etExternal:
         assert channel_id.get == ""

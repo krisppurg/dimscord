@@ -120,13 +120,13 @@ template ban*(g: Guild; m: Member; delete_msg_days: range[0..7] = 0;
 template bulkBan*(g: Guild;
         user_ids: seq[string];
         delete_message_seconds = 0;
-        reason = ""): Future[void] =
+        reason = ""): Future[tuple[banned_users, failed_users: seq[string]]] =
     ## Creates a guild bulk ban.
     getClient.api.bulkGuildBan(g.id, user_ids, delete_message_seconds, reason)
 
 template removeBan*(g: Guild; u: User | string; reason = ""): Future[void] =
     ## Removes a guild ban.
-    getClient.api.removeGuildBan(g.id, if u is User: u.id else: u, reason)
+    getClient.api.removeGuildBan(g.id, (when u is User: u.id else: u), reason)
 
 template getIntegrations*(g: Guild): Future[seq[Integration]] =
     ## Gets a list of guild integrations.
@@ -236,10 +236,7 @@ template deleteRule*(g: Guild; amr: AutoModerationRule): Future[void] =
 template editRule*(g: Guild; amr: AutoModerationRule;
     event_type = none int; name = none string;
     trigger_type = none ModerationTriggerType;
-    trigger_metadata = none tuple[
-        keyword_filter: seq[string];
-        presets: seq[int]
-    ];
+    trigger_metadata = none TriggerMetadata;
     actions = none seq[ModerationAction]; enabled = none bool;
     exempt_roles, exempt_channels = none seq[string];
     reason = "";
@@ -253,4 +250,3 @@ template editRule*(g: Guild; amr: AutoModerationRule;
         enabled, exempt_roles, exempt_channels,
         reason
     )
-

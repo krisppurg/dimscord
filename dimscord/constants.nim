@@ -654,6 +654,24 @@ const
     deThreadListSync*      = DispatchEvent.ThreadListSync
     deThreadMembersUpdate* = DispatchEvent.ThreadMembersUpdate
 
+const
+    ActionRow* {.deprecated: "use mctActionRow".}                 = mctActionRow
+    Button* {.deprecated: "use mctButton".}                       = mctButton
+    SelectMenu* {.deprecated: "use mctSelectMenu".}               = mctSelectMenu
+    TextInput* {.deprecated: "use mctTextInput".}                 = mctTextInput
+    UserSelect* {.deprecated: "use mctUserSelect".}               = mctUserSelect
+    RoleSelect* {.deprecated: "use mctRoleSelect".}               = mctRoleSelect
+    MentionableSelect* {.deprecated: "use mctMentionableSelect".} = mctMentionableSelect
+    ChannelSelect* {.deprecated: "use mctChannelSelect".}         = mctChannelSelect
+
+    Primary* {.deprecated: "use bsPrimary".}     = bsPrimary
+    Secondary* {.deprecated: "use bsSecondary".} = bsSecondary
+    Success* {.deprecated: "use bsSuccess".}     = bsSuccess
+    Danger* {.deprecated: "use bsDanger".}       = bsDanger
+    Link* {.deprecated: "use bsLink".}           = bsLink
+
+    Short* {.deprecated: "use tisShort".}         = tisShort
+    Paragraph* {.deprecated: "use tisParagraph".} = tisParagraph
 
 const
     permAllText* = {permCreateInstantInvite,

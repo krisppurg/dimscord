@@ -8,41 +8,56 @@ import ../dimscord/constants
 import ../dimscord/restapi
 import ../dimscord/helpers
 
-
 # Mock data for testing
 let mockString = "mock_id"
 let mockInt = 42
-#let mockBool = true
-#let mockRange = 60
 let mockOptionString = some("mock_option")
 let mockOptionInt = some(42)
 let mockOptionBool = some(true)
 let mockSeqString = @["mock1", "mock2"]
-#let mockSeqInt = @[1, 2, 3]
 let mockTableString = {"en-US": some("mock_value")}.toTable()
 let mockEmbed = Embed(title: some("Test Embed"))
 let mockAttachment = Attachment(id: "123", filename: "test.txt")
 let mockComponent = MessageComponent(kind: MessageComponentType.Button, custom_id: some("mock_button"))
 let mockFile = DiscordFile(name: "test.txt", body: "")
 let mockAllowedMentions = AllowedMentions(parse: @[])
-#let mockMessageReference = MessageReference(channel_id: some("123"), message_id: some("456"))
-#let mockPollRequest = PollRequest(question: PollMedia(text: some("Test Poll")), answers: @[])
-#let mockOverwrite = Overwrite(id: "123", kind: 0, allow: {}, deny: {})
 let mockPermObj = PermObj(allowed: {}, denied: {})
 let mockEmoji = Emoji(id: some("123"), name: some("mock_emoji"))
 let mockSticker = Sticker(id: "123", name: "mock_sticker")
-let mockApplicationCommandOption = ApplicationCommandOption(kind: ApplicationCommandOptionType.acotNothing, name: "mock_option", description: "mock description")
+let mockApplicationCommand = ApplicationCommand.default()
+let mockApplicationCommandOption = ApplicationCommandOption(
+  kind: ApplicationCommandOptionType.acotNothing,
+  name: "mock_option",
+  description: "mock description",
+)
 
 # Mock objects
 var mockMessage = Message(id: "123", channel_id: "456", content: "test message")
-var mockChannel = GuildChannel(id: "123", name: "test-channel", guild_id: "456", kind: ChannelType.ctGuildText)
-var mockSomeChannel: SomeChannel = mockChannel
-var mockGuild = Guild(id: "123", name: "test-guild", owner_id: "456")
-var mockMember = Member(user: User(id: "123", username: "testuser"), guild_id: "456", nick: some "testnick")
-var mockRole = Role(id: "123", name: "test-role", permissions: PermissionFlags.fullSet)
-var mockUser = User(id: "123", username: "testuser")
-var mockApplication = Application(id: "123", name: "test-app", description: "test app")
-var mockInteraction = Interaction(id: "123", application_id: "456", token: "mock_token", kind: InteractionType.itApplicationCommand)
+var mockChannel = GuildChannel(
+  id: "123", name: "test-channel", guild_id: "456",
+  kind: ChannelType.ctGuildText
+)
+var mockGuildScheduledEvent = GuildScheduledEvent(id: "123", guild_id: "456")
+var mockStageInstance = StageInstance.default()
+var mockSomeChannel: SomeChannel = mockChannel # todo
+var mockGuild = new Guild
+var mockInvite = Invite(code: "mock_code", guild: some(PartialGuild(id: "123", icon: some "test-icon", splash: some "456")))
+var mockMember = Member(
+  user: User(id: "123", username: "testuser"), guild_id: "456",
+      nick: some "testnick"
+)
+var mockRole = Role(id: "123", name: "test-role",
+    permissions: PermissionFlags.fullSet)
+var mockUser = new User
+var mockApplication = Application.default()
+var mockInteraction = Interaction(
+  id: "123",
+  application_id: "456",
+  token: "mock_token",
+  kind: InteractionType.itApplicationCommand,
+)
+var mockAutoModRule = AutoModerationRule.default()
+var mockIntegration = Integration.default()
 
 let discord {.mainClient.} = newDiscordClient("mock")
 
@@ -74,12 +89,14 @@ suite "Channel Helpers Tests":
     check:
       compiles(mockChannel.getWebhooks())
 
-
   test "newThread template":
     check:
       compiles(mockChannel.newThread("test-thread"))
       compiles(mockChannel.newThread("test-thread", auto_archive_duration = 60))
-      compiles(mockChannel.newThread("test-thread", kind = ChannelType.ctGuildPrivateThread))
+      compiles(
+        mockChannel.newThread("test-thread",
+            kind = ChannelType.ctGuildPrivateThread)
+      )
       compiles(mockChannel.newThread("test-thread", invitable = mockOptionBool))
       compiles(mockChannel.newThread("test-thread", reason = "test reason"))
 
@@ -88,7 +105,80 @@ suite "Channel Helpers Tests":
       compiles(mockChannel.createStageInstance("test topic"))
       compiles(mockChannel.createStageInstance("test topic", "test reason"))
       compiles(mockChannel.createStageInstance("test topic", "test reason", privacy = 0))
+      compiles(mockChannel.createStageInstance("test topic", "test reason", privacy = 1))
 
+  test "edit template":
+    check:
+      compiles(mockChannel.edit(name = some "test"))
+      compiles(mockChannel.edit(parent_id = some "test"))
+      compiles(mockChannel.edit(topic = some "test"))
+      compiles(mockChannel.edit(rtc_region = some "test"))
+      compiles(mockChannel.edit(default_auto_archive_duration = some 60))
+      compiles(mockChannel.edit(video_quality_mode = some 1))
+      compiles(mockChannel.edit(flags = some {cfPinned}))
+      compiles(mockChannel.edit(available_tags = some(@[default(ForumTag)])))
+      compiles(
+        mockChannel.edit(default_reaction_emoji = some default(DefaultForumReaction))
+      )
+      compiles(mockChannel.edit(default_sort_order = some 1))
+      compiles(mockChannel.edit(default_forum_layout = some 1))
+      compiles(mockChannel.edit(rate_limit_per_user = some range[0..21600](0)))
+      compiles(mockChannel.edit(default_thread_rate_limit_per_user = some range[0..21600](0)))
+      compiles(mockChannel.edit(bitrate = some range[8000..128000](8000)))
+      compiles(mockChannel.edit(user_limit = some range[0..99](0)))
+      compiles(mockChannel.edit(position = some 0))
+      compiles(mockChannel.edit(permission_overwrites = some(@[default(Overwrite)])))
+      compiles(mockChannel.edit(nsfw = some true))
+      compiles(mockChannel.edit(reason = "test reason"))
+
+  test "createChannel template":
+    check:
+      compiles(mockGuild.createChannel("test-channel"))
+      compiles(mockGuild.createChannel("test-channel", kind = 0))
+      compiles(mockGuild.createChannel("test-channel", parent_id = some "test"))
+      compiles(mockGuild.createChannel("test-channel", topic = some "test"))
+      compiles(mockGuild.createChannel("test-channel", rtc_region = some "test"))
+      compiles(mockGuild.createChannel("test-channel", nsfw = some true))
+      compiles(mockGuild.createChannel("test-channel", position = some 0))
+      compiles(mockGuild.createChannel("test-channel",video_quality_mode = some 1))
+      compiles(mockGuild.createChannel("test-channel",default_sort_order = some 1))
+      compiles(mockGuild.createChannel("test-channel",default_forum_layout = some 1))
+      compiles(mockGuild.createChannel("test-channel", default_thread_rate_limit_per_user = some 0))
+      compiles(mockGuild.createChannel("test-channel", available_tags = some(@[default(ForumTag)])))
+      compiles(mockGuild.createChannel("test-channel", default_reaction_emoji = some default(DefaultForumReaction)))
+      compiles(mockGuild.createChannel("test-channel", rate_limit_per_user = some range[0..21600](0)))
+      compiles(mockGuild.createChannel("test-channel", bitrate = some range[8000..128000](8000)))
+      compiles(mockGuild.createChannel("test-channel", user_limit = some range[0..99](0)))
+      compiles(mockGuild.createChannel("test-channel", permission_overwrites = some(@[default(Overwrite)])))
+      compiles(mockGuild.createChannel("test-channel", reason = "test reason"))
+
+  test "createInvite template":
+    check:
+      compiles(mockChannel.createInvite())
+      compiles(mockChannel.createInvite(max_age = 86400))
+      compiles(mockChannel.createInvite(max_uses = 0))
+      compiles(mockChannel.createInvite(temporary = false))
+      compiles(mockChannel.createInvite(unique = false))
+      compiles(mockChannel.createInvite(target_user = some "test"))
+      compiles(mockChannel.createInvite(target_user_id = some "test"))
+      compiles(mockChannel.createInvite(target_application_id = some "test"))
+      compiles(mockChannel.createInvite(target_type = some ittStream))
+      compiles(mockChannel.createInvite(reason = "test reason"))
+
+  test "delete invite template":
+    check:
+      compiles(mockInvite.delete("test reason"))
+
+  test "editStageInstance template":
+    check:
+      compiles(mockStageInstance.editStageInstance(topic = "test"))
+      compiles(mockStageInstance.editStageInstance(topic = "test", privacy = some 0))
+      compiles(mockStageInstance.editStageInstance(topic = "test", reason = "test reason"))
+
+  test "deleteStageInstance template":
+    check:
+      compiles(deleteStageInstance("test_id", reason = "test reason"))
+      compiles(mockStageInstance.deleteStageInstance(reason = "test reason"))
 
 suite "Guild Helpers Tests":
   test "beginPrune template":
@@ -114,26 +204,26 @@ suite "Guild Helpers Tests":
   test "edit template":
     check:
       compiles(mockGuild.edit())
-      compiles(mockGuild.edit(name = mockOptionString))
-      compiles(mockGuild.edit(description = mockOptionString))
-      compiles(mockGuild.edit(region = mockOptionString))
-      compiles(mockGuild.edit(afk_channel_id = mockOptionString))
-      compiles(mockGuild.edit(icon = mockOptionString))
-      compiles(mockGuild.edit(discovery_splash = mockOptionString))
-      compiles(mockGuild.edit(owner_id = mockOptionString))
-      compiles(mockGuild.edit(splash = mockOptionString))
-      compiles(mockGuild.edit(banner = mockOptionString))
-      compiles(mockGuild.edit(system_channel_id = mockOptionString))
-      compiles(mockGuild.edit(rules_channel_id = mockOptionString))
-      compiles(mockGuild.edit(preferred_locale = mockOptionString))
-      compiles(mockGuild.edit(public_updates_channel_id = mockOptionString))
-      compiles(mockGuild.edit(verification_level = mockOptionInt))
-      compiles(mockGuild.edit(default_message_notifications = mockOptionInt))
-      compiles(mockGuild.edit(system_channel_flags = mockOptionInt))
-      compiles(mockGuild.edit(explicit_content_filter = mockOptionInt))
-      compiles(mockGuild.edit(afk_timeout = mockOptionInt))
-      compiles(mockGuild.edit(features = mockSeqString))
-      compiles(mockGuild.edit(premium_progress_bar_enabled = mockOptionBool))
+      compiles(mockGuild.edit(name = some "test"))
+      compiles(mockGuild.edit(description = some "test"))
+      compiles(mockGuild.edit(region = some "test"))
+      compiles(mockGuild.edit(afk_channel_id = some "test"))
+      compiles(mockGuild.edit(icon = some "test"))
+      compiles(mockGuild.edit(discovery_splash = some "test"))
+      compiles(mockGuild.edit(owner_id = some "test"))
+      compiles(mockGuild.edit(splash = some "test"))
+      compiles(mockGuild.edit(banner = some "test"))
+      compiles(mockGuild.edit(system_channel_id = some "test"))
+      compiles(mockGuild.edit(rules_channel_id = some "test"))
+      compiles(mockGuild.edit(preferred_locale = some "test"))
+      compiles(mockGuild.edit(public_updates_channel_id = some "test"))
+      compiles(mockGuild.edit(verification_level = some 0))
+      compiles(mockGuild.edit(default_message_notifications = some 0))
+      compiles(mockGuild.edit(system_channel_flags = some 0))
+      compiles(mockGuild.edit(explicit_content_filter = some 0))
+      compiles(mockGuild.edit(afk_timeout = some 0))
+      compiles(mockGuild.edit(features = @["test"]))
+      compiles(mockGuild.edit(premium_progress_bar_enabled = some true))
       compiles(mockGuild.edit(reason = "test reason"))
 
   test "getAuditLogs template":
@@ -147,7 +237,6 @@ suite "Guild Helpers Tests":
   test "deleteRole template":
     check:
       compiles(mockGuild.deleteRole(mockRole))
-
 
   test "getInvites template":
     check:
@@ -207,9 +296,9 @@ suite "Guild Helpers Tests":
   test "editSticker template":
     check:
       compiles(mockGuild.editSticker(mockSticker))
-      compiles(mockGuild.editSticker(mockSticker, name = mockOptionString))
-      compiles(mockGuild.editSticker(mockSticker, desc = mockOptionString))
-      compiles(mockGuild.editSticker(mockSticker, tags = mockOptionString))
+      compiles(mockGuild.editSticker(mockSticker, name = some "test"))
+      compiles(mockGuild.editSticker(mockSticker, desc = some "test"))
+      compiles(mockGuild.editSticker(mockSticker, tags = some "test"))
       compiles(mockGuild.editSticker(mockSticker, reason = "test reason"))
 
   test "deleteSticker template":
@@ -234,10 +323,24 @@ suite "Guild Helpers Tests":
   test "getEventUsers template":
     check:
       compiles(GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers())
-      compiles(GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(limit = 100))
-      compiles(GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(with_member = false))
-      compiles(GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(before = "test_before"))
-      compiles(GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(after = "test_after"))
+      compiles(
+        GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(limit = 100)
+      )
+      compiles(
+        GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(
+          with_member = false
+        )
+      )
+      compiles(
+        GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(
+          before = "test_before"
+        )
+      )
+      compiles(
+        GuildScheduledEvent(id: "123", guild_id: "456").getEventUsers(
+          after = "test_after"
+        )
+      )
 
   test "getRules template":
     check:
@@ -249,7 +352,90 @@ suite "Guild Helpers Tests":
 
   test "deleteRule template":
     check:
-      compiles(mockGuild.deleteRule(AutoModerationRule(id: "123", guild_id: "456")))
+      compiles(mockGuild.deleteRule(AutoModerationRule(id: "123",
+          guild_id: "456")))
+
+  test "editRole template":
+    check:
+      compiles(mockGuild.editRole(mockRole))
+      compiles(mockGuild.editRole(mockRole, name = some "test"))
+      compiles(mockGuild.editRole(mockRole, icon = some "test"))
+      compiles(mockGuild.editRole(mockRole, unicode_emoji = some "test"))
+      compiles(mockGuild.editRole(mockRole, permissions = some default(PermObj)))
+      compiles(mockGuild.editRole(mockRole, color = some 0))
+      compiles(mockGuild.editRole(mockRole, hoist = some true))
+      compiles(mockGuild.editRole(mockRole, mentionable = some true))
+      compiles(mockGuild.editRole(mockRole, reason = "test reason"))
+
+  test "editMember template":
+    check:
+      compiles(mockGuild.editMember(mockMember))
+      compiles(mockGuild.editMember(mockMember, nick = some "test"))
+      compiles(mockGuild.editMember(mockMember, channel_id = some "test"))
+      compiles(
+        mockGuild.editMember(
+          mockMember, communication_disabled_until = some "2023-01-01T00:00:00.000Z"
+        )
+      )
+      compiles(mockGuild.editMember(mockMember, roles = some(@["test"])))
+      compiles(mockGuild.editMember(mockMember, mute = some true))
+      compiles(mockGuild.editMember(mockMember, deaf = some true))
+      compiles(mockGuild.editMember(mockMember, reason = "test reason"))
+
+  test "bulkBan template":
+    check:
+      compiles(mockGuild.bulkBan(@["user1", "user2"]))
+      compiles(mockGuild.bulkBan(@["user1", "user2"],
+          delete_message_seconds = 0))
+      compiles(mockGuild.bulkBan(@["user1", "user2"], reason = "test reason"))
+
+  test "removeBan template":
+    check:
+      compiles(mockGuild.removeBan(mockUser))
+      compiles(mockGuild.removeBan("test_user"))
+      compiles(mockGuild.removeBan(mockUser, reason = "test reason"))
+
+  test "deleteIntegration template":
+    check:
+      compiles(mockIntegration.deleteIntegration())
+      compiles(mockIntegration.deleteIntegration(reason = "test reason"))
+
+  test "editEmoji template":
+    check:
+      compiles(mockGuild.editEmoji(mockEmoji))
+      compiles(mockGuild.editEmoji(mockEmoji, name = some "test"))
+      compiles(mockGuild.editEmoji(mockEmoji, roles = some(@["test"])))
+      compiles(mockGuild.editEmoji(mockEmoji, reason = "test reason"))
+
+  test "editEvent template":
+    check:
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, name = some "test"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, start_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, end_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, image = some "test"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, channel_id = some "test"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, end_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, desc = some "test"))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, privacy_level = some splGuildOnly))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, entity_type = some etStageInstance))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, entity_metadata = some default(EntityMetadata)))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, status = some esScheduled))
+      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
+
+  test "editRule template":
+    check:
+      compiles(mockGuild.editRule(mockAutoModRule))
+      compiles(mockGuild.editRule(mockAutoModRule, event_type = some 1))
+      compiles(mockGuild.editRule(mockAutoModRule, name = some "test"))
+      compiles(mockGuild.editRule(mockAutoModRule, trigger_type = none ModerationTriggerType, trigger_metadata = none TriggerMetadata))
+      compiles(mockGuild.editRule(mockAutoModRule, actions = some(@[default(ModerationAction)])))
+      compiles(mockGuild.editRule(mockAutoModRule, enabled = some true))
+      compiles(mockGuild.editRule(mockAutoModRule, exempt_roles = some(@["test"])))
+      compiles(mockGuild.editRule(mockAutoModRule, exempt_channels = some(@["test"])))
+      compiles(mockGuild.editRule(mockAutoModRule, reason = "test reason"))
 
 suite "Message Helpers Tests":
   test "send template":
@@ -283,8 +469,11 @@ suite "Message Helpers Tests":
       compiles(mockSomeChannel.editMessage(mockMessage))
       compiles(mockSomeChannel.editMessage(mockMessage, content = "updated"))
       compiles(mockSomeChannel.editMessage(mockMessage, embeds = @[mockEmbed]))
-      compiles(mockSomeChannel.editMessage(mockMessage, attachments = @[mockAttachment]))
-      compiles(mockSomeChannel.editMessage(mockMessage, components = @[mockComponent]))
+      compiles(
+        mockSomeChannel.editMessage(mockMessage, attachments = @[mockAttachment])
+      )
+      compiles(mockSomeChannel.editMessage(mockMessage, components = @[
+          mockComponent]))
       compiles(mockSomeChannel.editMessage(mockMessage, files = @[mockFile]))
       compiles(mockSomeChannel.editMessage(mockMessage, tts = false))
       compiles(mockSomeChannel.editMessage(mockMessage, flags = mockOptionInt))
@@ -385,8 +574,15 @@ suite "Message Helpers Tests":
   test "getPollAnswerVoters template":
     check:
       compiles(mockMessage.getPollAnswerVoters("answer_id"))
-      compiles(mockMessage.getPollAnswerVoters("answer_id", after = mockOptionString))
+      compiles(mockMessage.getPollAnswerVoters("answer_id",
+          after = mockOptionString))
       compiles(mockMessage.getPollAnswerVoters("answer_id", limit = 25))
+
+  test "getThreadMember template":
+    check:
+      compiles(mockChannel.getThreadMember(mockUser))
+      compiles(mockChannel.getThreadMember("user_id"))
+      compiles(mockChannel.getThreadMember(mockUser, with_member = true))
 
 suite "User Helpers Tests":
   test "getMember template":
@@ -422,6 +618,60 @@ suite "User Helpers Tests":
   test "getSelf template":
     check:
       compiles(mockGuild.getSelf())
+
+  test "getCommands template":
+    check:
+      compiles(mockApplication.getCommands())
+      compiles(mockApplication.getCommands(guild_id = "guild_id"))
+      compiles(mockApplication.getCommands(with_localizations = false))
+
+  test "getCommand template":
+    check:
+      compiles(mockApplication.getCommand(command_id = "command_id"))
+      compiles(mockApplication.getCommand(guild_id = "guild_id", command_id = "command_id"))
+
+  test "registerCommand template":
+    check:
+      compiles(mockApplication.registerCommand("command_name", "command_description"))
+      compiles(mockApplication.registerCommand("command_name", "command_description", name_localizations = some default(Table[string, string])))
+      compiles(mockApplication.registerCommand("command_name", "command_description", description_localizations = some default(Table[string, string])))
+      compiles(mockApplication.registerCommand("command_name", "command_description", name_localizations = some default(Table[string, string]), description_localizations = some default(Table[string, string])))
+      compiles(mockApplication.registerCommand("command_name", "command_description", kind = ApplicationCommandType.atSlash))
+      compiles(mockApplication.registerCommand("command_name", "command_description", guild_id = "guild_id"))
+      compiles(mockApplication.registerCommand("command_name", "command_description", dm_permission = true))
+      compiles(mockApplication.registerCommand("command_name", "command_description", nsfw = true))
+      compiles(mockApplication.registerCommand("command_name", "command_description", default_member_permissions = some default(PermissionFlags)))
+      compiles(mockApplication.registerCommand("command_name", "command_description", options = @[mockApplicationCommandOption]))
+
+  test "followup template":
+    check:
+      compiles(mockInteraction.followup())
+      compiles(mockInteraction.followup(content = "followup"))
+      compiles(mockInteraction.followup(embeds = @[mockEmbed]))
+      compiles(mockInteraction.followup(components = @[mockComponent]))
+      compiles(mockInteraction.followup(attachments = @[mockAttachment]))
+      compiles(mockInteraction.followup(files = @[mockFile]))
+      compiles(mockInteraction.followup(allowed_mentions = some default(AllowedMentions)))
+      compiles(mockInteraction.followup(tts = false))
+      compiles(mockInteraction.followup(ephemeral = false))
+      compiles(mockInteraction.followup(thread_id = some "test"))
+      compiles(mockInteraction.followup(thread_name = some "test"))
+      compiles(mockInteraction.followup(applied_tags = @["tag1"]))
+      compiles(mockInteraction.followup(poll = some default(PollRequest)))
+
+  test "editCommand template":
+    check:
+      compiles(mockApplicationCommand.editCommand(name = "new_name"))
+      compiles(mockApplicationCommand.editCommand(desc = "new_desc"))
+      compiles(mockApplicationCommand.editCommand(name_localizations = some default(Table[string, string])))
+      compiles(mockApplicationCommand.editCommand(description_localizations = some default(Table[string, string])))
+      compiles(mockApplicationCommand.editCommand(default_member_permissions = some default(PermissionFlags)))
+      compiles(mockApplicationCommand.editCommand(options = @[mockApplicationCommandOption]))
+
+  test "delete command template":
+    check:
+      compiles(mockApplicationCommand.delete())
+      compiles(mockApplicationCommand.delete("guild_id"))
 
   test "bulkRegisterCommands template":
     check:

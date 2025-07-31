@@ -716,6 +716,9 @@ proc startSession(s: Shard, url, query: string) {.async.} =
         if not getCurrentExceptionMsg()[0].isAlphaNumeric: return
         raise
 
+# todo: Make gateway intent compulsory, and add option of not containing
+# message content.
+# It will try to forcefully put message content intent if not specified.
 proc startSession*(discord: DiscordClient,
             autoreconnect = true;
             gateway_intents: set[GatewayIntent] = {

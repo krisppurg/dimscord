@@ -1,7 +1,7 @@
 import asyncdispatch, json, options, jsony, httpclient
 import ../objects, ../constants
 import tables, sequtils, strutils
-import requester, base64
+import requester
 
 proc getInvite*(api: RestApi, code: string;
         with_counts, with_expiration = false;
@@ -44,7 +44,7 @@ proc editCurrentMember*(api: RestApi, guild_id: string;
     ## Modify current member.
     ## `nick` - some "" to reset nick.
     let payload = newJObject()
-    payload.loadNullableOptStr(nick)
+    payload.loadOpt(nick)
     discard await api.request(
         "PATCH",
         endpointGuildMembers(guild_id, "@me"),
@@ -131,7 +131,6 @@ proc editCurrentUser*(api: RestApi,
     let payload = newJObject()
 
     payload.loadOpt(username, avatar)
-    payload.loadNullableOptStr(avatar)
 
     result = (await api.request("PATCH", endpointUsers(), $payload)).newUser
 

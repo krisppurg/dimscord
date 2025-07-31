@@ -1,13 +1,17 @@
 import asyncdispatch, options, json
 import ../objects, ../constants
 
+template startTyping*(c: SomeChannel) =
+    ## Starts typing in a specific Discord channel.
+    getClient.api.startTyping(c.id)
+
 template pin*(m: Message, reason = ""): Future[void] =
     ## Add pinned message.
-    getClient.api.addChannelMessagePin(m.channel_id, m.id, reason)
+    getClient.api.pinMessage(m.channel_id, m.id, reason)
 
 template unpin*(m: Message, reason = ""): Future[void] =
     ## Remove pinned message.
-    getClient.api.deleteChannelMessagePin(m.channel_id, m.id, reason)
+    getClient.api.unpinMessage(m.channel_id, m.id, reason)
 
 template getPins*(ch: SomeChannel): Future[seq[Message]] =
     ## Get channel pins.

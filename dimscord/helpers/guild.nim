@@ -8,9 +8,10 @@ template beginPrune*(g: Guild;
     ## Begins a guild prune.
     getClient.api.beginGuildPrune(g.id, days, include_roles, compute_prune_count)
 
-template getPruneCount*(g: Guild; days: int): Future[int] =
+template getPruneCount*(g: Guild;
+        days: int, include_roles: seq[string] = @[]): Future[int] =
     ## Gets the prune count.
-    getClient.api.getGuildPruneCount(g.id, days)
+    getClient.api.getGuildPruneCount(g.id, days, include_roles)
 
 template editMFA*(g: Guild; lvl: MFALevel; reason = ""): Future[MFALevel] =
     ## Modify Guild MFA Level, requiring guild ownership.
@@ -24,11 +25,12 @@ template edit*(g: Guild;
         name, description, region, afk_channel_id, icon = none string;
         discovery_splash, owner_id, splash, banner = none string;
         system_channel_id, rules_channel_id = none string;
+        safety_alerts_channel_id = none string;
         preferred_locale, public_updates_channel_id = none string;
         verification_level, default_message_notifications = none int;
         system_channel_flags = none int;
         explicit_content_filter, afk_timeout = none int;
-        features: seq[string] = @[];
+        features = none seq[string];
         premium_progress_bar_enabled = none bool;
         reason = ""
 ): Future[Guild] =
@@ -42,6 +44,7 @@ template edit*(g: Guild;
     getClient.api.editGuild(
         g.id, name, description, region, afk_channel_id, icon,
         discovery_splash, owner_id, splash, banner,
+        safety_alerts_channel_id,
         system_channel_id, rules_channel_id,
         preferred_locale, public_updates_channel_id,
         verification_level, default_message_notifications,
@@ -57,25 +60,36 @@ template getAuditLogs*(g: Guild;
     ## Get guild audit logs. The maximum limit is 100.
     getClient.api.getGuildAuditLogs(g.id, user_id, before, action_type, limit)
 
+template createRole*(g: Guild,
+        name: string = "new role";
+        unicode_emoji, icon = none string;
+        hoist, mentionable: bool = false;
+        permissions: set[PermissionFlags] = {};
+        role_colors = none RoleColors;
+        color = 0; reason = ""): Future[Role] =
+    ## Creates role.
+    getClient.api.createGuildRole(g.id,
+        name, unicode_emoji, icon,
+        hoist, mentionable, permissions,
+        role_colors, color, reason) 
+
 template deleteRole*(g: Guild; r: Role): Future[void] =
     ## Deletes a guild role.
     getClient.api.deleteGuildRole(g.id, r.id)
 
 template editRole*(g: Guild; r: Role;
         name = none string;
+        permissions = none set[PermissionFlags];
         icon, unicode_emoji = none string;
-        permissions = none PermObj; color = none int;
+        colors = none RoleColors;
+        color = none int;
         hoist, mentionable = none bool;
         reason = ""
 ): Future[Role] =
     ## Modifies a guild role.
-    getClient.api.editGuildRole(
-        g.id, r.id,
-        name, icon, unicode_emoji,
-        permissions, color,
-        hoist, mentionable,
-        reason
-    )
+    getClient.api.editGuildRole(g.id, r.id,
+        name, permissions, icon, unicode_emoji,
+        colors, color, hoist, mentionable)
 
 template getInvites*(g: Guild): Future[seq[InviteMetadata]] =
     ## Gets guild invites.
@@ -112,10 +126,10 @@ template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.
     getClient.api.getGuildBans(g.id)
 
-template ban*(g: Guild; m: Member; delete_msg_days: range[0..7] = 0;
+template ban*(g: Guild; m: Member; delete_message_seconds: range[0..604800] = 0;
         reason = ""): Future[void] =
     ## Creates a guild ban.
-    getClient.api.createGuildBan(g.id, m.user.id, delete_msg_days, reason)
+    getClient.api.createGuildBan(g.id, m.user.id, delete_message_seconds, reason)
 
 template bulkBan*(g: Guild;
         user_ids: seq[string];

@@ -389,7 +389,6 @@ proc editGuildIntegration*(api: RestApi, guild_id, integ_id: string;
     let payload = newJObject()
 
     payload.loadOpt(expire_behavior, expire_grace_period, enable_emoticons)
-    payload.loadNullableOptInt(expire_behavior, expire_grace_period)
 
     discard await api.request(
         "PATCH",
@@ -424,7 +423,6 @@ proc editGuildWidget*(api: RestApi, guild_id: string,
     let payload = newJObject()
 
     payload.loadOpt(enabled, channel_id)
-    payload.loadNullableOptStr(channel_id)
 
     result = (await api.request(
         "PATCH",
@@ -579,7 +577,7 @@ proc editGuildTemplate*(api: RestApi;
         name, description = none string): Future[GuildTemplate] {.async.} =
     ## Modify a guild template.
     let payload = newJObject()
-    payload.loadNullableOptStr(description)
+    payload.loadOpt(description)
     if name.isSome: payload["name"] = %name
     result = (await api.request(
         "PATCH", endpointGuildTemplates(gid=guild_id,tid=code)
@@ -606,8 +604,7 @@ proc editUserVoiceState*(api: RestApi,
         assert request_to_speak_timestamp.isNone
 
     let payload = %*{"channel_id":channel_id}
-    payload.loadNullableOptStr(channel_id, request_to_speak_timestamp)
-    payload.loadOpt(suppress)
+    payload.loadOpt(channel_id, request_to_speak_timestamp, suppress)
 
     discard await api.request(
         "PATCH", endpointGuildVoiceStatesUser(guild_id, user_id),
@@ -637,8 +634,7 @@ proc editGuildWelcomeScreen*(api: RestApi, guild_id: string;
             welcome_channels: seq[WelcomeChannel]
     ]] {.async.} =
     let payload = newJObject()
-    payload.loadOpt(enabled)
-    payload.loadNullableOptStr(description)
+    payload.loadOpt(enabled, description)
 
     if welcome_channels.isSome and welcome_channels.get.len == 0:
         payload["welcome_channels"] = newJNull()
@@ -766,7 +762,7 @@ proc editGuildSticker*(api: RestApi, guild_id, sticker_id: string;
         assert tags.get.len in 2..200
     if description.isSome:
         assert description.get.len in 2..100
-    payload.loadNullableOptStr(name, description, tags)
+    payload.loadOpt(name, description, tags)
     result = (await api.request(
         "PATCH",
         endpointGuildStickers(guild_id, sticker_id),

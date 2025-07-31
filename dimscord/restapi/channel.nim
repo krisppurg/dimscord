@@ -3,7 +3,7 @@ import ../objects, ../constants, ../helpers
 import sequtils, requester
 
 proc startTyping*(api: RestApi, channel_id: string) {.async.} =
-    ## Alias of triggerTypingIndicator
+    ## Starts typing in a specific Discord channel.
     discard await api.request("POST", endpointTriggerTyping(channel_id))
 
 proc pinMessage*(api: RestApi,
@@ -241,10 +241,9 @@ proc editGuildChannelPositions*(api: RestApi, guild_id, channel_id: string;
     payload.add %*{
         "id": channel_id,
         "position": %position,
-        "parent_id": %parent_id,
         "lock_permissions": lock_permissions
     }
-    payload.loadNullableOptStr(parent_id)
+    payload.loadOpt(parent_id)
     discard await api.request(
         "PATCH",
         endpointGuildChannels(guild_id),

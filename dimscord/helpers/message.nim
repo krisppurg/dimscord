@@ -28,19 +28,22 @@ template reply*(m: Message, content = "";
         attachments: seq[Attachment] = @[];
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
+        flags: set[MessageFlags] = {};
         stickers: seq[string] = @[];
         allowed_mentions = none AllowedMentions;
         nonce: Option[string] or Option[int] = none(int);
         mention, failifnotexists, tts = false): Future[Message] =
     ## Replies to a Message.
     ## - set `mention` to `true` in order to mention the replied message in Discord.
+    var refr = block:
+        (if mention: some m.reference else: none MessageReference)
     getClient.api.sendMessage(
         m.channel_id,
-        content, tts, nonce,
-        files, embeds, attachments,
-        allowed_mentions, 
-        (if mention: some m.reference else: none MessageReference),
-        components, stickers
+        content=content, tts=tts, nonce=nonce,
+        flags=flags, files=files, embeds=embeds,
+        allowed_mentions=allowed_mentions, 
+        message_reference = refr, components=components,
+        attachments=attachments, stickers=stickers
     )
 
 template editMessage*(c: SomeChannel, m: Message;
@@ -66,13 +69,14 @@ template edit*(m: Message;
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
         tts = false;
-        flags = none int): Future[Message]  =
+        flags = none set[MessageFlags]): Future[Message]  =
     ## Edits a Message.
     getClient.api.editMessage(
         m.channel_id, m.id,
-        content, tts, flags,
-        files, embeds, attachments,
-        components
+        content=content, tts=tts,
+        flags=flags,
+        files=files, embeds=embeds, attachments=attachments,
+        components=components
     )
 
 template delete*(m: Message; reason = ""): Future[void] =

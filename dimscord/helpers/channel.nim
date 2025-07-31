@@ -1,5 +1,4 @@
 import asyncdispatch, options, json
-import ../restapi
 import ../objects, ../constants
 
 template pin*(m: Message, reason = ""): Future[void] =

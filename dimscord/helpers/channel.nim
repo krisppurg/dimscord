@@ -120,7 +120,7 @@ template createStageInstance*(ch: GuildChannel;
     getClient.api.createStageInstance(ch.id, topic, privacy, reason)
 
 template editStageInstance*(si: StageInstance | string,
-        topic = none string;
+        topic: string;
         privacy = none int; reason = ""): Future[StageInstance] =
     ## Modify a stage instance.
     let st = when si is StageInstance: si.channel_id else: si
@@ -131,4 +131,3 @@ template deleteStageInstance*(si: StageInstance | string,
     ## Delete the stage instance.
     let st = when si is StageInstance: si.channel_id else: si
     getClient.api.deleteStageInstance(st, reason)
-

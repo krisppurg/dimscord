@@ -129,16 +129,14 @@ template clearReactions*(m: Message): Future[void] =
 template getThreadMember*(ch: GuildChannel;
         user: User | string; with_member = true): Future[ThreadMember] =
     ## Get a thread member.
-    getClient.api.getThreadMember(
-        when user is User: user.id else: user, with_member
-    )
+    getClient.api.getThreadMember(ch.id, (when user is User: user.id else: user), with_member)
 
-template getThreadMembers*(ch: GuildChannel): Future[seq[ThreadMember]] =
+template getThreadMembers*(ch: GuildChannel, with_member = true): Future[seq[ThreadMember]] =
     ## List thread members.
     ## Note: This endpoint requires the `GUILD_MEMBERS` Privileged Intent
     ## if not enabled on your application.
     # assert giGuildMembers in getClient.intents
-    getClient.api.getThreadMembers(ch.id)
+    getClient.api.getThreadMembers(ch.id, with_member)
 
 template removeFromThread*(ch: GuildChannel, member: Member | User | string;
         reason = ""): Future[void] =

@@ -1,13 +1,12 @@
 import asyncdispatch, json, options, jsony
 import ../objects, ../constants, ../helpers
-import tables, sequtils
-import uri, macros, requester
+import sequtils, requester
 
-proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async.} =
-    ## Starts typing in a specific Discord channel.
+proc startTyping*(api: RestApi, channel_id: string) {.async.} =
+    ## Alias of triggerTypingIndicator
     discard await api.request("POST", endpointTriggerTyping(channel_id))
 
-proc addChannelMessagePin*(api: RestApi,
+proc pinMessage*(api: RestApi,
         channel_id, message_id: string; reason = "") {.async.} =
     ## Add pinned message.
     discard await api.request(
@@ -16,7 +15,7 @@ proc addChannelMessagePin*(api: RestApi,
         audit_reason = reason
     )
 
-proc deleteChannelMessagePin*(api: RestApi,
+proc unpinMessage*(api: RestApi,
         channel_id, message_id: string; reason = "") {.async.} =
     ## Remove pinned message.
     discard await api.request(
@@ -24,6 +23,21 @@ proc deleteChannelMessagePin*(api: RestApi,
         endpointChannelPins(channel_id, message_id),
         audit_reason = reason
     )
+
+proc triggerTypingIndicator*(api: RestApi, channel_id: string) {.async, deprecated: "Use startTyping instead".} =
+    ## Starts typing in a specific Discord channel.
+    ## **Deprecated**: use [startTyping] instead.
+    await startTyping(api, channel_id)
+
+proc addChannelMessagePin*(api: RestApi,
+        channel_id, message_id: string; reason = "") {.async, deprecated: "Use pinMessage instead.".} =
+    ## Add pinned message. (Deprecated: use [pinMessage])
+    await api.pinMessage(channel_id, message_id, reason)
+
+proc deleteChannelMessagePin*(api: RestApi,
+        channel_id, message_id: string; reason = "") {.async, deprecated: "Use unpinMessage instead".} =
+    ## Remove pinned message. (Deprecated: use [unpinMessage])
+    await api.unpinMessage(channel_id, message_id, reason)
 
 proc getChannelPins*(api: RestApi,
         channel_id: string): Future[seq[Message]] {.async.} =
@@ -61,12 +75,9 @@ proc editGuildChannel*(api: RestApi, channel_id: string;
 
     payload.loadOpt(name, position, topic, nsfw, rate_limit_per_user,
         bitrate, user_limit, permission_overwrites, parent_id, flags,
-        default_forum_layout, default_thread_rate_limit_per_user,
-        available_tags)
-
-    payload.loadNullableOptStr(topic, parent_id, rtc_region)
-    payload.loadNullableOptInt(position, rate_limit_per_user, bitrate,
-        user_limit, video_quality_mode, default_sort_order)
+        default_forum_layout, default_sort_order,
+        default_thread_rate_limit_per_user, available_tags,
+        video_quality_mode, rtc_region)
 
     result = (await api.request(
         "PATCH",
@@ -100,8 +111,7 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
                     bitrate, user_limit, parent_id, permission_overwrites,
                     available_tags, default_reaction_emoji, video_quality_mode,
                     default_sort_order, default_forum_layout,
-                    default_thread_rate_limit_per_user)
-    payload.loadNullableOptStr(rtc_region)
+                    default_thread_rate_limit_per_user, rtc_region)
 
     result = (await api.request(
         "POST",
@@ -120,27 +130,21 @@ proc deleteChannel*(api: RestApi, channel_id: string; reason = "") {.async.} =
     )
 
 proc editGuildChannelPermissions*(api: RestApi,
-        channel_id, perm_id, kind: string or int;
-        perms: PermObj; reason = "") {.async.} =
-    ## Modify the channel's permissions.
-    ## 
-    ## - `kind` Must be "role" or "member", or 0 or 1 if v8.
-    let payload = newJObject()
-
-    when kind is int:
-        payload["type"] = %(if kind == 0: "role" else: "member") 
-
-    when kind is string:
-        payload["type"] = %(if kind == "role": 0 else: 1)
-
-    if perms.allowed.len > 0:
-        payload["allow"] = %($cast[int](perms.allowed))
-    if perms.denied.len > 0:
-        payload["deny"] = %($cast[int](perms.denied))
+        channel_id, overwrite_id: string;
+        kind: OverwriteType;
+        allow, deny = none set[PermissionFlags];
+        reason = "") {.async.} =
+    ## Modify the channel's permissions. This is known as the channel's permission overwrite.
+    ##
+    ## - `overwrite_id` -> Can be user id or role id.
+    ## - `allow` is the allowed permissions and `deny` is denied permissions.
+    let payload = %*{"type": ord kind}
+    if allow.isSome: payload["allow"] = %($allow.get.toBits)
+    if deny.isSome: payload["deny"] = %($deny.get.toBits)
 
     discard await api.request(
         "PUT",
-        endpointChannelOverwrites(channel_id, perm_id),
+        endpointChannelOverwrites(channel_id, overwrite_id),
         $payload,
         audit_reason = reason
     )
@@ -171,12 +175,14 @@ proc createChannelInvite*(api: RestApi, channel_id: string;
         audit_reason = reason
     )).newInvite
 
-proc deleteGuildChannelPermission*(api: RestApi, channel_id, overwrite: string;
-        reason = "") {.async.} =
+proc deleteGuildChannelPermission*(api: RestApi;
+            channel_id, overwrite_id: string;
+            reason = "") {.async.} =
     ## Deletes a guild channel overwrite.
+    ## - `overwrite_id` -> Can be user id or role id.
     discard await api.request(
         "DELETE",
-        endpointChannelOverwrites(channel_id, overwrite),
+        endpointChannelOverwrites(channel_id, overwrite_id),
         audit_reason = reason
     )
 
@@ -286,7 +292,6 @@ proc editWebhook*(api: RestApi, webhook_id: string;
     let payload = newJObject()
 
     payload.loadOpt(name, avatar, channel_id)
-    payload.loadNullableOptStr(avatar)
 
     discard await api.request("PATCH",
         endpointWebhooks(webhook_id),
@@ -383,10 +388,10 @@ proc editStageInstance*(api: RestApi; channel_id, topic: string;
     privacy_level = none int; reason = ""
 ): Future[StageInstance] {.async.} =
     ## Modify a stage instance.
-    ## Requires the current user to be a moderator of the stage channel.
+    ## Requires the current user to be a moderator of the stage channel. 
     assert topic.len in 1..120
     let payload = %*{"topic": topic}
-    payload.loadNullableOptInt(privacy_level)
+    payload.loadOpt(privacy_level)
     result = (await api.request(
         "POST",
         endpointStageInstances(channel_id),
@@ -401,4 +406,28 @@ proc deleteStageInstance*(api: RestApi;
         "DELETE",
         endpointStageInstances(channel_id),
         audit_reason = reason
+    )
+
+proc followAnnouncementChannel*(api: RestApi;
+    channel_id, webhook_channel_id: string; reason = "") {.async.} =
+    ## Follow announcement channel.
+    discard await api.request(
+        "POST",
+        endpointChannels(channel_id) & "/followers",
+        $(%*{
+            "webhook_channel_id": webhook_channel_id
+        }),
+        audit_reason = reason
+    )
+
+proc sendSoundboardSound*(api: RestApi;
+        channel_id, sound_id: string;
+        source_guild_id = none(string)) {.async.} =
+    ## Sends soundboard sound when joined in voice channel.
+    var payload = %*{"sound_id": sound_id}
+    payload.loadOpt(source_guild_id)
+    discard await api.request(
+        "POST",
+        endpointChannels(channel_id) & "/send-soundboard-sound",
+        $payload
     )

@@ -183,6 +183,7 @@ template followup*(i: Interaction;
 template editResponse*(i: Interaction;
         content = none string;
         embeds = newSeq[Embed]();
+        flags: set[MessageFlags] = {};
         allowed_mentions = none AllowedMentions;
         attachments = newSeq[Attachment]();
         files = newSeq[DiscordFile]();
@@ -195,9 +196,8 @@ template editResponse*(i: Interaction;
     ## - `message_id` can be `@original`
     getClient.api.editInteractionResponse(
         i.application_id, i.token, message_id,
-        content, embeds, allowed_mentions,
-        attachments, files,
-        components
+        content, embeds, flags, allowed_mentions,
+        attachments, files, components
     )
 
 template getResponse*(i: Interaction, message_id = "@original"): Future[Message] =

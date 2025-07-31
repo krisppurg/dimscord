@@ -215,8 +215,6 @@ proc getMessageReactions*(api: RestApi,
     if emoji == decodeUrl(emoji):
         emj = encodeUrl(emoji)
 
-    # if before != "":
-    #     url = url & "before=" & before & "&"
     if after != "":
         url = url & "after=" & after & "&"
 
@@ -238,7 +236,7 @@ proc deleteAllMessageReactions*(api: RestApi,
 proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         wait = true; with_components = false;
         thread_id, thread_name = none string;
-        content = ""; tts = false; flags = none int;
+        content = ""; tts = false; flags: set[MessageFlags] = {};
         files = newSeq[DiscordFile]();
         attachments = newSeq[Attachment]();
         embeds = newSeq[Embed]();
@@ -267,8 +265,10 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         "tts": tts
     }
 
+    if flags != {}: payload["flags"] = %*(cast[int](flags))
+
     payload.loadOpt(username, avatar_url,
-        allowed_mentions, flags,
+        allowed_mentions,
         thread_id, thread_name)
 
     if embeds.len > 0: payload["embeds"] = %embeds
@@ -307,7 +307,7 @@ proc createFollowupMessage*(api: RestApi,
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         components = newSeq[MessageComponent]();
-        flags = none int;
+        flags: set[MessageFlags] = {};
         thread_id, thread_name = none string;
         applied_tags: seq[string] = @[];
         poll = none PollRequest;
@@ -337,6 +337,7 @@ proc editWebhookMessage*(api: RestApi;
         embeds = newSeq[Embed]();
         allowed_mentions = none AllowedMentions;
         attachments = newSeq[Attachment]();
+        flags: set[MessageFlags] = {};
         files = newSeq[DiscordFile]();
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Modifies the webhook message.
@@ -366,13 +367,16 @@ proc editWebhookMessage*(api: RestApi;
         mpd.append(files, payload)
     if attachments.len > 0:
         mpd.append(attachments, payload, is_interaction=false)
+    if flags != {}: payload["flags"] = %*(cast[int](flags))
 
     result = (await api.request("PATCH", endpoint, $payload, mp=mpd)).newMessage
 
 proc editInteractionResponse*(api: RestApi;
-        application_id, interaction_token, message_id: string;
+        application_id, interaction_token: string;
+        message_id: string = "@original";
         content = none string;
         embeds = newSeq[Embed]();
+        flags: set[MessageFlags] = {};
         allowed_mentions = none AllowedMentions;
         attachments = newSeq[Attachment]();
         files = newSeq[DiscordFile]();
@@ -387,6 +391,7 @@ proc editInteractionResponse*(api: RestApi;
         embeds = embeds,
         allowed_mentions = allowed_mentions,
         attachments = attachments,
+        flags = flags,
         files = files,
         components = components,
     )

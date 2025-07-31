@@ -177,6 +177,14 @@ proc timestamp*(id: string): Time =
     let snowflake = parseBiggestUint(id)
     result = fromUnix int64(((snowflake shr 22) + 1420070400000'u64) div 1000)
 
+proc toBits*(p: set[PermissionFlags]): int =
+    ## Converts the set of permissions to an integer
+    cast[int](p)
+
+proc denied*(p: set[PermissionFlags]): set[PermissionFlags] =
+    ## Returns the denied permissions
+    permAll - p
+
 proc perms*(p: PermObj): int =
     ## Gets the total permissions.
     result = 0
@@ -598,7 +606,7 @@ template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
     ##
     ## - The object returned would be a tuple that have the same parameter names in `Events`.
     ##   e.g. if you were to `waitFor` `MessageReactionAdd`, it would be
-    ##   `tuple[s: Shard, msg: Message, u: User, emj: Emoji, exists: bool]`
+    ##   `tuple[msg: Message, u: User, emj: Emoji, exists: bool]`
     ##   You can always find which type the parameter fields are by checking the `Events` object.
     ## 
     ## See also:

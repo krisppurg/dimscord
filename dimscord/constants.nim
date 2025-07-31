@@ -140,11 +140,17 @@ type
         ufDiscordCertifiedModerator,
         ufBotHttpInteractions
         ufActiveDeveloper      = 22
-    GuildMemberFlags* = enum
-        gmfDidRejoin
-        gmfCompletedOnboarding
-        gmfBypassesVerification
-        gmfStartedOnboarding
+    MemberFlags* = enum
+        mfDidRejoin,
+        mfCompletedOnboarding,
+        mfBypassesVerification,
+        mfStartedOnboarding,
+        mfIsGuest,
+        mfStartedHomeActions,
+        mfCompletedHomeActions,
+        mfAutomodQuarantinedUsername = 7,
+        mfDmSettingsUpsellAcknowledged = 9,
+        mfAutomodQuarantinedGuildTag
     SystemChannelFlags* = enum
         scfSuppressJoinNotifications,
         scfSuppressPremiumSubscriptions,
@@ -376,6 +382,9 @@ type
         aleOnboardingUpdate                   = 167
         aleHomeSettingsCreate                 = 190
         aleHomeSettingsUpdate                 = 191
+    OverwriteType* = enum
+        otRole   = 0
+        otMember = 1
     TeamMembershipState* = enum
         tmsInvited =  1 # not to be confused with "The Mysterious Song" lol
         tmsAccepted = 2
@@ -513,7 +522,8 @@ type
         rrwSaturday  = 5
         rrwSunday    = 6
     RecurrenceRuleMonth* = enum
-        rrmJanuary    = 1,
+        rrmNone       = 0
+        rrmJanuary    = 1
         rrmFebruary   = 2
         rrmMarch      = 3
         rrmApril      = 4
@@ -565,6 +575,7 @@ type
         etPremiumPurchase,
         etApplicationSubscription
     SkuType* = enum
+        stNone = 0 # this is so useless
         stDurable           = 2
         stConsumable        = 3
         stSubscription      = 5
@@ -650,7 +661,7 @@ const
         permAddReactions,
         permViewChannel,
         permSendMessages,
-        permSendTTSMessage,
+        permSendTtsMessage,
         permManageMessages,
         permEmbedLinks,
         permAttachFiles,
@@ -673,7 +684,7 @@ const
         permUseExternalStickers,
         permUseExternalEmojis,
         permReadMessageHistory,
-        permSendTTSMessage,
+        permSendTtsMessage,
         permAddReactions,
         permManageWebhooks,
         permUseSlashCommands,
@@ -685,7 +696,7 @@ const
         permVoiceMuteMembers,
         permVoiceDeafenMembers,
         permVoiceMoveMembers,
-        permUseVAD,
+        permUseVad,
         permUseSoundboard,
         permUseExternalSounds,
         permStartEmbeddedActivities,
@@ -700,7 +711,7 @@ const
         permReadMessageHistory,
         permAddReactions,
         permManageChannels,
-        permSendTTSMessage,
+        permSendTtsMessage,
         permViewChannel,
         permVoiceConnect,
         permVoiceMuteMembers,
@@ -741,13 +752,6 @@ proc log*(msg: string, info: tuple) =
 proc log*(msg: string) =
     when defined(dimscordDebug):
         echo "[Lib]: " & msg
-
-proc `$`*(p:PermissionFlags): string=
-    if p==permMentionEveryone:
-        return "Mention @everyone, @here and All Roles"
-    system.`$`(p)[4..^1].findandcaptureall(
-        re"(^[a-z]|[A-Z]+)[a-z]*"
-    ).join" "
 
 # CDN Endpoints
 
@@ -904,6 +908,9 @@ proc endpointGuildVanity*(gid: string): string =
 
 proc endpointGuildOnboarding*(gid: string): string =
     endpointGuilds(gid) & "/onboarding"
+
+proc endpointGuildSounds*(gid: string; sid = ""): string =
+    endpointGuilds(gid) & "/soundboard-sounds" & (if sid != "":"/"&sid else:"")
 
 proc endpointGuildChannels*(gid: string; cid = ""): string =
     endpointGuilds(gid) & "/channels" & (if cid != "":"/"&cid else:"")

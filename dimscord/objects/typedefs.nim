@@ -216,7 +216,7 @@ type
         roles*: seq[string]
         deaf*, mute*: bool
         pending*: Option[bool]
-        flags*: set[GuildMemberFlags]
+        flags*: set[MemberFlags]
         permissions*: set[PermissionFlags]
         presence*: Presence
         voice_state*: Option[VoiceState]
@@ -230,6 +230,7 @@ type
         height*, width*: Option[int]
         flags: set[AttachmentFlags]
         ephemeral*: Option[bool]
+        duration_secs*: Option[float]
         size*: int
     Reaction* = object
         kind*: Option[ReactionType] ## will return a some(...) for reaction events.
@@ -422,10 +423,12 @@ type
         show_age_gate*, premium*: bool
         kind*: SkuType
         flags*: set[SkuFlags]
+    IncidentsData* = object
+        invites_disabled_until*, dms_disabled_until*: Option[string]
+        dm_spam_detected_at*, raid_detected_at*: Option[string]
     Guild* = ref object
         id*, name*, owner_id*: string
         preferred_locale*: string
-        rtc_region*, permissions_new*: Option[string]
         icon_hash*, description*, banner*: Option[string]
         public_updates_channel_id*, rules_channel_id*: Option[string]
         icon*, splash*, discovery_splash*: Option[string]
@@ -460,6 +463,7 @@ type
         stage_instances*: Table[string, StageInstance]
         stickers*: Table[string, Sticker]
         guild_scheduled_events*: Table[string, GuildScheduledEvent]
+        incidents*: Option[IncidentsData]
     VoiceState* = ref object
         guild_id*, channel_id*: Option[string]
         user_id*, session_id*: string
@@ -474,6 +478,13 @@ type
         animation_type*, animation_id*: Option[int]
         sound_id*: JsonNode
         sound_volume*: Option[BiggestFloat]
+    SoundboardSound* = object
+        name*, sound_id*: string
+        volume*: float #!!!! jsony handling
+        emoji_id*, emoji_name*: Option[string]
+        guild_id*: Option[string]
+        available*: bool
+        user*: Option[User]
     RecurrenceRuleNWeekday* = object
         n*: int
         day*: RecurrenceRuleWeekday
@@ -510,10 +521,14 @@ type
         member*: Option[Member]
     EntityMetadata* = object
         location*: Option[string]
+    RoleColors* = object
+        primary_color*: int
+        secondary_color*, tetiary_color*: Option[int]
     Role* = object
-        id*, name*, permissions_new*: string
+        id*, name*: string
         icon*, unicode_emoji*: Option[string]
         color*, position*: int
+        colors*: RoleColors
         permissions*: set[PermissionFlags]
         hoist*, managed*, mentionable*: bool
         tags*: Option[RoleTag]
@@ -591,9 +606,8 @@ type
         url*: Option[string]
         state*: Option[string]  ## Only required when a custom activity type is set.
     Overwrite* = object
-        ## - `kind` will be either ("role" or "member") or ("0" or "1")
         id*: string
-        kind*: int
+        kind*: OverwriteType
         allow*, deny*: set[PermissionFlags]
     PermObj* = object
         allowed*, denied*: set[PermissionFlags]
@@ -641,6 +655,9 @@ type
         team*: Option[Team]
         flags*: set[ApplicationFlags]
         install_params*: ApplicationInstallParams
+        event_webhooks_url*: Option[string]
+        # event_webhooks_status*: EventWebhookStatus
+        event_webhooks_types*: seq[string]
     ApplicationCommand* = object
         id*, application_id*, version*: string
         guild_id*: Option[string]
@@ -874,6 +891,7 @@ type
             id, name, description: string,
             icon: Option[string], bot: Option[User]
         ]]
+        scopes*: Option[seq[string]]
     SelectMenuOption* = object
         label*: string
         value*: string
@@ -954,15 +972,13 @@ type
         vip*, optimal*: bool
         deprecated*, custom*: bool
     AuditLogOptions* = object
-        ## - `kind` represents overwritten entity. -> ("0" or "1")
-        ## 
-        ## `"0"` is role and `"1"` is member
         auto_moderation_rule_name*: Option[string]
         auto_moderation_rule_trigger_type*: Option[string]
         delete_member_days*, members_removed*: Option[string]
         channel_id*, count*, role_name*: Option[string]
         id*, message_id*, application_id*: Option[string]
-        kind*, integration_type*: Option[string] #.
+        integration_type*: Option[string] #.
+        kind*: Option[OverwriteType]
     AuditLogChangeValue* = object
         case kind*: AuditLogChangeType
         of alcString:
@@ -1147,7 +1163,7 @@ proc guild*(c: CacheTable, obj: ref object | object): Guild =
     ## This is a nice shortcut.
     assert compiles(obj.guild_id), "guild_id field does not exist in " & $typeof(obj)
     when obj.guild_id is Option[string]:
-        assert obj.guild_id.isSome, typeof(obj) & ".guild_id is none!"
+        assert obj.guild_id.isSome, $typeof(obj) & ".guild_id is none!"
         c.guilds[obj.guild_id.get]
     else:
         c.guilds[obj.guild_id]
@@ -1162,7 +1178,7 @@ proc gchannel*(c: CacheTable, obj: ref object | object | string): GuildChannel =
         )
     
         when obj.channel_id is Option[string]: 
-            assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
+            assert obj.channel_id.isSome, $typeof(obj) & ".channel_id is none!"
             c.guildchannels[obj.channel_id.get]
         else:
             c.guildchannels[obj.channel_id]
@@ -1179,7 +1195,7 @@ proc dm*(c: CacheTable, obj: ref object | object | string): DMChannel =
         )
     
         when obj.channel_id is Option[string]: 
-            assert obj.channel_id.isSome, typeof(obj) & ".channel_id is none!"
+            assert obj.channel_id.isSome, $typeof(obj) & ".channel_id is none!"
             c.dmchannels[obj.channel_id.get]
         else:
             c.dmchannels[obj.channel_id]

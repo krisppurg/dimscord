@@ -6,7 +6,8 @@ import requester
 proc beginGuildPrune*(api: RestApi, guild_id: string;
         days: range[1..30] = 7;
         include_roles: seq[string] = @[];
-        compute_prune_count = true) {.async.} =
+        compute_prune_count = true;
+        reason = "") {.async.} =
     ## Begins a guild prune.
     let payload = %*{
         "days": days,
@@ -18,15 +19,19 @@ proc beginGuildPrune*(api: RestApi, guild_id: string;
     discard await api.request(
         "POST",
         endpointGuildPrune(guild_id),
-        $payload
+        $payload,
+        audit_reason = reason
     )
 
-proc getGuildPruneCount*(api: RestApi, guild_id: string,
-        days: int): Future[int] {.async.} =
+proc getGuildPruneCount*(api: RestApi, guild_id: string;
+        days: range[1..30] = 7;
+        include_roles: seq[string] = @[];
+    ): Future[int] {.async.} =
     ## Gets the prune count.
+    var roles = include_roles.join(",")
     result = (await api.request(
         "GET",
-        endpointGuildPrune(guild_id) & "?days=" & $days
+        endpointGuildPrune(guild_id)&"?days="&($days)&"&include_roles="&roles
     ))["pruned"].getInt
 
 proc editGuildMFALevel*(api: RestApi;
@@ -50,11 +55,12 @@ proc editGuild*(api: RestApi, guild_id: string;
     name, description, region, afk_channel_id, icon = none string;
     discovery_splash, owner_id, splash, banner = none string;
     system_channel_id, rules_channel_id = none string;
+    safety_alerts_channel_id = none string;
     preferred_locale, public_updates_channel_id = none string;
     verification_level, default_message_notifications = none int;
     system_channel_flags = none int;
     explicit_content_filter, afk_timeout = none int;
-    features: seq[string] = @[];
+    features = none seq[string];
     premium_progress_bar_enabled = none bool;
     reason = ""
 ): Future[Guild] {.async.} =
@@ -72,20 +78,10 @@ proc editGuild*(api: RestApi, guild_id: string;
         default_message_notifications, icon, explicit_content_filter,
         afk_channel_id, discovery_splash, owner_id, splash, banner,
         system_channel_id, rules_channel_id, public_updates_channel_id,
-        preferred_locale, system_channel_flags, premium_progress_bar_enabled)
+        safety_alerts_channel_id, preferred_locale,
+        system_channel_flags, premium_progress_bar_enabled)
 
-    payload.loadNullableOptInt(verification_level,
-        default_message_notifications,
-        explicit_content_filter, afk_timeout)
-
-    payload.loadNullableOptStr(icon, description, region, splash,
-        discovery_splash, banner, system_channel_id, rules_channel_id,
-        public_updates_channel_id, preferred_locale)
-
-    if features.len > 0:
-        payload["features"] = %[]
-        for f in features:
-            payload["features"].add(%f)
+    if features.isSome: payload["features"] = %features.get.mapIt(%it)
 
     result = (await api.request(
         "PATCH",
@@ -112,15 +108,7 @@ proc createGuild*(api: RestApi, name, region = none string;
 
     payload.loadOpt(name, region, verification_level, afk_timeout,
         default_message_notifications, icon, explicit_content_filter,
-        afk_channel_id, system_channel_id)
-
-    payload.loadNullableOptInt(verification_level,
-        default_message_notifications,
-        explicit_content_filter, afk_timeout,
-        system_channel_flags
-    )
-
-    payload.loadNullableOptStr(icon, region, afk_channel_id, system_channel_id)
+        afk_channel_id, system_channel_id, system_channel_flags)
 
     if channels.isSome:
         payload["channels"] = %[]
@@ -184,15 +172,30 @@ proc createGuildRole*(api: RestApi, guild_id: string;
         name = "new role";
         unicode_emoji, icon = none string;
         hoist, mentionable = false;
-        permissions: PermObj;
+        permissions: set[PermissionFlags] = {};
+        role_colors = none RoleColors;
         color = 0; reason = ""): Future[Role] {.async.} =
     ## Creates a guild role.
-    result = (await api.request("POST", endpointGuildRoles(guild_id), $(%*{
-        "name": name, "unicode_emoji": unicode_emoji,
-        "icon": icon, "permissions": %($perms(permissions)),
-        "color": color, "hoist": hoist,
-        "mentionable": mentionable
-    }), audit_reason = reason)).newRole
+    var payload = %*{
+        "name": name,
+        "unicode_emoji": unicode_emoji,
+        "icon": icon,
+        "hoist": hoist,
+        "mentionable": mentionable,
+    }
+    if role_colors.isNone:
+        payload["colors"] = %*{"primary_color": color}
+    else:
+        payload["colors"] = %role_colors.get
+
+    if permissions != {}: payload["permissions"] = %($toBits(permissions))
+
+    result = (await api.request(
+        "POST",
+        endpointGuildRoles(guild_id),
+        $payload,
+        audit_reason = reason
+    )).newRole
 
 proc deleteGuildRole*(api: RestApi, guild_id, role_id: string;
     reason = "") {.async.} =
@@ -205,20 +208,24 @@ proc deleteGuildRole*(api: RestApi, guild_id, role_id: string;
 
 proc editGuildRole*(api: RestApi, guild_id, role_id: string;
             name = none string;
+            permissions = none set[PermissionFlags];
             icon, unicode_emoji = none string;
-            permissions = none PermObj; color = none int;
+            colors = none RoleColors;
+            color = none int;
             hoist, mentionable = none bool;
             reason = ""): Future[Role] {.async.} =
     ## Modifies a guild role.
     let payload = newJObject()
 
-    payload.loadOpt(name, color, hoist, mentionable)
+    if colors.isSome:
+        payload["colors"] = %colors.get
+    elif color.isSome:
+        payload["colors"] = %*{"primary_color": color.get}
 
-    payload.loadNullableOptStr(name, icon, unicode_emoji)
-    payload.loadNullableOptInt(color)
+    payload.loadOpt(name, hoist, mentionable, icon, unicode_emoji)
 
     if permissions.isSome:
-        payload["permissions"] = %($perms(get permissions))
+        payload["permissions"] = %($toBits(get permissions))
 
     result = (await api.request(
         "PATCH",
@@ -279,7 +286,6 @@ proc editGuildMember*(api: RestApi, guild_id, user_id: string;
 
     payload.loadOpt(nick, roles, mute, deaf,
         channel_id, communication_disabled_until)
-    payload.loadNullableOptStr(channel_id)
 
     discard await api.request(
         "PATCH",
@@ -296,6 +302,12 @@ proc removeGuildMember*(api: RestApi, guild_id, user_id: string;
         endpointGuildMembers(guild_id, user_id),
         audit_reason = reason
     )
+
+proc kickUserFromVoice*(api: RestApi, guild_id, user_id: string;
+        reason = "") {.async.} =
+    ## Disconnect member from voice.
+    await api.editGuildMember(guild_id, user_id, 
+        channel_id = some "", reason = reason)
 
 proc getGuildBan*(api: RestApi,
         guild_id, user_id: string): Future[GuildBan] {.async.} =
@@ -329,12 +341,12 @@ proc bulkGuildBan*(api: RestApi, guild_id: string;
         }), audit_reason = reason)
 
 proc createGuildBan*(api: RestApi, guild_id, user_id: string;
-        deletemsgdays: range[0..7] = 0; reason = "") {.async.} =
+        deletemsgsecs: range[0..604800] = 0; reason = "") {.async.} =
     ## Creates a guild ban.
     discard await api.request(
         "PUT", endpointGuildBans(guild_id, user_id),
         $(%*{
-            "delete_message_days": deletemsgdays,
+            "delete_message_seconds": deletemsgsecs,
             "reason": reason
         }), audit_reason = reason)
 
@@ -858,8 +870,7 @@ proc editScheduledEvent*(api: RestApi; guild_id, event_id: string;
     if description.isSome: assert description.get.len in 1..1000
 
     let payload = newJObject()
-    payload.loadNullableOptStr(channel_id, image)
-    payload.loadOpt(scheduled_end_time, scheduled_start_time,
+    payload.loadOpt(channel_id, image, scheduled_end_time, scheduled_start_time,
         description, entity_type, status, privacy_level, recurrence_rule)
 
     if entity_type.isSome and entity_type.get == etExternal:
@@ -908,10 +919,6 @@ proc getScheduledEventUsers*(api: RestApi,
         endpoint
     )).elems.mapIt(it.`$`.fromJson(GuildScheduledEventUser))
 
-proc renameHook(v: var ModerationAction, fieldName: var string) {.used.} = # just putting that here because im cool and lazy
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc getAutoModerationRules*(api: RestApi;
     guild_id: string
 ): Future[seq[AutoModerationRule]] {.async.} =
@@ -953,7 +960,7 @@ proc createAutoModerationRule*(api: RestApi;
     let payload = %*{
         "name": name,
         "event_type": event_type,
-        "trigger_type": %*trigger_type,
+        "trigger_type": %*(ord trigger_type),
         "enabled": enabled
     }
     payload.loadOpt(trigger_metadata)
@@ -1025,3 +1032,84 @@ proc editGuildOnboarding*(api: RestApi, guild_id: string;
         $payload,
         audit_reason = reason
     )).`$`.fromJson GuildOnboarding
+
+proc editGuildIncidentActions*(api: RestApi, guild_id: string;
+        invites_disabled_until, dms_disabled_until = none string;
+        reason = ""): Future[IncidentsData] {.async.} =
+    var payload = %*{}
+    payload.loadOpt(invites_disabled_until, dms_disabled_until)
+
+    result = (await api.request(
+        "PATCH",
+        endpointGuilds(guild_id) & "/incident-actions",
+        $payload,
+        audit_reason = reason
+    )).`$`.fromJson IncidentsData
+
+proc getGuildSoundboard*(api: RestApi;
+        guild_id: string): Future[seq[SoundboardSound]] {.async.} =
+    result = (await api.request(
+        "GET",
+        endpointGuildSounds(guild_id),
+    ))["items"].elems.mapIt(it.`$`.fromJson(SoundboardSound))
+
+proc createSoundboardSound*(api: RestApi;
+    guild_id, name: string;
+    sound: string;
+    volume: float = 1.0;
+    emoji_id, emoji_name = none string;
+    reason = ""
+) {.async.} =
+    ## Create soundboard sound.
+    ##
+    ## Note that sound has to be base64 encoded.
+    var payload = %*{
+        "name": name,
+        "sound": sound,
+    }
+    if volume == 1.0:
+        payload["volume"] = %1
+    elif volume == 0.0:
+        payload["volume"] = %0
+    else:
+        payload["volume"] = %volume
+
+    payload.loadOpt(emoji_id, emoji_name)
+    discard await api.request(
+        "POST",
+        endpointGuildSounds(guild_id),
+        $payload,
+        audit_reason = reason
+    )
+
+proc editSoundboardSound*(api: RestApi;
+    guild_id, sound_id: string;
+    name = none string;
+    volume = none float;
+    emoji_id, emoji_name = none string;
+    reason = ""
+) {.async.} =
+    var payload = %*{}
+    payload.loadOpt(emoji_id, emoji_name, volume)
+
+    if volume.get(0.0) == 1.0:
+        payload["volume"] = %1
+    elif volume.get(1.0) == 0.0:
+        payload["volume"] = %0
+
+    discard await api.request(
+        "PATCH",
+        endpointGuildSounds(guild_id, sound_id),
+        $payload,
+        audit_reason = reason
+    )
+
+proc deleteSoundboardSound*(api: RestApi;
+    guild_id, sound_id: string;
+    reason = ""
+) {.async.} =
+    discard await api.request(
+        "DELETE",
+        endpointGuildSounds(guild_id, sound_id),
+        audit_reason = reason
+    )

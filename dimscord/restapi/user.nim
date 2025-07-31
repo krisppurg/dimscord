@@ -11,7 +11,7 @@ proc getInvite*(api: RestApi, code: string;
     ##
     ## - `auth` Whether you should get the invite while authenticated.
     var queryparams = "?with_counts="&($with_counts) &
-        "&with_expiration="&($with_counts)
+        "&with_expiration="&($with_expiration)
     if guild_scheduled_event_id.isSome:
         queryparams&="&guild_scheduled_event_id="&($guild_scheduled_event_id.get)
     result = (await api.request(
@@ -612,3 +612,9 @@ proc getSkuSubscription*(api:RestApi;
         "GET",
         endpointSkuSubscriptions(sku_id, subscription_id)
     )).`$`.fromJson(Subscription)
+
+proc defaultSoundboardSounds*(api:RestApi): Future[seq[SoundboardSound]] {.async.} =
+    result = (await api.request(
+        "GET",
+        "soundboard-default-sounds"
+    )).`$`.fromJson(seq[SoundboardSound])

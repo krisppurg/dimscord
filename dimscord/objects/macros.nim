@@ -53,7 +53,15 @@ macro loadOpt*(obj: typed, lits: varargs[untyped]): untyped =
         let fieldName = lit.strVal
         result.add quote do:
             if `lit`.isSome:
-                `obj`[`fieldName`] = %*get(`lit`)
+                var value = %*get(`lit`)
+                when `lit` is Option[int]:
+                    if `lit`.get == -1: value = newJNull()
+                when `lit` is Option[string]:
+                    if `lit`.get == "": value = newJNull()
+                when `lit` is Option[enum]:
+                    value = %*(ord get(`lit`))
+
+                `obj`[`fieldName`] = value
 
 macro loadOpts*(res, parent: typed, lits: varargs[untyped]): untyped =
     result = newStmtList()

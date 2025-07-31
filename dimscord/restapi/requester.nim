@@ -306,8 +306,7 @@ proc `%`*(flags: SomeFlags): JsonNode =
 proc `%`*(flags: set[PermissionFlags]): JsonNode =
     %($cast[int](flags))
 
-proc `%`*(r: MessageReferenceType): JsonNode =
-    json.`%*`(int r)
+proc `%`*(r: MessageReferenceType): JsonNode = json.`%*`(int r)
 
 proc append*(mpd: var MultipartData;
         attachments: seq[Attachment];

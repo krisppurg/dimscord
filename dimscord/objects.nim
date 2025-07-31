@@ -218,10 +218,10 @@ proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
     parseHook(s, i, number)
     v = cast[set[UserFlags]](number)
 
-proc parseHook*(s: string, i: var int, v: var set[GuildMemberFlags]) =
+proc parseHook*(s: string, i: var int, v: var set[MemberFlags]) =
     var number: BiggestInt
     parseHook(s, i, number)
-    v = cast[set[GuildMemberFlags]](number)
+    v = cast[set[MemberFlags]](number)
 
 proc parseHook*(s: string, i: var int, v: var set[RoleFlags]) =
     var number: BiggestInt
@@ -280,6 +280,16 @@ proc newRole*(data: JsonNode): Role =
         result.tags.get.available_for_purchase = some(
             "available_for_purchase" in tag)
         result.tags.get.guild_connections = some "guild_connections" in tag
+
+proc parseHook*(s: string, i: var int, v: var OverwriteType) =
+    var data: JsonNode
+    parseHook(s, i, data)
+    case data.kind:
+    of JString: # audit log options
+        v = OverwriteType parseInt(data.str)
+    of JInt:
+        v = OverwriteType data.getInt
+    else: discard
 
 proc newHook(m: var Member) =
     m = Member()
@@ -481,7 +491,6 @@ proc `[]=`(obj: ref object, fld: string, val: JsonNode) =
     for name, field in obj[].fieldPairs:
         if name == fld:
             field = ($val).fromJson(typeof(field))
-
     
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     case data.kind:
@@ -573,10 +582,6 @@ proc newAuditLog*(data: JsonNode): AuditLog =
 
 proc newVoiceState*(data: JsonNode): VoiceState =
     result = ($data).fromJson(VoiceState)
-
-proc renameHook(v: var Guild, fieldName: var string) {.used.} =
-    if fieldName == "region":
-        fieldName = "rtc_region"
 
 proc parseHook(s: string, i: var int, v: var set[SystemChannelFlags]) =
     var number: BiggestInt
@@ -799,8 +804,8 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
 
     if "component_type" in data:
         a = ApplicationCommandInteractionData(
-            interactionType: idtMessageComponent,
-            component_type: ($data["component_type"].getInt).fromJson(
+            interaction_type: idtMessageComponent,
+            component_type: ($data["component_type"]).fromJson(
                 MessageComponentType),
             custom_id: data["custom_id"].str
         )
@@ -825,20 +830,20 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
                     case key:
                     of "users":
                         for k, v in values.pairs:
-                            a.resolved.users[k] = ($v).fromJson User
+                            a.resolved.users[k] = v.newUser
                     of "attachments":
                         for k, v in values.pairs:
-                            a.resolved.attachments[k] = ($v).fromJson Attachment
+                            a.resolved.attachments[k] = v.newAttachment
                     else: discard
 
                     if a.kind == atUser:
                         case key:
                         of "members":
                             for k, v in values.pairs:
-                                a.resolved.members[k] = ($v).fromJson Member
+                                a.resolved.members[k] = v.newMember
                         of "roles":
                             for k, v in values.pairs:
-                                a.resolved.roles[k] = ($v).fromJson Role
+                                a.resolved.roles[k] = v.newRole
                         else: discard
 
                     if a.kind == atMessage:
@@ -850,7 +855,7 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
                                 )
                         of "messages":
                             for k, v in values.pairs:
-                                a.resolved.messages[k] = ($v).fromJson Message
+                                a.resolved.messages[k] = v.newMessage
                         else: discard
 
     for k, val in data.pairs:
@@ -1001,7 +1006,6 @@ proc `+`(a, b: JsonNode): JsonNode =
         result[k] = v
     for k, v in b.pairs:
         result[k] = v
-
 
 proc `&=`(a: var JsonNode, b: JsonNode) =
     a = a+b

@@ -227,7 +227,7 @@ proc messageReactionAdd(s: Shard, data: JsonNode) {.async.} =
             emoji: emoji,
             kind: some ReactionType data["type"].getInt,
             reacted: data["user_id"].str == s.user.id,
-            burst: data["burst"].getBool,
+            burst: data{"burst"}.getBool,
         )
         exists = false
 
@@ -283,7 +283,7 @@ proc messageReactionRemove(s: Shard, data: JsonNode) {.async.} =
         reaction = Reaction(
             emoji: emoji,
             kind: some data["type"].getInt.ReactionType,
-            burst: data["burst"].getBool
+            burst: data{"burst"}.getBool
         )
         exists = false
 

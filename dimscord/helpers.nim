@@ -141,6 +141,8 @@ proc iconUrl*(g: Guild, fmt = "png"; size = 128): string =
 proc `$`*(u: User): string =
     ## Stringifies a user.
     ## This would return something like `krisppurg#3211` or `krisp0`
+    if u.username == "": return u.id
+
     result = u.username
     if u.discriminator != "0":
         result &= "#" & u.discriminator

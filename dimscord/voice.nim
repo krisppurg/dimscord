@@ -11,9 +11,8 @@ import std/[monotimes, times]
 import std/[os, strformat]
 randomize()
 
-when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-  {.warning[HoleEnumConv]: off.}
-  {.warning[CaseTransition]: off.}
+{.warning[HoleEnumConv]: off.}
+{.warning[CaseTransition]: off.}
 
 type
     VoiceOp* = enum

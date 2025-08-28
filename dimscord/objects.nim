@@ -7,23 +7,26 @@
 ##
 ## Some may not be optional, but they can be assumable or always present.
 
-when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-    {.warning[HoleEnumConv]: off.}
-    {.warning[CaseTransition]: off.}
+{.warning[HoleEnumConv]: off.}
+{.warning[CaseTransition]: off.}
 
 import options
-import sequtils, strutils, jsony
-import std/with
+import sequtils, strutils, jsony {.all.}
+import tables, sets, typetraits
+
 include objects/typedefs, objects/macros
 
-macro enumElementsAsSet(enm: typed): untyped =
-    result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
+template softAssertImpl(cond: bool, expr: string, msg="") =
+    var message = block:
+        if msg == "":
+            "Condition not satisfied: "&"`"&expr&"`"
+        else:
+            msg
+    if not cond:
+        raise newException(RequesterError, message&" (`"&expr&"`)")
 
-func fullSet*[T](U: typedesc[T]): set[T] {.inline.} =
-    when T is Ordinal:
-        {T.low..T.high}
-    else: # Hole filled enum
-        enumElementsAsSet(T)
+template softAssert*(cond: untyped, msg = "") =
+    softAssertImpl(cond, astToStr(cond), msg)
 
 proc newInteractionData*(
         content: string,
@@ -210,26 +213,154 @@ proc newDiscordClient*(token: string;
             entitlement_delete: proc(s: Shard, e: Entitlement) {.async.} = discard
         ))
 
-proc renameHook(s: var (object | tuple), fieldName: var string) =
-    if fieldName == "type": fieldName="kind"
+proc extractFieldName(
+        s: string, i: var int): string =
+    var fieldName = ""
+    for idx in 3..i:
+        let c = s[i-idx..i-idx][0]
+        if c != "\""[0]:
+            fieldName = c & fieldName
+        else:
+            break
+    
+    return fieldName
 
-proc parseHook*(s: string, i: var int, v: var set[UserFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[UserFlags]](number)
+# proc extractJsonyError[T: object | ref object | tuple](
+#         s: string, i: var int; v: var T): tuple[target, fieldname: string] =
+#     extractJsonyError(T, i, v)
 
-proc parseHook*(s: string, i: var int, v: var set[MemberFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[MemberFlags]](number)
+proc logParser*(msg: string, s = "") =
+    when defined(dimscordDebug):
+        var finalmsg = "[JsonParser]: " & msg
 
-proc parseHook*(s: string, i: var int, v: var set[RoleFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[RoleFlags]](number)
+        when defined(jsonyDumps):
+            finalmsg &= "\n    JSON Dump: " & s
+        else:
+            finalmsg &= "\nFor more information define -d:jsonyDumps"
 
-proc newUser*(data: JsonNode): User =
-    result = ($data).fromJson(User)
+        echo finalmsg
+
+proc parseHook[T](s: string, i: var int, v: var set[T]) =
+    var data: JsonNode
+    jsony.parseHook(s, i, data)
+
+    case data.kind:
+    of JString:
+        try:
+            v = cast[set[T]](data.str.parseInt)
+        except:
+            v = {}
+    of JInt:
+        v = cast[set[T]](data.num)
+    else:
+        v = {}
+
+proc fromJson*[T](s: string, x: typedesc[T]): T =
+    try:
+        var i = 0
+        jsony.parseHook(s, i, result)
+    except:
+        let message = getCurrentExceptionMsg()
+        logParser(message, s)
+        try:
+            var offset = parseInt(message.split(' ')[^1])
+            log("target: " & $x & ", fieldname: " & extractFieldName(s, offset))
+            skipValue(s, offset)
+        except:
+            raise
+
+proc parseHook(s: string, i: var int, v: var (int|float)) =
+    var data: JsonNode
+    parseHook(s, i, data)
+
+    case data.kind:
+    of JFloat:
+        when v is float:
+            v = data.fnum
+        else:
+            logParser("Expected float but got an integer instead", s)
+            v = -1
+    of JInt:
+        when v is int: v = data.num else: v = float(data.num)
+    of JString:
+        when v is int:
+            try:
+                v = parseInt(data.str)
+            except:
+                v = -1
+        else:
+            v = -1.0
+    else:
+        when v is float: v = -1.0 else: v = -1
+
+
+proc parseHook[T: enum](s: string, i: var int, v: var T) =
+    var data: JsonNode
+    jsony.parseHook(s, i, data)
+
+    if data.kind == JInt and data.getInt in ord(T.low)..ord(T.high):
+        v = type(v)(data.getInt)
+    else:
+        logParser("Error parsing enum " & $T & " - using default", s)
+        skipValue(s, i)
+
+        var default = T.low
+        if not (($default).contains("Unknown") or ($default).contains("None")):
+            when v is ChannelType:
+                default = ctGuildText
+            else:
+                default = T.high
+
+        v = default
+
+proc parseHook[T](s: string, i: var int, v: var seq[T]) =
+    try:
+        jsony.parseHook(s, i, v)
+    except jsony.JsonError:
+        logParser("Error parsing generic type " & $type(v) & " - using default", s)
+        skipValue(s, i)
+        v = @[]
+
+proc parseHook(s: string, i: var int, v: var string) = # todo test this out
+    try:
+        jsony.parseHook(s, i, v)
+    except:
+        logParser(getCurrentExceptionMsg(), s)
+        skipValue(s, i)
+        v = ""
+
+proc renameHook(s: var (object | ref object | tuple), fieldName: var string) =
+    case fieldName:
+    of "type":
+        fieldName="kind"
+    of "me": # Message
+        fieldName="reacted"
+    of "mentions": # Message
+        fieldName="mention_users"
+
+proc parseHook(s:string,i:var int,v:var (Option[string],Option[int])) {.used.} =
+    var value: JsonNode
+    parseHook(s, i, value)
+
+    case value.kind:
+    of JString:
+        v = (some value.str, none int)
+    of JInt:
+        v = (none string, some value.getInt)
+    else:
+        v = (none string, none int)
+
+proc parseHook(s:string,i:var int,v:var (Option[BiggestInt], Option[float])) {.used.} =
+    var value: JsonNode
+    parseHook(s, i, value)
+
+    case value.kind:
+    of JInt:
+        v = (some value.num, none float)
+    of JFloat:
+        v = (none BiggestInt, some value.fnum)
+    else:
+        v = (none BiggestInt, none float)
 
 proc parseHook(s: string, i: var int;
         v: var seq[tuple[label, url: string]]) {.used.} =
@@ -250,36 +381,6 @@ proc postHook(p: var Presence) =
         p.client_status.desktop = "offline"
     if p.client_status.mobile == "":
         p.client_status.mobile = "offline"
-
-proc parseHook(s: string, i: var int, v: var set[ActivityFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[ActivityFlags]](number)
-
-proc newPresence*(data: JsonNode): Presence =
-    if data{"activities"}.getElems != @[]:
-        for act in data["activities"].getElems:
-            let keycheck = "application_id" in act
-            if keycheck and act["application_id"].kind == JInt:
-                act["application_id"] = %($act["application_id"].getInt)
-    result = ($data).fromJson(Presence)
-
-proc parseHook*(s: string, i: var int, v: var set[PermissionFlags]) =
-    var str: string
-    try:
-        parseHook(s, i, str)
-    except:
-        str = "0"
-    v = cast[set[PermissionFlags]](str.parseBiggestInt)
-
-proc newRole*(data: JsonNode): Role =
-    result = ($data).fromJson(Role)
-    if "tags" in data:
-        let tag = data["tags"]
-        result.tags.get.premium_subscriber = some "premium_subscriber" in tag
-        result.tags.get.available_for_purchase = some(
-            "available_for_purchase" in tag)
-        result.tags.get.guild_connections = some "guild_connections" in tag
 
 proc parseHook*(s: string, i: var int, v: var OverwriteType) =
     var data: JsonNode
@@ -305,78 +406,17 @@ proc newHook(m: var Member) =
 proc postHook(m: var Member) =
     m.presence.user = m.user
 
-proc newMember*(data: JsonNode): Member =
-    result = ($data).fromJson(Member)
-
-proc renameHook(v: var Overwrite, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc parseHook(s: string, i: var int, v: var set[MessageFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[MessageFlags]](number)
-
-proc newOverwrite*(data: JsonNode): Overwrite =
-    result = ($data).fromJson(Overwrite)
-
 proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
     var overwrites: seq[Overwrite]
     parseHook(s, i, overwrites)
     for o in overwrites:
         v[o.id] = o
 
-proc renameHook(v: var GuildChannel, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
+proc parseHook(s: string, i: var int,
+    v: var Table[string, tuple[
+        id, name: string,
+        format_type: MessageStickerFormat]]) =
 
-proc parseHook(s: string, i: var int, v: var ChannelType) =
-    var number: int
-    parseHook(s, i, number)
-    if ChannelType(number) in fullSet(ChannelType):
-        v = ChannelType number
-    else:
-        v = ctGuildText # just by default incase
-
-proc renameHook(v: var MentionChannel, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc parseHook(s: string; i: var int; v: var set[ApplicationFlags]) {.used.} =
-    var bint: BiggestInt
-    try:
-        parseHook(s, i, bint)
-    except:
-        bint = 0
-    v = cast[set[ApplicationFlags]](bint)
-
-proc parseHook(s: string; i: var int; v: var set[ChannelFlags]) {.used.} =
-    var bint: BiggestInt
-    try:
-        parseHook(s, i, bint)
-    except:
-        bint = 0
-    v = cast[set[ChannelFlags]](bint)
-
-proc renameHook(s: var Message, fieldName: var string) =
-    case fieldName:
-    of "type":
-        fieldName = "kind"
-    of "mentions":
-        fieldName = "mention_users"
-    else:
-        discard
-
-proc renameHook(s: var tuple[kind: int, party_id: string];
-    fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(s: var Reaction, fieldName: var string) =
-    if fieldName == "me":
-        fieldName = "reacted"
-
-proc parseHook(s: string, i: var int, v: var Table[string, tuple[id, name: string, format_type: MessageStickerFormat]]) =
     var stickers: seq[tuple[
         id, name: string,
         format_type: MessageStickerFormat
@@ -391,47 +431,25 @@ proc parseHook(s: string, i: var int, v: var Table[string, Reaction]) =
     for r in reactions:
         v[$r.emoji] = r
 
-proc renameHook(s: var MessageInteractionMetadata, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
+proc parseHook(s: string, i: var int;
+    v: var Table[ApplicationIntegrationType, ApplicationIntegrationTypeConfig]) =
+    var data: JsonNode
+    parseHook(s, i, data)
+    for k, val in data.fields:
+        v[ApplicationIntegrationType(parseInt(k))] = ($val).fromJson(
+            ApplicationIntegrationTypeConfig)
+
+proc parseHook(s: string, i: var int, v: var Table[string, Attachment]) =
+    var attachments: seq[Attachment]
+    parseHook(s, i, attachments)
+    for a in attachments:
+        v[a.id] = a
 
 proc parseHook(s: string, i: var int, v: var Table[string, Message]) =
     var msgs: seq[Message]
     parseHook(s, i, msgs)
     for m in msgs:
         v[m.id] = m
-
-proc newMessage*(data: JsonNode): Message =
-    result = data.`$`.fromJson(Message)
-
-proc newGuildChannel*(data: JsonNode): GuildChannel =
-    result = ($data).fromJson(GuildChannel)
-
-proc newReaction*(data: JsonNode): Reaction =
-    result = ($data).fromJson(Reaction)
-
-proc newApplication*(data: JsonNode): Application =
-    result = ($data).fromJson(Application)
-
-proc renameHook(v: var PartialChannel, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var Webhook, fieldName: var string) =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var Presence, fieldName: var string) {.used.} =
-    if fieldName == "game":
-        fieldName = "activity"
-
-proc parseHook(s: string, i: var int, v: var BiggestFloat) =
-    var data: JsonNode
-    parseHook(s, i, data)
-    if data.kind == JInt:
-        v = toBiggestFloat data.num
-    elif data.kind == JFloat:
-        v = BiggestFloat data.fnum
 
 proc parseHook(s: string, i: var int;
         v: var Option[tuple[start, final: BiggestFloat]]) {.used.} =
@@ -442,20 +460,8 @@ proc parseHook(s: string, i: var int;
         final: table.getOrDefault("end", 0)
     )
 
-proc renameHook(v: var Activity, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc newActivity*(data: JsonNode): Activity =
-    result = ($data).fromJson(Activity)
-
-proc renameHook(v: var AuditLogEntry, fieldName: var string) {.used.} =
-    if fieldName == "options":
-        fieldName = "opts"
-
-proc renameHook(v: var AuditLogOptions, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
+    result = ($data).fromJson(Activity) # ! VERY ERROR PRONE
 
 proc parseHook(s: string, i: var int, v: var Table[string, Role]) {.used.} =
     var roles: seq[Role]
@@ -491,6 +497,7 @@ proc `[]=`(obj: ref object, fld: string, val: JsonNode) =
     for name, field in obj[].fieldPairs:
         if name == fld:
             field = ($val).fromJson(typeof(field))
+            break
     
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     case data.kind:
@@ -542,51 +549,17 @@ proc parseHook(s: string, i: var int, a: var AuditLogEntry) =
                 a[k] = val # incase
         of JObject:
             if "options" in data:
-                a.opts = some ($data["options"]).fromJson AuditLogOptions
+                a.options = some ($data["options"]).fromJson AuditLogOptions
         else:
             discard
 
-proc newIntegration*(data: JsonNode): Integration =
-    result = ($data).fromJson(Integration)
-
-proc newAuditLogEntry*(data: JsonNode): AuditLogEntry =
-    result = ($data).fromJson(AuditLogEntry)
-
-proc newWebhook*(data: JsonNode): Webhook =
-    result = ($data).fromJson(Webhook)
-
-proc parseHook(s:string,i:var int,v:var (Option[string],Option[int])) {.used.} =
-    var value: JsonNode
-    parseHook(s, i, value)
-
-    case value.kind:
-    of JString:
-        v = (some value.str, none int)
-    of JInt:
-        v = (none string, some value.getInt)
-    else: discard
-
-proc parseHook(s:string,i:var int,v:var (Option[BiggestInt], Option[float])) {.used.} =
-    var value: JsonNode
-    parseHook(s, i, value)
-
-    case value.kind:
-    of JInt:
-        v = (some value.num, none float)
-    of JFloat:
-        v = (none BiggestInt, some value.fnum)
-    else: discard
-
-proc newAuditLog*(data: JsonNode): AuditLog =
-    result = ($data).fromJson(AuditLog)
-
-proc newVoiceState*(data: JsonNode): VoiceState =
-    result = ($data).fromJson(VoiceState)
-
-proc parseHook(s: string, i: var int, v: var set[SystemChannelFlags]) =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[SystemChannelFlags]](number)
+proc newPresence*(data: JsonNode): Presence =
+    if data{"activities"}.getElems != @[]:
+        for act in data["activities"].getElems:
+            let keycheck = "application_id" in act
+            if keycheck and act["application_id"].kind == JInt:
+                act["application_id"] = %($act["application_id"].getInt)
+    result = ($data).fromJson(Presence)
 
 proc parseHook(s: string, i: var int, g: var Guild) =
     var data: JsonNode
@@ -597,7 +570,7 @@ proc parseHook(s: string, i: var int, g: var Guild) =
 
     for v in data{"members"}.getElems:
         v["guild_id"] = %*g.id
-        let member = v.newMember
+        let member = v.`$`.fromJson Member
         g.members[member.user.id] = member
 
     for k, val in data.pairs:
@@ -608,22 +581,22 @@ proc parseHook(s: string, i: var int, g: var Guild) =
             case k:
             of "voice_states":
                 for v in val.getElems:
-                    let state = v.newVoiceState
+                    let state = v.`$`.fromJson(VoiceState)
 
                     g.members[state.user_id].voice_state = some state
                     g.voice_states[state.user_id] = state
             of "threads":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
-                    g.threads[v["id"].str] = v.newGuildChannel
+                    g.threads[v["id"].str] = v.`$`.fromJson(GuildChannel)
             of "channels":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
-                    g.channels[v["id"].str] = v.newGuildChannel
+                    g.channels[v["id"].str] = v.`$`.fromJson(GuildChannel)
             of "presences":
                 for v in val.getElems:
                     v["guild_id"] = %g.id
-                    let p = v.newPresence
+                    let p = newPresence(v)
 
                     if p.user.id in g.members:
                         g.members[p.user.id].presence = p
@@ -633,6 +606,51 @@ proc parseHook(s: string, i: var int, g: var Guild) =
                     g[k] = val
         else:
             discard
+
+proc newMember*(data: JsonNode): Member =
+    result = ($data).fromJson(Member)
+
+proc newOverwrite*(data: JsonNode): Overwrite =
+    result = ($data).fromJson(Overwrite)
+
+proc newRole*(data: JsonNode): Role =
+    result = ($data).fromJson(Role)
+    if "tags" in data:
+        let tag = data["tags"]
+        result.tags.get.premium_subscriber = some "premium_subscriber" in tag
+        result.tags.get.available_for_purchase = some(
+            "available_for_purchase" in tag)
+        result.tags.get.guild_connections = some "guild_connections" in tag
+
+proc newUser*(data: JsonNode): User =
+    result = ($data).fromJson(User)
+
+proc newMessage*(data: JsonNode): Message =
+    result = data.`$`.fromJson(Message)
+
+proc newGuildChannel*(data: JsonNode): GuildChannel =
+    result = ($data).fromJson(GuildChannel)
+
+proc newReaction*(data: JsonNode): Reaction =
+    result = ($data).fromJson(Reaction)
+
+proc newApplication*(data: JsonNode): Application =
+    result = ($data).fromJson(Application)
+
+proc newIntegration*(data: JsonNode): Integration =
+    result = ($data).fromJson(Integration)
+
+proc newAuditLogEntry*(data: JsonNode): AuditLogEntry =
+    result = ($data).fromJson(AuditLogEntry)
+
+proc newWebhook*(data: JsonNode): Webhook =
+    result = ($data).fromJson(Webhook)
+
+proc newAuditLog*(data: JsonNode): AuditLog =
+    result = ($data).fromJson(AuditLog)
+
+proc newVoiceState*(data: JsonNode): VoiceState =
+    result = ($data).fromJson(VoiceState)
 
 proc newGuild*(data: JsonNode): Guild =
     result = ($data).fromJson(Guild)
@@ -654,20 +672,6 @@ proc newInvite*(data: JsonNode): Invite =
 
 proc newInviteCreate*(data: JsonNode): InviteCreate =
     result = ($data).fromJson(InviteCreate)
-
-proc parseHook(s: string, i: var int, v: var set[AttachmentFlags]) {.used.} =
-    var number: BiggestInt
-    parseHook(s, i, number)
-    v = cast[set[AttachmentFlags]](number)
-
-proc parseHook(s: string;
-    i: var int;
-    v: var tuple[id: string, flags: set[ApplicationFlags]]
-) =
-    var table: Table[string, JsonNode]
-    parseHook(s, i, table)
-    v.id = table["id"].str
-    v.flags = cast[set[ApplicationFlags]](table["flags"].num)
 
 proc newReady*(data: JsonNode): Ready =
     result = ($data).fromJson(Ready)
@@ -746,16 +750,6 @@ proc parseHook(s: string, i: var int;
     for o in data:
         v[o["name"].str] = newApplicationCommandInteractionDataOption(o)
 
-proc renameHook(v: var ApplicationCommandInteractionData,
-    fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var ApplicationCommandInteractionDataOption,
-    fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc parseHook(s: string, i: var int, v: var MessageComponentType) =
     var data: int
     parseHook(s, i, data)
@@ -777,7 +771,8 @@ proc parseHook(s: string, i: var int, v: var MessageComponent) =
         var field = k
         if v.kind == mctTextInput:
             case k
-            of "style": field = "input_style"
+            of "style":
+                field = "input_style"
             of "label": field = "input_label"
             else:
                 discard
@@ -866,22 +861,6 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
             discard
     if a.interaction_type == idtModalSubmit: a.component_type = mctTextInput
 
-proc renameHook(v: var Interaction, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var ApplicationCommandPermission, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var ApplicationCommandOption, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
-proc renameHook(v: var ApplicationCommand, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
-
 proc newEntitlement*(data: JsonNode): Entitlement = 
     result = data.`$`.fromJson(Entitlement)
 
@@ -930,7 +909,7 @@ proc `%%*`*(a: ApplicationCommandOption): JsonNode =
         )
 
 proc `%%*`*(a: ApplicationCommand): JsonNode =
-    assert a.name.len in 1..32
+    softassert a.name.len in 1..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api
     let commandKind = if a.kind == atNothing: atSlash else: a.kind
@@ -946,7 +925,7 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     if a.name_localizations.isSome:
         result["name_localizations"] = %*a.name_localizations
     if commandKind == atSlash:
-        assert a.description.len in 1..100
+        softassert a.description.len in 1..100
         result["description"] = %a.description
         if a.description_localizations.isSome:
             result["description_localizations"] = %*a.description_localizations
@@ -999,6 +978,41 @@ proc `%`*(p: ApplicationCommandPermission): JsonNode =
        "permission": %p.permission}
 
 proc `%`*(d: tuple[id, kind: string]): JsonNode = %*{"id": d.id, "type": d.kind}
+
+proc `%`*(t: tuple[
+        channel_id: string, duration_seconds: int,
+        custom_message: Option[string]
+    ]): JsonNode =
+    result = %*{
+        "channel_id":t.channel_id,
+        "duration_seconds":t.duration_seconds,
+    }
+    if t.custom_message.isSome: result["custom_message"] = %t.custom_message.get
+
+proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
+    %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
+
+proc `%`*(o: tuple[sku_id, asset: string]): JsonNode =
+    %*{"sku_id": o.sku_id, "asset": o.asset}
+
+proc `%`*(o: tuple[nameplate: Nameplate]): JsonNode =
+    %*{"nameplate": %o.nameplate}# this is to shut the compiler up
+
+proc `%`*(o: Overwrite): JsonNode =
+    %*{"id": o.id,
+        "type": %o.kind,
+        "allow": %cast[int](o.allow),
+        "deny": %cast[int](o.deny)}
+
+proc `%`*[T: enum](flags: set[T]): JsonNode =
+    when flags is not set[PermissionFlags]:
+        %cast[int](flags)
+    else:
+        %($cast[int](flags))
+
+proc `%`*(r: (MessageReferenceType | InteractionContextType |
+        ApplicationIntegrationType)): JsonNode =
+    %(ord r)
 
 proc `+`(a, b: JsonNode): JsonNode =
     result = %*{}

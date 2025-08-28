@@ -1,6 +1,6 @@
 import asyncdispatch, json, options
 import ../objects, ../constants, ../helpers
-import sequtils, strutils, jsony
+import sequtils, strutils
 import requester
 
 proc beginGuildPrune*(api: RestApi, guild_id: string;
@@ -661,7 +661,7 @@ proc getGuildWelcomeScreen*(
             welcome_channels: seq[WelcomeChannel]
         ])
 
-proc getGuildApplicationCommandsPermissions*(
+proc getGuildApplicationCommandPermissions*(
     api: RestApi, application_id, guild_id: string
 ): Future[seq[GuildApplicationCommandPermissions]] {.async.} =
     ## Fetches command permissions for all commands for your application in a guild

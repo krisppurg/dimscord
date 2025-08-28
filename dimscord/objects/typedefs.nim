@@ -2,8 +2,6 @@ import options as optns, json, asyncdispatch
 import tables, ../constants
 from ws import Websocket
 import std/asyncnet
-# when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-#     {.warning[DuplicateModule]: off.}
 
 type
     RestError* = object of CatchableError
@@ -14,6 +12,9 @@ type
         code*: int
         message*: string
         errors*: JsonNode
+    RequesterError* = object of CatchableError
+        ## Throws when parameter passed exceed limit or a certain condition isnt
+        ## satisfied.
     DiscordFile* = ref object
         ## A Discord file.
         name*, body*: string
@@ -154,7 +155,8 @@ type
         id*, channel_id*: string
         content*, timestamp*: string
         edited_timestamp*, guild_id*: Option[string]
-        webhook_id*, nonce*, application_id*: Option[string]
+        webhook_id*, application_id*: Option[string]
+        nonce*: (Option[string], Option[int])
         tts*, mention_everyone*, pinned*: bool
         kind*: MessageType
         flags*: set[MessageFlags]
@@ -167,7 +169,7 @@ type
         attachments*: seq[Attachment]
         embeds*: seq[Embed]
         reactions*: Table[string, Reaction]
-        activity*: Option[tuple[kind: int, party_id: string]]
+        activity*: Option[tuple[kind: MessageActivityType, party_id: string]]
         thread*: Option[GuildChannel]
         application*: Option[Application]
         interaction_metadata*: Option[MessageInteractionMetadata]
@@ -335,6 +337,7 @@ type
         messages*: Table[string, Message]
         icon_emoji*: Option[Emoji]
         last_message_id*: string
+        flags*: set[ChannelFlags]
         case kind*: ChannelType
         of ctGuildVoice, ctGuildStageVoice:
             rtc_region*: Option[string]
@@ -345,7 +348,6 @@ type
             total_message_sent*: Option[int]
             thread_metadata*: ThreadMetadata
             member*: Option[ThreadMember]
-            flags*: set[ChannelFlags]
             applied_tags*: Option[seq[string]]
         of ctGuildForum, ctGuildMedia:
             available_tags*: seq[ForumTag]
@@ -387,7 +389,6 @@ type
         ## https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-asset-image
         small_text*, small_image*: string
         large_text*, large_image*: string
-    GameAssets* = ActivityAssets
     Activity* = object
         name*: string
         kind*: ActivityType
@@ -400,7 +401,7 @@ type
         party*: Option[tuple[id: string, size: seq[int]]] ## todo
         assets*: Option[ActivityAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
-        buttons*: seq[tuple[label, url: string]]
+        buttons*: seq[tuple[label, url: string]] # !!!! parsehooks
         instance*: bool
     Presence* = ref object
         user*: User
@@ -641,14 +642,15 @@ type
         verify_key*: string
         rpc_origins*, tags*: seq[string]
         redirect_uris*: Option[seq[string]]
-        approximate_guild_count*: Option[int]
+        approximate_guild_count*, approximate_user_install_count*: Option[int]
+        approximate_user_authorization_count*: Option[int]
         bot_public*, bot_require_code_grant*: bool
         terms_of_service_url*, privacy_policy_url*: Option[string]
         interactions_endpoint_url*: Option[string]
         guild_id*, custom_install_url*: Option[string]
         icon*, primary_sku_id*, slug*, cover_image*: Option[string]
         role_connections_verification_url*: Option[string]
-        interactions_type_config*: Table[ApplicationIntegrationType,
+        integration_types_config*: Table[ApplicationIntegrationType,
             ApplicationIntegrationTypeConfig]
         owner*, bot*: PartialUser
         guild*: PartialGuild
@@ -656,7 +658,7 @@ type
         flags*: set[ApplicationFlags]
         install_params*: ApplicationInstallParams
         event_webhooks_url*: Option[string]
-        # event_webhooks_status*: EventWebhookStatus
+        event_webhooks_status*: EventWebhookStatus
         event_webhooks_types*: seq[string]
     ApplicationCommand* = object
         id*, application_id*, version*: string
@@ -670,6 +672,7 @@ type
         options*: seq[ApplicationCommandOption]
         integration_types*: Option[seq[ApplicationIntegrationType]]
         contexts*: Option[seq[InteractionContextType]]
+        handler*: EntryPointCommandHandlerType
     GuildApplicationCommandPermissions* = object
         id*, application_id*, guild_id*: string
         permissions*: seq[ApplicationCommandPermission]
@@ -708,7 +711,7 @@ type
         ## ```
         name*: string
         name_localizations*: Option[Table[string, string]]
-        value*: (Option[string], Option[int])
+        value*: (Option[string], Option[int]) # !!!!!!!!
     MessageInteractionMetadata* = object
         id*, name*: string
         kind*: InteractionType
@@ -934,7 +937,7 @@ type
             emoji*: Option[Emoji]
             url*, sku_id*: Option[string]
         of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
-            default_values*: seq[tuple[id, kind: string]] # !
+            default_values*: seq[tuple[id, kind: string]]
             options*: seq[SelectMenuOption]
             channel_types*: seq[ChannelType] # !
             min_values*, max_values*: Option[int]
@@ -997,7 +1000,7 @@ type
         id*: string
         user_id*, target_id*, reason*: Option[string]
         before*, after*: Table[string, AuditLogChangeValue]
-        opts*: Option[AuditLogOptions]
+        options*: Option[AuditLogOptions]
         action_type*: AuditLogEntryType
     AuditLog* = object
         webhooks*: seq[Webhook]
@@ -1158,15 +1161,28 @@ proc kind*(c: CacheTable, channel_id: string): ChannelType =
     else:
         raise newException(CacheError, "Channel doesn't exist in cache.")
 
-proc guild*(c: CacheTable, obj: ref object | object): Guild =
+proc guild*(c: CacheTable, obj: ref object | object | string): Guild =
     ## Get guild from respective object via cache.
     ## This is a nice shortcut.
-    assert compiles(obj.guild_id), "guild_id field does not exist in " & $typeof(obj)
-    when obj.guild_id is Option[string]:
-        assert obj.guild_id.isSome, $typeof(obj) & ".guild_id is none!"
-        c.guilds[obj.guild_id.get]
+    # assert compiles(obj.guild_id), "guild_id field does not exist in " & $typeof(obj)
+    # when obj.guild_id is Option[string]:
+    #     assert obj.guild_id.isSome, $typeof(obj) & ".guild_id is none!"
+    #     c.guilds[obj.guild_id.get]
+    # else:
+    #     c.guilds[obj.guild_id]
+    when not (obj is string):
+        assert(
+            compiles(obj.guild_id),
+            "guild_id field does not exist in " & $typeof(obj)
+        )
+    
+        when obj.guild_id is Option[string]: 
+            assert obj.guild_id.isSome, $typeof(obj) & ".guild_id is none!"
+            c.guilds[obj.guild_id.get]
+        else:
+            c.guilds[obj.guild_id]
     else:
-        c.guilds[obj.guild_id]
+        c.guilds[obj]
 
 proc gchannel*(c: CacheTable, obj: ref object | object | string): GuildChannel =
     ## Get channel from respective object via cache.

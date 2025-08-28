@@ -8,7 +8,7 @@ var
     ratelimited, global = false
     global_retry_after = 0.0
     invalid_requests = 0
-
+        
 proc `<=`(x, y: HttpCode): bool =
     result = x.int <= y.int
 
@@ -91,7 +91,7 @@ proc request*(api: RestApi, meth, endpoint: string;
     ## * `mp` - multipart data which is used to attach files
     ## * `auth` - if authentication is needed.
     ## * `meth` - method of http request. definitely not illegal ;).
-    if api.token == "Bot  ":
+    if api.token == "Bot ":
         raise newException(Exception, "The token you specified was empty.")
     let route = endpoint.parseRoute(meth)
 
@@ -272,42 +272,6 @@ proc request*(api: RestApi, meth, endpoint: string;
     except:
         raise
 
-proc `%`*(t: tuple[
-        channel_id: string, duration_seconds: int,
-        custom_message: Option[string]
-    ]): JsonNode =
-    result = %*{
-        "channel_id":t.channel_id,
-        "duration_seconds":t.duration_seconds,
-    }
-    if t.custom_message.isSome: result["custom_message"] = %t.custom_message.get
-
-# proc `%`*(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode =
-#     %*{"keyword_filter":tm.keyword_filter,"presets":tm.presets}
-
-proc `%`*(o: tuple[sku_id, asset: string]): JsonNode =
-    %*{"sku_id": o.sku_id, "asset": o.asset}
-
-proc `%`*(o: tuple[nameplate: Nameplate]): JsonNode =
-    %*{"nameplate": %o.nameplate}# this is to shut the compiler up
-
-proc `%`*(o: Overwrite): JsonNode =
-    %*{"id": o.id,
-        "type": %o.kind,
-        "allow": %cast[int](o.allow),
-        "deny": %cast[int](o.deny)}
-
-type SomeFlags = (set[MessageFlags] | set[AttachmentFlags] | set[
-    ChannelFlags] | set[UserFlags] | set[RoleFlags]) # dont judge the line break lol
-
-proc `%`*(flags: SomeFlags): JsonNode =
-    %cast[int](flags)
-
-proc `%`*(flags: set[PermissionFlags]): JsonNode =
-    %($cast[int](flags))
-
-proc `%`*(r: MessageReferenceType): JsonNode = json.`%*`(int r)
-
 proc append*(mpd: var MultipartData;
         attachments: seq[Attachment];
         pl: var JsonNode; is_interaction = false) =
@@ -328,7 +292,7 @@ proc append*(mpd: var MultipartData;
             body = a.file
             name = "files[" & $i & "]"
 
-        assert a.filename != "", "Attachment name needs to be provided."
+        softassert a.filename != "", "Attachment name needs to be provided."
 
         let att = splitFile(a.filename)
 
@@ -350,7 +314,7 @@ proc append*(mpd: var MultipartData;
 
     for file in files:
         var contenttype = ""
-        assert file.name != "", "file name needs to be provided."
+        softassert file.name != "", "file name needs to be provided."
 
         let fil = splitFile(file.name)
 

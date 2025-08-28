@@ -1,4 +1,4 @@
-import asyncdispatch, json, options, jsony
+import asyncdispatch, json, options
 import ../objects, ../constants, ../helpers
 import sequtils, requester
 

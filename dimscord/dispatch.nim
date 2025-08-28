@@ -1,12 +1,11 @@
 import objects, constants
 import options, json, asyncdispatch
-import sequtils, tables, jsony, macros
+import sequtils, tables, macros
 import helpers {.all.}
 import std/[sugar, strutils]
 
-when (NimMajor, NimMinor, NimPatch) >= (1, 6, 0):
-    {.warning[HoleEnumConv]: off.}
-    {.warning[CaseTransition]: off.}
+{.warning[HoleEnumConv]: off.}
+{.warning[CaseTransition]: off.}
 
 when defined(dimscordVoice):
     from voice import pause, disconnect
@@ -49,12 +48,6 @@ macro checkAndCall(s: Shard, event: static[DispatchEvent], args: varargs[untyped
 
 macro enumElementsAsSet(enm: typed): untyped =
     result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
-
-func fullSet*[T](U: typedesc[T]): set[T] {.inline.} =
-    when T is Ordinal:
-        {T.low..T.high}
-    else: # Hole filled enum
-        enumElementsAsSet(T)
 
 proc addMsg(c: GuildChannel, m: Message, data: string;
         prefs: CacheTablePrefs) {.async.} =

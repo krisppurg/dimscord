@@ -1,6 +1,6 @@
 import httpclient, asyncdispatch, options
 import ../objects, ../constants
-import tables, os, json, sequtils, jsony
+import tables, os, json, sequtils
 import uri, ../helpers, requester
 
 proc sendMessage*(api: RestApi, channel_id: string;
@@ -18,8 +18,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
         enforce_nonce = none bool): Future[Message] {.async.} =
     ## Sends a Discord message.
     ## - `nonce` This can be used for optimistic message sending
-    assert content.len in 0..2000, "Message too long to send :: "&($content.len)
-    assert sticker_ids.len in 0..3
+    softAssert content.len in 0..2000, "Message too long to send :: "&($content.len)
+    softAssert sticker_ids.len in 0..3
     var payload = %*{
         "content": content,
         "tts": tts,
@@ -43,8 +43,8 @@ proc sendMessage*(api: RestApi, channel_id: string;
     if sticker_ids.len > 0: payload["sticker_ids"] = %sticker_ids
     if embeds.len > 0: payload["embeds"] = %embeds
     if poll.isSome:
-        assert poll.get.duration in 1..768
-        assert(poll.get.layout_type.int != 0,
+        softAssert poll.get.duration in 1..768
+        softAssert(poll.get.layout_type.int != 0,
             "Must include 'layout_type' field in PollRequest object or set value to plDefault.")
         payload["poll"] = %poll.get
         payload["poll"]["layout_type"] = %int(poll.get.layout_type)
@@ -76,7 +76,7 @@ proc editMessage*(api: RestApi, channel_id, message_id: string;
         embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
         components = newSeq[MessageComponent]()): Future[Message] {.async.} =
     ## Edits a discord message.
-    assert content.len <= 2000
+    softAssert content.len <= 2000
     var payload = %*{
         "content": content,
         "tts": tts,
@@ -151,7 +151,7 @@ proc bulkDeleteMessages*(api: RestApi, channel_id: string;
         message_ids: seq[string] | seq[Message]; reason = "") {.async.} =
     ## Bulk deletes messages.
     template req(data: untyped) {.dirty.} =
-        assert message_ids.len in 1..100
+        softAssert message_ids.len in 1..100
         discard await api.request(
             "POST",
             endpointBulkDeleteMessages(channel_id),
@@ -250,7 +250,7 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
     ## - `webhook_id` can be used as application id
     ## - `webhook_token` can be used as interaction token
     ## - `flags` are only used for interaction responses
-    assert embeds.len in 0..10
+    softAssert embeds.len in 0..10
 
     var
         url = endpointWebhookToken(webhook_id,webhook_token) & "?wait=" & $wait
@@ -280,8 +280,8 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
             payload["components"].add %%*component
 
     if poll.isSome:
-        assert poll.get.duration in 1..768
-        assert(poll.get.layout_type.int != 0,
+        softAssert poll.get.duration in 1..768
+        softAssert(poll.get.layout_type.int != 0,
             "Must include 'layout_type' field in PollRequest object or set value to plDefault.")
 
         payload["poll"] = %poll.get
@@ -347,7 +347,7 @@ proc editWebhookMessage*(api: RestApi;
     ## - `webhook_id` can also be application_id
     ## - `webhook_token` can also be interaction token.
     ## - `message_id` can be `@original`
-    assert embeds.len in 0..10
+    softAssert embeds.len in 0..10
     var endpoint = endpointWebhookMessage(webhook_id, webhook_token, message_id)
     if thread_id.isSome: endpoint &= "?thread_id=" & thread_id.get
 
@@ -517,7 +517,7 @@ proc startThreadWithMessage*(api: RestApi,
 ): Future[GuildChannel] {.async.} =
     ## Starts a public thread.
     ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
-    assert name.len in 1..100
+    softAssert name.len in 1..100
     result = (await api.request(
         "POST",
         endpointChannelMessagesThreads(channel_id, message_id),

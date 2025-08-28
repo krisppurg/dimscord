@@ -4,7 +4,7 @@
 when defined(dimscordDebug):
     import strformat
 #{.hint[XDeclaredButNotUsed]: off.} Unsure when am I gonna use this
-import strutils, regex
+# import strutils, regex
 
 type
     PermissionFlags* = enum
@@ -179,13 +179,10 @@ type
         cfRequireTag = 4
         cfHideMediaDownloadOptions = 15
     SkuFlags* = enum
+        sfNone,
         sfAvailable         = 2
         sfGuildSubscription = 7
         sfUserSubscription  = 8
-    SubscriptionStatus* = enum
-        ssActive = 0
-        ssEnding,
-        ssInactive
 const
     libName* =  "Dimscord"
     libVer* =   "1.6.0"
@@ -248,7 +245,9 @@ type
         mtGuildIncidentReportFalseAlarm =           39
         mtPurchaseNotification =                    44
         mtPollResult =                              46
+        mtUnknown
     MessageActivityType* = enum
+        matNone =        0
         matJoin =        1
         matSpectate =    2
         matListen =      3
@@ -256,6 +255,7 @@ type
     MessageReferenceType* = enum
         mrtDefault = 0
         mrtForward = 1
+        mrtUnknown = 2
     ChannelType* = enum
         ctGuildText =          0
         ctDirect =             1
@@ -315,10 +315,16 @@ type
         whIncoming =    1
         whFollower =    2
         whApplication = 3
+    EventWebhookStatus* = enum
+        ewsNone               = 0
+        ewsDisabled           = 1
+        ewsEnabled            = 2
+        ewsDisabledByDiscord  = 3
     IntegrationExpireBehavior* = enum
         iebRemoveRole = 0
         iebKick =       1
     AuditLogEntryType* = enum
+        aleUnknown =                            0
         aleGuildUpdate =                        1
         aleChannelCreate =                      10
         aleChannelUpdate =                      11
@@ -456,10 +462,12 @@ type
         itGroupDm = 1
         itFriend  = 2
     InviteTargetType* = enum
+        ittUnknown
         ittStream              = 1
         ittEmbeddedApplication = 2
     PrivacyLevel* = enum
         plGuildOnly = 2
+        plUnknown
     UserPremiumType* = enum
         uptNone         = 0
         uptNitroClassic = 1
@@ -493,18 +501,23 @@ type
         mctSeparator         = 14
         mctContainer         = 17
     StickerType* = enum
+        stUnknown
         stStandard = 1
         stGuild    = 2
     PollLayoutType* = enum
+        plNone
         plDefault = 1
     GuildScheduledEventPrivacyLevel* = enum
         splGuildOnly = 2
+        splUnknown
     GuildScheduledEventStatus* = enum
+        esUnknown
         esScheduled = 1
         esActive    = 2
         esCompleted = 3
         esCanceled  = 4
     EntityType* = enum
+        etNone
         etStageInstance = 1
         etVoice         = 2
         etExternal      = 3
@@ -539,33 +552,41 @@ type
         atPremium = 0
         atBasic   = 1
     ModerationActionType* = enum
+        matUnknown
         matBlockMessage     = 1
         matSendAlertMessage = 2
         matTimeout          = 3
     ModerationTriggerType* = enum
+        mttUnknown
         mttKeyword       = 1
         mttHarmfulLink   = 2
         mttSpam          = 3
         mttKeywordPreset = 4
         mttMentionSpam   = 5
     KeywordPresetType* = enum
+        kptUnknown
         kptProfanity =     1
         kptSexualContent = 2
         kptSlurs         = 3
     ForumSortOrder* = enum
         fsoLatestActivity = 0
         fsoCreationDate   = 1
+        fsoUnknown
     ForumLayout* = enum
         flNotSet      = 0
         flListView    = 1
         flGalleryView = 2
+        flUnknown
     GuildOnboardingMode* = enum
         omDefault  = 0,
-        omAdvanced = 1
+        omAdvanced = 1,
+        omUnknown
     GuildOnboardingPromptType* = enum
         ptMultipleChoice = 0,
-        ptDropdown       = 1
+        ptDropdown       = 1,
+        ptUnknown
     EntitlementType* = enum
+        etUnknown = 0
         etPurchase = 1
         etPremiumSubscription,
         etDeveloperGift,
@@ -575,11 +596,20 @@ type
         etPremiumPurchase,
         etApplicationSubscription
     SkuType* = enum
-        stNone = 0 # this is so useless
         stDurable           = 2
         stConsumable        = 3
         stSubscription      = 5
         stSubscriptionGroup = 6
+        stNone
+    SubscriptionStatus* = enum
+        ssActive = 0
+        ssEnding,
+        ssInactive,
+        ssUnknown
+    EntryPointCommandHandlerType* = enum
+        ephUnknown
+        ephAppHandler            = 1
+        ephDiscordLaunchActivity = 2
     DispatchEvent* = enum
         Unknown
         VoiceStateUpdate              = "VOICE_STATE_UPDATE"

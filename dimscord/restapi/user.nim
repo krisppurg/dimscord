@@ -1,4 +1,4 @@
-import asyncdispatch, json, options, jsony, httpclient
+import asyncdispatch, json, options, httpclient
 import ../objects, ../constants
 import tables, sequtils, strutils
 import requester
@@ -170,6 +170,7 @@ proc editCurrentApplication*(api: RestApi;
     payload.loadOpt(custom_install_url, description, icon,
         role_connections_verification_url,
         install_params, cover_image, interactions_endpoint_url)
+
     if tags.isSome:
         payload["tags"] = %* some tags.get.mapIt(%*it)
     if integration_types_config.isSome:
@@ -188,9 +189,11 @@ proc editCurrentApplication*(api: RestApi;
 proc registerApplicationCommand*(api: RestApi; application_id: string;
         name: string; description, guild_id = "";
         name_localizations,description_localizations=none Table[string,string];
-        kind = atSlash; dm_permission = true; nsfw = false;
-        default_member_permissions = none PermissionFlags;
-        options: seq[ApplicationCommandOption] = @[]
+        kind = atSlash; nsfw = false;
+        default_member_permissions = none set[PermissionFlags];
+        options: seq[ApplicationCommandOption] = @[];
+        integration_types = none seq[ApplicationIntegrationType];
+        contexts = none seq[InteractionContextType];
 ): Future[ApplicationCommand] {.async.} =
     ## Create a global or guild only slash command.
     ##
@@ -201,9 +204,8 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
     ## overwrite the old command.
-    assert name.len in 1..32
+    softAssert name.len in 1..32
     var payload = %*{"name": name,
-                     "dm_permission": dm_permission,
                      "type": ord kind}
 
     if default_member_permissions.isSome:
@@ -214,12 +216,18 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     payload.loadOpt(name_localizations, description_localizations)
 
     if kind notin {atUser, atMessage}:
-        assert description.len in 1..100
+        softAssert description.len in 1..100
         payload["description"] = %description
     else:
-        assert description == "", "Context menu commands cannot have description"
+        softAssert description == "", "Context menu commands cannot have description"
 
     if options.len > 0: payload["options"] = %options.mapIt(%%*it)
+
+    if integration_types.isSome:
+        payload["integration_types"] = %integration_types.get.mapit(%(ord it))
+    if contexts.isSome:
+        payload["contexts"] = %contexts.get.mapit(%(ord it))
+
     var endpoint = endpointGlobalCommands(application_id)
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id)
@@ -279,8 +287,11 @@ proc bulkOverwriteApplicationCommands*(api: RestApi;
 proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
         guild_id, name, description = "";
         name_localizations,description_localizations = none Table[string,string];
-        default_member_permissions = none PermissionFlags; nsfw = false;
-        options: seq[ApplicationCommandOption] = @[]
+        default_member_permissions = none set[PermissionFlags];
+        nsfw = false;
+        options: seq[ApplicationCommandOption] = @[];
+        contexts = none seq[InteractionContextType];
+        integration_types = none seq[ApplicationIntegrationType];
 ): Future[ApplicationCommand] {.async.} =
     ## Modify slash command for a specific application.
     ##
@@ -293,14 +304,20 @@ proc editApplicationCommand*(api: RestApi; application_id, command_id: string;
     if guild_id != "":
         endpoint = endpointGuildCommands(application_id, guild_id, command_id)
     if name != "":
-        assert name.len in 1..32
+        softAssert name.len in 1..32
         payload["name"] = %name
+
     if description != "":
-        assert description.len in 1..100
+        softAssert description.len in 1..100
         payload["description"] = %description
     if options.len > 0: payload["options"] = %(options.map(`%%*`))
 
     payload.loadOpt(name_localizations, description_localizations)
+
+    if integration_types.isSome:
+        payload["integration_types"] = %integration_types.get.mapit(%(ord it))
+    if contexts.isSome:
+        payload["contexts"] = %contexts.get.mapit(%(ord it))
 
     if default_member_permissions.isSome:
         payload["default_member_permissions"] = %(
@@ -347,7 +364,7 @@ proc interactionResponseMessage*(api: RestApi,
             if response.flags.len!=0:
                 payload["data"]["flags"] = %response.flags
         else:
-            raise newException(ValueError,
+            raise newException(RequesterError,
                 "Invalid reponse kind for a message-based interaction response"
             )
 

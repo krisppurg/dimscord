@@ -242,6 +242,7 @@ proc logParser*(msg: string, s = "") =
 
 proc parseHook[T](s: string, i: var int, v: var set[T]) =
     var data: JsonNode
+    echo "hiya"
     jsony.parseHook(s, i, data)
 
     case data.kind:
@@ -258,7 +259,16 @@ proc parseHook[T](s: string, i: var int, v: var set[T]) =
 proc fromJson*[T](s: string, x: typedesc[T]): T =
     try:
         var i = 0
-        jsony.parseHook(s, i, result)
+        ## Draft code
+        when (NimMajor, NimMinor, NimPatch) > (2, 0, 4):
+            parseHook(s, i, result)
+        else:
+            when not compiles(objects.parseHook(s, i, result)):
+                log "trying to parse " & $x & ", but going to use jsony's version"
+                jsony.parseHook(s, i, result)
+            else:
+                log "trying to parse " & $x & ", but going to use objects's version"
+                objects.parseHook(s, i, result)
     except:
         let message = getCurrentExceptionMsg()
         logParser(message, s)
@@ -315,6 +325,7 @@ proc parseHook[T: enum](s: string, i: var int, v: var T) =
 
 proc parseHook[T](s: string, i: var int, v: var seq[T]) =
     try:
+        log("trying to parse the sequence of " & $T)
         jsony.parseHook(s, i, v)
     except jsony.JsonError:
         logParser("Error parsing generic type " & $type(v) & " - using default", s)
@@ -568,6 +579,7 @@ proc parseHook(s: string, i: var int, g: var Guild) =
     g = new Guild
     g.id = data["id"].str # just in case
 
+    log "I am calling the Guild object"
     for v in data{"members"}.getElems:
         v["guild_id"] = %*g.id
         let member = v.`$`.fromJson Member
@@ -583,6 +595,7 @@ proc parseHook(s: string, i: var int, g: var Guild) =
                 for v in val.getElems:
                     let state = v.`$`.fromJson(VoiceState)
 
+                    echo "peak a boo"
                     g.members[state.user_id].voice_state = some state
                     g.voice_states[state.user_id] = state
             of "threads":
@@ -606,6 +619,8 @@ proc parseHook(s: string, i: var int, g: var Guild) =
                     g[k] = val
         else:
             discard
+
+
 
 proc newMember*(data: JsonNode): Member =
     result = ($data).fromJson(Member)
@@ -1027,14 +1042,14 @@ proc `&=`(a: var JsonNode, b: JsonNode) =
 proc `%%*`*(comp: MessageComponent): JsonNode =
     result = %*{"type": comp.kind.ord}
 
-    result.loadOpts(comp, spoiler, placeholder, disabled, id)
+    result.loadOpts(comp, spoiler, placeholder, disabled, id, label, description)
     case comp.kind:
     of mctNone: discard
     of mctActionRow, mctContainer:
         result["components"] = %comp.components.mapIt(%%*it)
         result.loadOpts(comp, accent_color)
     of mctButton:
-        result &= %*{"label": comp.label, "style": comp.style.ord}
+        result &= %*{"style": comp.style.ord}
         
         result.loadOpts(comp, custom_id, url, sku_id)
         if comp.emoji.isSome:
@@ -1056,7 +1071,6 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
         result.loadOpts(comp, value, required, min_length, max_length)
     of mctThumbnail:
         result &= %*{"media": %comp.media}
-        result.loadOpts(comp, description)
     of mctSection:
         result &= %*{"components": comp.sect_components.mapIt(%it),
                      "accessory": %%*comp.accessory}
@@ -1067,3 +1081,5 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
                      "size": comp.size}
     of mctSeparator: result.loadOpts(comp, divider, spacing)
     of mctTextDisplay: result["content"] = %comp.content
+    of mctLabel:
+        result &= %*{"component": %%*comp.component}

@@ -500,6 +500,7 @@ type
         mctFile              = 13
         mctSeparator         = 14
         mctContainer         = 17
+        mctLabel             = 18
     StickerType* = enum
         stUnknown
         stStandard = 1
@@ -683,6 +684,8 @@ const
     deInviteCreate*        = DispatchEvent.InviteCreate
     deThreadListSync*      = DispatchEvent.ThreadListSync
     deThreadMembersUpdate* = DispatchEvent.ThreadMembersUpdate
+
+const mctStringSelect* = mctSelectMenu ## alias equivalent
 
 const
     ActionRow* {.deprecated: "use mctActionRow".}                 = mctActionRow

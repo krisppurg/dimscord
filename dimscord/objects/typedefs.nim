@@ -156,7 +156,8 @@ type
         content*, timestamp*: string
         edited_timestamp*, guild_id*: Option[string]
         webhook_id*, application_id*: Option[string]
-        nonce*: (Option[string], Option[int])
+        nonce*: Option[string]
+        # nonce*: (Option[string], Option[int])
         tts*, mention_everyone*, pinned*: bool
         kind*: MessageType
         flags*: set[MessageFlags]
@@ -926,6 +927,7 @@ type
         disabled*: Option[bool]
         placeholder*: Option[string]
         spoiler*: Option[bool]
+        label*: Option[string]
         case kind*: MessageComponentType
         of mctNone: discard
         of mctActionRow, mctContainer:
@@ -933,17 +935,16 @@ type
             accent_color*: Option[int] ## container only
         of mctButton: # Message Component
             style*: ButtonStyle
-            label*: Option[string]
             emoji*: Option[Emoji]
             url*, sku_id*: Option[string]
         of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
             default_values*: seq[tuple[id, kind: string]]
             options*: seq[SelectMenuOption]
-            channel_types*: seq[ChannelType] # !
+            channel_types*: seq[ChannelType]
             min_values*, max_values*: Option[int]
         of mctTextInput:
-            input_style*: Option[TextInputStyle] # also known as "style"
-            input_label*, value*: Option[string] # also known as "label"
+            input_style*: Option[TextInputStyle]
+            input_label*, value*: Option[string]
             required*: Option[bool]
             min_length*, max_length*: Option[int]
         of mctThumbnail:
@@ -963,6 +964,8 @@ type
             spacing*: Option[int]
         of mctTextDisplay:
             content*: string
+        of mctLabel:
+            component*: MessageComponent
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]

@@ -120,6 +120,7 @@ type
         mfHasSnapshot,
         mfIsComponentsV2
     AttachmentFlags* = enum
+        afNone = 0
         afIsRemix = 2
     UserFlags* = enum
         ## Note on this enum:

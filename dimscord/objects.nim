@@ -11,7 +11,7 @@
 {.warning[CaseTransition]: off.}
 
 import options
-import sequtils, strutils, jsony {.all.}
+import sequtils, strutils, strformat, jsony {.all.}
 import tables, sets, typetraits
 
 include objects/typedefs, objects/macros
@@ -213,21 +213,14 @@ proc newDiscordClient*(token: string;
             entitlement_delete: proc(s: Shard, e: Entitlement) {.async.} = discard
         ))
 
-proc extractFieldName(
-        s: string, i: var int): string =
-    var fieldName = ""
-    for idx in 3..i:
-        let c = s[i-idx..i-idx][0]
-        if c != "\""[0]:
-            fieldName = c & fieldName
+proc extractFieldName(s: string, i: var int): string =
+    result = ""
+    for idx in countdown(i-1, 0):
+        let isQuote = s[idx] == "\""[0]
+        if result == "":
+            if isQuote: result = $s[idx-1] else: continue 
         else:
-            break
-    
-    return fieldName
-
-# proc extractJsonyError[T: object | ref object | tuple](
-#         s: string, i: var int; v: var T): tuple[target, fieldname: string] =
-#     extractJsonyError(T, i, v)
+            if isQuote: return result[1..^1] else: result = s[idx-1] & result
 
 proc logParser*(msg: string, s = "") =
     when defined(dimscordDebug):
@@ -242,7 +235,6 @@ proc logParser*(msg: string, s = "") =
 
 proc parseHook[T](s: string, i: var int, v: var set[T]) =
     var data: JsonNode
-    echo "hiya"
     jsony.parseHook(s, i, data)
 
     case data.kind:
@@ -259,22 +251,14 @@ proc parseHook[T](s: string, i: var int, v: var set[T]) =
 proc fromJson*[T](s: string, x: typedesc[T]): T =
     try:
         var i = 0
-        ## Draft code
-        when (NimMajor, NimMinor, NimPatch) > (2, 0, 4):
-            parseHook(s, i, result)
-        else:
-            when not compiles(objects.parseHook(s, i, result)):
-                log "trying to parse " & $x & ", but going to use jsony's version"
-                jsony.parseHook(s, i, result)
-            else:
-                log "trying to parse " & $x & ", but going to use objects's version"
-                objects.parseHook(s, i, result)
-    except:
+        parseHook(s, i, result)
+    except jsony.JsonError:
         let message = getCurrentExceptionMsg()
         logParser(message, s)
         try:
             var offset = parseInt(message.split(' ')[^1])
-            log("target: " & $x & ", fieldname: " & extractFieldName(s, offset))
+            let fieldname = extractFieldName(s, offset)
+            log(fmt"Error during JSON serialization - there's a type mismatch on field: '{fieldname}' inside {$x}")
             skipValue(s, offset)
         except:
             raise
@@ -288,7 +272,7 @@ proc parseHook(s: string, i: var int, v: var (int|float)) =
         when v is float:
             v = data.fnum
         else:
-            logParser("Expected float but got an integer instead", s)
+            logParser(fmt"Expected integer but got float instead at offset: {$i}", s)
             v = -1
     of JInt:
         when v is int: v = data.num else: v = float(data.num)
@@ -303,7 +287,6 @@ proc parseHook(s: string, i: var int, v: var (int|float)) =
     else:
         when v is float: v = -1.0 else: v = -1
 
-
 proc parseHook[T: enum](s: string, i: var int, v: var T) =
     var data: JsonNode
     jsony.parseHook(s, i, data)
@@ -311,28 +294,26 @@ proc parseHook[T: enum](s: string, i: var int, v: var T) =
     if data.kind == JInt and data.getInt in ord(T.low)..ord(T.high):
         v = type(v)(data.getInt)
     else:
-        logParser("Error parsing enum " & $T & " - using default", s)
-        skipValue(s, i)
-
         var default = T.low
         if not (($default).contains("Unknown") or ($default).contains("None")):
             when v is ChannelType:
                 default = ctGuildText
             else:
                 default = T.high
+        logParser(fmt"Error parsing enum {$T} - using default: {default}", s)
 
+        skipValue(s, i)
         v = default
 
 proc parseHook[T](s: string, i: var int, v: var seq[T]) =
     try:
-        log("trying to parse the sequence of " & $T)
         jsony.parseHook(s, i, v)
-    except jsony.JsonError:
-        logParser("Error parsing generic type " & $type(v) & " - using default", s)
+    except:
+        logParser(fmt"Error parsing generic type {$type(v)} - using default: @[]", s)
         skipValue(s, i)
         v = @[]
 
-proc parseHook(s: string, i: var int, v: var string) = # todo test this out
+proc parseHook(s: string, i: var int, v: var string) =
     try:
         jsony.parseHook(s, i, v)
     except:
@@ -472,13 +453,22 @@ proc parseHook(s: string, i: var int;
     )
 
 proc newActivity*(data: JsonNode): Activity =
-    result = ($data).fromJson(Activity) # ! VERY ERROR PRONE
+    result = ($data).fromJson(Activity)
+
+proc newRole*(data: JsonNode): Role =
+    result = ($data).fromJson(Role)
+    if "tags" in data:
+        let tag = data["tags"]
+        result.tags.get.premium_subscriber = some "premium_subscriber" in tag
+        result.tags.get.available_for_purchase = some(
+            "available_for_purchase" in tag)
+        result.tags.get.guild_connections = some "guild_connections" in tag
 
 proc parseHook(s: string, i: var int, v: var Table[string, Role]) {.used.} =
-    var roles: seq[Role]
+    var roles: seq[JsonNode]
     parseHook(s, i, roles)
     for role in roles:
-        v[role.id] = role
+        v[role["id"].str] = newRole role
 
 proc parseHook(s: string, i: var int, v: var Table[string, Sticker]) {.used.} =
     var stickers: seq[Sticker]
@@ -509,7 +499,7 @@ proc `[]=`(obj: ref object, fld: string, val: JsonNode) =
         if name == fld:
             field = ($val).fromJson(typeof(field))
             break
-    
+
 proc newAuditLogChangeValue(data: JsonNode, key: string): AuditLogChangeValue =
     case data.kind:
     of JString:
@@ -579,7 +569,6 @@ proc parseHook(s: string, i: var int, g: var Guild) =
     g = new Guild
     g.id = data["id"].str # just in case
 
-    log "I am calling the Guild object"
     for v in data{"members"}.getElems:
         v["guild_id"] = %*g.id
         let member = v.`$`.fromJson Member
@@ -595,7 +584,6 @@ proc parseHook(s: string, i: var int, g: var Guild) =
                 for v in val.getElems:
                     let state = v.`$`.fromJson(VoiceState)
 
-                    echo "peak a boo"
                     g.members[state.user_id].voice_state = some state
                     g.voice_states[state.user_id] = state
             of "threads":
@@ -620,22 +608,11 @@ proc parseHook(s: string, i: var int, g: var Guild) =
         else:
             discard
 
-
-
 proc newMember*(data: JsonNode): Member =
     result = ($data).fromJson(Member)
 
 proc newOverwrite*(data: JsonNode): Overwrite =
     result = ($data).fromJson(Overwrite)
-
-proc newRole*(data: JsonNode): Role =
-    result = ($data).fromJson(Role)
-    if "tags" in data:
-        let tag = data["tags"]
-        result.tags.get.premium_subscriber = some "premium_subscriber" in tag
-        result.tags.get.available_for_purchase = some(
-            "available_for_purchase" in tag)
-        result.tags.get.guild_connections = some "guild_connections" in tag
 
 proc newUser*(data: JsonNode): User =
     result = ($data).fromJson(User)
@@ -784,15 +761,12 @@ proc parseHook(s: string, i: var int, v: var MessageComponent) =
 
     for k, val in data.fields:
         var field = k
-        if v.kind == mctTextInput:
-            case k
-            of "style":
-                field = "input_style"
-            of "label": field = "input_label"
-            else:
-                discard
-        elif v.kind == mctSection:
+        case v.kind:
+        of mctTextInput:
+            if k == "style": field = "input_style"
+        of mctSection:
             if k == "components": field = "sect_components"
+        else: discard
 
         v[field] = val
 
@@ -803,10 +777,6 @@ proc parseHook(s: string, i: var int, v: var ApplicationCommandType) =
         v = ApplicationCommandType number
     except:
         v = atSlash # just by default incase
-
-proc renameHook(v: var ResolvedChannel, fieldName: var string) {.used.} =
-    if fieldName == "type":
-        fieldName = "kind"
 
 proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) =
     var data: JsonNode
@@ -1065,8 +1035,7 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
     of mctTextInput:
         result &= %*{"custom_id":   comp.custom_id.get,
                      "placeholder": comp.placeholder,
-                     "style":       ord comp.input_style.get,
-                     "label":       comp.input_label.get}
+                     "style":       ord comp.input_style.get}
 
         result.loadOpts(comp, value, required, min_length, max_length)
     of mctThumbnail:

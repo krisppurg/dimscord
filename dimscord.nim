@@ -71,8 +71,11 @@
 ## - `-d:discordv9` Discord API v9 is used for threads (as in discord's channel type).
 ## - `-d:dimscordVoice` Enables the voice module. Requires libsodium and libopus
 ## - `-d:discordEtf` Enables etf support for gateway, currently not the fastest as dimscord relies on json.
+## - `-d:jsonyDumps` If there are any [jsony](https://github.com/treeform/jsony) parsing issues going on during serialisation processes, you can view the raw json data for debugging purposes.
 
 {.define: ssl.}
+
+assert (NimMajor, NimMinor, NimPatch) >= (2, 0, 6), "We currently support only Nim v2.0.6 or above. Please update your version of Nim."
 
 import dimscord/[
     gateway, restapi, constants,

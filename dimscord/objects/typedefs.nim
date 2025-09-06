@@ -156,8 +156,7 @@ type
         content*, timestamp*: string
         edited_timestamp*, guild_id*: Option[string]
         webhook_id*, application_id*: Option[string]
-        nonce*: Option[string]
-        # nonce*: (Option[string], Option[int])
+        nonce*: (Option[string], Option[int])
         tts*, mention_everyone*, pinned*: bool
         kind*: MessageType
         flags*: set[MessageFlags]
@@ -928,10 +927,11 @@ type
         placeholder*: Option[string]
         spoiler*: Option[bool]
         label*: Option[string]
+        description*: Option[string]
+        components*: seq[MessageComponent]
         case kind*: MessageComponentType
         of mctNone: discard
         of mctActionRow, mctContainer:
-            components*: seq[MessageComponent]
             accent_color*: Option[int] ## container only
         of mctButton: # Message Component
             style*: ButtonStyle
@@ -944,12 +944,11 @@ type
             min_values*, max_values*: Option[int]
         of mctTextInput:
             input_style*: Option[TextInputStyle]
-            input_label*, value*: Option[string]
+            value*: Option[string]
             required*: Option[bool]
             min_length*, max_length*: Option[int]
         of mctThumbnail:
             media*: UnfurledMediaItem
-            description*: Option[string]
         of mctSection:
             sect_components*: seq[TextDisplay]
             accessory*: MessageComponent

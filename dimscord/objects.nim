@@ -947,6 +947,13 @@ proc toPartial(emoji: Emoji): JsonNode =
         "animated": emoji.animated
     }
 
+proc `%`*(t: TextDisplay): JsonNode =
+    result = %*{
+        "type": ord t.kind,
+        "content": t.content
+    }
+    result.loadOpts(t, id)
+
 proc `%`(option: SelectMenuOption): JsonNode =
     result = %* {
         "label": option.label,

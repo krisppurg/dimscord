@@ -442,7 +442,7 @@ proc reconnect(s: Shard) {.async.} =
     s.reconnecting = true
     s.retry_info.attempts += 1
 
-    var url = s.resumeGatewayUrl
+    var url = if s.resumeGatewayUrl == "": s.gatewayUrl else: s.resumeGatewayUrl
     var query = "?v=" & $s.client.gatewayVersion
     when defined(discordEtf): query &= "&encoding=etf"
     if not url.endsWith("/"): url &= "/"
@@ -577,17 +577,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
         var data: JsonNode
 
         when defined(discordCompress):
-            if packet[0] == Binary:
-                packet[1] = uncompress(packet[1])
-                # buffer &= packet[1]
-                # if len(packet[1]) >= 4:
-                #     if packet[1][^4..^1] == zlib_suffix:
-                #         packet[1] = uncompress(buffer)
-                #         buffer = ""
-                #     else:
-                #         return
-                # else:
-                #     return
+            if packet[0] == Binary: packet[1] = uncompress(packet[1])
 
         try:
             when defined(discordEtf):
@@ -598,7 +588,7 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 s.logShard("A zombied connection was detected.")
             else:
                 s.logShard(
-                    "An error occurred while parsing data: "&packet[1]
+                    fmt"Received non-JSON message from gateway: '{packet[1]}'"
                 )
             autoreconnect = s.handleDisconnect(packet[1])
 
@@ -657,12 +647,10 @@ proc handleSocketMessage(s: Shard) {.async.} =
                 await s.identify()
         else:
             discard
-    if not reconnectable:
-        raise newException(Exception, "Fatal error occurred.")
 
-    if packet[0] == Close:
-        if not autoreconnect:
-            autoreconnect = s.handleDisconnect(packet[1])
+    # if packet[0] == Close:
+    #     if not autoreconnect:
+    #         autoreconnect = s.handleDisconnect(packet[1])
 
     s.stop = true
     s.reset()
@@ -674,9 +662,11 @@ proc handleSocketMessage(s: Shard) {.async.} =
         if not s.networkError: await s.handleSocketMessage()
     else:
         let info = extractCloseData(packet[1])
+        var reason = info.reason
+        if info.code == 4014: reason &= " Check if your priviliged intents you listed are enabled on the OAuth2 Bot Applications section via https://discord.dev/"
         raise newException(
             Exception,
-            "Fatal discord gateway error: "&"["&($info.code)&"] "&info.reason
+            "Fatal discord gateway error: "&"["&($info.code)&"] "&reason
         )
 
 proc endSession*(discord: DiscordClient) {.async.} =
@@ -721,11 +711,9 @@ proc startSession(s: Shard, url, query: string) {.async.} =
 # It will try to forcefully put message content intent if not specified.
 proc startSession*(discord: DiscordClient,
             autoreconnect = true;
-            gateway_intents: set[GatewayIntent] = {
-                    giGuilds, giGuildMessages,
-                    giDirectMessages, giGuildVoiceStates,
-                    giMessageContent
-            }; large_message_threshold, large_threshold = 50;
+            gateway_intents: set[GatewayIntent];
+            content_intent = true;
+            large_message_threshold, large_threshold = 50;
             max_message_size = 5_000_000;
             gateway_version = 10;
             max_shards = none int; shard_id = 0;
@@ -734,8 +722,7 @@ proc startSession*(discord: DiscordClient,
     ## Connects the client to Discord via gateway.
     ##
     ## - `gateway_intents` Allows you to subscribe to pre-defined events.
-    ##    **NOTE:** When not specified this will default to:
-    ##    `giGuilds, giGuildMessages, giDirectMessages, giGuildVoiceStates, giMessageContent`
+    ## - `content_intent` Whether to use discord's priviliged message content on by default. (defaults to `true`)
     ##
     ## - `large_threshold` The number that would be considered a large guild (50-250).
     ## - `guild_subscriptions` **DEPRECATED** Whether or not to receive presence_update, typing_start events.
@@ -750,13 +737,13 @@ proc startSession*(discord: DiscordClient,
 
     discord.autoreconnect = autoreconnect
 
-    # assert gateway_intents.len == 0, "Gateway intents cannot be empty."
     discord.intents = gateway_intents
 
     if giMessageContent notin discord.intents:
-        log("Warning: giMessageContent not specified this might cause issues.")
+        if content_intent: raise newException(Exception, "giMessageContent not in intents, if you wish to turn it off set content_intent = false in startSession")
 
     discord.largeThreshold = large_threshold
+    
     if guild_subscriptions:
         log("Warning: guild_subscriptions is deprecated.")
         discord.intents = discord.intents + {
@@ -768,8 +755,6 @@ proc startSession*(discord: DiscordClient,
 
     discord.max_shards = max_shards.get(-1)
     discord.gatewayVersion = gateway_version
-    # when defined(discordv8):
-    #     discord.gatewayVersion = 8
     when defined(discordv9):
         discord.gatewayVersion = 9
 
@@ -781,9 +766,6 @@ proc startSession*(discord: DiscordClient,
 
     when defined(discordEtf):
         query &= "&encoding=etf"
-
-    # when defined(discordCompress):
-    #     query &= "&compress=zlib-stream"
 
     if discord.shards.len == 0:
         log("Starting gateway session.")

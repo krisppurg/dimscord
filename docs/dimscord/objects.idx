@@ -1,180 +1,224 @@
 nimTitle	objects	dimscord/objects.html	module dimscord/objects		0
-nim	RestError	dimscord/objects.html#RestError	object RestError		9
-nim	DiscordHttpError	dimscord/objects.html#DiscordHttpError	type DiscordHttpError		10
-nim	DiscordFile	dimscord/objects.html#DiscordFile	type DiscordFile		17
-nim	AllowedMentions	dimscord/objects.html#AllowedMentions	object AllowedMentions		20
-nim	DiscordClient	dimscord/objects.html#DiscordClient	type DiscordClient		25
-nim	Shard	dimscord/objects.html#Shard	type Shard		34
-nim	Normal	dimscord/objects.html#Normal	VoiceEncryptionMode.Normal		53
-nim	Suffix	dimscord/objects.html#Suffix	VoiceEncryptionMode.Suffix		53
-nim	Lite	dimscord/objects.html#Lite	VoiceEncryptionMode.Lite		53
-nim	VoiceEncryptionMode	dimscord/objects.html#VoiceEncryptionMode	enum VoiceEncryptionMode		53
-nim	VoiceClient	dimscord/objects.html#VoiceClient	type VoiceClient		57
-nim	VoiceEvents	dimscord/objects.html#VoiceEvents	type VoiceEvents		89
-nim	CacheTable	dimscord/objects.html#CacheTable	type CacheTable		95
-nim	CacheTablePrefs	dimscord/objects.html#CacheTablePrefs	object CacheTablePrefs		101
-nim	CacheError	dimscord/objects.html#CacheError	object CacheError		105
-nim	Embed	dimscord/objects.html#Embed	object Embed		106
-nim	EmbedThumbnail	dimscord/objects.html#EmbedThumbnail	object EmbedThumbnail		117
-nim	EmbedVideo	dimscord/objects.html#EmbedVideo	object EmbedVideo		121
-nim	EmbedImage	dimscord/objects.html#EmbedImage	object EmbedImage		124
-nim	EmbedProvider	dimscord/objects.html#EmbedProvider	object EmbedProvider		128
-nim	EmbedAuthor	dimscord/objects.html#EmbedAuthor	object EmbedAuthor		130
-nim	EmbedFooter	dimscord/objects.html#EmbedFooter	object EmbedFooter		134
-nim	EmbedField	dimscord/objects.html#EmbedField	object EmbedField		137
-nim	MentionChannel	dimscord/objects.html#MentionChannel	object MentionChannel		140
-nim	MessageReference	dimscord/objects.html#MessageReference	object MessageReference		143
-nim	Message	dimscord/objects.html#Message	type Message		147
-nim	User	dimscord/objects.html#User	type User		177
-nim	Member	dimscord/objects.html#Member	type Member		190
-nim	Attachment	dimscord/objects.html#Attachment	object Attachment		204
-nim	Reaction	dimscord/objects.html#Reaction	object Reaction		215
-nim	Emoji	dimscord/objects.html#Emoji	object Emoji		219
-nim	PartialUser	dimscord/objects.html#PartialUser	object PartialUser		225
-nim	Sticker	dimscord/objects.html#Sticker	object Sticker		230
-nim	StickerPack	dimscord/objects.html#StickerPack	object StickerPack		240
-nim	RoleSubscriptionData	dimscord/objects.html#RoleSubscriptionData	object RoleSubscriptionData		245
-nim	RestApi	dimscord/objects.html#RestApi	type RestApi		249
-nim	Ratelimit	dimscord/objects.html#Ratelimit	type Ratelimit		253
-nim	UnavailableGuild	dimscord/objects.html#UnavailableGuild	object UnavailableGuild		256
-nim	Ready	dimscord/objects.html#Ready	object Ready		259
-nim	DMChannel	dimscord/objects.html#DMChannel	type DMChannel		266
-nim	DefaultForumReaction	dimscord/objects.html#DefaultForumReaction	object DefaultForumReaction		271
-nim	ForumTag	dimscord/objects.html#ForumTag	object ForumTag		273
-nim	GuildChannel	dimscord/objects.html#GuildChannel	type GuildChannel		277
-nim	StageInstance	dimscord/objects.html#StageInstance	object StageInstance		309
-nim	ThreadMetadata	dimscord/objects.html#ThreadMetadata	object ThreadMetadata		315
-nim	ThreadMember	dimscord/objects.html#ThreadMember	object ThreadMember		321
-nim	ThreadListSync	dimscord/objects.html#ThreadListSync	object ThreadListSync		326
-nim	ThreadMembersUpdate	dimscord/objects.html#ThreadMembersUpdate	object ThreadMembersUpdate		331
-nim	ActivityAssets	dimscord/objects.html#ActivityAssets	object ActivityAssets		336
-nim	GameAssets	dimscord/objects.html#GameAssets	type GameAssets		341
-nim	Activity	dimscord/objects.html#Activity	object Activity		342
-nim	Presence	dimscord/objects.html#Presence	type Presence		355
-nim	WelcomeChannel	dimscord/objects.html#WelcomeChannel	object WelcomeChannel		360
-nim	Guild	dimscord/objects.html#Guild	type Guild		363
-nim	VoiceState	dimscord/objects.html#VoiceState	type VoiceState		401
-nim	GuildScheduledEvent	dimscord/objects.html#GuildScheduledEvent	type GuildScheduledEvent		407
-nim	GuildScheduledEventUser	dimscord/objects.html#GuildScheduledEventUser	object GuildScheduledEventUser		417
-nim	EntityMetadata	dimscord/objects.html#EntityMetadata	object EntityMetadata		421
-nim	Role	dimscord/objects.html#Role	object Role		423
-nim	RoleTag	dimscord/objects.html#RoleTag	object RoleTag		431
-nim	TriggerMetadata	dimscord/objects.html#TriggerMetadata	object TriggerMetadata		436
-nim	AutoModerationRule	dimscord/objects.html#AutoModerationRule	object AutoModerationRule		441
-nim	ModerationAction	dimscord/objects.html#ModerationAction	object ModerationAction		452
-nim	ModerationActionExecution	dimscord/objects.html#ModerationActionExecution	object ModerationActionExecution		459
-nim	GuildOnboarding	dimscord/objects.html#GuildOnboarding	object GuildOnboarding		465
-nim	GuildOnboardingPrompt	dimscord/objects.html#GuildOnboardingPrompt	object GuildOnboardingPrompt		471
-nim	GuildOnboardingPromptOption	dimscord/objects.html#GuildOnboardingPromptOption	object GuildOnboardingPromptOption		476
-nim	GuildTemplate	dimscord/objects.html#GuildTemplate	object GuildTemplate		481
-nim	ActivityStatus	dimscord/objects.html#ActivityStatus	object ActivityStatus		489
-nim	Overwrite	dimscord/objects.html#Overwrite	object Overwrite		494
-nim	PermObj	dimscord/objects.html#PermObj	object PermObj		499
-nim	PartialGuild	dimscord/objects.html#PartialGuild	object PartialGuild		501
-nim	PartialChannel	dimscord/objects.html#PartialChannel	object PartialChannel		504
-nim	SomeChannel	dimscord/objects.html#SomeChannel	type SomeChannel		507
-nim	Channel	dimscord/objects.html#Channel	object Channel		508
-nim	TeamMember	dimscord/objects.html#TeamMember	object TeamMember		512
-nim	Team	dimscord/objects.html#Team	object Team		517
-nim	Application	dimscord/objects.html#Application	object Application		522
-nim	ApplicationCommand	dimscord/objects.html#ApplicationCommand	object ApplicationCommand		537
-nim	GuildApplicationCommandPermissions	dimscord/objects.html#GuildApplicationCommandPermissions	object GuildApplicationCommandPermissions		547
-nim	ApplicationCommandPermission	dimscord/objects.html#ApplicationCommandPermission	object ApplicationCommandPermission		550
-nim	ApplicationRoleConnectionMetadata	dimscord/objects.html#ApplicationRoleConnectionMetadata	object ApplicationRoleConnectionMetadata		554
-nim	ApplicationRoleConnection	dimscord/objects.html#ApplicationRoleConnection	object ApplicationRoleConnection		559
-nim	ApplicationCommandOption	dimscord/objects.html#ApplicationCommandOption	object ApplicationCommandOption		562
-nim	ApplicationCommandOptionChoice	dimscord/objects.html#ApplicationCommandOptionChoice	object ApplicationCommandOptionChoice		573
-nim	MessageInteraction	dimscord/objects.html#MessageInteraction	object MessageInteraction		577
-nim	Interaction	dimscord/objects.html#Interaction	object Interaction		582
-nim	ApplicationCommandInteractionData	dimscord/objects.html#ApplicationCommandInteractionData	type ApplicationCommandInteractionData		598
-nim	ResolvedChannel	dimscord/objects.html#ResolvedChannel	object ResolvedChannel		620
-nim	ApplicationCommandResolution	dimscord/objects.html#ApplicationCommandResolution	object ApplicationCommandResolution		627
-nim	ApplicationCommandInteractionDataOption	dimscord/objects.html#ApplicationCommandInteractionDataOption	object ApplicationCommandInteractionDataOption		639
-nim	InteractionResponse	dimscord/objects.html#InteractionResponse	object InteractionResponse		655
-nim	InteractionApplicationCommandCallbackData	dimscord/objects.html#InteractionApplicationCommandCallbackData	object InteractionApplicationCommandCallbackData		667
-nim	InteractionCallbackDataMessage	dimscord/objects.html#InteractionCallbackDataMessage	type InteractionCallbackDataMessage		677
-nim	InteractionCallbackDataAutocomplete	dimscord/objects.html#InteractionCallbackDataAutocomplete	object InteractionCallbackDataAutocomplete		678
-nim	InteractionCallbackDataModal	dimscord/objects.html#InteractionCallbackDataModal	object InteractionCallbackDataModal		680
-nim	Invite	dimscord/objects.html#Invite	object Invite		683
-nim	InviteMetadata	dimscord/objects.html#InviteMetadata	object InviteMetadata		698
-nim	InviteCreate	dimscord/objects.html#InviteCreate	object InviteCreate		703
-nim	TypingStart	dimscord/objects.html#TypingStart	object TypingStart		712
-nim	GuildMembersChunk	dimscord/objects.html#GuildMembersChunk	object GuildMembersChunk		717
-nim	GuildBan	dimscord/objects.html#GuildBan	object GuildBan		724
-nim	Webhook	dimscord/objects.html#Webhook	object Webhook		727
-nim	Integration	dimscord/objects.html#Integration	object Integration		735
-nim	SelectMenuOption	dimscord/objects.html#SelectMenuOption	object SelectMenuOption		749
-nim	MessageComponent	dimscord/objects.html#MessageComponent	object MessageComponent		755
-nim	GuildPreview	dimscord/objects.html#GuildPreview	object GuildPreview		781
-nim	VoiceRegion	dimscord/objects.html#VoiceRegion	object VoiceRegion		788
-nim	AuditLogOptions	dimscord/objects.html#AuditLogOptions	object AuditLogOptions		792
-nim	AuditLogChangeValue	dimscord/objects.html#AuditLogChangeValue	object AuditLogChangeValue		800
-nim	AuditLogEntry	dimscord/objects.html#AuditLogEntry	type AuditLogEntry		814
-nim	AuditLog	dimscord/objects.html#AuditLog	object AuditLog		820
-nim	GuildWidgetJson	dimscord/objects.html#GuildWidgetJson	object GuildWidgetJson		829
-nim	GatewaySession	dimscord/objects.html#GatewaySession	object GatewaySession		842
-nim	GatewayBot	dimscord/objects.html#GatewayBot	object GatewayBot		845
-nim	Events	dimscord/objects.html#Events	type Events		849
-nim	kind	dimscord/objects.html#kind,CacheTable,string	proc kind(c: CacheTable; channel_id: string): ChannelType		961
-nim	clear	dimscord/objects.html#clear,CacheTable	proc clear(c: CacheTable)		970
-nim	`$`	dimscord/objects.html#$,Emoji	proc `$`(e: Emoji): string		977
-nim	getCurrentDiscordHttpError	dimscord/objects.html#getCurrentDiscordHttpError	proc getCurrentDiscordHttpError(): DiscordHttpError		983
+nim	RestError	dimscord/objects.html#RestError	object RestError		7
+nim	DiscordHttpError	dimscord/objects.html#DiscordHttpError	type DiscordHttpError		8
+nim	RequesterError	dimscord/objects.html#RequesterError	object RequesterError		15
+nim	DiscordFile	dimscord/objects.html#DiscordFile	type DiscordFile		18
+nim	AllowedMentions	dimscord/objects.html#AllowedMentions	object AllowedMentions		21
+nim	DiscordClient	dimscord/objects.html#DiscordClient	type DiscordClient		26
+nim	Shard	dimscord/objects.html#Shard	type Shard		35
+nim	Normal	dimscord/objects.html#Normal	VoiceEncryptionMode.Normal		54
+nim	Suffix	dimscord/objects.html#Suffix	VoiceEncryptionMode.Suffix		54
+nim	Lite	dimscord/objects.html#Lite	VoiceEncryptionMode.Lite		54
+nim	VoiceEncryptionMode	dimscord/objects.html#VoiceEncryptionMode	enum VoiceEncryptionMode		54
+nim	VoiceClient	dimscord/objects.html#VoiceClient	type VoiceClient		58
+nim	VoiceEvents	dimscord/objects.html#VoiceEvents	type VoiceEvents		90
+nim	CacheTable	dimscord/objects.html#CacheTable	type CacheTable		96
+nim	CacheTablePrefs	dimscord/objects.html#CacheTablePrefs	object CacheTablePrefs		102
+nim	CacheError	dimscord/objects.html#CacheError	object CacheError		106
+nim	Embed	dimscord/objects.html#Embed	object Embed		107
+nim	EmbedThumbnail	dimscord/objects.html#EmbedThumbnail	object EmbedThumbnail		118
+nim	EmbedVideo	dimscord/objects.html#EmbedVideo	object EmbedVideo		122
+nim	EmbedImage	dimscord/objects.html#EmbedImage	object EmbedImage		125
+nim	EmbedProvider	dimscord/objects.html#EmbedProvider	object EmbedProvider		129
+nim	EmbedAuthor	dimscord/objects.html#EmbedAuthor	object EmbedAuthor		131
+nim	EmbedFooter	dimscord/objects.html#EmbedFooter	object EmbedFooter		135
+nim	EmbedField	dimscord/objects.html#EmbedField	object EmbedField		138
+nim	MentionChannel	dimscord/objects.html#MentionChannel	object MentionChannel		141
+nim	MessageCall	dimscord/objects.html#MessageCall	object MessageCall		144
+nim	MessageReference	dimscord/objects.html#MessageReference	object MessageReference		147
+nim	Message	dimscord/objects.html#Message	type Message		152
+nim	PrimaryGuild	dimscord/objects.html#PrimaryGuild	object PrimaryGuild		187
+nim	Nameplate	dimscord/objects.html#Nameplate	object Nameplate		190
+nim	User	dimscord/objects.html#User	type User		192
+nim	Member	dimscord/objects.html#Member	type Member		208
+nim	Attachment	dimscord/objects.html#Attachment	type Attachment		225
+nim	Reaction	dimscord/objects.html#Reaction	object Reaction		237
+nim	Emoji	dimscord/objects.html#Emoji	object Emoji		244
+nim	PollAnswer	dimscord/objects.html#PollAnswer	object PollAnswer		250
+nim	Poll	dimscord/objects.html#Poll	type Poll		253
+nim	PollRequest	dimscord/objects.html#PollRequest	object PollRequest		260
+nim	PollResults	dimscord/objects.html#PollResults	type PollResults		266
+nim	PollAnswerCount	dimscord/objects.html#PollAnswerCount	type PollAnswerCount		269
+nim	PollMedia	dimscord/objects.html#PollMedia	object PollMedia		272
+nim	PartialUser	dimscord/objects.html#PartialUser	object PartialUser		275
+nim	Sticker	dimscord/objects.html#Sticker	object Sticker		280
+nim	StickerPack	dimscord/objects.html#StickerPack	object StickerPack		290
+nim	RoleSubscriptionData	dimscord/objects.html#RoleSubscriptionData	object RoleSubscriptionData		295
+nim	RestApi	dimscord/objects.html#RestApi	type RestApi		299
+nim	Ratelimit	dimscord/objects.html#Ratelimit	type Ratelimit		303
+nim	UnavailableGuild	dimscord/objects.html#UnavailableGuild	object UnavailableGuild		306
+nim	Ready	dimscord/objects.html#Ready	object Ready		309
+nim	DMChannel	dimscord/objects.html#DMChannel	type DMChannel		316
+nim	DefaultForumReaction	dimscord/objects.html#DefaultForumReaction	object DefaultForumReaction		321
+nim	ForumTag	dimscord/objects.html#ForumTag	object ForumTag		323
+nim	GuildChannel	dimscord/objects.html#GuildChannel	type GuildChannel		327
+nim	StageInstance	dimscord/objects.html#StageInstance	object StageInstance		360
+nim	ThreadMetadata	dimscord/objects.html#ThreadMetadata	object ThreadMetadata		366
+nim	ThreadMember	dimscord/objects.html#ThreadMember	object ThreadMember		372
+nim	ThreadListSync	dimscord/objects.html#ThreadListSync	object ThreadListSync		377
+nim	ThreadMembersUpdate	dimscord/objects.html#ThreadMembersUpdate	object ThreadMembersUpdate		382
+nim	ActivityAssets	dimscord/objects.html#ActivityAssets	object ActivityAssets		387
+nim	Activity	dimscord/objects.html#Activity	object Activity		392
+nim	Presence	dimscord/objects.html#Presence	type Presence		406
+nim	WelcomeChannel	dimscord/objects.html#WelcomeChannel	object WelcomeChannel		411
+nim	Entitlement	dimscord/objects.html#Entitlement	object Entitlement		414
+nim	Sku	dimscord/objects.html#Sku	object Sku		421
+nim	IncidentsData	dimscord/objects.html#IncidentsData	object IncidentsData		427
+nim	Guild	dimscord/objects.html#Guild	type Guild		430
+nim	VoiceState	dimscord/objects.html#VoiceState	type VoiceState		468
+nim	VoiceChannelEffectSend	dimscord/objects.html#VoiceChannelEffectSend	object VoiceChannelEffectSend		476
+nim	SoundboardSound	dimscord/objects.html#SoundboardSound	object SoundboardSound		482
+nim	RecurrenceRuleNWeekday	dimscord/objects.html#RecurrenceRuleNWeekday	object RecurrenceRuleNWeekday		489
+nim	RecurrenceRule	dimscord/objects.html#RecurrenceRule	type RecurrenceRule		492
+nim	GuildScheduledEvent	dimscord/objects.html#GuildScheduledEvent	type GuildScheduledEvent		508
+nim	GuildScheduledEventUser	dimscord/objects.html#GuildScheduledEventUser	object GuildScheduledEventUser		519
+nim	EntityMetadata	dimscord/objects.html#EntityMetadata	object EntityMetadata		523
+nim	RoleColors	dimscord/objects.html#RoleColors	object RoleColors		525
+nim	Role	dimscord/objects.html#Role	object Role		528
+nim	RoleTag	dimscord/objects.html#RoleTag	object RoleTag		537
+nim	TriggerMetadata	dimscord/objects.html#TriggerMetadata	object TriggerMetadata		542
+nim	AutoModerationRule	dimscord/objects.html#AutoModerationRule	object AutoModerationRule		547
+nim	ModerationAction	dimscord/objects.html#ModerationAction	object ModerationAction		558
+nim	ModerationActionExecution	dimscord/objects.html#ModerationActionExecution	object ModerationActionExecution		565
+nim	GuildOnboarding	dimscord/objects.html#GuildOnboarding	object GuildOnboarding		571
+nim	GuildOnboardingPrompt	dimscord/objects.html#GuildOnboardingPrompt	object GuildOnboardingPrompt		577
+nim	GuildOnboardingPromptOption	dimscord/objects.html#GuildOnboardingPromptOption	object GuildOnboardingPromptOption		582
+nim	GuildTemplate	dimscord/objects.html#GuildTemplate	object GuildTemplate		588
+nim	Subscription	dimscord/objects.html#Subscription	object Subscription		596
+nim	ActivityStatus	dimscord/objects.html#ActivityStatus	object ActivityStatus		603
+nim	Overwrite	dimscord/objects.html#Overwrite	object Overwrite		609
+nim	PermObj	dimscord/objects.html#PermObj	object PermObj		613
+nim	PartialGuild	dimscord/objects.html#PartialGuild	object PartialGuild		615
+nim	PartialChannel	dimscord/objects.html#PartialChannel	object PartialChannel		618
+nim	SomeChannel	dimscord/objects.html#SomeChannel	type SomeChannel		621
+nim	Channel	dimscord/objects.html#Channel	object Channel		622
+nim	TeamMember	dimscord/objects.html#TeamMember	object TeamMember		626
+nim	Team	dimscord/objects.html#Team	object Team		630
+nim	ApplicationInstallParams	dimscord/objects.html#ApplicationInstallParams	object ApplicationInstallParams		635
+nim	ApplicationIntegrationTypeConfig	dimscord/objects.html#ApplicationIntegrationTypeConfig	object ApplicationIntegrationTypeConfig		638
+nim	Application	dimscord/objects.html#Application	object Application		640
+nim	ApplicationCommand	dimscord/objects.html#ApplicationCommand	object ApplicationCommand		663
+nim	GuildApplicationCommandPermissions	dimscord/objects.html#GuildApplicationCommandPermissions	object GuildApplicationCommandPermissions		676
+nim	ApplicationCommandPermission	dimscord/objects.html#ApplicationCommandPermission	object ApplicationCommandPermission		679
+nim	ApplicationRoleConnectionMetadata	dimscord/objects.html#ApplicationRoleConnectionMetadata	object ApplicationRoleConnectionMetadata		683
+nim	ApplicationRoleConnection	dimscord/objects.html#ApplicationRoleConnection	object ApplicationRoleConnection		688
+nim	ApplicationCommandOption	dimscord/objects.html#ApplicationCommandOption	object ApplicationCommandOption		691
+nim	ApplicationCommandOptionChoice	dimscord/objects.html#ApplicationCommandOptionChoice	object ApplicationCommandOptionChoice		702
+nim	MessageInteractionMetadata	dimscord/objects.html#MessageInteractionMetadata	object MessageInteractionMetadata		715
+nim	Interaction	dimscord/objects.html#Interaction	object Interaction		724
+nim	ApplicationCommandInteractionData	dimscord/objects.html#ApplicationCommandInteractionData	type ApplicationCommandInteractionData		744
+nim	ResolvedChannel	dimscord/objects.html#ResolvedChannel	object ResolvedChannel		766
+nim	ResolvedData	dimscord/objects.html#ResolvedData	object ResolvedData		773
+nim	ApplicationCommandResolution	dimscord/objects.html#ApplicationCommandResolution	object ApplicationCommandResolution		780
+nim	ApplicationCommandInteractionDataOption	dimscord/objects.html#ApplicationCommandInteractionDataOption	object ApplicationCommandInteractionDataOption		791
+nim	InteractionResponse	dimscord/objects.html#InteractionResponse	object InteractionResponse		807
+nim	InteractionCallbackDataMessage	dimscord/objects.html#InteractionCallbackDataMessage	type InteractionCallbackDataMessage		819
+nim	InteractionCallbackDataAutocomplete	dimscord/objects.html#InteractionCallbackDataAutocomplete	object InteractionCallbackDataAutocomplete		829
+nim	InteractionCallbackDataModal	dimscord/objects.html#InteractionCallbackDataModal	object InteractionCallbackDataModal		831
+nim	Invite	dimscord/objects.html#Invite	object Invite		834
+nim	InviteMetadata	dimscord/objects.html#InviteMetadata	object InviteMetadata		845
+nim	InviteCreate	dimscord/objects.html#InviteCreate	object InviteCreate		850
+nim	TypingStart	dimscord/objects.html#TypingStart	object TypingStart		859
+nim	GuildMembersChunk	dimscord/objects.html#GuildMembersChunk	object GuildMembersChunk		864
+nim	GuildBan	dimscord/objects.html#GuildBan	object GuildBan		871
+nim	Webhook	dimscord/objects.html#Webhook	object Webhook		874
+nim	Integration	dimscord/objects.html#Integration	object Integration		882
+nim	SelectMenuOption	dimscord/objects.html#SelectMenuOption	object SelectMenuOption		897
+nim	TextDisplay	dimscord/objects.html#TextDisplay	object TextDisplay		903
+nim	UnfurledMediaItem	dimscord/objects.html#UnfurledMediaItem	object UnfurledMediaItem		907
+nim	MediaGallery	dimscord/objects.html#MediaGallery	object MediaGallery		912
+nim	MessageComponent	dimscord/objects.html#MessageComponent	type MessageComponent		916
+nim	GuildPreview	dimscord/objects.html#GuildPreview	object GuildPreview		967
+nim	VoiceRegion	dimscord/objects.html#VoiceRegion	object VoiceRegion		974
+nim	AuditLogOptions	dimscord/objects.html#AuditLogOptions	object AuditLogOptions		978
+nim	AuditLogChangeValue	dimscord/objects.html#AuditLogChangeValue	object AuditLogChangeValue		986
+nim	AuditLogEntry	dimscord/objects.html#AuditLogEntry	type AuditLogEntry		1000
+nim	AuditLog	dimscord/objects.html#AuditLog	object AuditLog		1006
+nim	GuildWidgetJson	dimscord/objects.html#GuildWidgetJson	object GuildWidgetJson		1015
+nim	GatewaySession	dimscord/objects.html#GatewaySession	object GatewaySession		1028
+nim	GatewayBot	dimscord/objects.html#GatewayBot	object GatewayBot		1031
+nim	Events	dimscord/objects.html#Events	type Events		1035
+nim	kind	dimscord/objects.html#kind,CacheTable,string	proc kind(c: CacheTable; channel_id: string): ChannelType		1180
+nim	guild	dimscord/objects.html#guild,CacheTable,	proc guild(c: CacheTable; obj: ref object | object | string): Guild		1189
+nim	gchannel	dimscord/objects.html#gchannel,CacheTable,	proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel		1212
+nim	dm	dimscord/objects.html#dm,CacheTable,	proc dm(c: CacheTable; obj: ref object | object | string): DMChannel		1229
+nim	clear	dimscord/objects.html#clear,CacheTable	proc clear(c: CacheTable)		1246
+nim	`$`	dimscord/objects.html#$,Emoji	proc `$`(e: Emoji): string		1253
+nim	`$`	dimscord/objects.html#$,Message	proc `$`(m: Message): string		1259
+nim	`$`	dimscord/objects.html#$,Attachment	proc `$`(a: Attachment): string		1262
+nim	`$`	dimscord/objects.html#$,ref.	proc `$`(a: ref object): string		1265
+nim	getCurrentDiscordHttpError	dimscord/objects.html#getCurrentDiscordHttpError	proc getCurrentDiscordHttpError(): DiscordHttpError		1268
 nim	keyCheckOptInt	dimscord/objects.html#keyCheckOptInt.m,typed,typed,varargs[untyped]	macro keyCheckOptInt(obj: typed; obj2: typed; lits: varargs[untyped]): untyped		5
 nim	keyCheckOptBool	dimscord/objects.html#keyCheckOptBool.m,typed,typed,varargs[untyped]	macro keyCheckOptBool(obj: typed; obj2: typed; lits: varargs[untyped]): untyped		14
 nim	keyCheckBool	dimscord/objects.html#keyCheckBool.m,typed,typed,varargs[untyped]	macro keyCheckBool(obj: typed; obj2: typed; lits: varargs[untyped]): untyped		23
 nim	keyCheckOptStr	dimscord/objects.html#keyCheckOptStr.m,typed,typed,varargs[untyped]	macro keyCheckOptStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped		32
 nim	keyCheckStr	dimscord/objects.html#keyCheckStr.m,typed,typed,varargs[untyped]	macro keyCheckStr(obj: typed; obj2: typed; lits: varargs[untyped]): untyped		41
-nim	optionIf	dimscord/objects.html#optionIf.m,typed	macro optionIf(check: typed): untyped		50
-nim	mainClient	dimscord/objects.html#mainClient.m,typed	macro mainClient(x: typed): untyped		66
-nim	getClient	dimscord/objects.html#getClient.m	macro getClient(): DiscordClient		83
-nim	fullSet	dimscord/objects.html#fullSet,typedesc[T]	proc fullSet[T](U: typedesc[T]): set[T]		22
-nim	newInteractionData	dimscord/objects.html#newInteractionData,string,seq[Embed],set[MessageFlags],seq[Attachment],seq[MessageComponent],AllowedMentions,Option[bool]	proc newInteractionData(content: string; embeds: seq[Embed];\n                   flags: set[MessageFlags]; attachments: seq[Attachment];\n                   components: seq[MessageComponent];\n                   allowed_mentions: AllowedMentions; tts: Option[bool]): InteractionCallbackDataMessage		28
-nim	newShard	dimscord/objects.html#newShard,int,DiscordClient	proc newShard(id: int; client: DiscordClient): Shard		47
-nim	newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	proc newDiscordClient(token: string; rest_mode = false; restVersion = 10): DiscordClient		60
-nim	parseHook	dimscord/objects.html#parseHook,string,int,set[UserFlags]	proc parseHook(s: string; i: var int; v: var set[UserFlags])		200
-nim	parseHook	dimscord/objects.html#parseHook,string,int,set[GuildMemberFlags]	proc parseHook(s: string; i: var int; v: var set[GuildMemberFlags])		205
-nim	parseHook	dimscord/objects.html#parseHook,string,int,set[RoleFlags]	proc parseHook(s: string; i: var int; v: var set[RoleFlags])		210
-nim	newUser	dimscord/objects.html#newUser,JsonNode	proc newUser(data: JsonNode): User		215
-nim	newPresence	dimscord/objects.html#newPresence,JsonNode	proc newPresence(data: JsonNode): Presence		243
-nim	parseHook	dimscord/objects.html#parseHook,string,int,set[PermissionFlags]	proc parseHook(s: string; i: var int; v: var set[PermissionFlags])		246
-nim	newRole	dimscord/objects.html#newRole,JsonNode	proc newRole(data: JsonNode): Role		254
-nim	newMember	dimscord/objects.html#newMember,JsonNode	proc newMember(data: JsonNode): Member		277
-nim	newOverwrite	dimscord/objects.html#newOverwrite,JsonNode	proc newOverwrite(data: JsonNode): Overwrite		289
-nim	newMessage	dimscord/objects.html#newMessage,JsonNode	proc newMessage(data: JsonNode): Message		371
-nim	newGuildChannel	dimscord/objects.html#newGuildChannel,JsonNode	proc newGuildChannel(data: JsonNode): GuildChannel		374
-nim	newReaction	dimscord/objects.html#newReaction,JsonNode	proc newReaction(data: JsonNode): Reaction		377
-nim	newApplication	dimscord/objects.html#newApplication,JsonNode	proc newApplication(data: JsonNode): Application		380
-nim	newActivity	dimscord/objects.html#newActivity,JsonNode	proc newActivity(data: JsonNode): Activity		416
-nim	newIntegration	dimscord/objects.html#newIntegration,JsonNode	proc newIntegration(data: JsonNode): Integration		512
-nim	newAuditLogEntry	dimscord/objects.html#newAuditLogEntry,JsonNode	proc newAuditLogEntry(data: JsonNode): AuditLogEntry		515
-nim	newWebhook	dimscord/objects.html#newWebhook,JsonNode	proc newWebhook(data: JsonNode): Webhook		518
-nim	newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	proc newAuditLog(data: JsonNode): AuditLog		521
-nim	newVoiceState	dimscord/objects.html#newVoiceState,JsonNode	proc newVoiceState(data: JsonNode): VoiceState		524
-nim	newGuild	dimscord/objects.html#newGuild,JsonNode	proc newGuild(data: JsonNode): Guild		581
-nim	newGuildBan	dimscord/objects.html#newGuildBan,JsonNode	proc newGuildBan(data: JsonNode): GuildBan		584
-nim	newDMChannel	dimscord/objects.html#newDMChannel,JsonNode	proc newDMChannel(data: JsonNode): DMChannel		587
-nim	newStageInstance	dimscord/objects.html#newStageInstance,JsonNode	proc newStageInstance(data: JsonNode): StageInstance		590
-nim	newEmoji	dimscord/objects.html#newEmoji,JsonNode	proc newEmoji(data: JsonNode): Emoji		593
-nim	newInvite	dimscord/objects.html#newInvite,JsonNode	proc newInvite(data: JsonNode): Invite		596
-nim	newInviteCreate	dimscord/objects.html#newInviteCreate,JsonNode	proc newInviteCreate(data: JsonNode): InviteCreate		599
-nim	newReady	dimscord/objects.html#newReady,JsonNode	proc newReady(data: JsonNode): Ready		611
-nim	newTypingStart	dimscord/objects.html#newTypingStart,JsonNode	proc newTypingStart(data: JsonNode): TypingStart		617
-nim	newGuildMembersChunk	dimscord/objects.html#newGuildMembersChunk,JsonNode	proc newGuildMembersChunk(data: JsonNode): GuildMembersChunk		620
-nim	newGuildPreview	dimscord/objects.html#newGuildPreview,JsonNode	proc newGuildPreview(data: JsonNode): GuildPreview		623
-nim	newInviteMetadata	dimscord/objects.html#newInviteMetadata,JsonNode	proc newInviteMetadata(data: JsonNode): InviteMetadata		626
-nim	updateMessage	dimscord/objects.html#updateMessage,Message,JsonNode	proc updateMessage(m: Message; data: JsonNode): Message		629
-nim	newSticker	dimscord/objects.html#newSticker,JsonNode	proc newSticker(data: JsonNode): Sticker		669
-nim	newStickerPack	dimscord/objects.html#newStickerPack,JsonNode	proc newStickerPack(data: JsonNode): StickerPack		672
-nim	newGuildTemplate	dimscord/objects.html#newGuildTemplate,JsonNode	proc newGuildTemplate(data: JsonNode): GuildTemplate		675
-nim	newApplicationCommandInteractionData	dimscord/objects.html#newApplicationCommandInteractionData,JsonNode	proc newApplicationCommandInteractionData(data: JsonNode): ApplicationCommandInteractionData		853
-nim	newInteraction	dimscord/objects.html#newInteraction,JsonNode	proc newInteraction(data: JsonNode): Interaction		858
-nim	newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	proc newApplicationCommandOption(data: JsonNode): ApplicationCommandOption		861
-nim	`%%*`	dimscord/objects.html#%%*,ApplicationCommandOption	proc `%%*`(a: ApplicationCommandOption): JsonNode		864
-nim	`%%*`	dimscord/objects.html#%%*,ApplicationCommand	proc `%%*`(a: ApplicationCommand): JsonNode		893
-nim	newApplicationCommandPermission	dimscord/objects.html#newApplicationCommandPermission,JsonNode	proc newApplicationCommandPermission(data: JsonNode): ApplicationCommandPermission		921
-nim	newGuildApplicationCommandPermissions	dimscord/objects.html#newGuildApplicationCommandPermissions,JsonNode	proc newGuildApplicationCommandPermissions(data: JsonNode): GuildApplicationCommandPermissions		926
-nim	newApplicationCommand	dimscord/objects.html#newApplicationCommand,JsonNode	proc newApplicationCommand(data: JsonNode): ApplicationCommand		931
-nim	`%`	dimscord/objects.html#%,ApplicationCommandPermission	proc `%`(permission: ApplicationCommandPermission): JsonNode		952
-nim	`%%*`	dimscord/objects.html#%%*,MessageComponent	proc `%%*`(comp: MessageComponent): JsonNode		959
-nimgrp	parsehook	dimscord/objects.html#parseHook-procs-all	proc		200
-nimgrp	%%*	dimscord/objects.html#%%*-procs-all	proc		864
+nim	loadOpt	dimscord/objects.html#loadOpt.m,typed,varargs[untyped]	macro loadOpt(obj: typed; lits: varargs[untyped]): untyped		50
+nim	loadOpts	dimscord/objects.html#loadOpts.m,typed,typed,varargs[untyped]	macro loadOpts(res, parent: typed; lits: varargs[untyped]): untyped		66
+nim	loadNullableOptStr	dimscord/objects.html#loadNullableOptStr.m,typed,varargs[untyped]	macro loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped		74
+nim	loadNullableOptInt	dimscord/objects.html#loadNullableOptInt.m,typed,varargs[untyped]	macro loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped		82
+nim	optionIf	dimscord/objects.html#optionIf.m,typed	macro optionIf(check: typed): untyped		90
+nim	mainClient	dimscord/objects.html#mainClient.m,typed	macro mainClient(x: typed)		106
+nim	getClient	dimscord/objects.html#getClient.t	template getClient(): DiscordClient		123
+nim	softAssert	dimscord/objects.html#softAssert.t,untyped,string	template softAssert(cond: untyped; msg = "")		28
+nim	newInteractionData	dimscord/objects.html#newInteractionData,string,seq[Embed],set[MessageFlags],seq[Attachment],seq[MessageComponent],AllowedMentions,Option[bool]	proc newInteractionData(content: string; embeds: seq[Embed];\n                   flags: set[MessageFlags]; attachments: seq[Attachment];\n                   components: seq[MessageComponent];\n                   allowed_mentions: AllowedMentions; tts: Option[bool]): InteractionCallbackDataMessage		31
+nim	newShard	dimscord/objects.html#newShard,int,DiscordClient	proc newShard(id: int; client: DiscordClient): Shard		50
+nim	newDiscordClient	dimscord/objects.html#newDiscordClient,string,int	proc newDiscordClient(token: string; rest_mode = false; restVersion = 10): DiscordClient		63
+nim	logParser	dimscord/objects.html#logParser,string,string	proc logParser(msg: string; s = "")		225
+nim	fromJson	dimscord/objects.html#fromJson,string,typedesc[T]	proc fromJson[T](s: string; x: typedesc[T]): T		251
+nim	parseHook	dimscord/objects.html#parseHook,string,int,OverwriteType	proc parseHook(s: string; i: var int; v: var OverwriteType)		377
+nim	newActivity	dimscord/objects.html#newActivity,JsonNode	proc newActivity(data: JsonNode): Activity		455
+nim	newRole	dimscord/objects.html#newRole,JsonNode	proc newRole(data: JsonNode): Role		458
+nim	newPresence	dimscord/objects.html#newPresence,JsonNode	proc newPresence(data: JsonNode): Presence		557
+nim	newMember	dimscord/objects.html#newMember,JsonNode	proc newMember(data: JsonNode): Member		611
+nim	newOverwrite	dimscord/objects.html#newOverwrite,JsonNode	proc newOverwrite(data: JsonNode): Overwrite		614
+nim	newUser	dimscord/objects.html#newUser,JsonNode	proc newUser(data: JsonNode): User		617
+nim	newMessage	dimscord/objects.html#newMessage,JsonNode	proc newMessage(data: JsonNode): Message		620
+nim	newGuildChannel	dimscord/objects.html#newGuildChannel,JsonNode	proc newGuildChannel(data: JsonNode): GuildChannel		623
+nim	newReaction	dimscord/objects.html#newReaction,JsonNode	proc newReaction(data: JsonNode): Reaction		626
+nim	newApplication	dimscord/objects.html#newApplication,JsonNode	proc newApplication(data: JsonNode): Application		629
+nim	newIntegration	dimscord/objects.html#newIntegration,JsonNode	proc newIntegration(data: JsonNode): Integration		632
+nim	newAuditLogEntry	dimscord/objects.html#newAuditLogEntry,JsonNode	proc newAuditLogEntry(data: JsonNode): AuditLogEntry		635
+nim	newWebhook	dimscord/objects.html#newWebhook,JsonNode	proc newWebhook(data: JsonNode): Webhook		638
+nim	newAuditLog	dimscord/objects.html#newAuditLog,JsonNode	proc newAuditLog(data: JsonNode): AuditLog		641
+nim	newVoiceState	dimscord/objects.html#newVoiceState,JsonNode	proc newVoiceState(data: JsonNode): VoiceState		644
+nim	newGuild	dimscord/objects.html#newGuild,JsonNode	proc newGuild(data: JsonNode): Guild		647
+nim	newGuildBan	dimscord/objects.html#newGuildBan,JsonNode	proc newGuildBan(data: JsonNode): GuildBan		650
+nim	newDMChannel	dimscord/objects.html#newDMChannel,JsonNode	proc newDMChannel(data: JsonNode): DMChannel		653
+nim	newStageInstance	dimscord/objects.html#newStageInstance,JsonNode	proc newStageInstance(data: JsonNode): StageInstance		656
+nim	newEmoji	dimscord/objects.html#newEmoji,JsonNode	proc newEmoji(data: JsonNode): Emoji		659
+nim	newInvite	dimscord/objects.html#newInvite,JsonNode	proc newInvite(data: JsonNode): Invite		662
+nim	newInviteCreate	dimscord/objects.html#newInviteCreate,JsonNode	proc newInviteCreate(data: JsonNode): InviteCreate		665
+nim	newReady	dimscord/objects.html#newReady,JsonNode	proc newReady(data: JsonNode): Ready		668
+nim	newTypingStart	dimscord/objects.html#newTypingStart,JsonNode	proc newTypingStart(data: JsonNode): TypingStart		674
+nim	newGuildMembersChunk	dimscord/objects.html#newGuildMembersChunk,JsonNode	proc newGuildMembersChunk(data: JsonNode): GuildMembersChunk		677
+nim	newGuildPreview	dimscord/objects.html#newGuildPreview,JsonNode	proc newGuildPreview(data: JsonNode): GuildPreview		680
+nim	newInviteMetadata	dimscord/objects.html#newInviteMetadata,JsonNode	proc newInviteMetadata(data: JsonNode): InviteMetadata		683
+nim	newSticker	dimscord/objects.html#newSticker,JsonNode	proc newSticker(data: JsonNode): Sticker		686
+nim	newStickerPack	dimscord/objects.html#newStickerPack,JsonNode	proc newStickerPack(data: JsonNode): StickerPack		689
+nim	newGuildTemplate	dimscord/objects.html#newGuildTemplate,JsonNode	proc newGuildTemplate(data: JsonNode): GuildTemplate		692
+nim	newEntitlement	dimscord/objects.html#newEntitlement,JsonNode	proc newEntitlement(data: JsonNode): Entitlement		849
+nim	newApplicationCommandInteractionData	dimscord/objects.html#newApplicationCommandInteractionData,JsonNode	proc newApplicationCommandInteractionData(data: JsonNode): ApplicationCommandInteractionData		852
+nim	newInteraction	dimscord/objects.html#newInteraction,JsonNode	proc newInteraction(data: JsonNode): Interaction		857
+nim	newApplicationCommandOption	dimscord/objects.html#newApplicationCommandOption,JsonNode	proc newApplicationCommandOption(data: JsonNode): ApplicationCommandOption		864
+nim	`%%*`	dimscord/objects.html#%%*,ApplicationCommandOption	proc `%%*`(a: ApplicationCommandOption): JsonNode		867
+nim	`%%*`	dimscord/objects.html#%%*,ApplicationCommand	proc `%%*`(a: ApplicationCommand): JsonNode		896
+nim	newApplicationCommandPermission	dimscord/objects.html#newApplicationCommandPermission,JsonNode	proc newApplicationCommandPermission(data: JsonNode): ApplicationCommandPermission		932
+nim	newGuildApplicationCommandPermissions	dimscord/objects.html#newGuildApplicationCommandPermissions,JsonNode	proc newGuildApplicationCommandPermissions(data: JsonNode): GuildApplicationCommandPermissions		937
+nim	newApplicationCommand	dimscord/objects.html#newApplicationCommand,JsonNode	proc newApplicationCommand(data: JsonNode): ApplicationCommand		942
+nim	`%`	dimscord/objects.html#%,TextDisplay	proc `%`(t: TextDisplay): JsonNode		953
+nim	`%`	dimscord/objects.html#%,ApplicationCommandPermission	proc `%`(p: ApplicationCommandPermission): JsonNode		970
+nim	`%`	dimscord/objects.html#%,tuple[string,string]	proc `%`(d: tuple[id, kind: string]): JsonNode		975
+nim	`%`	dimscord/objects.html#%,tuple[string,int,Option[string]]	proc `%`(t: tuple[channel_id: string, duration_seconds: int,\n             custom_message: Option[string]]): JsonNode		977
+nim	`%`	dimscord/objects.html#%,tuple[seq[string],seq[int]]	proc `%`(tm: tuple[keyword_filter: seq[string], presets: seq[int]]): JsonNode		987
+nim	`%`	dimscord/objects.html#%,tuple[string,string]_2	proc `%`(o: tuple[sku_id, asset: string]): JsonNode		990
+nim	`%`	dimscord/objects.html#%,tuple[Nameplate]	proc `%`(o: tuple[nameplate: Nameplate]): JsonNode		993
+nim	`%`	dimscord/objects.html#%,Overwrite	proc `%`(o: Overwrite): JsonNode		996
+nim	`%`	dimscord/objects.html#%,set[T]	proc `%`[T: enum](flags: set[T]): JsonNode		1002
+nim	`%`	dimscord/objects.html#%	proc `%`(r: (MessageReferenceType | InteractionContextType |\n    ApplicationIntegrationType)): JsonNode		1008
+nim	`%%*`	dimscord/objects.html#%%*,MessageComponent	proc `%%*`(comp: MessageComponent): JsonNode		1022
+nim	`%`	dimscord/objects.html#%,MessageComponent	proc `%`(m: MessageComponent): JsonNode		1068
+nim	`%`	dimscord/objects.html#%,InteractionCallbackDataMessage	proc `%`(m: InteractionCallbackDataMessage): JsonNode		1070
+nimgrp	$	dimscord/objects.html#$-procs-all	proc		1253
+nimgrp	%%*	dimscord/objects.html#%%*-procs-all	proc		867
+nimgrp	%	dimscord/objects.html#%-procs-all	proc		953

@@ -186,7 +186,7 @@ type
         sfUserSubscription  = 8
 const
     libName* =  "Dimscord"
-    libVer* =   "1.6.0"
+    libVer* =   "1.8.0"
     libAgent* = "DiscordBot (https://github.com/krisppurg/dimscord, v"&libVer&")"
 
     cdnBase* =               "https://cdn.discordapp.com/"

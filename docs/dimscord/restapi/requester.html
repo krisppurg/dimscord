@@ -12,10 +12,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.0.6">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.0.6"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -54,42 +54,17 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">%
-  <li><a class="reference" href="#%25%2Cset%5BAttachmentFlags%5D" title="`%`(flags: set[AttachmentFlags]): JsonNode">`%`(flags: set[AttachmentFlags]): JsonNode</a></li>
-<li><a class="reference" href="#%25%2Cset%5BChannelFlags%5D" title="`%`(flags: set[ChannelFlags]): JsonNode">`%`(flags: set[ChannelFlags]): JsonNode</a></li>
-<li><a class="reference" href="#%25%2Cset%5BMessageFlags%5D" title="`%`(flags: set[MessageFlags]): JsonNode">`%`(flags: set[MessageFlags]): JsonNode</a></li>
-<li><a class="reference" href="#%25%2Cset%5BPermissionFlags%5D" title="`%`(flags: set[PermissionFlags]): JsonNode">`%`(flags: set[PermissionFlags]): JsonNode</a></li>
-<li><a class="reference" href="#%25%2Cset%5BRoleFlags%5D" title="`%`(flags: set[RoleFlags]): JsonNode">`%`(flags: set[RoleFlags]): JsonNode</a></li>
-<li><a class="reference" href="#%25%2COverwrite" title="`%`(o: Overwrite): JsonNode">`%`(o: Overwrite): JsonNode</a></li>
-<li><a class="reference" href="#%25%2Ctuple%5Bstring%2Cint%2COption%5Bstring%5D%5D" title="`%`(t: tuple[channel_id: string, duration_seconds: int,
-             custom_message: Option[string]]): JsonNode">`%`(t: tuple[channel_id: string, duration_seconds: int,
-             custom_message: Option[string]]): JsonNode</a></li>
+      <ul class="simple nested-toc-section">append
+  <li><a class="reference" href="#append%2CMultipartData%2Cseq%5BAttachment%5D%2CJsonNode" title="append(mpd: var MultipartData; attachments: seq[Attachment]; pl: var JsonNode;
+       is_interaction = false)">append(mpd: var MultipartData; attachments: seq[Attachment]; pl: var JsonNode;
+       is_interaction = false)</a></li>
+<li><a class="reference" href="#append%2CMultipartData%2Cseq%5BDiscordFile%5D%2CJsonNode" title="append(mpd: var MultipartData; files: seq[DiscordFile]; pl: var JsonNode)">append(mpd: var MultipartData; files: seq[DiscordFile]; pl: var JsonNode)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">request
   <li><a class="reference" href="#request%2CRestApi%2Cstring%2Cstring%2Cstring%2Cstring%2CMultipartData" title="request(api: RestApi; meth, endpoint: string; pl, audit_reason = &quot;&quot;;
         mp: MultipartData = nil; auth = true): Future[JsonNode]">request(api: RestApi; meth, endpoint: string; pl, audit_reason = &quot;&quot;;
         mp: MultipartData = nil; auth = true): Future[JsonNode]</a></li>
-
-</ul>
-
-    </ul>
-  </details>
-</li>
-<li>
-  <details open>
-    <summary><a class="reference reference-toplevel" href="#17" id="67">Macros</a></summary>
-    <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">loadNullableOptInt
-  <li><a class="reference" href="#loadNullableOptInt.m%2Ctyped%2Cvarargs%5Buntyped%5D" title="loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped">loadNullableOptInt(obj: typed; lits: varargs[untyped]): untyped</a></li>
-
-</ul>
-<ul class="simple nested-toc-section">loadNullableOptStr
-  <li><a class="reference" href="#loadNullableOptStr.m%2Ctyped%2Cvarargs%5Buntyped%5D" title="loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped">loadNullableOptStr(obj: typed; lits: varargs[untyped]): untyped</a></li>
-
-</ul>
-<ul class="simple nested-toc-section">loadOpt
-  <li><a class="reference" href="#loadOpt.m%2Ctyped%2Cvarargs%5Buntyped%5D" title="loadOpt(obj: typed; lits: varargs[untyped]): untyped">loadOpt(obj: typed; lits: varargs[untyped]): untyped</a></li>
 
 </ul>
 
@@ -116,78 +91,29 @@
 <div class="section" id="12">
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
-    <div id="%-procs-all">
-  <div id="%,set[AttachmentFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Cset%5BAttachmentFlags%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="../constants.html#AttachmentFlags"><span class="Identifier">AttachmentFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <div id="append-procs-all">
+  <div id="append,MultipartData,seq[Attachment],JsonNode">
+  <dt><pre><span class="Keyword">proc</span> <a href="#append%2CMultipartData%2Cseq%5BAttachment%5D%2CJsonNode"><span class="Identifier">append</span></a><span class="Other">(</span><span class="Identifier">mpd</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">MultipartData</span><span class="Other">;</span> <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span><span class="Other">;</span>
+            <span class="Identifier">pl</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">JsonNode</span><span class="Other">;</span> <span class="Identifier">is_interaction</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">RequesterError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Appends discord attachment items to multipart data. Internal use only, but you can use it if you want.
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L282" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L282" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+
+  </dd>
+</div>
+<div id="append,MultipartData,seq[DiscordFile],JsonNode">
+  <dt><pre><span class="Keyword">proc</span> <a href="#append%2CMultipartData%2Cseq%5BDiscordFile%5D%2CJsonNode"><span class="Identifier">append</span></a><span class="Other">(</span><span class="Identifier">mpd</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">MultipartData</span><span class="Other">;</span> <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="../objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">pl</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">JsonNode</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RequesterError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L290" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L290" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,set[ChannelFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Cset%5BChannelFlags%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="../constants.html#ChannelFlags"><span class="Identifier">ChannelFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L293" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L293" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,set[MessageFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Cset%5BMessageFlags%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="../constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L287" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L287" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,set[PermissionFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Cset%5BPermissionFlags%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="../constants.html#PermissionFlags"><span class="Identifier">PermissionFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L299" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L299" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,set[RoleFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Cset%5BRoleFlags%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="../constants.html#RoleFlags"><span class="Identifier">RoleFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L296" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L296" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,Overwrite">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2COverwrite"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">o</span><span class="Other">:</span> <a href="../objects.html#Overwrite"><span class="Identifier">Overwrite</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L281" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L281" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-<div id="%,tuple[string,int,Option[string]]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%25%2Ctuple%5Bstring%2Cint%2COption%5Bstring%5D%5D"><span class="Identifier">`%`</span></a><span class="Other">(</span><span class="Identifier">t</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">duration_seconds</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">,</span>
-                  <span class="Identifier">custom_message</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L268" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L268" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    Appends discord file items to multipart data. Internal use only, but you can use it if you want.
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L315" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L315" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -202,54 +128,15 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Makes HTTP requests to the Discord API.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">pl</span></span></tt> - stringified json payload.</li>
+<li><tt class="docutils literal"><span class="pre"><span class="Identifier">audit_reason</span></span></tt> - audit log reason for any action</li>
+<li><tt class="docutils literal"><span class="pre"><span class="Identifier">mp</span></span></tt> - multipart data which is used to attach files</li>
+<li><tt class="docutils literal"><span class="pre"><span class="Identifier">auth</span></span></tt> - if authentication is needed.</li>
+<li><tt class="docutils literal"><span class="pre"><span class="Identifier">meth</span></span></tt> - method of http request. definitely not illegal ;).</li>
+</ul>
+
     <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L86" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
 <a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L86" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-
-</div>
-
-  </dl>
-</div>
-<div class="section" id="17">
-  <h1><a class="toc-backref" href="#17">Macros</a></h1>
-  <dl class="item">
-    <div id="loadNullableOptInt-macros-all">
-  <div id="loadNullableOptInt.m,typed,varargs[untyped]">
-  <dt><pre><span class="Keyword">macro</span> <a href="#loadNullableOptInt.m%2Ctyped%2Cvarargs%5Buntyped%5D"><span class="Identifier">loadNullableOptInt</span></a><span class="Other">(</span><span class="Identifier">obj</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">;</span> <span class="Identifier">lits</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">untyped</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L318" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L318" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-
-</div>
-<div id="loadNullableOptStr-macros-all">
-  <div id="loadNullableOptStr.m,typed,varargs[untyped]">
-  <dt><pre><span class="Keyword">macro</span> <a href="#loadNullableOptStr.m%2Ctyped%2Cvarargs%5Buntyped%5D"><span class="Identifier">loadNullableOptStr</span></a><span class="Other">(</span><span class="Identifier">obj</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">;</span> <span class="Identifier">lits</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">untyped</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L310" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L310" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
-
-</div>
-<div id="loadOpt-macros-all">
-  <div id="loadOpt.m,typed,varargs[untyped]">
-  <dt><pre><span class="Keyword">macro</span> <a href="#loadOpt.m%2Ctyped%2Cvarargs%5Buntyped%5D"><span class="Identifier">loadOpt</span></a><span class="Other">(</span><span class="Identifier">obj</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">;</span> <span class="Identifier">lits</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">untyped</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
-  <dd>
-    
-    
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/requester.nim#L302" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/requester.nim#L302" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -265,7 +152,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-08-24 17:26:35 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-08 23:14:02 UTC</small>
       </div>
     </div>
   </div>

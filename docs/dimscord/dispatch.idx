@@ -1,3 +1,2 @@
 nimTitle	dispatch	dimscord/dispatch.html	module dimscord/dispatch		0
-nim	fullSet	dimscord/dispatch.html#fullSet,typedesc[T]	proc fullSet[T](U: typedesc[T]): set[T]		53
-nim	handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,DispatchEvent,JsonNode	proc handleEventDispatch(s: Shard; event: DispatchEvent; data: JsonNode): owned(\n    Future[void])		1002
+nim	handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,DispatchEvent,JsonNode	proc handleEventDispatch(s: Shard; event: DispatchEvent; data: JsonNode): owned(\n    Future[void])		1115

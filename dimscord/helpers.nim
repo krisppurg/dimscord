@@ -613,6 +613,14 @@ template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
     ## 
     ## See also:
     ## - [Events](./objects.html#Events)
+    ## 
+    ## Similar procs:
+    ## - [waitForComponentUse]
+    ## - [waitForDeletion]
+    ## - [waitForInternal]
+    ## - [waitForReaction]
+    ## - [waitForReply]
+    ## - [waitToJoinVoice]
     block:
         # Issue is that we can't refine the handler type to be
         # different depending on what event is. To get around this

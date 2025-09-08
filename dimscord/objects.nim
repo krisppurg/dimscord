@@ -92,7 +92,7 @@ proc newDiscordClient*(token: string;
                     o: Option[Message], exists: bool) {.async.} = discard,
             message_reaction_add: proc (s: Shard,
                     m: Message, u: User,
-                    e: Emoji, exists: bool) {.async.} = discard,
+                    emj: Emoji, exists: bool) {.async.} = discard,
             message_reaction_remove: proc (s: Shard, m: Message,
                     u: User, r: Reaction, exists: bool) {.async.} = discard,
             message_reaction_remove_all: proc (s: Shard, m: Message,
@@ -897,6 +897,9 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     softassert a.name.len in 1..32
     # This ternary is needed so that the enums can stay similar to
     # the discord api
+
+    # <TODO> PLEASE CLEAN UP THE CODE
+
     let commandKind = if a.kind == atNothing: atSlash else: a.kind
     result = %*{
         "name": a.name,
@@ -1017,6 +1020,8 @@ proc `&=`(a: var JsonNode, b: JsonNode) =
     a = a+b
 
 proc `%%*`*(comp: MessageComponent): JsonNode =
+    # Fyi, it's named that because originally it was meant to avoid conflicts with json but now since there is no conflicts,
+    # I thought I'd just keep it as it is and make a `%` that would redirect the proc.
     result = %*{"type": comp.kind.ord}
 
     result.loadOpts(comp, spoiler, placeholder, disabled, id, label, description)
@@ -1059,3 +1064,16 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
     of mctTextDisplay: result["content"] = %comp.content
     of mctLabel:
         result &= %*{"component": %%*comp.component}
+
+proc `%`*(m: MessageComponent): JsonNode = %%*m
+
+proc `%`*(m: InteractionCallbackDataMessage): JsonNode =
+    result = %*{
+        "content": m.content,
+        "embeds": %m.embeds.mapIt(%it),
+        "allowed_mentions": %m.allowed_mentions,
+        "flags": %m.flags,
+        "attachments": %m.attachments,
+        "components": %m.components.mapIt(%%*it)
+    }
+    result.loadOpts(m, tts)

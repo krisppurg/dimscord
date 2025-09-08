@@ -206,7 +206,7 @@ proc registerApplicationCommand*(api: RestApi; application_id: string;
     ## overwrite the old command.
     softAssert name.len in 1..32
     var payload = %*{"name": name,
-                     "type": ord kind}
+                     "type": %(ord kind)}
 
     if default_member_permissions.isSome:
         payload["default_member_permissions"] = %(
@@ -350,7 +350,22 @@ proc interactionResponseMessage*(api: RestApi,
         kind: InteractionResponseType,
         response: InteractionCallbackDataMessage) {.async.} =
     ## Create an interaction response.
-    ## `response.kind` is required.
+    ## - `response.kind` is required.
+    ## 
+    ## Example:
+    ## ```nim
+    ## await discord.api.interactionResponseMessage(
+    ##      interaction_id, interaction_token,
+    ##         kind = ..., # you can choose whichever
+    ##         response = InteractionCallbackDataMessage(
+    ##             flags: {mfIsEphemeral, mfIsComponentsV2},
+    ##             content: "What's up bro".
+    ##             components: @[...],
+    ##             ...
+    ##        )
+    ## )
+    ## )
+    ## ```
     var payload = %*{"type":int kind, "data": newJObject()}
     var mpd: MultipartData = nil
     if response != nil:

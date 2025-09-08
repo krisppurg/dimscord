@@ -401,7 +401,7 @@ type
         party*: Option[tuple[id: string, size: seq[int]]] ## todo
         assets*: Option[ActivityAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
-        buttons*: seq[tuple[label, url: string]] # !!!! parsehooks
+        buttons*: seq[tuple[label, url: string]]
         instance*: bool
     Presence* = ref object
         user*: User
@@ -711,7 +711,7 @@ type
         ## ```
         name*: string
         name_localizations*: Option[Table[string, string]]
-        value*: (Option[string], Option[int]) # !!!!!!!!
+        value*: (Option[string], Option[int])
     MessageInteractionMetadata* = object
         id*, name*: string
         kind*: InteractionType
@@ -826,7 +826,6 @@ type
         flags*: set[MessageFlags]
         attachments*: seq[Attachment]
         components*: seq[MessageComponent]
-    # InteractionCallbackDataMessage* = InteractionApplicationCommandCallbackData
     InteractionCallbackDataAutocomplete* = object
         choices*: seq[ApplicationCommandOptionChoice]
     InteractionCallbackDataModal* = object
@@ -1034,12 +1033,36 @@ type
         shards*: int
         session_start_limit*: GatewaySession
     Events* = ref object
-        ## An object containing events that can be changed.
+        ## An object consisting of events that can be registered
+        ## 
+        ## Each property can be written in the following form:
+        ## ```nim
+        ## # for interaction_create for instance
+        ## proc interaction_create(s: Shard, i: Interaction) {.event(discord).} =
+        ##   ...
+        ## 
+        ## # The {.event(discord).} pragma is a macro which rewrites the expression as this:
+        ## discord.events.interaction_create = proc interaction_create(s: Shard, i: Interaction) {.async.} =
+        ##   ...
+        ## 
+        ## # the event name is also case insensitive (except for first letter),
+        ## # thanks to Nim's flexibility so writing the following would be valid equivalent.
+        ## 
+        ## proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
+        ##   ...
+        ## 
+        ## # just don't forget the pragma, it also automatically adds in the {.async.} pragma
+        ## # hence why use of async/await inside proc is valid.
+        ## ```
+        ## 
+        ## Additional information:
+        ## - `exists` (parameter) Checks object is cached or not. Other cachable objects dont have them.
+        ## - `on_dispatch` (event) gives you the raw event data for you to handle things, useful for debugging. (see last bullet point for information)
+        ## - `message_reaction_add` (event) to get [Reaction] data you can do `msg.reactions[$emoji]`.
+        ## - [Discord API docs on gateway events](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
         ##
-        ## - `exists` Checks message is cached or not. Other cachable objects dont have them.
         ##
-        ## - `on_dispatch` event gives you the raw event data for you to handle things.
-        ## [For reference](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
+        ## - See also [waitFor] in helpers section 
         on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
         on_ready*: proc (s: Shard, r: Ready) {.async.}
         on_disconnect*: proc (s: Shard) {.async.}

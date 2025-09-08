@@ -137,9 +137,15 @@ proc request*(api: RestApi, meth, endpoint: string;
             reason: if audit_reason != "": audit_reason else: ""
         ))
 
-        try:
-            resp = await client.request(url, parseEnum[HttpMethod](meth),
+        let req = client.request(url, parseEnum[HttpMethod](meth),
                     pl, multipart=mp)
+
+        if not (await req.withTimeout(20_000)):
+            log("Request is taking longer than 20s. Retrying request...")
+            await doreq()
+
+        try:
+            resp = await req
         except:
             r.processing = false
             raise
@@ -218,6 +224,7 @@ proc request*(api: RestApi, meth, endpoint: string;
                 elif status == Http504:
                     error = fin & "Gateway timed out."
 
+            echo pl.parseJson.pretty()
             if fatalErr:
                 raise DiscordHttpError(
                     msg: error,

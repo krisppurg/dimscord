@@ -65,14 +65,14 @@ template editMessage*(c: SomeChannel, m: Message;
         components
     )
 
-proc edit*(m: Message;
+template edit*(m: Message;
         content = "";
         embeds: seq[Embed] = @[];
         attachments: seq[Attachment] = @[];
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
         tts = false;
-        flags = none set[MessageFlags]): Future[Message] {.async.} =
+        flags = none set[MessageFlags]): Future[Message]  =
     ## Edits a Message.
 
     # getMessage(getClient.shards[0].cache.gchannel(m), "123")

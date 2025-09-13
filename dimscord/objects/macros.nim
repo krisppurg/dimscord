@@ -120,9 +120,6 @@ macro mainClient*(x: typed) =
       `vname`
   )
 
-proc sCheck(): bool =
-    when declared(s): s is Shard
-
 template getClient*: DiscordClient =
   ## Gets registered client or shard client
   when declared(dimscordPrivateClient):
@@ -133,12 +130,12 @@ template getClient*: DiscordClient =
           msg: "Client is nil: Check client initialization"
         )
     dc
-  elif sCheck():
-        when defined(dimscordDebug):
-            if s.client.isNil:
-                raise (ref AccessViolationDefect)(
-                msg: "Client is nil: Check shard initialization"
-                )
-            s.client
+  elif declared(s) and (s is Shard):
+    when defined(dimscordDebug):
+      if s.client.isNil:
+        raise (ref AccessViolationDefect)(
+          msg: "Client is nil: Check shard initialization"
+        )
+    s.client
   else:
     {.error: "No client found. Use `mainClient` or ensure 's' Shard exists".}

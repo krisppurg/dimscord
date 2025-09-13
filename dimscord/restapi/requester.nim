@@ -224,7 +224,6 @@ proc request*(api: RestApi, meth, endpoint: string;
                 elif status == Http504:
                     error = fin & "Gateway timed out."
 
-            echo pl.parseJson.pretty()
             if fatalErr:
                 raise DiscordHttpError(
                     msg: error,

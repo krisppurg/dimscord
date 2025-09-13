@@ -786,6 +786,10 @@
 <li><a class="reference external"
           data-doc-search-tag="constants: enum AttachmentFlags" href="dimscord/constants.html#AttachmentFlags">constants: enum AttachmentFlags</a></li>
           </ul></dd>
+<dt><a name="atUnknown" href="#atUnknown"><span>atUnknown:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: AnimationType.atUnknown" href="dimscord/constants.html#atUnknown">constants: AnimationType.atUnknown</a></li>
+          </ul></dd>
 <dt><a name="atUser" href="#atUser"><span>atUser:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: ApplicationCommandType.atUser" href="dimscord/constants.html#atUser">constants: ApplicationCommandType.atUser</a></li>
@@ -1255,17 +1259,21 @@
 <dt><a name="createFollowupMessage" href="#createFollowupMessage"><span>createFollowupMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: proc createFollowupMessage(api: RestApi; application_id, interaction_token: string;
-                      content = &quot;&quot;; tts = false; files = newSeq();
-                      attachments = newSeq(); embeds = newSeq();
+                      content = &quot;&quot;; tts = false; files: seq[DiscordFile] = @[];
+                      attachments: seq[Attachment] = @[];
+                      embeds: seq[Embed] = @[];
                       allowed_mentions = none AllowedMentions;
-                      components = newSeq(); flags: set[MessageFlags] = {};
+                      components: seq[MessageComponent] = @[];
+                      flags: set[MessageFlags] = {};
                       thread_id, thread_name = none string;
                       applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
-    Message]" href="dimscord/restapi.html#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D">restapi: proc createFollowupMessage(api: RestApi; application_id, interaction_token: string;
-                      content = &quot;&quot;; tts = false; files = newSeq();
-                      attachments = newSeq(); embeds = newSeq();
+    Message]" href="dimscord/restapi.html#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D">restapi: proc createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files: seq[DiscordFile] = @[];
+                      attachments: seq[Attachment] = @[];
+                      embeds: seq[Embed] = @[];
                       allowed_mentions = none AllowedMentions;
-                      components = newSeq(); flags: set[MessageFlags] = {};
+                      components: seq[MessageComponent] = @[];
+                      flags: set[MessageFlags] = {};
                       thread_id, thread_name = none string;
                       applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Message]</a></li>
@@ -1762,6 +1770,10 @@
 <li><a class="reference external"
           data-doc-search-tag="constants: const deTypingStart" href="dimscord/constants.html#deTypingStart">constants: const deTypingStart</a></li>
           </ul></dd>
+<dt><a name="deVoiceChannelEffectSend" href="#deVoiceChannelEffectSend"><span>deVoiceChannelEffectSend:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: const deVoiceChannelEffectSend" href="dimscord/constants.html#deVoiceChannelEffectSend">constants: const deVoiceChannelEffectSend</a></li>
+          </ul></dd>
 <dt><a name="disconnect" href="#disconnect"><span>disconnect:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="gateway: proc disconnect(s: Shard; should_reconnect = true): owned(Future[void])" href="dimscord/gateway.html#disconnect%2CShard">gateway: proc disconnect(s: Shard; should_reconnect = true): owned(Future[void])</a></li>
@@ -1816,6 +1828,14 @@
           </ul></dd>
 <dt><a name="edit" href="#edit"><span>edit:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="helpers: proc edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags = none set[MessageFlags]): Future[Message]" href="dimscord/helpers.html#edit%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D">helpers: proc edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags = none set[MessageFlags]): Future[Message]</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="helpers: template edit(g: Guild; name, description, region, afk_channel_id, icon = none string;
      discovery_splash, owner_id, splash, banner = none string;
      system_channel_id, rules_channel_id = none string;
@@ -1855,14 +1875,6 @@
      bitrate = none range[8000 .. 128000]; user_limit = none range[0 .. 99];
      position = none int; permission_overwrites = none seq[Overwrite];
      nsfw = none bool; reason = &quot;&quot;): Future[GuildChannel]</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="helpers: template edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]" href="dimscord/helpers.html#edit.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D">helpers: template edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="helpers: template edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
     void]" href="dimscord/helpers.html#edit.t%2CWebhook%2Cstring">helpers: template edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
@@ -2222,15 +2234,17 @@
 <li><a class="reference external"
           data-doc-search-tag="restapi: proc editInteractionResponse(api: RestApi; application_id, interaction_token: string;
                         message_id: string = &quot;@original&quot;; content = none string;
-                        embeds = newSeq(); flags: set[MessageFlags] = {};
+                        embeds: seq[Embed] = @[]; flags: set[MessageFlags] = {};
                         allowed_mentions = none AllowedMentions;
-                        attachments = newSeq(); files = newSeq();
-                        components = newSeq()): Future[Message]" href="dimscord/restapi.html#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D">restapi: proc editInteractionResponse(api: RestApi; application_id, interaction_token: string;
+                        attachments: seq[Attachment] = @[];
+                        files: seq[DiscordFile] = @[];
+                        components: seq[MessageComponent] = @[]): Future[Message]" href="dimscord/restapi.html#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cset%5BMessageFlags%5D%2Cseq%5BAttachment%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D">restapi: proc editInteractionResponse(api: RestApi; application_id, interaction_token: string;
                         message_id: string = &quot;@original&quot;; content = none string;
-                        embeds = newSeq(); flags: set[MessageFlags] = {};
+                        embeds: seq[Embed] = @[]; flags: set[MessageFlags] = {};
                         allowed_mentions = none AllowedMentions;
-                        attachments = newSeq(); files = newSeq();
-                        components = newSeq()): Future[Message]</a></li>
+                        attachments: seq[Attachment] = @[];
+                        files: seq[DiscordFile] = @[];
+                        components: seq[MessageComponent] = @[]): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editMember" href="#editMember"><span>editMember:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2255,12 +2269,14 @@
     Message]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="restapi: proc editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags: set[MessageFlags] = {}; files = newSeq();
-            embeds = newSeq(); attachments = newSeq(); components = newSeq()): Future[
-    Message]" href="dimscord/restapi.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D">restapi: proc editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags: set[MessageFlags] = {}; files = newSeq();
-            embeds = newSeq(); attachments = newSeq(); components = newSeq()): Future[
-    Message]</a></li>
+            tts = false; flags: set[MessageFlags] = {};
+            files: seq[DiscordFile] = @[]; embeds: seq[Embed] = @[];
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]): Future[Message]" href="dimscord/restapi.html#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D">restapi: proc editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
+            tts = false; flags: set[MessageFlags] = {};
+            files: seq[DiscordFile] = @[]; embeds: seq[Embed] = @[];
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="editMFA" href="#editMFA"><span>editMFA:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2369,14 +2385,18 @@
 <dt><a name="editWebhookMessage" href="#editWebhookMessage"><span>editWebhookMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="restapi: proc editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content, thread_id = none string; embeds = newSeq();
+                   content, thread_id = none string; embeds: seq[Embed] = @[];
                    allowed_mentions = none AllowedMentions;
-                   attachments = newSeq(); flags: set[MessageFlags] = {};
-                   files = newSeq(); components = newSeq()): Future[Message]" href="dimscord/restapi.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D">restapi: proc editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content, thread_id = none string; embeds = newSeq();
+                   attachments: seq[Attachment] = @[];
+                   flags: set[MessageFlags] = {};
+                   files: seq[DiscordFile] = @[];
+                   components: seq[MessageComponent] = @[]): Future[Message]" href="dimscord/restapi.html#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D">restapi: proc editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                   content, thread_id = none string; embeds: seq[Embed] = @[];
                    allowed_mentions = none AllowedMentions;
-                   attachments = newSeq(); flags: set[MessageFlags] = {};
-                   files = newSeq(); components = newSeq()): Future[Message]</a></li>
+                   attachments: seq[Attachment] = @[];
+                   flags: set[MessageFlags] = {};
+                   files: seq[DiscordFile] = @[];
+                   components: seq[MessageComponent] = @[]): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="elapsed" href="#elapsed"><span>elapsed:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2935,16 +2955,20 @@
           data-doc-search-tag="restapi: proc executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                with_components = false; thread_id, thread_name = none string;
                content = &quot;&quot;; tts = false; flags: set[MessageFlags] = {};
-               files = newSeq(); attachments = newSeq(); embeds = newSeq();
+               files: seq[DiscordFile] = @[];
+               attachments: seq[Attachment] = @[]; embeds: seq[Embed] = @[];
                allowed_mentions = none AllowedMentions;
-               username, avatar_url = none string; components = newSeq();
+               username, avatar_url = none string;
+               components: seq[MessageComponent] = @[];
                applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
-    Option[Message]]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D">restapi: proc executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+    Option[Message]]" href="dimscord/restapi.html#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D">restapi: proc executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                with_components = false; thread_id, thread_name = none string;
                content = &quot;&quot;; tts = false; flags: set[MessageFlags] = {};
-               files = newSeq(); attachments = newSeq(); embeds = newSeq();
+               files: seq[DiscordFile] = @[];
+               attachments: seq[Attachment] = @[]; embeds: seq[Embed] = @[];
                allowed_mentions = none AllowedMentions;
-               username, avatar_url = none string; components = newSeq();
+               username, avatar_url = none string;
+               components: seq[MessageComponent] = @[];
                applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Option[Message]]</a></li>
           </ul></dd>
@@ -3839,6 +3863,22 @@
 <dt><a name="GuildScheduledEventUserRemove" href="#GuildScheduledEventUserRemove"><span>GuildScheduledEventUserRemove:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: DispatchEvent.GuildScheduledEventUserRemove" href="dimscord/constants.html#GuildScheduledEventUserRemove">constants: DispatchEvent.GuildScheduledEventUserRemove</a></li>
+          </ul></dd>
+<dt><a name="GuildSoundboardSoundCreate" href="#GuildSoundboardSoundCreate"><span>GuildSoundboardSoundCreate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.GuildSoundboardSoundCreate" href="dimscord/constants.html#GuildSoundboardSoundCreate">constants: DispatchEvent.GuildSoundboardSoundCreate</a></li>
+          </ul></dd>
+<dt><a name="GuildSoundboardSoundDelete" href="#GuildSoundboardSoundDelete"><span>GuildSoundboardSoundDelete:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.GuildSoundboardSoundDelete" href="dimscord/constants.html#GuildSoundboardSoundDelete">constants: DispatchEvent.GuildSoundboardSoundDelete</a></li>
+          </ul></dd>
+<dt><a name="GuildSoundboardSoundsUpdate" href="#GuildSoundboardSoundsUpdate"><span>GuildSoundboardSoundsUpdate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.GuildSoundboardSoundsUpdate" href="dimscord/constants.html#GuildSoundboardSoundsUpdate">constants: DispatchEvent.GuildSoundboardSoundsUpdate</a></li>
+          </ul></dd>
+<dt><a name="GuildSoundboardSoundUpdate" href="#GuildSoundboardSoundUpdate"><span>GuildSoundboardSoundUpdate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.GuildSoundboardSoundUpdate" href="dimscord/constants.html#GuildSoundboardSoundUpdate">constants: DispatchEvent.GuildSoundboardSoundUpdate</a></li>
           </ul></dd>
 <dt><a name="GuildStickersUpdate" href="#GuildStickersUpdate"><span>GuildStickersUpdate:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -5816,11 +5856,15 @@
           </ul></dd>
 <dt><a name="requestGuildMembers" href="#requestGuildMembers"><span>requestGuildMembers:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="gateway: proc requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;
+          data-doc-search-tag="gateway: proc requestGuildMembers(s: Shard; guild_id: string; limit = none int;
                     query = none string; nonce = &quot;&quot;; presences = false;
-                    user_ids: seq[string] = @[]): owned(Future[void])" href="dimscord/gateway.html#requestGuildMembers%2CShard%2C%2Cstring%2Cseq%5Bstring%5D">gateway: proc requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;
+                    user_ids: seq[string] = @[]): owned(Future[void])" href="dimscord/gateway.html#requestGuildMembers%2CShard%2Cstring%2Cstring%2Cseq%5Bstring%5D">gateway: proc requestGuildMembers(s: Shard; guild_id: string; limit = none int;
                     query = none string; nonce = &quot;&quot;; presences = false;
                     user_ids: seq[string] = @[]): owned(Future[void])</a></li>
+          </ul></dd>
+<dt><a name="requestSounds" href="#requestSounds"><span>requestSounds:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="gateway: proc requestSounds(s: Shard; guild_ids: seq[string]): owned(Future[void])" href="dimscord/gateway.html#requestSounds%2CShard%2Cseq%5Bstring%5D">gateway: proc requestSounds(s: Shard; guild_ids: seq[string]): owned(Future[void])</a></li>
           </ul></dd>
 <dt><a name="ResolvedChannel" href="#ResolvedChannel"><span>ResolvedChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -6094,20 +6138,20 @@
 <li><a class="reference external"
           data-doc-search-tag="restapi: proc sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
-            flags: set[MessageFlags] = {}; files = newSeq[DiscordFile]();
-            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
+            flags: set[MessageFlags] = {}; files: seq[DiscordFile] = @[];
+            embeds: seq[Embed] = @[]; attachments: seq[Attachment] = @[];
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
-            components = newSeq[MessageComponent]();
-            sticker_ids = newSeq[string](); poll = none PollRequest;
-            enforce_nonce = none bool): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D">restapi: proc sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
+            components: seq[MessageComponent] = @[];
+            sticker_ids: seq[string] = @[]; poll = none PollRequest;
+            enforce_nonce = none bool): Future[Message]" href="dimscord/restapi.html#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D">restapi: proc sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
-            flags: set[MessageFlags] = {}; files = newSeq[DiscordFile]();
-            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
+            flags: set[MessageFlags] = {}; files: seq[DiscordFile] = @[];
+            embeds: seq[Embed] = @[]; attachments: seq[Attachment] = @[];
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
-            components = newSeq[MessageComponent]();
-            sticker_ids = newSeq[string](); poll = none PollRequest;
+            components: seq[MessageComponent] = @[];
+            sticker_ids: seq[string] = @[]; poll = none PollRequest;
             enforce_nonce = none bool): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="sendModal" href="#sendModal"><span>sendModal:</span></a></dt><dd><ul class="simple">
@@ -6203,6 +6247,10 @@
           data-doc-search-tag="objects: object SoundboardSound" href="dimscord/objects.html#SoundboardSound">objects: object SoundboardSound</a></li>
           <li><a class="reference external"
           data-doc-search-tag="typedefs: object SoundboardSound" href="dimscord/objects/typedefs.html#SoundboardSound">typedefs: object SoundboardSound</a></li>
+          </ul></dd>
+<dt><a name="SoundboardSounds" href="#SoundboardSounds"><span>SoundboardSounds:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.SoundboardSounds" href="dimscord/constants.html#SoundboardSounds">constants: DispatchEvent.SoundboardSounds</a></li>
           </ul></dd>
 <dt><a name="Speaking" href="#Speaking"><span>Speaking:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -6730,6 +6778,8 @@
           </ul></dd>
 <dt><a name="VoiceChannelEffectSend" href="#VoiceChannelEffectSend"><span>VoiceChannelEffectSend:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="constants: DispatchEvent.VoiceChannelEffectSend" href="dimscord/constants.html#VoiceChannelEffectSend">constants: DispatchEvent.VoiceChannelEffectSend</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="objects: object VoiceChannelEffectSend" href="dimscord/objects.html#VoiceChannelEffectSend">objects: object VoiceChannelEffectSend</a></li>
           <li><a class="reference external"
           data-doc-search-tag="typedefs: object VoiceChannelEffectSend" href="dimscord/objects/typedefs.html#VoiceChannelEffectSend">typedefs: object VoiceChannelEffectSend</a></li>
@@ -6812,7 +6862,9 @@
           </ul></dd>
 <dt><a name="waitForComponentUse" href="#waitForComponentUse"><span>waitForComponentUse:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: proc waitForComponentUse(discord: DiscordClient; id: string): Future[Interaction]" href="dimscord/helpers.html#waitForComponentUse%2CDiscordClient%2Cstring">helpers: proc waitForComponentUse(discord: DiscordClient; id: string): Future[Interaction]</a></li>
+          data-doc-search-tag="helpers: proc waitForComponentUse(discord: DiscordClient; custom_id: string): Future[
+    Interaction]" href="dimscord/helpers.html#waitForComponentUse%2CDiscordClient%2Cstring">helpers: proc waitForComponentUse(discord: DiscordClient; custom_id: string): Future[
+    Interaction]</a></li>
           </ul></dd>
 <dt><a name="waitForDeletion" href="#waitForDeletion"><span>waitForDeletion:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -6823,6 +6875,10 @@
           data-doc-search-tag="helpers: proc waitForInternal(discord: DiscordClient; event: static[DispatchEvent];
                 handler: proc): auto" href="dimscord/helpers.html#waitForInternal%2CDiscordClient%2Cstatic%5BDispatchEvent%5D%2Cproc">helpers: proc waitForInternal(discord: DiscordClient; event: static[DispatchEvent];
                 handler: proc): auto</a></li>
+          </ul></dd>
+<dt><a name="waitForModalUse" href="#waitForModalUse"><span>waitForModalUse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="helpers: proc waitForModalUse(discord: DiscordClient; custom_id: string): Future[Interaction]" href="dimscord/helpers.html#waitForModalUse%2CDiscordClient%2Cstring">helpers: proc waitForModalUse(discord: DiscordClient; custom_id: string): Future[Interaction]</a></li>
           </ul></dd>
 <dt><a name="waitForRaw" href="#waitForRaw"><span>waitForRaw:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -6886,7 +6942,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-08 23:14:05 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-13 15:31:27 UTC</small>
       </div>
     </div>
   </div>

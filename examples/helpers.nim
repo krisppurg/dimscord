@@ -2,7 +2,7 @@
 ## - With this pragma you can use the helper template functions for sake of conciseness.
 ## Additionally in this example we also demonstrate the waitFor template, which is useful.
 
-import ../dimscord
+import dimscord
 import asyncdispatch, options, tables
 import strutils, sequtils, sugar, times
 
@@ -24,7 +24,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     of "highfive": # Simple reply/edit
         let msg = await m.reply("🖐", mention = true)
         await sleepAsync(1000)
-        discard await msg.edit("🤙")
+        discard await msg.edit(content="🤙")
 
     of "hello": # Basic Messaging
         let msg = await ch.send("Hey, how's your day ?")
@@ -57,8 +57,8 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
 
     of "counter": # Basic Interaction
         let btns = newActionRow @[
-            newButton(label = "+", idOrUrl = "addBtn", style = Primary),
-            newButton(label = "-", idOrUrl = "subBtn", style = Danger)
+            newButton(label = "+", idOrUrl = "addBtn", style = bsPrimary),
+            newButton(label = "-", idOrUrl = "subBtn", style = bsDanger)
         ]
 
         discard await m.reply(

@@ -37,14 +37,17 @@ template reply*(m: Message, content = "";
     ## - set `mention` to `true` in order to mention the replied message in Discord.
     var refr = block:
         (if mention: some m.reference else: none MessageReference)
-    getClient.api.sendMessage(
-        m.channel_id,
-        content=content, tts=tts, nonce=nonce,
-        flags=flags, files=files, embeds=embeds,
-        allowed_mentions=allowed_mentions, 
-        message_reference = refr, components=components,
-        attachments=attachments, stickers=stickers
-    )
+    getMessage(getClient.shards[0].cache.gchannel(m), "123")
+    # TEMPORARY
+
+    # getClient.api.sendMessage(
+    #     m.channel_id,
+    #     content=content, tts=tts, nonce=nonce,
+    #     flags=flags, files=files, embeds=embeds,
+    #     allowed_mentions=allowed_mentions, 
+    #     message_reference = refr, components=components,
+    #     attachments=attachments, stickers=stickers
+    # )
 
 template editMessage*(c: SomeChannel, m: Message;
         content = "";
@@ -62,16 +65,19 @@ template editMessage*(c: SomeChannel, m: Message;
         components
     )
 
-template edit*(m: Message;
+proc edit*(m: Message;
         content = "";
         embeds: seq[Embed] = @[];
         attachments: seq[Attachment] = @[];
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
         tts = false;
-        flags = none set[MessageFlags]): Future[Message]  =
+        flags = none set[MessageFlags]): Future[Message] {.async.} =
     ## Edits a Message.
-    getClient.api.editMessage(
+
+    # getMessage(getClient.shards[0].cache.gchannel(m), "123")
+    # ^^^ this is temp, it will be removed soon
+    discard await getClient.api.editMessage(
         m.channel_id, m.id,
         content=content, tts=tts,
         flags=flags,

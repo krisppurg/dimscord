@@ -7,13 +7,13 @@ proc sendMessage*(api: RestApi, channel_id: string;
         content = ""; tts = false;
         nonce: Option[string] or Option[int] = none(int);
         flags: set[MessageFlags] = {};
-        files = newSeq[DiscordFile]();
-        embeds = newSeq[Embed]();
-        attachments = newSeq[Attachment]();
+        files: seq[DiscordFile] = @[];
+        embeds: seq[Embed] = @[];
+        attachments: seq[Attachment] = @[];
         allowed_mentions = none AllowedMentions;
         message_reference = none MessageReference;
-        components = newSeq[MessageComponent]();
-        sticker_ids = newSeq[string]();
+        components: seq[MessageComponent] = @[];
+        sticker_ids: seq[string] = @[];
         poll = none PollRequest,
         enforce_nonce = none bool): Future[Message] {.async.} =
     ## Sends a Discord message.
@@ -72,9 +72,9 @@ proc sendMessage*(api: RestApi, channel_id: string;
 
 proc editMessage*(api: RestApi, channel_id, message_id: string;
         content = ""; tts = false; flags: set[MessageFlags] = {};
-        files = newSeq[DiscordFile]();
-        embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
-        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+        files: seq[DiscordFile] = @[];
+        embeds: seq[Embed] = @[]; attachments: seq[Attachment] = @[];
+        components: seq[MessageComponent] = @[]): Future[Message] {.async.} =
     ## Edits a discord message.
     softAssert content.len <= 2000
     var payload = %*{
@@ -237,12 +237,12 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         wait = true; with_components = false;
         thread_id, thread_name = none string;
         content = ""; tts = false; flags: set[MessageFlags] = {};
-        files = newSeq[DiscordFile]();
-        attachments = newSeq[Attachment]();
-        embeds = newSeq[Embed]();
+        files: seq[DiscordFile] = @[];
+        attachments: seq[Attachment] = @[];
+        embeds: seq[Embed] = @[];
         allowed_mentions = none AllowedMentions;
         username, avatar_url = none string;
-        components = newSeq[MessageComponent]();
+        components: seq[MessageComponent] = @[];
         applied_tags: seq[string] = @[];
         poll = none PollRequest;
 ): Future[Option[Message]] {.async.} =
@@ -258,7 +258,6 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
         mpd: MultipartData
 
     if thread_id.isSome: url &= "&thread_id=" & thread_id.get
-    if with_components: url &= "&with_components=" & $with_components
 
     var payload = %*{
         "content": content,
@@ -275,9 +274,12 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
     if applied_tags.len > 0: payload["applied_tags"] = %applied_tags
 
     if components.len > 0:
+        url &= "&with_components=true"
         payload["components"] = newJArray()
         for component in components:
             payload["components"].add %%*component
+    elif with_components:
+        url &= "&with_components=" & $with_components # user might use it for later
 
     if poll.isSome:
         softAssert poll.get.duration in 1..768
@@ -302,18 +304,18 @@ proc executeWebhook*(api: RestApi, webhook_id, webhook_token: string;
 proc createFollowupMessage*(api: RestApi,
         application_id, interaction_token: string;
         content = ""; tts = false;
-        files = newSeq[DiscordFile]();
-        attachments = newSeq[Attachment]();
-        embeds = newSeq[Embed]();
+        files: seq[DiscordFile] = @[];
+        attachments: seq[Attachment] = @[];
+        embeds: seq[Embed] = @[];
         allowed_mentions = none AllowedMentions;
-        components = newSeq[MessageComponent]();
+        components: seq[MessageComponent] = @[];
         flags: set[MessageFlags] = {};
         thread_id, thread_name = none string;
         applied_tags: seq[string] = @[];
         poll = none PollRequest;
         ): Future[Message] {.async.} =
     ## Create a followup message.
-    ## - `flags` can set the followup message as ephemeral (which can be 64).
+    ## - `flags` valid options: `{mfIsEphemeral, mfIsComponentsV2}` 
     result = get(await api.executeWebhook(
         application_id, interaction_token,
         content = content,
@@ -334,12 +336,12 @@ proc createFollowupMessage*(api: RestApi,
 proc editWebhookMessage*(api: RestApi;
         webhook_id, webhook_token, message_id: string;
         content, thread_id = none string;
-        embeds = newSeq[Embed]();
+        embeds: seq[Embed] = @[];
         allowed_mentions = none AllowedMentions;
-        attachments = newSeq[Attachment]();
+        attachments: seq[Attachment] = @[];
         flags: set[MessageFlags] = {};
-        files = newSeq[DiscordFile]();
-        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+        files: seq[DiscordFile] = @[];
+        components: seq[MessageComponent] = @[]): Future[Message] {.async.} =
     ## Modifies the webhook message.
     ## You can actually use this to modify
     ## original interaction or followup message.
@@ -375,12 +377,12 @@ proc editInteractionResponse*(api: RestApi;
         application_id, interaction_token: string;
         message_id: string = "@original";
         content = none string;
-        embeds = newSeq[Embed]();
+        embeds: seq[Embed] = @[];
         flags: set[MessageFlags] = {};
         allowed_mentions = none AllowedMentions;
-        attachments = newSeq[Attachment]();
-        files = newSeq[DiscordFile]();
-        components = newSeq[MessageComponent]()): Future[Message] {.async.} =
+        attachments: seq[Attachment] = @[];
+        files: seq[DiscordFile] = @[];
+        components: seq[MessageComponent] = @[]): Future[Message] {.async.} =
     ## Modifies interaction response
     ## You can actually use this to modify original interaction or followup message.
     ##

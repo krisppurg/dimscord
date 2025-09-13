@@ -175,18 +175,22 @@
 
 </ul>
 <ul class="simple nested-toc-section">createFollowupMessage
-  <li><a class="reference" href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D" title="createFollowupMessage(api: RestApi; application_id, interaction_token: string;
-                      content = &quot;&quot;; tts = false; files = newSeq();
-                      attachments = newSeq(); embeds = newSeq();
+  <li><a class="reference" href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D" title="createFollowupMessage(api: RestApi; application_id, interaction_token: string;
+                      content = &quot;&quot;; tts = false; files: seq[DiscordFile] = @[];
+                      attachments: seq[Attachment] = @[];
+                      embeds: seq[Embed] = @[];
                       allowed_mentions = none AllowedMentions;
-                      components = newSeq(); flags: set[MessageFlags] = {};
+                      components: seq[MessageComponent] = @[];
+                      flags: set[MessageFlags] = {};
                       thread_id, thread_name = none string;
                       applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Message]">createFollowupMessage(api: RestApi; application_id, interaction_token: string;
-                      content = &quot;&quot;; tts = false; files = newSeq();
-                      attachments = newSeq(); embeds = newSeq();
+                      content = &quot;&quot;; tts = false; files: seq[DiscordFile] = @[];
+                      attachments: seq[Attachment] = @[];
+                      embeds: seq[Embed] = @[];
                       allowed_mentions = none AllowedMentions;
-                      components = newSeq(); flags: set[MessageFlags] = {};
+                      components: seq[MessageComponent] = @[];
+                      flags: set[MessageFlags] = {};
                       thread_id, thread_name = none string;
                       applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Message]</a></li>
@@ -761,27 +765,31 @@
 
 </ul>
 <ul class="simple nested-toc-section">editInteractionResponse
-  <li><a class="reference" href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D" title="editInteractionResponse(api: RestApi; application_id, interaction_token: string;
+  <li><a class="reference" href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cset%5BMessageFlags%5D%2Cseq%5BAttachment%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D" title="editInteractionResponse(api: RestApi; application_id, interaction_token: string;
                         message_id: string = &quot;@original&quot;; content = none string;
-                        embeds = newSeq(); flags: set[MessageFlags] = {};
+                        embeds: seq[Embed] = @[]; flags: set[MessageFlags] = {};
                         allowed_mentions = none AllowedMentions;
-                        attachments = newSeq(); files = newSeq();
-                        components = newSeq()): Future[Message]">editInteractionResponse(api: RestApi; application_id, interaction_token: string;
+                        attachments: seq[Attachment] = @[];
+                        files: seq[DiscordFile] = @[];
+                        components: seq[MessageComponent] = @[]): Future[Message]">editInteractionResponse(api: RestApi; application_id, interaction_token: string;
                         message_id: string = &quot;@original&quot;; content = none string;
-                        embeds = newSeq(); flags: set[MessageFlags] = {};
+                        embeds: seq[Embed] = @[]; flags: set[MessageFlags] = {};
                         allowed_mentions = none AllowedMentions;
-                        attachments = newSeq(); files = newSeq();
-                        components = newSeq()): Future[Message]</a></li>
+                        attachments: seq[Attachment] = @[];
+                        files: seq[DiscordFile] = @[];
+                        components: seq[MessageComponent] = @[]): Future[Message]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">editMessage
-  <li><a class="reference" href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D" title="editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags: set[MessageFlags] = {}; files = newSeq();
-            embeds = newSeq(); attachments = newSeq(); components = newSeq()): Future[
-    Message]">editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
-            tts = false; flags: set[MessageFlags] = {}; files = newSeq();
-            embeds = newSeq(); attachments = newSeq(); components = newSeq()): Future[
-    Message]</a></li>
+  <li><a class="reference" href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D" title="editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
+            tts = false; flags: set[MessageFlags] = {};
+            files: seq[DiscordFile] = @[]; embeds: seq[Embed] = @[];
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]): Future[Message]">editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
+            tts = false; flags: set[MessageFlags] = {};
+            files: seq[DiscordFile] = @[]; embeds: seq[Embed] = @[];
+            attachments: seq[Attachment] = @[];
+            components: seq[MessageComponent] = @[]): Future[Message]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">editScheduledEvent
@@ -837,15 +845,19 @@
 
 </ul>
 <ul class="simple nested-toc-section">editWebhookMessage
-  <li><a class="reference" href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D" title="editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content, thread_id = none string; embeds = newSeq();
+  <li><a class="reference" href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D" title="editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                   content, thread_id = none string; embeds: seq[Embed] = @[];
                    allowed_mentions = none AllowedMentions;
-                   attachments = newSeq(); flags: set[MessageFlags] = {};
-                   files = newSeq(); components = newSeq()): Future[Message]">editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
-                   content, thread_id = none string; embeds = newSeq();
+                   attachments: seq[Attachment] = @[];
+                   flags: set[MessageFlags] = {};
+                   files: seq[DiscordFile] = @[];
+                   components: seq[MessageComponent] = @[]): Future[Message]">editWebhookMessage(api: RestApi; webhook_id, webhook_token, message_id: string;
+                   content, thread_id = none string; embeds: seq[Embed] = @[];
                    allowed_mentions = none AllowedMentions;
-                   attachments = newSeq(); flags: set[MessageFlags] = {};
-                   files = newSeq(); components = newSeq()): Future[Message]</a></li>
+                   attachments: seq[Attachment] = @[];
+                   flags: set[MessageFlags] = {};
+                   files: seq[DiscordFile] = @[];
+                   components: seq[MessageComponent] = @[]): Future[Message]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">endPoll
@@ -865,19 +877,23 @@
 
 </ul>
 <ul class="simple nested-toc-section">executeWebhook
-  <li><a class="reference" href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D" title="executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
+  <li><a class="reference" href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D" title="executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                with_components = false; thread_id, thread_name = none string;
                content = &quot;&quot;; tts = false; flags: set[MessageFlags] = {};
-               files = newSeq(); attachments = newSeq(); embeds = newSeq();
+               files: seq[DiscordFile] = @[];
+               attachments: seq[Attachment] = @[]; embeds: seq[Embed] = @[];
                allowed_mentions = none AllowedMentions;
-               username, avatar_url = none string; components = newSeq();
+               username, avatar_url = none string;
+               components: seq[MessageComponent] = @[];
                applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Option[Message]]">executeWebhook(api: RestApi; webhook_id, webhook_token: string; wait = true;
                with_components = false; thread_id, thread_name = none string;
                content = &quot;&quot;; tts = false; flags: set[MessageFlags] = {};
-               files = newSeq(); attachments = newSeq(); embeds = newSeq();
+               files: seq[DiscordFile] = @[];
+               attachments: seq[Attachment] = @[]; embeds: seq[Embed] = @[];
                allowed_mentions = none AllowedMentions;
-               username, avatar_url = none string; components = newSeq();
+               username, avatar_url = none string;
+               components: seq[MessageComponent] = @[];
                applied_tags: seq[string] = @[]; poll = none PollRequest): Future[
     Option[Message]]</a></li>
 
@@ -1344,22 +1360,22 @@
 
 </ul>
 <ul class="simple nested-toc-section">sendMessage
-  <li><a class="reference" href="#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D" title="sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
+  <li><a class="reference" href="#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D" title="sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
-            flags: set[MessageFlags] = {}; files = newSeq[DiscordFile]();
-            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
+            flags: set[MessageFlags] = {}; files: seq[DiscordFile] = @[];
+            embeds: seq[Embed] = @[]; attachments: seq[Attachment] = @[];
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
-            components = newSeq[MessageComponent]();
-            sticker_ids = newSeq[string](); poll = none PollRequest;
+            components: seq[MessageComponent] = @[];
+            sticker_ids: seq[string] = @[]; poll = none PollRequest;
             enforce_nonce = none bool): Future[Message]">sendMessage(api: RestApi; channel_id: string; content = &quot;&quot;; tts = false;
             nonce: Option[string] or Option[int] = none(int);
-            flags: set[MessageFlags] = {}; files = newSeq[DiscordFile]();
-            embeds = newSeq[Embed](); attachments = newSeq[Attachment]();
+            flags: set[MessageFlags] = {}; files: seq[DiscordFile] = @[];
+            embeds: seq[Embed] = @[]; attachments: seq[Attachment] = @[];
             allowed_mentions = none AllowedMentions;
             message_reference = none MessageReference;
-            components = newSeq[MessageComponent]();
-            sticker_ids = newSeq[string](); poll = none PollRequest;
+            components: seq[MessageComponent] = @[];
+            sticker_ids: seq[string] = @[]; poll = none PollRequest;
             enforce_nonce = none bool): Future[Message]</a></li>
 
 </ul>
@@ -1556,8 +1572,8 @@
   <dd>
     
     Adds a thread member.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L481" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L481" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L483" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L483" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1661,8 +1677,8 @@
   <dd>
     
     For One-Time Purchase consumable SKUs, marks a given entitlement for the user as consumed.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L543" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L543" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L542" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L542" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1678,8 +1694,8 @@
   <dd>
     
     Creates an application emoji.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L586" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L586" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L585" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L585" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1727,13 +1743,16 @@
 
 </div>
 <div id="createFollowupMessage-procs-all">
-  <div id="createFollowupMessage,RestApi,string,string,string,set[MessageFlags],seq[string]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D"><span class="Identifier">createFollowupMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+  <div id="createFollowupMessage,RestApi,string,string,string,seq[DiscordFile],seq[Attachment],seq[Embed],seq[MessageComponent],set[MessageFlags],seq[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#createFollowupMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D"><span class="Identifier">createFollowupMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
                            <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                           <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                           <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                           <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+                           <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                           <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                           <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                            <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
-                           <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
+                           <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                           <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
                            <span class="Identifier">thread_id</span><span class="Other">,</span> <span class="Identifier">thread_name</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
                            <span class="Identifier">applied_tags</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                            <span class="Identifier">poll</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#PollRequest"><span class="Identifier">PollRequest</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
@@ -1742,11 +1761,11 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Create a followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">flags</span></span></tt> can set the followup message as ephemeral (which can be 64).</li>
+    Create a followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">flags</span></span></tt> valid options: <tt class="docutils literal"><span class="pre"><span class="Punctuation">{</span><span class="Identifier">mfIsEphemeral</span><span class="Punctuation">,</span> <span class="Identifier">mfIsComponentsV2</span><span class="Punctuation">}</span></span></tt> </li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L314" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L314" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L316" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L316" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1951,8 +1970,8 @@
 <li>As well as the objects mentioned such as <a class="reference internal" href="#InteractionResponse">InteractionResponse</a>.</li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L445" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L445" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L444" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L444" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2029,8 +2048,8 @@
     Creates a test entitlement to a given SKU for a given guild or user. Discord will act as though that user or guild has entitlement to your premium offering.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">owner_type</span></span></tt> - <tt class="docutils literal"><span class="pre"><span class="DecNumber">1</span></span></tt> for a guild subscription, <tt class="docutils literal"><span class="pre"><span class="DecNumber">2</span></span></tt> for a user subscription.</li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L561" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L561" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L560" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L560" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2093,8 +2112,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L647" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L647" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L646" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L646" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2141,8 +2160,8 @@
   <dd>
     
     Deletes an application emoji.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L611" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L611" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L610" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L610" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2211,8 +2230,8 @@
   <dd>
     
     Deletes a currently-active test entitlement. Discord will act as though that user or guild no longer has entitlement to your premium offering.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L551" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L551" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L550" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L550" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2342,8 +2361,8 @@
   <dd>
     
     Delete followup message or interaction response.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L425" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L425" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L427" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L427" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2488,8 +2507,8 @@
   <dd>
     
     Delete webhook message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L418" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L418" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L420" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L420" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2530,8 +2549,8 @@
   <dd>
     
     Edits an application emoji.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L599" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L599" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L598" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L598" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2977,38 +2996,41 @@
 
 </div>
 <div id="editInteractionResponse-procs-all">
-  <div id="editInteractionResponse,RestApi,string,string,string,set[MessageFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D"><span class="Identifier">editInteractionResponse</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+  <div id="editInteractionResponse,RestApi,string,string,string,seq[Embed],set[MessageFlags],seq[Attachment],seq[DiscordFile],seq[MessageComponent]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#editInteractionResponse%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cset%5BMessageFlags%5D%2Cseq%5BAttachment%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D"><span class="Identifier">editInteractionResponse</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
                              <span class="Identifier">application_id</span><span class="Other">,</span> <span class="Identifier">interaction_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                              <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;@original&quot;</span><span class="Other">;</span>
-                             <span class="Identifier">content</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                             <span class="Identifier">content</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                              <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
                              <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
-                             <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                             <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+                             <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                             <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                             <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Modifies interaction response You can actually use this to modify original interaction or followup message.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">message_id</span></span></tt> can be <tt class="docutils literal"><span class="pre"><span class="Operator">@</span><span class="Identifier">original</span></span></tt></li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L383" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L383" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L385" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L385" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
 
 </div>
 <div id="editMessage-procs-all">
-  <div id="editMessage,RestApi,string,string,string,set[MessageFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D"><span class="Identifier">editMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                 <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span> <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                 <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                 <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
-    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="editMessage,RestApi,string,string,string,set[MessageFlags],seq[DiscordFile],seq[Embed],seq[Attachment],seq[MessageComponent]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#editMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D"><span class="Identifier">editMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                 <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
+                 <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                 <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                 <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Edits a discord message.
@@ -3115,13 +3137,16 @@
 
 </div>
 <div id="editWebhookMessage-procs-all">
-  <div id="editWebhookMessage,RestApi,string,string,string,set[MessageFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D"><span class="Identifier">editWebhookMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
+  <div id="editWebhookMessage,RestApi,string,string,string,seq[Embed],seq[Attachment],set[MessageFlags],seq[DiscordFile],seq[MessageComponent]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#editWebhookMessage%2CRestApi%2Cstring%2Cstring%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BMessageComponent%5D"><span class="Identifier">editWebhookMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span>
                         <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">,</span> <span class="Identifier">message_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                        <span class="Identifier">content</span><span class="Other">,</span> <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                        <span class="Identifier">content</span><span class="Other">,</span> <span class="Identifier">thread_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
+                        <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                         <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
-                        <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
-                        <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
+                        <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                        <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
+                        <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                        <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
@@ -3132,8 +3157,8 @@
 <li><tt class="docutils literal"><span class="pre"><span class="Identifier">message_id</span></span></tt> can be <tt class="docutils literal"><span class="pre"><span class="Operator">@</span><span class="Identifier">original</span></span></tt></li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L342" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L342" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L344" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L344" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3148,8 +3173,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L541" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L541" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L543" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L543" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3165,8 +3190,8 @@
   <dd>
     
     Executes a github webhook.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L441" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L441" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L443" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L443" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3182,22 +3207,25 @@
   <dd>
     
     Executes a slack webhook.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L432" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L432" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L434" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L434" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
 
 </div>
 <div id="executeWebhook-procs-all">
-  <div id="executeWebhook,RestApi,string,string,string,set[MessageFlags],seq[string]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D"><span class="Identifier">executeWebhook</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <div id="executeWebhook,RestApi,string,string,string,set[MessageFlags],seq[DiscordFile],seq[Attachment],seq[Embed],seq[MessageComponent],seq[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#executeWebhook%2CRestApi%2Cstring%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BAttachment%5D%2Cseq%5BEmbed%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D"><span class="Identifier">executeWebhook</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">webhook_id</span><span class="Other">,</span> <span class="Identifier">webhook_token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                     <span class="Identifier">wait</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">with_components</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
                     <span class="Identifier">thread_id</span><span class="Other">,</span> <span class="Identifier">thread_name</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
                     <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span>
-                    <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                    <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                    <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                    <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                     <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
-                    <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">avatar_url</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                    <span class="Identifier">username</span><span class="Other">,</span> <span class="Identifier">avatar_url</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span>
+                    <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                     <span class="Identifier">applied_tags</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">poll</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#PollRequest"><span class="Identifier">PollRequest</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <span class="Identifier">Option</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
@@ -3277,8 +3305,8 @@
   <dd>
     
     lists emojis made by a bot user application,
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L577" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L577" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L576" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L576" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3294,8 +3322,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L483" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L483" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L482" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L482" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3514,8 +3542,8 @@
   <dd>
     
     Returns all entitlements for a given app, active and expired.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L526" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L526" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L525" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L525" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3980,8 +4008,8 @@
   <dd>
     
     Get interaction response or follow up message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L410" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L410" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L412" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L412" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4033,8 +4061,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L452" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L452" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L454" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L454" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4051,8 +4079,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L533" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L533" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L535" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L535" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4119,8 +4147,8 @@
   <dd>
     
     Lists out SKUs for a given application.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L640" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L640" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L639" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L639" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4151,8 +4179,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L449" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L449" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L451" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L451" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4168,8 +4196,8 @@
   <dd>
     
     Get a thread member.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L491" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L491" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L493" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L493" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4184,8 +4212,8 @@
   <dd>
     
     List thread members. Note: This endpoint requires the <tt class="docutils literal"><span class="pre"><span class="Identifier">GUILD_MEMBERS</span></span></tt> Privileged Intent if not enabled on your application.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L460" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L460" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L462" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L462" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4216,8 +4244,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L499" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L499" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L498" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L498" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4266,8 +4294,8 @@
   <dd>
     
     Get webhook message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L401" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L401" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L403" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L403" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4283,8 +4311,8 @@
   <dd>
     
     Create an interaction response which is an autocomplete response.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L398" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L398" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L397" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L397" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4307,14 +4335,13 @@
 <p><pre class="listing">
 <span class="Identifier">await</span> <span class="Identifier">discord</span><span class="Operator">.</span><span class="Identifier">api</span><span class="Operator">.</span><span class="Identifier">interactionResponseMessage</span><span class="Punctuation">(</span>
      <span class="Identifier">interaction_id</span><span class="Punctuation">,</span> <span class="Identifier">interaction_token</span><span class="Punctuation">,</span>
-        <span class="Identifier">kind</span> <span class="Operator">=</span> <span class="Operator">...</span><span class="Punctuation">,</span> <span class="Comment"># you can choose whichever</span>
-        <span class="Identifier">response</span> <span class="Operator">=</span> <span class="Identifier">InteractionCallbackDataMessage</span><span class="Punctuation">(</span>
-            <span class="Identifier">flags</span><span class="Punctuation">:</span> <span class="Punctuation">{</span><span class="Identifier">mfIsEphemeral</span><span class="Punctuation">,</span> <span class="Identifier">mfIsComponentsV2</span><span class="Punctuation">}</span><span class="Punctuation">,</span>
-            <span class="Identifier">content</span><span class="Punctuation">:</span> <span class="StringLit">&quot;What's up bro&quot;</span><span class="Operator">.</span>
-            <span class="Identifier">components</span><span class="Punctuation">:</span> <span class="Operator">@</span><span class="Punctuation">[</span><span class="Operator">...</span><span class="Punctuation">]</span><span class="Punctuation">,</span>
-            <span class="Operator">...</span>
-       <span class="Punctuation">)</span>
-<span class="Punctuation">)</span>
+     <span class="Identifier">kind</span> <span class="Operator">=</span> <span class="Operator">...</span><span class="Punctuation">,</span> <span class="Comment"># you can choose whichever</span>
+     <span class="Identifier">response</span> <span class="Operator">=</span> <span class="Identifier">InteractionCallbackDataMessage</span><span class="Punctuation">(</span>
+         <span class="Identifier">flags</span><span class="Punctuation">:</span> <span class="Punctuation">{</span><span class="Identifier">mfIsEphemeral</span><span class="Punctuation">,</span> <span class="Identifier">mfIsComponentsV2</span><span class="Punctuation">}</span><span class="Punctuation">,</span>
+         <span class="Identifier">content</span><span class="Punctuation">:</span> <span class="StringLit">&quot;What's up bro&quot;</span><span class="Punctuation">,</span>
+         <span class="Identifier">components</span><span class="Punctuation">:</span> <span class="Operator">@</span><span class="Punctuation">[</span><span class="Operator">...</span><span class="Punctuation">]</span><span class="Punctuation">,</span>
+         <span class="Operator">...</span>
+    <span class="Punctuation">)</span>
 <span class="Punctuation">)</span></pre></p>
 
     <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L351" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
@@ -4335,8 +4362,8 @@
   <dd>
     
     Create an interaction response which is a modal.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L422" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L422" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L421" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L421" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4350,8 +4377,8 @@
   <dd>
     
     Join thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L506" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L506" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L508" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L508" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4396,8 +4423,8 @@
   <dd>
     
     Leave thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L499" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L499" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L501" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L501" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4450,8 +4477,8 @@
   <dd>
     
     Lists out SKUs for a given application.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L618" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L618" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L617" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L617" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4467,8 +4494,8 @@
   <dd>
     
     Lists out SKUs for a given application.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L628" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L628" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L627" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L627" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4575,8 +4602,8 @@
   <dd>
     
     Remove thread member.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L471" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L471" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L473" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L473" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4600,15 +4627,15 @@
 
 </div>
 <div id="sendMessage-procs-all">
-  <div id="sendMessage,RestApi,string,string,set[MessageFlags]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D"><span class="Identifier">sendMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+  <div id="sendMessage,RestApi,string,string,set[MessageFlags],seq[DiscordFile],seq[Embed],seq[Attachment],seq[MessageComponent],seq[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendMessage%2CRestApi%2Cstring%2Cstring%2Cset%5BMessageFlags%5D%2Cseq%5BDiscordFile%5D%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5Bstring%5D"><span class="Identifier">sendMessage</span></a><span class="Other">(</span><span class="Identifier">api</span><span class="Other">:</span> <a href="objects.html#RestApi"><span class="Identifier">RestApi</span></a><span class="Other">;</span> <span class="Identifier">channel_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
                  <span class="Identifier">nonce</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Keyword">or</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">int</span><span class="Other">)</span><span class="Other">;</span>
-                 <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span> <span class="Identifier">files</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                 <span class="Identifier">embeds</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">attachments</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                 <span class="Identifier">flags</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Other">{</span><span class="Other">}</span><span class="Other">;</span> <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                 <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                  <span class="Identifier">allowed_mentions</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#AllowedMentions"><span class="Identifier">AllowedMentions</span></a><span class="Other">;</span>
                  <span class="Identifier">message_reference</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#MessageReference"><span class="Identifier">MessageReference</span></a><span class="Other">;</span>
-                 <span class="Identifier">components</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                 <span class="Identifier">sticker_ids</span> <span class="Other">=</span> <span class="Identifier">newSeq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">poll</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#PollRequest"><span class="Identifier">PollRequest</span></a><span class="Other">;</span>
+                 <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                 <span class="Identifier">sticker_ids</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">poll</span> <span class="Other">=</span> <span class="Identifier">none</span> <a href="objects.html#PollRequest"><span class="Identifier">PollRequest</span></a><span class="Other">;</span>
                  <span class="Identifier">enforce_nonce</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -4667,8 +4694,8 @@
     Starts a public thread.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">auto_archive_duration</span></span></tt> Duration in mins. Can set to: 60 1440 4320 10080</li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L517" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L517" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/message.nim#L519" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/message.nim#L519" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4787,8 +4814,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L491" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L491" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L490" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L490" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4805,8 +4832,8 @@
   <dd>
     
     
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L509" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L509" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/restapi/user.nim#L508" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/restapi/user.nim#L508" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -4822,7 +4849,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-08 23:14:05 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-13 15:31:27 UTC</small>
       </div>
     </div>
   </div>

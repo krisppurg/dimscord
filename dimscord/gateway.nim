@@ -28,6 +28,7 @@ const
     opInvalidSession = 9
     opHello = 10
     opHeartbeatAck = 11
+    opRequestSounds = 31
 
 var
     backoff = false
@@ -329,22 +330,19 @@ proc resume*(s: Shard) {.async.} =
         "seq": & s.sequence
     })
 
-proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
+proc requestGuildMembers*(s: Shard, guild_id: string;
         limit = none int; query = none string; nonce = "";
         presences = false; user_ids: seq[string] = @[]) {.async.} =
     ## Requests the offline members to a guild.
     ## (See: https://discord.com/developers/docs/topics/gateway#request-guild-members)
     if s.sockClosed or not s.ready: return
 
-    if guild_id.len == 0:
-        raise newException(Exception, "You need to specify a guild ID.")
-
     var payload = %%{
         "guild_id": &guild_id,
         "presences": &presences
     }
     if query.isSome:
-        assert(
+        softassert(
             limit.isSome,
             "You need to specify the limit once you've specified query."
         )
@@ -357,6 +355,15 @@ proc requestGuildMembers*(s: Shard, guild_id: string or seq[string];
         payload["nonce"] = &nonce
 
     await s.sendSock(opRequestGuildMembers, payload)
+
+proc requestSounds*(s: Shard, guild_ids: seq[string]) {.async.} =
+    ## Requests guild soundboards.
+    if s.sockClosed or not s.ready: return
+    softassert guild_ids.len == 0, "You need to specify a guild ID."
+
+    await s.sendSock(opRequestSounds, %%{
+        "guild_ids": &guild_ids,
+    })
 
 proc getGuildMember*(s: Shard;
         guild_id, user_id: string;
@@ -521,13 +528,13 @@ proc disconnect*(s: Shard, should_reconnect = true) {.async.} =
 proc heartbeat(s: Shard, requested = false) {.async.} =
     if s.sockClosed or s.resuming: return
 
+    s.logShard("Sending heartbeat.")
     if not requested:
         if not s.hbAck:
             s.logShard("A zombied connection was detected.")
             await s.disconnect(should_reconnect = true)
             return
         s.hbAck = false
-    s.logShard("Sending heartbeat.")
 
     await s.sendSock(opHeartbeat, &s.sequence, ignore = true)
     s.lastHBTransmit = getTime().toUnixFloat()

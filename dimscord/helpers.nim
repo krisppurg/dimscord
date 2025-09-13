@@ -616,6 +616,7 @@ template waitFor*(discord: DiscordClient; event: static[DispatchEvent],
     ## 
     ## Similar procs:
     ## - [waitForComponentUse]
+    ## - [waitForModalUse]
     ## - [waitForDeletion]
     ## - [waitForInternal]
     ## - [waitForReaction]
@@ -659,14 +660,26 @@ proc waitForDeletion*(discord: DiscordClient;
     discard await discord.waitFor(MessageDelete, event)
 
 proc waitForComponentUse*(discord: DiscordClient;
-        id: string): Future[Interaction] =
+        custom_id: string): Future[Interaction] =
     ## Waits for a component to be used and returns the interaction.
     ## Data sent in the component can then be extracted.
-    ## `id` is the ID that you used when creating the component
+    ##
+    ## `custom_id` is the ID that you used when creating the component
     return discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
         i.data.isSome and
         i.data.unsafeGet().interactionType == idtMessageComponent and
-        i.data.get.custom_id == id
+        i.data.get.custom_id == custom_id
+
+proc waitForModalUse*(discord: DiscordClient;
+        custom_id: string): Future[Interaction] =
+    ## Waits for a modal to be used and returns the interaction.
+    ## Data sent in the component can then be extracted.
+    ##
+    ## `custom_id` is the ID that you used when creating the component
+    return discord.waitFor(InteractionCreate) do (i: Interaction) -> bool:
+        i.data.isSome and
+        i.data.unsafeGet().interactionType == idtModalSubmit and
+        i.data.get.custom_id == custom_id
 
 proc waitToJoinVoice*(discord: DiscordClient;
         user: User; guildID: string): Future[VoiceState] {.async.} =

@@ -553,6 +553,7 @@ type
     AnimationType* = enum
         atPremium = 0
         atBasic   = 1
+        atUnknown
     ModerationActionType* = enum
         matUnknown
         matBlockMessage     = 1
@@ -649,7 +650,12 @@ type
         InviteDelete                  = "INVITE_DELETE"
         GuildIntegrationsUpdate       = "GUILD_INTEGRATIONS_UPDATE"
         VoiceServerUpdate             = "VOICE_SERVER_UPDATE"
-        # VoiceChannelEffectSend        = "VOICE_CHANNEL_EFFECT_SEND" TODO!!
+        VoiceChannelEffectSend        = "VOICE_CHANNEL_EFFECT_SEND"
+        GuildSoundboardSoundCreate    = "GUILD_SOUNDBOARD_SOUND_CREATE"
+        GuildSoundboardSoundUpdate    = "GUILD_SOUNDBOARD_SOUND_UPDATE"
+        GuildSoundboardSoundDelete    = "GUILD_SOUNDBOARD_SOUND_DELETE"
+        GuildSoundboardSoundsUpdate   = "GUILD_SOUNDBOARD_SOUNDS_UPDATE"
+        SoundboardSounds              = "SOUNDBOARD_SOUNDS"
         UserUpdate                    = "USER_UPDATE"
         InteractionCreate             = "INTERACTION_CREATE"
         ThreadCreate                  = "THREAD_CREATE"
@@ -680,11 +686,12 @@ type
         EntitlementDelete             = "ENTITLEMENT_DELETE"
 
 const
-    deGuildMembersChunk*   = DispatchEvent.GuildMembersChunk
-    deTypingStart*         = DispatchEvent.TypingStart
-    deInviteCreate*        = DispatchEvent.InviteCreate
-    deThreadListSync*      = DispatchEvent.ThreadListSync
-    deThreadMembersUpdate* = DispatchEvent.ThreadMembersUpdate
+    deGuildMembersChunk*      = DispatchEvent.GuildMembersChunk
+    deTypingStart*            = DispatchEvent.TypingStart
+    deInviteCreate*           = DispatchEvent.InviteCreate
+    deThreadListSync*         = DispatchEvent.ThreadListSync
+    deThreadMembersUpdate*    = DispatchEvent.ThreadMembersUpdate
+    deVoiceChannelEffectSend* = DispatchEvent.VoiceChannelEffectSend
 
 const mctStringSelect* = mctSelectMenu ## alias equivalent
 

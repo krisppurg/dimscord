@@ -1,15 +1,15 @@
 import dimscord, asyncdispatch, strutils, options, tables
-let discord = newDiscordClient("")
+let discord = newDiscordClient("insert token here")
 
 proc getGuild(s: Shard, guild_id: string): Future[Guild] {.async.} =
     if guild_id in s.cache.guilds:
-        return s.cache.guilds[guild_id]
+        return s.cache.guild(guild_id)
 
     result = await discord.api.getGuild(guild_id)
 
 proc getGuildChannel(s: Shard, chan_id: string): Future[GuildChannel] {.async.} =
     if chan_id in s.cache.guildChannels:
-        return s.cache.guildChannels[chan_id]
+        return s.cache.gchannel(chan_id) # Can also be written as s.cache.guildChannels[chan_id]
 
     let channel = await discord.api.getChannel(chan_id)
     if channel[0].isNone:

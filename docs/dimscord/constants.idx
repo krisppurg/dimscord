@@ -531,251 +531,259 @@ nim	rrmDecember	dimscord/constants.html#rrmDecember	RecurrenceRuleMonth.rrmDecem
 nim	RecurrenceRuleMonth	dimscord/constants.html#RecurrenceRuleMonth	enum RecurrenceRuleMonth		539
 nim	atPremium	dimscord/constants.html#atPremium	AnimationType.atPremium		553
 nim	atBasic	dimscord/constants.html#atBasic	AnimationType.atBasic		553
+nim	atUnknown	dimscord/constants.html#atUnknown	AnimationType.atUnknown		553
 nim	AnimationType	dimscord/constants.html#AnimationType	enum AnimationType		553
-nim	matUnknown	dimscord/constants.html#matUnknown	ModerationActionType.matUnknown		556
-nim	matBlockMessage	dimscord/constants.html#matBlockMessage	ModerationActionType.matBlockMessage		556
-nim	matSendAlertMessage	dimscord/constants.html#matSendAlertMessage	ModerationActionType.matSendAlertMessage		556
-nim	matTimeout	dimscord/constants.html#matTimeout	ModerationActionType.matTimeout		556
-nim	ModerationActionType	dimscord/constants.html#ModerationActionType	enum ModerationActionType		556
-nim	mttUnknown	dimscord/constants.html#mttUnknown	ModerationTriggerType.mttUnknown		561
-nim	mttKeyword	dimscord/constants.html#mttKeyword	ModerationTriggerType.mttKeyword		561
-nim	mttHarmfulLink	dimscord/constants.html#mttHarmfulLink	ModerationTriggerType.mttHarmfulLink		561
-nim	mttSpam	dimscord/constants.html#mttSpam	ModerationTriggerType.mttSpam		561
-nim	mttKeywordPreset	dimscord/constants.html#mttKeywordPreset	ModerationTriggerType.mttKeywordPreset		561
-nim	mttMentionSpam	dimscord/constants.html#mttMentionSpam	ModerationTriggerType.mttMentionSpam		561
-nim	ModerationTriggerType	dimscord/constants.html#ModerationTriggerType	enum ModerationTriggerType		561
-nim	kptUnknown	dimscord/constants.html#kptUnknown	KeywordPresetType.kptUnknown		568
-nim	kptProfanity	dimscord/constants.html#kptProfanity	KeywordPresetType.kptProfanity		568
-nim	kptSexualContent	dimscord/constants.html#kptSexualContent	KeywordPresetType.kptSexualContent		568
-nim	kptSlurs	dimscord/constants.html#kptSlurs	KeywordPresetType.kptSlurs		568
-nim	KeywordPresetType	dimscord/constants.html#KeywordPresetType	enum KeywordPresetType		568
-nim	fsoLatestActivity	dimscord/constants.html#fsoLatestActivity	ForumSortOrder.fsoLatestActivity		573
-nim	fsoCreationDate	dimscord/constants.html#fsoCreationDate	ForumSortOrder.fsoCreationDate		573
-nim	fsoUnknown	dimscord/constants.html#fsoUnknown	ForumSortOrder.fsoUnknown		573
-nim	ForumSortOrder	dimscord/constants.html#ForumSortOrder	enum ForumSortOrder		573
-nim	flNotSet	dimscord/constants.html#flNotSet	ForumLayout.flNotSet		577
-nim	flListView	dimscord/constants.html#flListView	ForumLayout.flListView		577
-nim	flGalleryView	dimscord/constants.html#flGalleryView	ForumLayout.flGalleryView		577
-nim	flUnknown	dimscord/constants.html#flUnknown	ForumLayout.flUnknown		577
-nim	ForumLayout	dimscord/constants.html#ForumLayout	enum ForumLayout		577
-nim	omDefault	dimscord/constants.html#omDefault	GuildOnboardingMode.omDefault		582
-nim	omAdvanced	dimscord/constants.html#omAdvanced	GuildOnboardingMode.omAdvanced		582
-nim	omUnknown	dimscord/constants.html#omUnknown	GuildOnboardingMode.omUnknown		582
-nim	GuildOnboardingMode	dimscord/constants.html#GuildOnboardingMode	enum GuildOnboardingMode		582
-nim	ptMultipleChoice	dimscord/constants.html#ptMultipleChoice	GuildOnboardingPromptType.ptMultipleChoice		586
-nim	ptDropdown	dimscord/constants.html#ptDropdown	GuildOnboardingPromptType.ptDropdown		586
-nim	ptUnknown	dimscord/constants.html#ptUnknown	GuildOnboardingPromptType.ptUnknown		586
-nim	GuildOnboardingPromptType	dimscord/constants.html#GuildOnboardingPromptType	enum GuildOnboardingPromptType		586
-nim	etUnknown	dimscord/constants.html#etUnknown	EntitlementType.etUnknown		590
-nim	etPurchase	dimscord/constants.html#etPurchase	EntitlementType.etPurchase		590
-nim	etPremiumSubscription	dimscord/constants.html#etPremiumSubscription	EntitlementType.etPremiumSubscription		590
-nim	etDeveloperGift	dimscord/constants.html#etDeveloperGift	EntitlementType.etDeveloperGift		590
-nim	etTestModePurchase	dimscord/constants.html#etTestModePurchase	EntitlementType.etTestModePurchase		590
-nim	etFreePurchase	dimscord/constants.html#etFreePurchase	EntitlementType.etFreePurchase		590
-nim	etUserGift	dimscord/constants.html#etUserGift	EntitlementType.etUserGift		590
-nim	etPremiumPurchase	dimscord/constants.html#etPremiumPurchase	EntitlementType.etPremiumPurchase		590
-nim	etApplicationSubscription	dimscord/constants.html#etApplicationSubscription	EntitlementType.etApplicationSubscription		590
-nim	EntitlementType	dimscord/constants.html#EntitlementType	enum EntitlementType		590
-nim	stDurable	dimscord/constants.html#stDurable	SkuType.stDurable		600
-nim	stConsumable	dimscord/constants.html#stConsumable	SkuType.stConsumable		600
-nim	stSubscription	dimscord/constants.html#stSubscription	SkuType.stSubscription		600
-nim	stSubscriptionGroup	dimscord/constants.html#stSubscriptionGroup	SkuType.stSubscriptionGroup		600
-nim	stNone	dimscord/constants.html#stNone	SkuType.stNone		600
-nim	SkuType	dimscord/constants.html#SkuType	enum SkuType		600
-nim	ssActive	dimscord/constants.html#ssActive	SubscriptionStatus.ssActive		606
-nim	ssEnding	dimscord/constants.html#ssEnding	SubscriptionStatus.ssEnding		606
-nim	ssInactive	dimscord/constants.html#ssInactive	SubscriptionStatus.ssInactive		606
-nim	ssUnknown	dimscord/constants.html#ssUnknown	SubscriptionStatus.ssUnknown		606
-nim	SubscriptionStatus	dimscord/constants.html#SubscriptionStatus	enum SubscriptionStatus		606
-nim	ephUnknown	dimscord/constants.html#ephUnknown	EntryPointCommandHandlerType.ephUnknown		611
-nim	ephAppHandler	dimscord/constants.html#ephAppHandler	EntryPointCommandHandlerType.ephAppHandler		611
-nim	ephDiscordLaunchActivity	dimscord/constants.html#ephDiscordLaunchActivity	EntryPointCommandHandlerType.ephDiscordLaunchActivity		611
-nim	EntryPointCommandHandlerType	dimscord/constants.html#EntryPointCommandHandlerType	enum EntryPointCommandHandlerType		611
-nim	Unknown	dimscord/constants.html#Unknown	DispatchEvent.Unknown		615
-nim	VoiceStateUpdate	dimscord/constants.html#VoiceStateUpdate	DispatchEvent.VoiceStateUpdate		615
-nim	ChannelPinsUpdate	dimscord/constants.html#ChannelPinsUpdate	DispatchEvent.ChannelPinsUpdate		615
-nim	GuildEmojisUpdate	dimscord/constants.html#GuildEmojisUpdate	DispatchEvent.GuildEmojisUpdate		615
-nim	GuildStickersUpdate	dimscord/constants.html#GuildStickersUpdate	DispatchEvent.GuildStickersUpdate		615
-nim	PresenceUpdate	dimscord/constants.html#PresenceUpdate	DispatchEvent.PresenceUpdate		615
-nim	MessageCreate	dimscord/constants.html#MessageCreate	DispatchEvent.MessageCreate		615
-nim	MessageReactionAdd	dimscord/constants.html#MessageReactionAdd	DispatchEvent.MessageReactionAdd		615
-nim	MessageReactionRemove	dimscord/constants.html#MessageReactionRemove	DispatchEvent.MessageReactionRemove		615
-nim	MessageReactionRemoveEmoji	dimscord/constants.html#MessageReactionRemoveEmoji	DispatchEvent.MessageReactionRemoveEmoji		615
-nim	MessageReactionRemoveAll	dimscord/constants.html#MessageReactionRemoveAll	DispatchEvent.MessageReactionRemoveAll		615
-nim	MessageDelete	dimscord/constants.html#MessageDelete	DispatchEvent.MessageDelete		615
-nim	MessageUpdate	dimscord/constants.html#MessageUpdate	DispatchEvent.MessageUpdate		615
-nim	MessageDeleteBulk	dimscord/constants.html#MessageDeleteBulk	DispatchEvent.MessageDeleteBulk		615
-nim	ChannelCreate	dimscord/constants.html#ChannelCreate	DispatchEvent.ChannelCreate		615
-nim	ChannelUpdate	dimscord/constants.html#ChannelUpdate	DispatchEvent.ChannelUpdate		615
-nim	ChannelDelete	dimscord/constants.html#ChannelDelete	DispatchEvent.ChannelDelete		615
-nim	GuildMembersChunk	dimscord/constants.html#GuildMembersChunk	DispatchEvent.GuildMembersChunk		615
-nim	GuildMemberAdd	dimscord/constants.html#GuildMemberAdd	DispatchEvent.GuildMemberAdd		615
-nim	GuildMemberUpdate	dimscord/constants.html#GuildMemberUpdate	DispatchEvent.GuildMemberUpdate		615
-nim	GuildMemberRemove	dimscord/constants.html#GuildMemberRemove	DispatchEvent.GuildMemberRemove		615
-nim	GuildAuditLogEntryCreate	dimscord/constants.html#GuildAuditLogEntryCreate	DispatchEvent.GuildAuditLogEntryCreate		615
-nim	GuildBanAdd	dimscord/constants.html#GuildBanAdd	DispatchEvent.GuildBanAdd		615
-nim	GuildBanRemove	dimscord/constants.html#GuildBanRemove	DispatchEvent.GuildBanRemove		615
-nim	GuildUpdate	dimscord/constants.html#GuildUpdate	DispatchEvent.GuildUpdate		615
-nim	GuildDelete	dimscord/constants.html#GuildDelete	DispatchEvent.GuildDelete		615
-nim	GuildCreate	dimscord/constants.html#GuildCreate	DispatchEvent.GuildCreate		615
-nim	GuildRoleCreate	dimscord/constants.html#GuildRoleCreate	DispatchEvent.GuildRoleCreate		615
-nim	GuildRoleUpdate	dimscord/constants.html#GuildRoleUpdate	DispatchEvent.GuildRoleUpdate		615
-nim	GuildRoleDelete	dimscord/constants.html#GuildRoleDelete	DispatchEvent.GuildRoleDelete		615
-nim	WebhooksUpdate	dimscord/constants.html#WebhooksUpdate	DispatchEvent.WebhooksUpdate		615
-nim	TypingStart	dimscord/constants.html#TypingStart	DispatchEvent.TypingStart		615
-nim	InviteCreate	dimscord/constants.html#InviteCreate	DispatchEvent.InviteCreate		615
-nim	InviteDelete	dimscord/constants.html#InviteDelete	DispatchEvent.InviteDelete		615
-nim	GuildIntegrationsUpdate	dimscord/constants.html#GuildIntegrationsUpdate	DispatchEvent.GuildIntegrationsUpdate		615
-nim	VoiceServerUpdate	dimscord/constants.html#VoiceServerUpdate	DispatchEvent.VoiceServerUpdate		615
-nim	UserUpdate	dimscord/constants.html#UserUpdate	DispatchEvent.UserUpdate		615
-nim	InteractionCreate	dimscord/constants.html#InteractionCreate	DispatchEvent.InteractionCreate		615
-nim	ThreadCreate	dimscord/constants.html#ThreadCreate	DispatchEvent.ThreadCreate		615
-nim	ThreadUpdate	dimscord/constants.html#ThreadUpdate	DispatchEvent.ThreadUpdate		615
-nim	ThreadDelete	dimscord/constants.html#ThreadDelete	DispatchEvent.ThreadDelete		615
-nim	ThreadListSync	dimscord/constants.html#ThreadListSync	DispatchEvent.ThreadListSync		615
-nim	ThreadMembersUpdate	dimscord/constants.html#ThreadMembersUpdate	DispatchEvent.ThreadMembersUpdate		615
-nim	ThreadMemberUpdate	dimscord/constants.html#ThreadMemberUpdate	DispatchEvent.ThreadMemberUpdate		615
-nim	StageInstanceCreate	dimscord/constants.html#StageInstanceCreate	DispatchEvent.StageInstanceCreate		615
-nim	StageInstanceUpdate	dimscord/constants.html#StageInstanceUpdate	DispatchEvent.StageInstanceUpdate		615
-nim	StageInstanceDelete	dimscord/constants.html#StageInstanceDelete	DispatchEvent.StageInstanceDelete		615
-nim	GuildScheduledEventUserAdd	dimscord/constants.html#GuildScheduledEventUserAdd	DispatchEvent.GuildScheduledEventUserAdd		615
-nim	GuildScheduledEventUserRemove	dimscord/constants.html#GuildScheduledEventUserRemove	DispatchEvent.GuildScheduledEventUserRemove		615
-nim	GuildScheduledEventCreate	dimscord/constants.html#GuildScheduledEventCreate	DispatchEvent.GuildScheduledEventCreate		615
-nim	GuildScheduledEventUpdate	dimscord/constants.html#GuildScheduledEventUpdate	DispatchEvent.GuildScheduledEventUpdate		615
-nim	GuildScheduledEventDelete	dimscord/constants.html#GuildScheduledEventDelete	DispatchEvent.GuildScheduledEventDelete		615
-nim	AutoModerationRuleCreate	dimscord/constants.html#AutoModerationRuleCreate	DispatchEvent.AutoModerationRuleCreate		615
-nim	AutoModerationRuleUpdate	dimscord/constants.html#AutoModerationRuleUpdate	DispatchEvent.AutoModerationRuleUpdate		615
-nim	AutoModerationRuleDelete	dimscord/constants.html#AutoModerationRuleDelete	DispatchEvent.AutoModerationRuleDelete		615
-nim	AutoModerationActionExecution	dimscord/constants.html#AutoModerationActionExecution	DispatchEvent.AutoModerationActionExecution		615
-nim	MessagePollVoteAdd	dimscord/constants.html#MessagePollVoteAdd	DispatchEvent.MessagePollVoteAdd		615
-nim	MessagePollVoteRemove	dimscord/constants.html#MessagePollVoteRemove	DispatchEvent.MessagePollVoteRemove		615
-nim	IntegrationCreate	dimscord/constants.html#IntegrationCreate	DispatchEvent.IntegrationCreate		615
-nim	IntegrationUpdate	dimscord/constants.html#IntegrationUpdate	DispatchEvent.IntegrationUpdate		615
-nim	IntegrationDelete	dimscord/constants.html#IntegrationDelete	DispatchEvent.IntegrationDelete		615
-nim	EntitlementCreate	dimscord/constants.html#EntitlementCreate	DispatchEvent.EntitlementCreate		615
-nim	EntitlementUpdate	dimscord/constants.html#EntitlementUpdate	DispatchEvent.EntitlementUpdate		615
-nim	EntitlementDelete	dimscord/constants.html#EntitlementDelete	DispatchEvent.EntitlementDelete		615
-nim	DispatchEvent	dimscord/constants.html#DispatchEvent	enum DispatchEvent		615
-nim	deGuildMembersChunk	dimscord/constants.html#deGuildMembersChunk	const deGuildMembersChunk		683
-nim	deTypingStart	dimscord/constants.html#deTypingStart	const deTypingStart		684
-nim	deInviteCreate	dimscord/constants.html#deInviteCreate	const deInviteCreate		685
-nim	deThreadListSync	dimscord/constants.html#deThreadListSync	const deThreadListSync		686
-nim	deThreadMembersUpdate	dimscord/constants.html#deThreadMembersUpdate	const deThreadMembersUpdate		687
-nim	mctStringSelect	dimscord/constants.html#mctStringSelect	const mctStringSelect		689
-nim	ActionRow	dimscord/constants.html#ActionRow	const ActionRow		692
-nim	Button	dimscord/constants.html#Button	const Button		693
-nim	SelectMenu	dimscord/constants.html#SelectMenu	const SelectMenu		694
-nim	TextInput	dimscord/constants.html#TextInput	const TextInput		695
-nim	UserSelect	dimscord/constants.html#UserSelect	const UserSelect		696
-nim	RoleSelect	dimscord/constants.html#RoleSelect	const RoleSelect		697
-nim	MentionableSelect	dimscord/constants.html#MentionableSelect	const MentionableSelect		698
-nim	ChannelSelect	dimscord/constants.html#ChannelSelect	const ChannelSelect		699
-nim	Primary	dimscord/constants.html#Primary	const Primary		701
-nim	Secondary	dimscord/constants.html#Secondary	const Secondary		702
-nim	Success	dimscord/constants.html#Success	const Success		703
-nim	Danger	dimscord/constants.html#Danger	const Danger		704
-nim	Link	dimscord/constants.html#Link	const Link		705
-nim	Short	dimscord/constants.html#Short	const Short		707
-nim	Paragraph	dimscord/constants.html#Paragraph	const Paragraph		708
-nim	permAllText	dimscord/constants.html#permAllText	const permAllText		711
-nim	permAllVoice	dimscord/constants.html#permAllVoice	const permAllVoice		733
-nim	permAllStage	dimscord/constants.html#permAllStage	const permAllStage		757
-nim	permAllChannel	dimscord/constants.html#permAllChannel	const permAllChannel		775
-nim	permAll	dimscord/constants.html#permAll	const permAll		776
-nim	permManageEmojis	dimscord/constants.html#permManageEmojis	const permManageEmojis		792
-nim	log	dimscord/constants.html#log,string,	proc log(msg: string; info: tuple)		795
-nim	log	dimscord/constants.html#log,string	proc log(msg: string)		804
-nim	cdnGuildUsers	dimscord/constants.html#cdnGuildUsers,string,string	proc cdnGuildUsers(gid, uid: string): string		813
-nim	cdnGuildMemberAvatar	dimscord/constants.html#cdnGuildMemberAvatar,string,string,string,string	proc cdnGuildMemberAvatar(gid, uid, avatar: string; fmt = "png"): string		816
-nim	cdnGuildMemberBanner	dimscord/constants.html#cdnGuildMemberBanner,string,string,string,string	proc cdnGuildMemberBanner(gid, uid, banner: string; fmt = "png"): string		820
-nim	cdnGuildScheduledEvents	dimscord/constants.html#cdnGuildScheduledEvents,string	proc cdnGuildScheduledEvents(eid: string): string		824
-nim	cdnGuildScheduledEventCover	dimscord/constants.html#cdnGuildScheduledEventCover,string,string,string	proc cdnGuildScheduledEventCover(eid, cover: string; fmt = "png"): string		827
-nim	cdnRoleIcon	dimscord/constants.html#cdnRoleIcon,string,string,string	proc cdnRoleIcon(rid, icon: string; fmt = "png"): string		831
-nim	cdnSticker	dimscord/constants.html#cdnSticker,string,string	proc cdnSticker(sid: string; fmt = "png"): string		835
-nim	cdnTeamIcon	dimscord/constants.html#cdnTeamIcon,string,string,string	proc cdnTeamIcon(tid, icon: string; fmt = "png"): string		838
-nim	cdnAppIcon	dimscord/constants.html#cdnAppIcon,string,string,string	proc cdnAppIcon(aid, icon: string; fmt = "png"): string		842
-nim	cdnAppAsset	dimscord/constants.html#cdnAppAsset,string,string,string	proc cdnAppAsset(aid, asid: string; fmt = "png"): string		846
-nim	cdnUserAvatarDecoration	dimscord/constants.html#cdnUserAvatarDecoration,string,string	proc cdnUserAvatarDecoration(uid, decoration: string): string		850
-nim	cdnBanner	dimscord/constants.html#cdnBanner,string,string,string	proc cdnBanner(bid, banner: string; fmt = "png"): string		853
-nim	cdnGuildSplash	dimscord/constants.html#cdnGuildSplash,string,string,string	proc cdnGuildSplash(gid, splash: string; fmt = "png"): string		858
-nim	cdnGuildDiscoverySplash	dimscord/constants.html#cdnGuildDiscoverySplash,string,string,string	proc cdnGuildDiscoverySplash(gid, splash: string; fmt = "png"): string		862
-nim	endpointUsers	dimscord/constants.html#endpointUsers,string	proc endpointUsers(uid = "@me"): string		868
-nim	endpointUserChannels	dimscord/constants.html#endpointUserChannels	proc endpointUserChannels(): string		871
-nim	endpointVoiceRegions	dimscord/constants.html#endpointVoiceRegions	proc endpointVoiceRegions(): string		874
-nim	endpointUserGuilds	dimscord/constants.html#endpointUserGuilds,string	proc endpointUserGuilds(gid = ""): string		877
-nim	endpointUserGuildMember	dimscord/constants.html#endpointUserGuildMember,string	proc endpointUserGuildMember(gid: string): string		880
-nim	endpointChannels	dimscord/constants.html#endpointChannels,string	proc endpointChannels(cid = ""): string		883
-nim	endpointStageInstances	dimscord/constants.html#endpointStageInstances,string	proc endpointStageInstances(cid = ""): string		886
-nim	endpointGuilds	dimscord/constants.html#endpointGuilds,string	proc endpointGuilds(gid = ""): string		889
-nim	endpointGuildStickers	dimscord/constants.html#endpointGuildStickers,string,string	proc endpointGuildStickers(gid: string; sid = ""): string		892
-nim	endpointGuildPreview	dimscord/constants.html#endpointGuildPreview,string	proc endpointGuildPreview(gid: string): string		895
-nim	endpointGuildRegions	dimscord/constants.html#endpointGuildRegions,string	proc endpointGuildRegions(gid: string): string		898
-nim	endpointGuildMFA	dimscord/constants.html#endpointGuildMFA,string	proc endpointGuildMFA(gid: string): string		901
-nim	endpointGuildAuditLogs	dimscord/constants.html#endpointGuildAuditLogs,string	proc endpointGuildAuditLogs(gid: string): string		904
-nim	endpointGuildAutoModerationRules	dimscord/constants.html#endpointGuildAutoModerationRules,string,string	proc endpointGuildAutoModerationRules(gid: string; rid = ""): string		907
-nim	endpointGuildMembers	dimscord/constants.html#endpointGuildMembers,string,string	proc endpointGuildMembers(gid: string; mid = ""): string		910
-nim	endpointGuildScheduledEvents	dimscord/constants.html#endpointGuildScheduledEvents,string,string	proc endpointGuildScheduledEvents(gid: string; eid = ""): string		913
-nim	endpointGuildScheduledEventUsers	dimscord/constants.html#endpointGuildScheduledEventUsers,string,string	proc endpointGuildScheduledEventUsers(gid, eid: string): string		916
-nim	endpointGuildMembersSearch	dimscord/constants.html#endpointGuildMembersSearch,string	proc endpointGuildMembersSearch(gid: string): string		919
-nim	endpointGuildMembersNick	dimscord/constants.html#endpointGuildMembersNick,string,string	proc endpointGuildMembersNick(gid: string; mid = "@me"): string		922
-nim	endpointGuildMembersRole	dimscord/constants.html#endpointGuildMembersRole,string,string,string	proc endpointGuildMembersRole(gid, mid, rid: string): string		925
-nim	endpointGuildIntegrations	dimscord/constants.html#endpointGuildIntegrations,string,string	proc endpointGuildIntegrations(gid: string; iid = ""): string		928
-nim	endpointGuildVoiceStatesUser	dimscord/constants.html#endpointGuildVoiceStatesUser,string,string	proc endpointGuildVoiceStatesUser(gid, uid = "@me"): string		931
-nim	endpointGuildWelcomeScreen	dimscord/constants.html#endpointGuildWelcomeScreen,string	proc endpointGuildWelcomeScreen(gid: string): string		934
-nim	endpointGuildIntegrationsSync	dimscord/constants.html#endpointGuildIntegrationsSync,string,string	proc endpointGuildIntegrationsSync(gid, iid: string): string		937
-nim	endpointGuildWidget	dimscord/constants.html#endpointGuildWidget,string	proc endpointGuildWidget(gid: string): string		940
-nim	endpointGuildEmojis	dimscord/constants.html#endpointGuildEmojis,string,string	proc endpointGuildEmojis(gid: string; eid = ""): string		943
-nim	endpointGuildRoles	dimscord/constants.html#endpointGuildRoles,string,string	proc endpointGuildRoles(gid: string; rid = ""): string		946
-nim	endpointGuildPrune	dimscord/constants.html#endpointGuildPrune,string	proc endpointGuildPrune(gid: string): string		949
-nim	endpointInvites	dimscord/constants.html#endpointInvites,string	proc endpointInvites(code = ""): string		952
-nim	endpointGuildInvites	dimscord/constants.html#endpointGuildInvites,string	proc endpointGuildInvites(gid: string): string		955
-nim	endpointGuildVanity	dimscord/constants.html#endpointGuildVanity,string	proc endpointGuildVanity(gid: string): string		958
-nim	endpointGuildOnboarding	dimscord/constants.html#endpointGuildOnboarding,string	proc endpointGuildOnboarding(gid: string): string		961
-nim	endpointGuildSounds	dimscord/constants.html#endpointGuildSounds,string,string	proc endpointGuildSounds(gid: string; sid = ""): string		964
-nim	endpointGuildChannels	dimscord/constants.html#endpointGuildChannels,string,string	proc endpointGuildChannels(gid: string; cid = ""): string		967
-nim	endpointChannelOverwrites	dimscord/constants.html#endpointChannelOverwrites,string,string	proc endpointChannelOverwrites(cid, oid: string): string		970
-nim	endpointWebhooks	dimscord/constants.html#endpointWebhooks,string	proc endpointWebhooks(wid: string): string		973
-nim	endpointChannelWebhooks	dimscord/constants.html#endpointChannelWebhooks,string	proc endpointChannelWebhooks(cid: string): string		976
-nim	endpointGuildTemplates	dimscord/constants.html#endpointGuildTemplates,string,string	proc endpointGuildTemplates(gid, tid = ""): string		979
-nim	endpointGuildWebhooks	dimscord/constants.html#endpointGuildWebhooks,string	proc endpointGuildWebhooks(gid: string): string		982
-nim	endpointWebhookToken	dimscord/constants.html#endpointWebhookToken,string,string	proc endpointWebhookToken(wid, tok: string): string		985
-nim	endpointWebhookMessage	dimscord/constants.html#endpointWebhookMessage,string,string,string	proc endpointWebhookMessage(wid, tok, mid: string): string		988
-nim	endpointWebhookTokenSlack	dimscord/constants.html#endpointWebhookTokenSlack,string,string	proc endpointWebhookTokenSlack(wid, tok: string): string		991
-nim	endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,string,string	proc endpointWebhookTokenGithub(wid, tok: string): string		994
-nim	endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	proc endpointChannelMessages(cid: string; mid = ""): string		997
-nim	endpointChannelMessagesThreads	dimscord/constants.html#endpointChannelMessagesThreads,string,string	proc endpointChannelMessagesThreads(cid, mid: string): string		1001
-nim	endpointChannelThreads	dimscord/constants.html#endpointChannelThreads,string	proc endpointChannelThreads(cid: string): string		1004
-nim	endpointGuildThreads	dimscord/constants.html#endpointGuildThreads,string	proc endpointGuildThreads(gid: string): string		1007
-nim	endpointGuildThreadsActive	dimscord/constants.html#endpointGuildThreadsActive,string	proc endpointGuildThreadsActive(gid: string): string		1010
-nim	endpointChannelThreadsArchived	dimscord/constants.html#endpointChannelThreadsArchived,string,string	proc endpointChannelThreadsArchived(cid, typ: string): string		1013
-nim	endpointChannelUsersThreadsArchived	dimscord/constants.html#endpointChannelUsersThreadsArchived,string,string	proc endpointChannelUsersThreadsArchived(cid, typ: string): string		1016
-nim	endpointChannelThreadsMembers	dimscord/constants.html#endpointChannelThreadsMembers,string,string	proc endpointChannelThreadsMembers(cid: string; uid = ""): string		1019
-nim	endpointChannelPollsAnswer	dimscord/constants.html#endpointChannelPollsAnswer,string,string,string	proc endpointChannelPollsAnswer(cid, mid, aid: string): string		1024
-nim	endpointChannelPollsExpire	dimscord/constants.html#endpointChannelPollsExpire,string,string	proc endpointChannelPollsExpire(cid, mid: string): string		1027
-nim	endpointChannelMessagesCrosspost	dimscord/constants.html#endpointChannelMessagesCrosspost,string,string	proc endpointChannelMessagesCrosspost(cid, mid: string): string		1030
-nim	endpointChannelInvites	dimscord/constants.html#endpointChannelInvites,string	proc endpointChannelInvites(cid: string): string		1033
-nim	endpointChannelPermissions	dimscord/constants.html#endpointChannelPermissions,string,string	proc endpointChannelPermissions(cid, oid: string): string		1036
-nim	endpointGuildBanBulk	dimscord/constants.html#endpointGuildBanBulk,string,string	proc endpointGuildBanBulk(gid: string; uid = ""): string		1039
-nim	endpointGuildBans	dimscord/constants.html#endpointGuildBans,string,string	proc endpointGuildBans(gid: string; uid = ""): string		1042
-nim	endpointBulkDeleteMessages	dimscord/constants.html#endpointBulkDeleteMessages,string	proc endpointBulkDeleteMessages(cid: string): string		1045
-nim	endpointTriggerTyping	dimscord/constants.html#endpointTriggerTyping,string	proc endpointTriggerTyping(cid: string): string		1048
-nim	endpointChannelPins	dimscord/constants.html#endpointChannelPins,string,string	proc endpointChannelPins(cid: string; mid = ""): string		1051
-nim	endpointGroupRecipient	dimscord/constants.html#endpointGroupRecipient,string,string	proc endpointGroupRecipient(cid, rid: string): string		1056
-nim	endpointReactions	dimscord/constants.html#endpointReactions,string,string,string,string	proc endpointReactions(cid, mid: string; e, uid = ""): string		1059
-nim	endpointSkuSubscriptions	dimscord/constants.html#endpointSkuSubscriptions,string,string	proc endpointSkuSubscriptions(skid: string; sid = ""): string		1066
-nim	endpointApplications	dimscord/constants.html#endpointApplications,string	proc endpointApplications(aid: string): string		1069
-nim	endpointApplicationEmojis	dimscord/constants.html#endpointApplicationEmojis,string,string	proc endpointApplicationEmojis(aid: string; eid = ""): string		1072
-nim	endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	proc endpointOAuth2Application(): string		1075
-nim	endpointEntitlements	dimscord/constants.html#endpointEntitlements,string,string	proc endpointEntitlements(aid: string; eid = ""): string		1078
-nim	endpointEntitlementConsume	dimscord/constants.html#endpointEntitlementConsume,string,string	proc endpointEntitlementConsume(aid, eid: string): string		1081
-nim	endpointListSkus	dimscord/constants.html#endpointListSkus,string	proc endpointListSkus(aid: string): string		1084
-nim	endpointGlobalCommands	dimscord/constants.html#endpointGlobalCommands,string,string	proc endpointGlobalCommands(aid: string; cid = ""): string		1087
-nim	endpointGuildCommands	dimscord/constants.html#endpointGuildCommands,string,string,string	proc endpointGuildCommands(aid, gid: string; cid = ""): string		1090
-nim	endpointGuildCommandPermission	dimscord/constants.html#endpointGuildCommandPermission,string,string,string	proc endpointGuildCommandPermission(aid, gid: string; cid = ""): string		1095
-nim	endpointInteractionsCallback	dimscord/constants.html#endpointInteractionsCallback,string,string	proc endpointInteractionsCallback(iid, it: string): string		1098
-nim	endpointApplicationRoleConnectionMetadata	dimscord/constants.html#endpointApplicationRoleConnectionMetadata,string	proc endpointApplicationRoleConnectionMetadata(aid: string): string		1101
-nim	endpointUserApplications	dimscord/constants.html#endpointUserApplications,string	proc endpointUserApplications(aid: string): string		1104
-nim	endpointUserApplicationRoleConnection	dimscord/constants.html#endpointUserApplicationRoleConnection,string	proc endpointUserApplicationRoleConnection(aid: string): string		1107
-nim	endpointStickers	dimscord/constants.html#endpointStickers,string	proc endpointStickers(sid: string): string		1110
-nim	endpointStickerPacks	dimscord/constants.html#endpointStickerPacks	proc endpointStickerPacks(): string		1113
-nimgrp	log	dimscord/constants.html#log-procs-all	proc		795
+nim	matUnknown	dimscord/constants.html#matUnknown	ModerationActionType.matUnknown		557
+nim	matBlockMessage	dimscord/constants.html#matBlockMessage	ModerationActionType.matBlockMessage		557
+nim	matSendAlertMessage	dimscord/constants.html#matSendAlertMessage	ModerationActionType.matSendAlertMessage		557
+nim	matTimeout	dimscord/constants.html#matTimeout	ModerationActionType.matTimeout		557
+nim	ModerationActionType	dimscord/constants.html#ModerationActionType	enum ModerationActionType		557
+nim	mttUnknown	dimscord/constants.html#mttUnknown	ModerationTriggerType.mttUnknown		562
+nim	mttKeyword	dimscord/constants.html#mttKeyword	ModerationTriggerType.mttKeyword		562
+nim	mttHarmfulLink	dimscord/constants.html#mttHarmfulLink	ModerationTriggerType.mttHarmfulLink		562
+nim	mttSpam	dimscord/constants.html#mttSpam	ModerationTriggerType.mttSpam		562
+nim	mttKeywordPreset	dimscord/constants.html#mttKeywordPreset	ModerationTriggerType.mttKeywordPreset		562
+nim	mttMentionSpam	dimscord/constants.html#mttMentionSpam	ModerationTriggerType.mttMentionSpam		562
+nim	ModerationTriggerType	dimscord/constants.html#ModerationTriggerType	enum ModerationTriggerType		562
+nim	kptUnknown	dimscord/constants.html#kptUnknown	KeywordPresetType.kptUnknown		569
+nim	kptProfanity	dimscord/constants.html#kptProfanity	KeywordPresetType.kptProfanity		569
+nim	kptSexualContent	dimscord/constants.html#kptSexualContent	KeywordPresetType.kptSexualContent		569
+nim	kptSlurs	dimscord/constants.html#kptSlurs	KeywordPresetType.kptSlurs		569
+nim	KeywordPresetType	dimscord/constants.html#KeywordPresetType	enum KeywordPresetType		569
+nim	fsoLatestActivity	dimscord/constants.html#fsoLatestActivity	ForumSortOrder.fsoLatestActivity		574
+nim	fsoCreationDate	dimscord/constants.html#fsoCreationDate	ForumSortOrder.fsoCreationDate		574
+nim	fsoUnknown	dimscord/constants.html#fsoUnknown	ForumSortOrder.fsoUnknown		574
+nim	ForumSortOrder	dimscord/constants.html#ForumSortOrder	enum ForumSortOrder		574
+nim	flNotSet	dimscord/constants.html#flNotSet	ForumLayout.flNotSet		578
+nim	flListView	dimscord/constants.html#flListView	ForumLayout.flListView		578
+nim	flGalleryView	dimscord/constants.html#flGalleryView	ForumLayout.flGalleryView		578
+nim	flUnknown	dimscord/constants.html#flUnknown	ForumLayout.flUnknown		578
+nim	ForumLayout	dimscord/constants.html#ForumLayout	enum ForumLayout		578
+nim	omDefault	dimscord/constants.html#omDefault	GuildOnboardingMode.omDefault		583
+nim	omAdvanced	dimscord/constants.html#omAdvanced	GuildOnboardingMode.omAdvanced		583
+nim	omUnknown	dimscord/constants.html#omUnknown	GuildOnboardingMode.omUnknown		583
+nim	GuildOnboardingMode	dimscord/constants.html#GuildOnboardingMode	enum GuildOnboardingMode		583
+nim	ptMultipleChoice	dimscord/constants.html#ptMultipleChoice	GuildOnboardingPromptType.ptMultipleChoice		587
+nim	ptDropdown	dimscord/constants.html#ptDropdown	GuildOnboardingPromptType.ptDropdown		587
+nim	ptUnknown	dimscord/constants.html#ptUnknown	GuildOnboardingPromptType.ptUnknown		587
+nim	GuildOnboardingPromptType	dimscord/constants.html#GuildOnboardingPromptType	enum GuildOnboardingPromptType		587
+nim	etUnknown	dimscord/constants.html#etUnknown	EntitlementType.etUnknown		591
+nim	etPurchase	dimscord/constants.html#etPurchase	EntitlementType.etPurchase		591
+nim	etPremiumSubscription	dimscord/constants.html#etPremiumSubscription	EntitlementType.etPremiumSubscription		591
+nim	etDeveloperGift	dimscord/constants.html#etDeveloperGift	EntitlementType.etDeveloperGift		591
+nim	etTestModePurchase	dimscord/constants.html#etTestModePurchase	EntitlementType.etTestModePurchase		591
+nim	etFreePurchase	dimscord/constants.html#etFreePurchase	EntitlementType.etFreePurchase		591
+nim	etUserGift	dimscord/constants.html#etUserGift	EntitlementType.etUserGift		591
+nim	etPremiumPurchase	dimscord/constants.html#etPremiumPurchase	EntitlementType.etPremiumPurchase		591
+nim	etApplicationSubscription	dimscord/constants.html#etApplicationSubscription	EntitlementType.etApplicationSubscription		591
+nim	EntitlementType	dimscord/constants.html#EntitlementType	enum EntitlementType		591
+nim	stDurable	dimscord/constants.html#stDurable	SkuType.stDurable		601
+nim	stConsumable	dimscord/constants.html#stConsumable	SkuType.stConsumable		601
+nim	stSubscription	dimscord/constants.html#stSubscription	SkuType.stSubscription		601
+nim	stSubscriptionGroup	dimscord/constants.html#stSubscriptionGroup	SkuType.stSubscriptionGroup		601
+nim	stNone	dimscord/constants.html#stNone	SkuType.stNone		601
+nim	SkuType	dimscord/constants.html#SkuType	enum SkuType		601
+nim	ssActive	dimscord/constants.html#ssActive	SubscriptionStatus.ssActive		607
+nim	ssEnding	dimscord/constants.html#ssEnding	SubscriptionStatus.ssEnding		607
+nim	ssInactive	dimscord/constants.html#ssInactive	SubscriptionStatus.ssInactive		607
+nim	ssUnknown	dimscord/constants.html#ssUnknown	SubscriptionStatus.ssUnknown		607
+nim	SubscriptionStatus	dimscord/constants.html#SubscriptionStatus	enum SubscriptionStatus		607
+nim	ephUnknown	dimscord/constants.html#ephUnknown	EntryPointCommandHandlerType.ephUnknown		612
+nim	ephAppHandler	dimscord/constants.html#ephAppHandler	EntryPointCommandHandlerType.ephAppHandler		612
+nim	ephDiscordLaunchActivity	dimscord/constants.html#ephDiscordLaunchActivity	EntryPointCommandHandlerType.ephDiscordLaunchActivity		612
+nim	EntryPointCommandHandlerType	dimscord/constants.html#EntryPointCommandHandlerType	enum EntryPointCommandHandlerType		612
+nim	Unknown	dimscord/constants.html#Unknown	DispatchEvent.Unknown		616
+nim	VoiceStateUpdate	dimscord/constants.html#VoiceStateUpdate	DispatchEvent.VoiceStateUpdate		616
+nim	ChannelPinsUpdate	dimscord/constants.html#ChannelPinsUpdate	DispatchEvent.ChannelPinsUpdate		616
+nim	GuildEmojisUpdate	dimscord/constants.html#GuildEmojisUpdate	DispatchEvent.GuildEmojisUpdate		616
+nim	GuildStickersUpdate	dimscord/constants.html#GuildStickersUpdate	DispatchEvent.GuildStickersUpdate		616
+nim	PresenceUpdate	dimscord/constants.html#PresenceUpdate	DispatchEvent.PresenceUpdate		616
+nim	MessageCreate	dimscord/constants.html#MessageCreate	DispatchEvent.MessageCreate		616
+nim	MessageReactionAdd	dimscord/constants.html#MessageReactionAdd	DispatchEvent.MessageReactionAdd		616
+nim	MessageReactionRemove	dimscord/constants.html#MessageReactionRemove	DispatchEvent.MessageReactionRemove		616
+nim	MessageReactionRemoveEmoji	dimscord/constants.html#MessageReactionRemoveEmoji	DispatchEvent.MessageReactionRemoveEmoji		616
+nim	MessageReactionRemoveAll	dimscord/constants.html#MessageReactionRemoveAll	DispatchEvent.MessageReactionRemoveAll		616
+nim	MessageDelete	dimscord/constants.html#MessageDelete	DispatchEvent.MessageDelete		616
+nim	MessageUpdate	dimscord/constants.html#MessageUpdate	DispatchEvent.MessageUpdate		616
+nim	MessageDeleteBulk	dimscord/constants.html#MessageDeleteBulk	DispatchEvent.MessageDeleteBulk		616
+nim	ChannelCreate	dimscord/constants.html#ChannelCreate	DispatchEvent.ChannelCreate		616
+nim	ChannelUpdate	dimscord/constants.html#ChannelUpdate	DispatchEvent.ChannelUpdate		616
+nim	ChannelDelete	dimscord/constants.html#ChannelDelete	DispatchEvent.ChannelDelete		616
+nim	GuildMembersChunk	dimscord/constants.html#GuildMembersChunk	DispatchEvent.GuildMembersChunk		616
+nim	GuildMemberAdd	dimscord/constants.html#GuildMemberAdd	DispatchEvent.GuildMemberAdd		616
+nim	GuildMemberUpdate	dimscord/constants.html#GuildMemberUpdate	DispatchEvent.GuildMemberUpdate		616
+nim	GuildMemberRemove	dimscord/constants.html#GuildMemberRemove	DispatchEvent.GuildMemberRemove		616
+nim	GuildAuditLogEntryCreate	dimscord/constants.html#GuildAuditLogEntryCreate	DispatchEvent.GuildAuditLogEntryCreate		616
+nim	GuildBanAdd	dimscord/constants.html#GuildBanAdd	DispatchEvent.GuildBanAdd		616
+nim	GuildBanRemove	dimscord/constants.html#GuildBanRemove	DispatchEvent.GuildBanRemove		616
+nim	GuildUpdate	dimscord/constants.html#GuildUpdate	DispatchEvent.GuildUpdate		616
+nim	GuildDelete	dimscord/constants.html#GuildDelete	DispatchEvent.GuildDelete		616
+nim	GuildCreate	dimscord/constants.html#GuildCreate	DispatchEvent.GuildCreate		616
+nim	GuildRoleCreate	dimscord/constants.html#GuildRoleCreate	DispatchEvent.GuildRoleCreate		616
+nim	GuildRoleUpdate	dimscord/constants.html#GuildRoleUpdate	DispatchEvent.GuildRoleUpdate		616
+nim	GuildRoleDelete	dimscord/constants.html#GuildRoleDelete	DispatchEvent.GuildRoleDelete		616
+nim	WebhooksUpdate	dimscord/constants.html#WebhooksUpdate	DispatchEvent.WebhooksUpdate		616
+nim	TypingStart	dimscord/constants.html#TypingStart	DispatchEvent.TypingStart		616
+nim	InviteCreate	dimscord/constants.html#InviteCreate	DispatchEvent.InviteCreate		616
+nim	InviteDelete	dimscord/constants.html#InviteDelete	DispatchEvent.InviteDelete		616
+nim	GuildIntegrationsUpdate	dimscord/constants.html#GuildIntegrationsUpdate	DispatchEvent.GuildIntegrationsUpdate		616
+nim	VoiceServerUpdate	dimscord/constants.html#VoiceServerUpdate	DispatchEvent.VoiceServerUpdate		616
+nim	VoiceChannelEffectSend	dimscord/constants.html#VoiceChannelEffectSend	DispatchEvent.VoiceChannelEffectSend		616
+nim	GuildSoundboardSoundCreate	dimscord/constants.html#GuildSoundboardSoundCreate	DispatchEvent.GuildSoundboardSoundCreate		616
+nim	GuildSoundboardSoundUpdate	dimscord/constants.html#GuildSoundboardSoundUpdate	DispatchEvent.GuildSoundboardSoundUpdate		616
+nim	GuildSoundboardSoundDelete	dimscord/constants.html#GuildSoundboardSoundDelete	DispatchEvent.GuildSoundboardSoundDelete		616
+nim	GuildSoundboardSoundsUpdate	dimscord/constants.html#GuildSoundboardSoundsUpdate	DispatchEvent.GuildSoundboardSoundsUpdate		616
+nim	SoundboardSounds	dimscord/constants.html#SoundboardSounds	DispatchEvent.SoundboardSounds		616
+nim	UserUpdate	dimscord/constants.html#UserUpdate	DispatchEvent.UserUpdate		616
+nim	InteractionCreate	dimscord/constants.html#InteractionCreate	DispatchEvent.InteractionCreate		616
+nim	ThreadCreate	dimscord/constants.html#ThreadCreate	DispatchEvent.ThreadCreate		616
+nim	ThreadUpdate	dimscord/constants.html#ThreadUpdate	DispatchEvent.ThreadUpdate		616
+nim	ThreadDelete	dimscord/constants.html#ThreadDelete	DispatchEvent.ThreadDelete		616
+nim	ThreadListSync	dimscord/constants.html#ThreadListSync	DispatchEvent.ThreadListSync		616
+nim	ThreadMembersUpdate	dimscord/constants.html#ThreadMembersUpdate	DispatchEvent.ThreadMembersUpdate		616
+nim	ThreadMemberUpdate	dimscord/constants.html#ThreadMemberUpdate	DispatchEvent.ThreadMemberUpdate		616
+nim	StageInstanceCreate	dimscord/constants.html#StageInstanceCreate	DispatchEvent.StageInstanceCreate		616
+nim	StageInstanceUpdate	dimscord/constants.html#StageInstanceUpdate	DispatchEvent.StageInstanceUpdate		616
+nim	StageInstanceDelete	dimscord/constants.html#StageInstanceDelete	DispatchEvent.StageInstanceDelete		616
+nim	GuildScheduledEventUserAdd	dimscord/constants.html#GuildScheduledEventUserAdd	DispatchEvent.GuildScheduledEventUserAdd		616
+nim	GuildScheduledEventUserRemove	dimscord/constants.html#GuildScheduledEventUserRemove	DispatchEvent.GuildScheduledEventUserRemove		616
+nim	GuildScheduledEventCreate	dimscord/constants.html#GuildScheduledEventCreate	DispatchEvent.GuildScheduledEventCreate		616
+nim	GuildScheduledEventUpdate	dimscord/constants.html#GuildScheduledEventUpdate	DispatchEvent.GuildScheduledEventUpdate		616
+nim	GuildScheduledEventDelete	dimscord/constants.html#GuildScheduledEventDelete	DispatchEvent.GuildScheduledEventDelete		616
+nim	AutoModerationRuleCreate	dimscord/constants.html#AutoModerationRuleCreate	DispatchEvent.AutoModerationRuleCreate		616
+nim	AutoModerationRuleUpdate	dimscord/constants.html#AutoModerationRuleUpdate	DispatchEvent.AutoModerationRuleUpdate		616
+nim	AutoModerationRuleDelete	dimscord/constants.html#AutoModerationRuleDelete	DispatchEvent.AutoModerationRuleDelete		616
+nim	AutoModerationActionExecution	dimscord/constants.html#AutoModerationActionExecution	DispatchEvent.AutoModerationActionExecution		616
+nim	MessagePollVoteAdd	dimscord/constants.html#MessagePollVoteAdd	DispatchEvent.MessagePollVoteAdd		616
+nim	MessagePollVoteRemove	dimscord/constants.html#MessagePollVoteRemove	DispatchEvent.MessagePollVoteRemove		616
+nim	IntegrationCreate	dimscord/constants.html#IntegrationCreate	DispatchEvent.IntegrationCreate		616
+nim	IntegrationUpdate	dimscord/constants.html#IntegrationUpdate	DispatchEvent.IntegrationUpdate		616
+nim	IntegrationDelete	dimscord/constants.html#IntegrationDelete	DispatchEvent.IntegrationDelete		616
+nim	EntitlementCreate	dimscord/constants.html#EntitlementCreate	DispatchEvent.EntitlementCreate		616
+nim	EntitlementUpdate	dimscord/constants.html#EntitlementUpdate	DispatchEvent.EntitlementUpdate		616
+nim	EntitlementDelete	dimscord/constants.html#EntitlementDelete	DispatchEvent.EntitlementDelete		616
+nim	DispatchEvent	dimscord/constants.html#DispatchEvent	enum DispatchEvent		616
+nim	deGuildMembersChunk	dimscord/constants.html#deGuildMembersChunk	const deGuildMembersChunk		689
+nim	deTypingStart	dimscord/constants.html#deTypingStart	const deTypingStart		690
+nim	deInviteCreate	dimscord/constants.html#deInviteCreate	const deInviteCreate		691
+nim	deThreadListSync	dimscord/constants.html#deThreadListSync	const deThreadListSync		692
+nim	deThreadMembersUpdate	dimscord/constants.html#deThreadMembersUpdate	const deThreadMembersUpdate		693
+nim	deVoiceChannelEffectSend	dimscord/constants.html#deVoiceChannelEffectSend	const deVoiceChannelEffectSend		694
+nim	mctStringSelect	dimscord/constants.html#mctStringSelect	const mctStringSelect		696
+nim	ActionRow	dimscord/constants.html#ActionRow	const ActionRow		699
+nim	Button	dimscord/constants.html#Button	const Button		700
+nim	SelectMenu	dimscord/constants.html#SelectMenu	const SelectMenu		701
+nim	TextInput	dimscord/constants.html#TextInput	const TextInput		702
+nim	UserSelect	dimscord/constants.html#UserSelect	const UserSelect		703
+nim	RoleSelect	dimscord/constants.html#RoleSelect	const RoleSelect		704
+nim	MentionableSelect	dimscord/constants.html#MentionableSelect	const MentionableSelect		705
+nim	ChannelSelect	dimscord/constants.html#ChannelSelect	const ChannelSelect		706
+nim	Primary	dimscord/constants.html#Primary	const Primary		708
+nim	Secondary	dimscord/constants.html#Secondary	const Secondary		709
+nim	Success	dimscord/constants.html#Success	const Success		710
+nim	Danger	dimscord/constants.html#Danger	const Danger		711
+nim	Link	dimscord/constants.html#Link	const Link		712
+nim	Short	dimscord/constants.html#Short	const Short		714
+nim	Paragraph	dimscord/constants.html#Paragraph	const Paragraph		715
+nim	permAllText	dimscord/constants.html#permAllText	const permAllText		718
+nim	permAllVoice	dimscord/constants.html#permAllVoice	const permAllVoice		740
+nim	permAllStage	dimscord/constants.html#permAllStage	const permAllStage		764
+nim	permAllChannel	dimscord/constants.html#permAllChannel	const permAllChannel		782
+nim	permAll	dimscord/constants.html#permAll	const permAll		783
+nim	permManageEmojis	dimscord/constants.html#permManageEmojis	const permManageEmojis		799
+nim	log	dimscord/constants.html#log,string,	proc log(msg: string; info: tuple)		802
+nim	log	dimscord/constants.html#log,string	proc log(msg: string)		811
+nim	cdnGuildUsers	dimscord/constants.html#cdnGuildUsers,string,string	proc cdnGuildUsers(gid, uid: string): string		820
+nim	cdnGuildMemberAvatar	dimscord/constants.html#cdnGuildMemberAvatar,string,string,string,string	proc cdnGuildMemberAvatar(gid, uid, avatar: string; fmt = "png"): string		823
+nim	cdnGuildMemberBanner	dimscord/constants.html#cdnGuildMemberBanner,string,string,string,string	proc cdnGuildMemberBanner(gid, uid, banner: string; fmt = "png"): string		827
+nim	cdnGuildScheduledEvents	dimscord/constants.html#cdnGuildScheduledEvents,string	proc cdnGuildScheduledEvents(eid: string): string		831
+nim	cdnGuildScheduledEventCover	dimscord/constants.html#cdnGuildScheduledEventCover,string,string,string	proc cdnGuildScheduledEventCover(eid, cover: string; fmt = "png"): string		834
+nim	cdnRoleIcon	dimscord/constants.html#cdnRoleIcon,string,string,string	proc cdnRoleIcon(rid, icon: string; fmt = "png"): string		838
+nim	cdnSticker	dimscord/constants.html#cdnSticker,string,string	proc cdnSticker(sid: string; fmt = "png"): string		842
+nim	cdnTeamIcon	dimscord/constants.html#cdnTeamIcon,string,string,string	proc cdnTeamIcon(tid, icon: string; fmt = "png"): string		845
+nim	cdnAppIcon	dimscord/constants.html#cdnAppIcon,string,string,string	proc cdnAppIcon(aid, icon: string; fmt = "png"): string		849
+nim	cdnAppAsset	dimscord/constants.html#cdnAppAsset,string,string,string	proc cdnAppAsset(aid, asid: string; fmt = "png"): string		853
+nim	cdnUserAvatarDecoration	dimscord/constants.html#cdnUserAvatarDecoration,string,string	proc cdnUserAvatarDecoration(uid, decoration: string): string		857
+nim	cdnBanner	dimscord/constants.html#cdnBanner,string,string,string	proc cdnBanner(bid, banner: string; fmt = "png"): string		860
+nim	cdnGuildSplash	dimscord/constants.html#cdnGuildSplash,string,string,string	proc cdnGuildSplash(gid, splash: string; fmt = "png"): string		865
+nim	cdnGuildDiscoverySplash	dimscord/constants.html#cdnGuildDiscoverySplash,string,string,string	proc cdnGuildDiscoverySplash(gid, splash: string; fmt = "png"): string		869
+nim	endpointUsers	dimscord/constants.html#endpointUsers,string	proc endpointUsers(uid = "@me"): string		875
+nim	endpointUserChannels	dimscord/constants.html#endpointUserChannels	proc endpointUserChannels(): string		878
+nim	endpointVoiceRegions	dimscord/constants.html#endpointVoiceRegions	proc endpointVoiceRegions(): string		881
+nim	endpointUserGuilds	dimscord/constants.html#endpointUserGuilds,string	proc endpointUserGuilds(gid = ""): string		884
+nim	endpointUserGuildMember	dimscord/constants.html#endpointUserGuildMember,string	proc endpointUserGuildMember(gid: string): string		887
+nim	endpointChannels	dimscord/constants.html#endpointChannels,string	proc endpointChannels(cid = ""): string		890
+nim	endpointStageInstances	dimscord/constants.html#endpointStageInstances,string	proc endpointStageInstances(cid = ""): string		893
+nim	endpointGuilds	dimscord/constants.html#endpointGuilds,string	proc endpointGuilds(gid = ""): string		896
+nim	endpointGuildStickers	dimscord/constants.html#endpointGuildStickers,string,string	proc endpointGuildStickers(gid: string; sid = ""): string		899
+nim	endpointGuildPreview	dimscord/constants.html#endpointGuildPreview,string	proc endpointGuildPreview(gid: string): string		902
+nim	endpointGuildRegions	dimscord/constants.html#endpointGuildRegions,string	proc endpointGuildRegions(gid: string): string		905
+nim	endpointGuildMFA	dimscord/constants.html#endpointGuildMFA,string	proc endpointGuildMFA(gid: string): string		908
+nim	endpointGuildAuditLogs	dimscord/constants.html#endpointGuildAuditLogs,string	proc endpointGuildAuditLogs(gid: string): string		911
+nim	endpointGuildAutoModerationRules	dimscord/constants.html#endpointGuildAutoModerationRules,string,string	proc endpointGuildAutoModerationRules(gid: string; rid = ""): string		914
+nim	endpointGuildMembers	dimscord/constants.html#endpointGuildMembers,string,string	proc endpointGuildMembers(gid: string; mid = ""): string		917
+nim	endpointGuildScheduledEvents	dimscord/constants.html#endpointGuildScheduledEvents,string,string	proc endpointGuildScheduledEvents(gid: string; eid = ""): string		920
+nim	endpointGuildScheduledEventUsers	dimscord/constants.html#endpointGuildScheduledEventUsers,string,string	proc endpointGuildScheduledEventUsers(gid, eid: string): string		923
+nim	endpointGuildMembersSearch	dimscord/constants.html#endpointGuildMembersSearch,string	proc endpointGuildMembersSearch(gid: string): string		926
+nim	endpointGuildMembersNick	dimscord/constants.html#endpointGuildMembersNick,string,string	proc endpointGuildMembersNick(gid: string; mid = "@me"): string		929
+nim	endpointGuildMembersRole	dimscord/constants.html#endpointGuildMembersRole,string,string,string	proc endpointGuildMembersRole(gid, mid, rid: string): string		932
+nim	endpointGuildIntegrations	dimscord/constants.html#endpointGuildIntegrations,string,string	proc endpointGuildIntegrations(gid: string; iid = ""): string		935
+nim	endpointGuildVoiceStatesUser	dimscord/constants.html#endpointGuildVoiceStatesUser,string,string	proc endpointGuildVoiceStatesUser(gid, uid = "@me"): string		938
+nim	endpointGuildWelcomeScreen	dimscord/constants.html#endpointGuildWelcomeScreen,string	proc endpointGuildWelcomeScreen(gid: string): string		941
+nim	endpointGuildIntegrationsSync	dimscord/constants.html#endpointGuildIntegrationsSync,string,string	proc endpointGuildIntegrationsSync(gid, iid: string): string		944
+nim	endpointGuildWidget	dimscord/constants.html#endpointGuildWidget,string	proc endpointGuildWidget(gid: string): string		947
+nim	endpointGuildEmojis	dimscord/constants.html#endpointGuildEmojis,string,string	proc endpointGuildEmojis(gid: string; eid = ""): string		950
+nim	endpointGuildRoles	dimscord/constants.html#endpointGuildRoles,string,string	proc endpointGuildRoles(gid: string; rid = ""): string		953
+nim	endpointGuildPrune	dimscord/constants.html#endpointGuildPrune,string	proc endpointGuildPrune(gid: string): string		956
+nim	endpointInvites	dimscord/constants.html#endpointInvites,string	proc endpointInvites(code = ""): string		959
+nim	endpointGuildInvites	dimscord/constants.html#endpointGuildInvites,string	proc endpointGuildInvites(gid: string): string		962
+nim	endpointGuildVanity	dimscord/constants.html#endpointGuildVanity,string	proc endpointGuildVanity(gid: string): string		965
+nim	endpointGuildOnboarding	dimscord/constants.html#endpointGuildOnboarding,string	proc endpointGuildOnboarding(gid: string): string		968
+nim	endpointGuildSounds	dimscord/constants.html#endpointGuildSounds,string,string	proc endpointGuildSounds(gid: string; sid = ""): string		971
+nim	endpointGuildChannels	dimscord/constants.html#endpointGuildChannels,string,string	proc endpointGuildChannels(gid: string; cid = ""): string		974
+nim	endpointChannelOverwrites	dimscord/constants.html#endpointChannelOverwrites,string,string	proc endpointChannelOverwrites(cid, oid: string): string		977
+nim	endpointWebhooks	dimscord/constants.html#endpointWebhooks,string	proc endpointWebhooks(wid: string): string		980
+nim	endpointChannelWebhooks	dimscord/constants.html#endpointChannelWebhooks,string	proc endpointChannelWebhooks(cid: string): string		983
+nim	endpointGuildTemplates	dimscord/constants.html#endpointGuildTemplates,string,string	proc endpointGuildTemplates(gid, tid = ""): string		986
+nim	endpointGuildWebhooks	dimscord/constants.html#endpointGuildWebhooks,string	proc endpointGuildWebhooks(gid: string): string		989
+nim	endpointWebhookToken	dimscord/constants.html#endpointWebhookToken,string,string	proc endpointWebhookToken(wid, tok: string): string		992
+nim	endpointWebhookMessage	dimscord/constants.html#endpointWebhookMessage,string,string,string	proc endpointWebhookMessage(wid, tok, mid: string): string		995
+nim	endpointWebhookTokenSlack	dimscord/constants.html#endpointWebhookTokenSlack,string,string	proc endpointWebhookTokenSlack(wid, tok: string): string		998
+nim	endpointWebhookTokenGithub	dimscord/constants.html#endpointWebhookTokenGithub,string,string	proc endpointWebhookTokenGithub(wid, tok: string): string		1001
+nim	endpointChannelMessages	dimscord/constants.html#endpointChannelMessages,string,string	proc endpointChannelMessages(cid: string; mid = ""): string		1004
+nim	endpointChannelMessagesThreads	dimscord/constants.html#endpointChannelMessagesThreads,string,string	proc endpointChannelMessagesThreads(cid, mid: string): string		1008
+nim	endpointChannelThreads	dimscord/constants.html#endpointChannelThreads,string	proc endpointChannelThreads(cid: string): string		1011
+nim	endpointGuildThreads	dimscord/constants.html#endpointGuildThreads,string	proc endpointGuildThreads(gid: string): string		1014
+nim	endpointGuildThreadsActive	dimscord/constants.html#endpointGuildThreadsActive,string	proc endpointGuildThreadsActive(gid: string): string		1017
+nim	endpointChannelThreadsArchived	dimscord/constants.html#endpointChannelThreadsArchived,string,string	proc endpointChannelThreadsArchived(cid, typ: string): string		1020
+nim	endpointChannelUsersThreadsArchived	dimscord/constants.html#endpointChannelUsersThreadsArchived,string,string	proc endpointChannelUsersThreadsArchived(cid, typ: string): string		1023
+nim	endpointChannelThreadsMembers	dimscord/constants.html#endpointChannelThreadsMembers,string,string	proc endpointChannelThreadsMembers(cid: string; uid = ""): string		1026
+nim	endpointChannelPollsAnswer	dimscord/constants.html#endpointChannelPollsAnswer,string,string,string	proc endpointChannelPollsAnswer(cid, mid, aid: string): string		1031
+nim	endpointChannelPollsExpire	dimscord/constants.html#endpointChannelPollsExpire,string,string	proc endpointChannelPollsExpire(cid, mid: string): string		1034
+nim	endpointChannelMessagesCrosspost	dimscord/constants.html#endpointChannelMessagesCrosspost,string,string	proc endpointChannelMessagesCrosspost(cid, mid: string): string		1037
+nim	endpointChannelInvites	dimscord/constants.html#endpointChannelInvites,string	proc endpointChannelInvites(cid: string): string		1040
+nim	endpointChannelPermissions	dimscord/constants.html#endpointChannelPermissions,string,string	proc endpointChannelPermissions(cid, oid: string): string		1043
+nim	endpointGuildBanBulk	dimscord/constants.html#endpointGuildBanBulk,string,string	proc endpointGuildBanBulk(gid: string; uid = ""): string		1046
+nim	endpointGuildBans	dimscord/constants.html#endpointGuildBans,string,string	proc endpointGuildBans(gid: string; uid = ""): string		1049
+nim	endpointBulkDeleteMessages	dimscord/constants.html#endpointBulkDeleteMessages,string	proc endpointBulkDeleteMessages(cid: string): string		1052
+nim	endpointTriggerTyping	dimscord/constants.html#endpointTriggerTyping,string	proc endpointTriggerTyping(cid: string): string		1055
+nim	endpointChannelPins	dimscord/constants.html#endpointChannelPins,string,string	proc endpointChannelPins(cid: string; mid = ""): string		1058
+nim	endpointGroupRecipient	dimscord/constants.html#endpointGroupRecipient,string,string	proc endpointGroupRecipient(cid, rid: string): string		1063
+nim	endpointReactions	dimscord/constants.html#endpointReactions,string,string,string,string	proc endpointReactions(cid, mid: string; e, uid = ""): string		1066
+nim	endpointSkuSubscriptions	dimscord/constants.html#endpointSkuSubscriptions,string,string	proc endpointSkuSubscriptions(skid: string; sid = ""): string		1073
+nim	endpointApplications	dimscord/constants.html#endpointApplications,string	proc endpointApplications(aid: string): string		1076
+nim	endpointApplicationEmojis	dimscord/constants.html#endpointApplicationEmojis,string,string	proc endpointApplicationEmojis(aid: string; eid = ""): string		1079
+nim	endpointOAuth2Application	dimscord/constants.html#endpointOAuth2Application	proc endpointOAuth2Application(): string		1082
+nim	endpointEntitlements	dimscord/constants.html#endpointEntitlements,string,string	proc endpointEntitlements(aid: string; eid = ""): string		1085
+nim	endpointEntitlementConsume	dimscord/constants.html#endpointEntitlementConsume,string,string	proc endpointEntitlementConsume(aid, eid: string): string		1088
+nim	endpointListSkus	dimscord/constants.html#endpointListSkus,string	proc endpointListSkus(aid: string): string		1091
+nim	endpointGlobalCommands	dimscord/constants.html#endpointGlobalCommands,string,string	proc endpointGlobalCommands(aid: string; cid = ""): string		1094
+nim	endpointGuildCommands	dimscord/constants.html#endpointGuildCommands,string,string,string	proc endpointGuildCommands(aid, gid: string; cid = ""): string		1097
+nim	endpointGuildCommandPermission	dimscord/constants.html#endpointGuildCommandPermission,string,string,string	proc endpointGuildCommandPermission(aid, gid: string; cid = ""): string		1102
+nim	endpointInteractionsCallback	dimscord/constants.html#endpointInteractionsCallback,string,string	proc endpointInteractionsCallback(iid, it: string): string		1105
+nim	endpointApplicationRoleConnectionMetadata	dimscord/constants.html#endpointApplicationRoleConnectionMetadata,string	proc endpointApplicationRoleConnectionMetadata(aid: string): string		1108
+nim	endpointUserApplications	dimscord/constants.html#endpointUserApplications,string	proc endpointUserApplications(aid: string): string		1111
+nim	endpointUserApplicationRoleConnection	dimscord/constants.html#endpointUserApplicationRoleConnection,string	proc endpointUserApplicationRoleConnection(aid: string): string		1114
+nim	endpointStickers	dimscord/constants.html#endpointStickers,string	proc endpointStickers(sid: string): string		1117
+nim	endpointStickerPacks	dimscord/constants.html#endpointStickerPacks	proc endpointStickerPacks(): string		1120
+nimgrp	log	dimscord/constants.html#log-procs-all	proc		802

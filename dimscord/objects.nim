@@ -6,6 +6,33 @@
 ##   present.
 ##
 ## Some may not be optional, but they can be assumable or always present.
+##
+##
+## One of the most important objects is [Events] and is used to register events with help of macros.
+## 
+## .. raw:: html
+##    <details>
+##    <summary>Expand for more information</summary>
+## .. code-block:: nim
+##    # For interaction_create for instance
+##    proc interaction_create(s: Shard, i: Interaction) {.event(discord).} =
+##      ...
+##    
+##    # The {.event(discord).} pragma is a macro which rewrites the expression as this:
+##    discord.events.interaction_create = proc interaction_create(s: Shard, i: Interaction) {.async.} =
+##      ...
+##    
+##    # the event name is also case insensitive (except for first letter),
+##    # thanks to Nim's flexibility so writing the following would be valid equivalent.
+##    
+##    proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
+##      ...
+##    
+##    # just don't forget the pragma, it also automatically adds in the {.async.} pragma
+##    # hence why use of async/await inside proc is valid.
+## .. raw:: html
+##    </details>
+## .
 
 {.warning[HoleEnumConv]: off.}
 {.warning[CaseTransition]: off.}
@@ -159,6 +186,20 @@ proc newDiscordClient*(token: string;
             voice_server_update: proc (s: Shard, g: Guild,
                     token: string,
                     e: Option[string], initial: bool) {.async.} = discard,
+            voice_channel_effect_send: proc (s: Shard,
+                    e: VoiceChannelEffectSend) {.async.} = discard,
+            guild_soundboard_sound_create: proc (s: Shard,
+                    ss: SoundboardSound) {.async.} = discard,
+            guild_soundboard_sound_update: proc (s: Shard,
+                    ss: SoundboardSound) {.async.} = discard,
+            guild_soundboard_sound_delete: proc (s: Shard,
+                    sound_id, guild_id: string) {.async.} = discard,
+            guild_soundboard_sounds_update: proc (s: Shard,
+                    guild_id: string,
+                    soundboard_sounds: seq[SoundboardSound]) {.async.} = discard,
+            soundboard_sounds: proc (s: Shard,
+                    guild_id: string,
+                    soundboard_sounds: seq[SoundboardSound]) {.async.} = discard,
             webhooks_update: proc (s: Shard, g: Guild,
                     c: GuildChannel) {.async.} = discard,
             on_disconnect: proc (s: Shard) {.async.} = discard,
@@ -432,16 +473,22 @@ proc parseHook(s: string, i: var int;
             ApplicationIntegrationTypeConfig)
 
 proc parseHook(s: string, i: var int, v: var Table[string, Attachment]) =
-    var attachments: seq[Attachment]
-    parseHook(s, i, attachments)
-    for a in attachments:
-        v[a.id] = a
+    if s[i] == '{': # this is for ResolvedData object, we'll need to check first char if it's an object.
+        jsony.parseHook(s, i, v)
+    else:
+        var attachments: seq[Attachment]
+        parseHook(s, i, attachments)
+        for a in attachments:
+            v[a.id] = a
 
 proc parseHook(s: string, i: var int, v: var Table[string, Message]) =
-    var msgs: seq[Message]
-    parseHook(s, i, msgs)
-    for m in msgs:
-        v[m.id] = m
+    if s[i] == '{': # this is for ResolvedData object, we'll need to check first char if it's an object.
+        jsony.parseHook(s, i, v)
+    else:
+        var msgs: seq[Message]
+        parseHook(s, i, msgs)
+        for m in msgs:
+            v[m.id] = m
 
 proc parseHook(s: string, i: var int;
         v: var Option[tuple[start, final: BiggestFloat]]) {.used.} =
@@ -465,10 +512,13 @@ proc newRole*(data: JsonNode): Role =
         result.tags.get.guild_connections = some "guild_connections" in tag
 
 proc parseHook(s: string, i: var int, v: var Table[string, Role]) {.used.} =
-    var roles: seq[JsonNode]
-    parseHook(s, i, roles)
-    for role in roles:
-        v[role["id"].str] = newRole role
+    if s[i] == '{': # this is for ResolvedData object, we'll need to check first char if it's an object.
+        jsony.parseHook(s, i, v)
+    else:
+        var roles: seq[JsonNode]
+        parseHook(s, i, roles)
+        for role in roles:
+            v[role["id"].str] = newRole role
 
 proc parseHook(s: string, i: var int, v: var Table[string, Sticker]) {.used.} =
     var stickers: seq[Sticker]

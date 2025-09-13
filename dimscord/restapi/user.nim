@@ -356,14 +356,13 @@ proc interactionResponseMessage*(api: RestApi,
     ## ```nim
     ## await discord.api.interactionResponseMessage(
     ##      interaction_id, interaction_token,
-    ##         kind = ..., # you can choose whichever
-    ##         response = InteractionCallbackDataMessage(
-    ##             flags: {mfIsEphemeral, mfIsComponentsV2},
-    ##             content: "What's up bro".
-    ##             components: @[...],
-    ##             ...
-    ##        )
-    ## )
+    ##      kind = ..., # you can choose whichever
+    ##      response = InteractionCallbackDataMessage(
+    ##          flags: {mfIsEphemeral, mfIsComponentsV2},
+    ##          content: "What's up bro",
+    ##          components: @[...],
+    ##          ...
+    ##     )
     ## )
     ## ```
     var payload = %*{"type":int kind, "data": newJObject()}

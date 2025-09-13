@@ -99,6 +99,16 @@
   <li><a class="reference" href="#denied%2Cset%5BPermissionFlags%5D" title="denied(p: set[PermissionFlags]): set[PermissionFlags]">denied(p: set[PermissionFlags]): set[PermissionFlags]</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">edit
+  <li><a class="reference" href="#edit%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D" title="edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags = none set[MessageFlags]): Future[Message]">edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags = none set[MessageFlags]): Future[Message]</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">eventCover
   <li><a class="reference" href="#eventCover%2CGuildScheduledEvent%2Cstring" title="eventCover(e: GuildScheduledEvent; fmt = &quot;png&quot;): string">eventCover(e: GuildScheduledEvent; fmt = &quot;png&quot;): string</a></li>
 
@@ -204,7 +214,9 @@
 
 </ul>
 <ul class="simple nested-toc-section">waitForComponentUse
-  <li><a class="reference" href="#waitForComponentUse%2CDiscordClient%2Cstring" title="waitForComponentUse(discord: DiscordClient; id: string): Future[Interaction]">waitForComponentUse(discord: DiscordClient; id: string): Future[Interaction]</a></li>
+  <li><a class="reference" href="#waitForComponentUse%2CDiscordClient%2Cstring" title="waitForComponentUse(discord: DiscordClient; custom_id: string): Future[
+    Interaction]">waitForComponentUse(discord: DiscordClient; custom_id: string): Future[
+    Interaction]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">waitForDeletion
@@ -215,6 +227,10 @@
   <li><a class="reference" href="#waitForInternal%2CDiscordClient%2Cstatic%5BDispatchEvent%5D%2Cproc" title="waitForInternal(discord: DiscordClient; event: static[DispatchEvent];
                 handler: proc): auto">waitForInternal(discord: DiscordClient; event: static[DispatchEvent];
                 handler: proc): auto</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">waitForModalUse
+  <li><a class="reference" href="#waitForModalUse%2CDiscordClient%2Cstring" title="waitForModalUse(discord: DiscordClient; custom_id: string): Future[Interaction]">waitForModalUse(discord: DiscordClient; custom_id: string): Future[Interaction]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">waitForRaw
@@ -433,13 +449,6 @@
      explicit_content_filter, afk_timeout = none int;
      features = none seq[string]; premium_progress_bar_enabled = none bool;
      reason = &quot;&quot;): Future[Guild]</a></li>
-<li><a class="reference" href="#edit.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D" title="edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]">edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]</a></li>
 <li><a class="reference" href="#edit.t%2CWebhook%2Cstring" title="edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
     void]">edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
     void]</a></li>
@@ -1114,6 +1123,24 @@
 </div>
 
 </div>
+<div id="edit-procs-all">
+  <div id="edit,Message,string,seq[Embed],seq[Attachment],seq[MessageComponent],seq[DiscordFile]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#edit%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D"><span class="Identifier">edit</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+          <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+          <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+          <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+          <span class="Identifier">flags</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Edits a Message.
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L75" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L75" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+
+  </dd>
+</div>
+
+</div>
 <div id="eventCover-procs-all">
   <div id="eventCover,GuildScheduledEvent,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#eventCover%2CGuildScheduledEvent%2Cstring"><span class="Identifier">eventCover</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="objects.html#GuildScheduledEvent"><span class="Identifier">GuildScheduledEvent</span></a><span class="Other">;</span> <span class="Identifier">fmt</span> <span class="Other">=</span> <span class="StringLit">&quot;png&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
@@ -1481,13 +1508,15 @@
 </div>
 <div id="waitForComponentUse-procs-all">
   <div id="waitForComponentUse,DiscordClient,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#waitForComponentUse%2CDiscordClient%2Cstring"><span class="Identifier">waitForComponentUse</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Interaction"><span class="Identifier">Interaction</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#waitForComponentUse%2CDiscordClient%2Cstring"><span class="Identifier">waitForComponentUse</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">custom_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="objects.html#Interaction"><span class="Identifier">Interaction</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Waits for a component to be used and returns the interaction. Data sent in the component can then be extracted. <tt class="docutils literal"><span class="pre"><span class="Identifier">id</span></span></tt> is the ID that you used when creating the component
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L661" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L661" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <p>Waits for a component to be used and returns the interaction. Data sent in the component can then be extracted.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">custom_id</span></span></tt> is the ID that you used when creating the component</p>
+
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L662" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L662" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1500,8 +1529,8 @@
   <dd>
     
     Waits for a message to be deleted
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L655" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L655" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L656" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L656" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1523,6 +1552,22 @@
 </div>
 
 </div>
+<div id="waitForModalUse-procs-all">
+  <div id="waitForModalUse,DiscordClient,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#waitForModalUse%2CDiscordClient%2Cstring"><span class="Identifier">waitForModalUse</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">custom_id</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="objects.html#Interaction"><span class="Identifier">Interaction</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    <p>Waits for a modal to be used and returns the interaction. Data sent in the component can then be extracted.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">custom_id</span></span></tt> is the ID that you used when creating the component</p>
+
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L673" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L673" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+
+  </dd>
+</div>
+
+</div>
 <div id="waitForRaw-procs-all">
   <div id="waitForRaw,DiscordClient,string,proc(JsonNode)">
   <dt><pre><span class="Keyword">proc</span> <a href="#waitForRaw%2CDiscordClient%2Cstring%2Cproc%28JsonNode%29"><span class="Identifier">waitForRaw</span></a><span class="Other">(</span><span class="Identifier">discord</span><span class="Other">:</span> <a href="objects.html#DiscordClient"><span class="Identifier">DiscordClient</span></a><span class="Other">;</span> <span class="Identifier">event</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
@@ -1532,8 +1577,8 @@
   <dd>
     
     This allows waiting for a dispatch event, except you can specify any string. This allows for handling events that aren't implemented in dimscord yet. The handler is ran before dimscord handles the event, so items might not be in cache. Use <a class="reference internal nimdoc" title="template waitFor(discord: DiscordClient; event: static[DispatchEvent]; handler: untyped): auto" href="#waitFor.t,DiscordClient,static[DispatchEvent],untyped">waitFor</a> if you know the event you want to wait for
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L635" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L635" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L636" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L636" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1549,8 +1594,8 @@
     <p>Waits for a reaction to a message. Can optionally provide a user to only wait for a certain user.</p>
 <p>Make sure you have message reaction intents, either one of <tt class="docutils literal"><span class="pre"><span class="Identifier">giGuildMessageReactions</span></span></tt> or <tt class="docutils literal"><span class="pre"><span class="Identifier">giDirectMessageReactions</span></span></tt>.</p>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L687" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L687" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L700" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L700" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1564,8 +1609,8 @@
   <dd>
     
     Waits for a message to reply to a message
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L647" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L647" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L648" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L648" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1579,8 +1624,8 @@
   <dd>
     
     Waits for a user to join a voice channel in a guild.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L672" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L672" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers.nim#L685" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers.nim#L685" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1631,8 +1676,8 @@
   <dd>
     
     Adds a member to a thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L162" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L162" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L168" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L168" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1704,8 +1749,8 @@
   <dd>
     
     Remove all the reactions of a given message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L130" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L130" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L136" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L136" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1858,8 +1903,8 @@
   <dd>
     
     Deletes a discord Message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L82" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L82" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L88" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L88" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -1868,8 +1913,8 @@
   <dd>
     
     Bulk deletes messages. Note: the length of <tt class="docutils literal"><span class="pre"><span class="Identifier">msg</span></span></tt> MUST superior to 0 and inferior to 101.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L86" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L86" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L92" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L92" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2023,20 +2068,6 @@
 
   </dd>
 </div>
-<div id="edit.t,Message,string,seq[Embed],seq[Attachment],seq[MessageComponent],seq[DiscordFile]">
-  <dt><pre><span class="Keyword">template</span> <a href="#edit.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D"><span class="Identifier">edit</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">;</span> <span class="Identifier">content</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">embeds</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Embed"><span class="Identifier">Embed</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
-              <span class="Identifier">attachments</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#Attachment"><span class="Identifier">Attachment</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
-              <span class="Identifier">components</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#MessageComponent"><span class="Identifier">MessageComponent</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
-              <span class="Identifier">files</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="objects.html#DiscordFile"><span class="Identifier">DiscordFile</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">tts</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
-              <span class="Identifier">flags</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">set</span><span class="Other">[</span><a href="constants.html#MessageFlags"><span class="Identifier">MessageFlags</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="objects.html#Message"><span class="Identifier">Message</span></a><span class="Other">]</span></pre></dt>
-  <dd>
-    
-    Edits a Message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L65" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L65" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
-
-  </dd>
-</div>
 <div id="edit.t,Webhook,string">
   <dt><pre><span class="Keyword">template</span> <a href="#edit.t%2CWebhook%2Cstring"><span class="Identifier">edit</span></a><span class="Other">(</span><span class="Identifier">w</span><span class="Other">:</span> <a href="objects.html#Webhook"><span class="Identifier">Webhook</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">avatar</span><span class="Other">,</span> <span class="Identifier">channel_id</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">reason</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <span class="Identifier">void</span><span class="Other">]</span></pre></dt>
@@ -2133,8 +2164,8 @@
   <dd>
     
     Edits a Message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L49" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L49" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L52" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L52" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2245,8 +2276,8 @@
   <dd>
     
     Ends poll.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L197" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L197" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L203" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L203" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2426,8 +2457,8 @@
   <dd>
     
     Get a channel message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L99" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L99" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L105" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L105" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2440,8 +2471,8 @@
   <dd>
     
     Gets channel messages.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L91" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L91" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L97" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L97" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2467,8 +2498,8 @@
   <dd>
     
     Ends poll.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L203" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L203" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L209" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L209" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2496,8 +2527,8 @@
   <dd>
     
     Get all user message reactions on the emoji provided.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L119" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L119" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L125" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L125" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2602,8 +2633,8 @@
   <dd>
     
     Get a thread member.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L134" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L134" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L140" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L140" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2616,8 +2647,8 @@
   <dd>
     
     List thread members. Note: This endpoint requires the <tt class="docutils literal"><span class="pre"><span class="Identifier">GUILD_MEMBERS</span></span></tt> Privileged Intent if not enabled on your application.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L139" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L139" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L145" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L145" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2665,8 +2696,8 @@
   <dd>
     
     Join thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L183" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L183" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L189" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L189" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2691,8 +2722,8 @@
   <dd>
     
     Leave thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L179" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L179" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L185" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L185" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2747,8 +2778,8 @@
     Add a reaction to a Message<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">emoji</span></span></tt> Example: '👀', '💩', <tt class="docutils literal"><span class="pre"><span class="Identifier">likethis</span><span class="Punctuation">:</span><span class="DecNumber">123456789012345678</span></span></tt></li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L104" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L104" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L110" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L110" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2801,8 +2832,8 @@
   <dd>
     
     Removes a member from a thread.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L146" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L146" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L152" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L152" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2827,8 +2858,8 @@
   <dd>
     
     Removes the user's or the bot's message reaction to a Discord message.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L110" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L110" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L116" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L116" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2840,8 +2871,8 @@
   <dd>
     
     Remove all the reactions of a given emoji.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L115" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L115" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L121" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L121" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -2978,8 +3009,8 @@
     Starts a public thread.<ul class="simple"><li><tt class="docutils literal"><span class="pre"><span class="Identifier">auto_archive_duration</span></span></tt> Duration in mins. Can set to: 60 1440 4320 10080</li>
 </ul>
 
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L187" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L187" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/helpers/message.nim#L193" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/helpers/message.nim#L193" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -3058,7 +3089,9 @@
 <ul class="simple"><li><a class="reference external" href="./objects.html#Events">Events</a></li>
 </ul>
 <p>Similar procs:</p>
-<ul class="simple"><li><a class="reference internal nimdoc" title="proc waitForComponentUse(discord: DiscordClient; id: string): Future[Interaction]" href="#waitForComponentUse,DiscordClient,string">waitForComponentUse</a></li>
+<ul class="simple"><li><a class="reference internal nimdoc" title="proc waitForComponentUse(discord: DiscordClient; custom_id: string): Future[
+    Interaction]" href="#waitForComponentUse,DiscordClient,string">waitForComponentUse</a></li>
+<li><a class="reference internal nimdoc" title="proc waitForModalUse(discord: DiscordClient; custom_id: string): Future[Interaction]" href="#waitForModalUse,DiscordClient,string">waitForModalUse</a></li>
 <li><a class="reference internal nimdoc" title="proc waitForDeletion(discord: DiscordClient; msg: Message): Future[void]" href="#waitForDeletion,DiscordClient,Message">waitForDeletion</a></li>
 <li><a class="reference internal nimdoc" title="proc waitForInternal(discord: DiscordClient; event: static[DispatchEvent];
                 handler: proc): auto" href="#waitForInternal,DiscordClient,static[DispatchEvent],proc">waitForInternal</a></li>
@@ -3086,7 +3119,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-08 23:14:03 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-13 15:31:24 UTC</small>
       </div>
     </div>
   </div>

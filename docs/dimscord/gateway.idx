@@ -1,12 +1,13 @@
 nimTitle	gateway	dimscord/gateway.html	module dimscord/gateway		0
-nim	updateStatus	dimscord/gateway.html#updateStatus,Shard,seq[ActivityStatus],string	proc updateStatus(s: Shard; activities: seq[ActivityStatus] = @[]; status = "online";\n             afk = false): owned(Future[void])		249
-nim	updateStatus	dimscord/gateway.html#updateStatus,Shard,string	proc updateStatus(s: Shard; activity = none ActivityStatus; status = "online";\n             afk = false): owned(Future[void])		271
-nim	resume	dimscord/gateway.html#resume,Shard	proc resume(s: Shard): owned(Future[void])		315
-nim	requestGuildMembers	dimscord/gateway.html#requestGuildMembers,Shard,,string,seq[string]	proc requestGuildMembers(s: Shard; guild_id: string or seq[string]; limit = none int;\n                    query = none string; nonce = ""; presences = false;\n                    user_ids: seq[string] = @[]): owned(Future[void])		334
-nim	getGuildMember	dimscord/gateway.html#getGuildMember,Shard,string,string	proc getGuildMember(s: Shard; guild_id, user_id: string; presence = false): Future[\n    Member]		363
-nim	voiceStateUpdate	dimscord/gateway.html#voiceStateUpdate,Shard,string	proc voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;\n                 self_mute, self_deaf = false): owned(Future[void])		382
-nim	disconnect	dimscord/gateway.html#disconnect,Shard	proc disconnect(s: Shard; should_reconnect = true): owned(Future[void])		499
-nim	endSession	dimscord/gateway.html#endSession,DiscordClient	proc endSession(discord: DiscordClient): owned(Future[void])		672
-nim	startSession	dimscord/gateway.html#startSession,DiscordClient,set[GatewayIntent],int,int,int,int,int	proc startSession(discord: DiscordClient; autoreconnect = true;\n             gateway_intents: set[GatewayIntent]; content_intent = true;\n             large_message_threshold, large_threshold = 50;\n             max_message_size = 5000000; gateway_version = 10;\n             max_shards = none int; shard_id = 0;\n             cache_users, cache_guilds, guild_subscriptions = true;\n             cache_guild_channels, cache_dm_channels = true): owned(\n    Future[void])		721
-nim	latency	dimscord/gateway.html#latency,Shard	proc latency(s: Shard): int		823
-nimgrp	updatestatus	dimscord/gateway.html#updateStatus-procs-all	proc		247
+nim	updateStatus	dimscord/gateway.html#updateStatus,Shard,seq[ActivityStatus],string	proc updateStatus(s: Shard; activities: seq[ActivityStatus] = @[]; status = "online";\n             afk = false): owned(Future[void])		250
+nim	updateStatus	dimscord/gateway.html#updateStatus,Shard,string	proc updateStatus(s: Shard; activity = none ActivityStatus; status = "online";\n             afk = false): owned(Future[void])		272
+nim	resume	dimscord/gateway.html#resume,Shard	proc resume(s: Shard): owned(Future[void])		316
+nim	requestGuildMembers	dimscord/gateway.html#requestGuildMembers,Shard,string,string,seq[string]	proc requestGuildMembers(s: Shard; guild_id: string; limit = none int;\n                    query = none string; nonce = ""; presences = false;\n                    user_ids: seq[string] = @[]): owned(Future[void])		335
+nim	requestSounds	dimscord/gateway.html#requestSounds,Shard,seq[string]	proc requestSounds(s: Shard; guild_ids: seq[string]): owned(Future[void])		359
+nim	getGuildMember	dimscord/gateway.html#getGuildMember,Shard,string,string	proc getGuildMember(s: Shard; guild_id, user_id: string; presence = false): Future[\n    Member]		370
+nim	voiceStateUpdate	dimscord/gateway.html#voiceStateUpdate,Shard,string	proc voiceStateUpdate(s: Shard; guild_id: string; channel_id = none string;\n                 self_mute, self_deaf = false): owned(Future[void])		389
+nim	disconnect	dimscord/gateway.html#disconnect,Shard	proc disconnect(s: Shard; should_reconnect = true): owned(Future[void])		506
+nim	endSession	dimscord/gateway.html#endSession,DiscordClient	proc endSession(discord: DiscordClient): owned(Future[void])		679
+nim	startSession	dimscord/gateway.html#startSession,DiscordClient,set[GatewayIntent],int,int,int,int,int	proc startSession(discord: DiscordClient; autoreconnect = true;\n             gateway_intents: set[GatewayIntent]; content_intent = true;\n             large_message_threshold, large_threshold = 50;\n             max_message_size = 5000000; gateway_version = 10;\n             max_shards = none int; shard_id = 0;\n             cache_users, cache_guilds, guild_subscriptions = true;\n             cache_guild_channels, cache_dm_channels = true): owned(\n    Future[void])		728
+nim	latency	dimscord/gateway.html#latency,Shard	proc latency(s: Shard): int		830
+nimgrp	updatestatus	dimscord/gateway.html#updateStatus-procs-all	proc		248

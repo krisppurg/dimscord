@@ -1,5 +1,5 @@
 nimTitle	requester	dimscord/restapi/requester.html	module dimscord/restapi/requester		0
 nim	request	dimscord/restapi/requester.html#request,RestApi,string,string,string,string,MultipartData	proc request(api: RestApi; meth, endpoint: string; pl, audit_reason = "";\n        mp: MultipartData = nil; auth = true): Future[JsonNode]		86
-nim	append	dimscord/restapi/requester.html#append,MultipartData,seq[Attachment],JsonNode	proc append(mpd: var MultipartData; attachments: seq[Attachment]; pl: var JsonNode;\n       is_interaction = false)		282
-nim	append	dimscord/restapi/requester.html#append,MultipartData,seq[DiscordFile],JsonNode	proc append(mpd: var MultipartData; files: seq[DiscordFile]; pl: var JsonNode)		315
-nimgrp	append	dimscord/restapi/requester.html#append-procs-all	proc		282
+nim	append	dimscord/restapi/requester.html#append,MultipartData,seq[Attachment],JsonNode	proc append(mpd: var MultipartData; attachments: seq[Attachment]; pl: var JsonNode;\n       is_interaction = false)		281
+nim	append	dimscord/restapi/requester.html#append,MultipartData,seq[DiscordFile],JsonNode	proc append(mpd: var MultipartData; files: seq[DiscordFile]; pl: var JsonNode)		314
+nimgrp	append	dimscord/restapi/requester.html#append-procs-all	proc		281

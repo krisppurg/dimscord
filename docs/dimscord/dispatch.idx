@@ -1,2 +1,2 @@
 nimTitle	dispatch	dimscord/dispatch.html	module dimscord/dispatch		0
-nim	handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,DispatchEvent,JsonNode	proc handleEventDispatch(s: Shard; event: DispatchEvent; data: JsonNode): owned(\n    Future[void])		1115
+nim	handleEventDispatch	dimscord/dispatch.html#handleEventDispatch,Shard,DispatchEvent,JsonNode	proc handleEventDispatch(s: Shard; event: DispatchEvent; data: JsonNode): owned(\n    Future[void])		1112

@@ -206,9 +206,15 @@ type
         avatar_decoration_data*: Option[tuple[sku_id, asset: string]]
         collectibles*: Option[tuple[nameplate: Nameplate]]
     Member* = ref object
-        ## - `permissions` Returned in the interaction object.
-        ## Be aware that Member.user could be nil in some cases.
-        ## ALso if `joined_at` appears to be "" that's usually due to the fact that the member is a guest.
+        ## Notes:
+        ## - The `permissions` field is returned in the Interaction object
+        ## - `presence` and `voice_state` may return false data, due to some data limitations in some objects
+        ## 
+        ## If you want to fully determine the `presence` and `voice_state`, the safest and surest way is to use [getGuildMember](../gateway.html#getGuildMember%2CShard%2Cstring%2Cstring)
+        ## 
+        ## - Be aware that Member.user could be nil in some cases.
+        ## 
+        ## Also if `joined_at` appears to be "", that's usually due to the fact that the member is a guest.
         user*: User
         guild_id*: string
         nick*, premium_since*, avatar*: Option[string]
@@ -398,7 +404,7 @@ type
         created_at*: BiggestFloat
         timestamps*: Option[tuple[start, final: BiggestFloat]]
         emoji*: Option[Emoji]
-        party*: Option[tuple[id: string, size: seq[int]]] ## todo
+        party*: Option[tuple[id: string, size: seq[int]]]
         assets*: Option[ActivityAssets]
         secrets*: Option[tuple[join, spectate, match: string]]
         buttons*: seq[tuple[label, url: string]]
@@ -476,12 +482,13 @@ type
     VoiceChannelEffectSend* = object
         channel_id*, guild_id*, user_id*: string
         emoji*: Option[Emoji]
-        animation_type*, animation_id*: Option[int]
-        sound_id*: JsonNode
+        animation_type*: Option[AnimationType]
+        animation_id*: Option[int]
+        sound_id*: JsonNode ## it can be a snowflake or integer.
         sound_volume*: Option[BiggestFloat]
     SoundboardSound* = object
         name*, sound_id*: string
-        volume*: float #!!!! jsony handling
+        volume*: float
         emoji_id*, emoji_name*: Option[string]
         guild_id*: Option[string]
         available*: bool
@@ -742,7 +749,7 @@ type
         context*: Option[ApplicationIntegrationType]
         attachment_size_limit*: int
     ApplicationCommandInteractionData* = ref object
-        ## `options` Table[option_name, obj]
+        ## - `options` A Table consisting of the option name and the respective option object.
         case interaction_type*: InteractionDataType
         of idtApplicationCommand:
             id*, name*: string
@@ -760,7 +767,6 @@ type
                 values*: seq[string]
             else: discard
             custom_id*: string
-        # of idtModalSubmit:
             components*: seq[MessageComponent]
         else: discard
     ResolvedChannel* = object
@@ -914,11 +920,12 @@ type
         description*: Option[string]
         spoiler*: Option[bool]
     MessageComponent* = ref object
-        ## `custom_id` is only needed for things other than action row
+        ## - `custom_id` is only needed for things other than action row
         ## but the new case object stuff isn't implemented in nim
         ## so it can't be shared
         ## same goes with disabled.
-        ## `id` is not to be confused with custom_id.
+        ##
+        ## - `id` is not to be confused with custom_id.
         ## It's used to identify components in the response from an interaction
         id*: Option[int]
         custom_id*: Option[string]
@@ -1035,34 +1042,13 @@ type
     Events* = ref object
         ## An object consisting of events that can be registered
         ## 
-        ## Each property can be written in the following form:
-        ## ```nim
-        ## # for interaction_create for instance
-        ## proc interaction_create(s: Shard, i: Interaction) {.event(discord).} =
-        ##   ...
-        ## 
-        ## # The {.event(discord).} pragma is a macro which rewrites the expression as this:
-        ## discord.events.interaction_create = proc interaction_create(s: Shard, i: Interaction) {.async.} =
-        ##   ...
-        ## 
-        ## # the event name is also case insensitive (except for first letter),
-        ## # thanks to Nim's flexibility so writing the following would be valid equivalent.
-        ## 
-        ## proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
-        ##   ...
-        ## 
-        ## # just don't forget the pragma, it also automatically adds in the {.async.} pragma
-        ## # hence why use of async/await inside proc is valid.
-        ## ```
-        ## 
         ## Additional information:
         ## - `exists` (parameter) Checks object is cached or not. Other cachable objects dont have them.
-        ## - `on_dispatch` (event) gives you the raw event data for you to handle things, useful for debugging. (see last bullet point for information)
+        ## - `on_dispatch` (event) gives you the raw event data for you to handle things, useful for debugging.
         ## - `message_reaction_add` (event) to get [Reaction] data you can do `msg.reactions[$emoji]`.
         ## - [Discord API docs on gateway events](https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events)
         ##
-        ##
-        ## - See also [waitFor] in helpers section 
+        ## - See also [waitFor](./helpers.html#waitFor.t,DiscordClient,static[DispatchEvent],untyped) in helpers section 
         on_dispatch*: proc (s: Shard, evt: string, data: JsonNode) {.async.}
         on_ready*: proc (s: Shard, r: Ready) {.async.}
         on_disconnect*: proc (s: Shard) {.async.}
@@ -1124,6 +1110,14 @@ type
                 old: Option[VoiceState]) {.async.}
         voice_server_update*: proc (s: Shard, g: Guild,
                 token: string, endpoint: Option[string], initial: bool) {.async.}
+        voice_channel_effect_send*: proc (s: Shard, e: VoiceChannelEffectSend) {.async.}
+        guild_soundboard_sound_create*, guild_soundboard_sound_update*: proc (s: Shard,
+                ss: SoundboardSound) {.async.}
+        guild_soundboard_sound_delete*: proc (s: Shard,
+                sound_id, guild_id: string) {.async.}
+        guild_soundboard_sounds_update*, soundboard_sounds*: proc (s: Shard,
+                guild_id: string,
+                soundboard_sounds: seq[SoundboardSound]) {.async.}
         webhooks_update*: proc (s: Shard, g: Guild, c: GuildChannel) {.async.}
         interaction_create*: proc (s: Shard, i: Interaction) {.async.}
         application_command_create*,application_command_update*: proc (s: Shard,
@@ -1165,7 +1159,6 @@ type
         entitlement_create*: proc(s: Shard, e: Entitlement){.async.}
         entitlement_update*: proc(s: Shard, e: Entitlement){.async.}
         entitlement_delete*: proc(s: Shard, e: Entitlement) {.async.}
-
     WaitHandler = proc (data: pointer): bool {.closure.}
       ## This proc will filter an object to see what it should do.
       ## It should be a closure that can complete a future it has already returned.

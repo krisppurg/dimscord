@@ -37,4 +37,4 @@ proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     )
 
 # Connect to Discord and run the bot.
-waitFor discord.startSession()
+waitFor discord.startSession(gateway_intents = {giMessageContent})

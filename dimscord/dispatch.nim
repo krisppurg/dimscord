@@ -46,9 +46,6 @@ macro checkAndCall(s: Shard, event: static[DispatchEvent], args: varargs[untyped
         else:
             asyncCheck `call`
 
-macro enumElementsAsSet(enm: typed): untyped =
-    result = newNimNode(nnkCurly).add(enm.getType[1][1..^1])
-
 proc addMsg(c: GuildChannel, m: Message, data: string;
         prefs: CacheTablePrefs) {.async.} =
     if data.len < prefs.max_message_size:
@@ -1202,4 +1199,24 @@ proc handleEventDispatch*(s:Shard, event:DispatchEvent, data:JsonNode){.async.} 
         s.checkAndCall(EntitlementUpdate, newEntitlement(data))
     of EntitlementDelete:
         s.checkAndCall(EntitlementDelete, newEntitlement(data))
+    of deVoiceChannelEffectSend:
+        s.checkAndCall(deVoiceChannelEffectSend,
+            data.`$`.fromJson(objects.VoiceChannelEffectSend))
+    of GuildSoundboardSoundCreate:
+        s.checkAndCall(GuildSoundboardSoundCreate,
+            data.`$`.fromJson(SoundboardSound))
+    of GuildSoundboardSoundUpdate:
+        s.checkAndCall(GuildSoundboardSoundUpdate,
+            data.`$`.fromJson(SoundboardSound))
+    of GuildSoundboardSoundDelete:
+        s.checkAndCall(GuildSoundboardSoundDelete,
+            data["sound_id"].str, data["guild_id"].str)
+    of GuildSoundboardSoundsUpdate:
+        s.checkAndCall(GuildSoundboardSoundsUpdate,
+            data["guild_id"].str,
+            data["soundboard_sounds"].`$`.fromJson(seq[SoundboardSound]))
+    of SoundboardSounds:
+        s.checkAndCall(SoundboardSounds,
+            data["guild_id"].str,
+            data["soundboard_sounds"].`$`.fromJson(seq[SoundboardSound]))
     of Unknown: discard

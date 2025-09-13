@@ -3,6 +3,7 @@ import unittest
 import asyncdispatch
 import options, tables
 import json
+import std/setutils
 import ../dimscord/objects
 import ../dimscord/constants
 import ../dimscord/restapi
@@ -18,7 +19,7 @@ let mockSeqString = @["mock1", "mock2"]
 let mockTableString = {"en-US": some("mock_value")}.toTable()
 let mockEmbed = Embed(title: some("Test Embed"))
 let mockAttachment = Attachment(id: "123", filename: "test.txt")
-let mockComponent = MessageComponent(kind: MessageComponentType.Button, custom_id: some("mock_button"))
+let mockComponent = MessageComponent(kind: MessageComponentType.mctButton, custom_id: some("mock_button"))
 let mockFile = DiscordFile(name: "test.txt", body: "")
 let mockAllowedMentions = AllowedMentions(parse: @[])
 let mockPermObj = PermObj(allowed: {}, denied: {})

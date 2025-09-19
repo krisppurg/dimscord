@@ -54,16 +54,14 @@ template getCommand*(app: Application;
         app.id, guild_id, command_id
     )
 
-template registerCommand*(app: Application;
-        name: string; description: string;
-        name_localizations: Option[Table[string,string]] = none(Table[string,string]);
-        description_localizations: Option[Table[string,string]] = none(Table[string,string]);
-        kind: ApplicationCommandType = atSlash;
-        guild_id: string = "";
-        dm_permission: bool = true;
-        nsfw: bool = false;
-        default_member_permissions: Option[PermissionFlags] = none(PermissionFlags);
-        options: seq[ApplicationCommandOption] = @[]
+template registerCommand*(app: Application; name: string;
+        description, guild_id = "";
+        name_localizations,description_localizations=none Table[string,string];
+        kind = atSlash; nsfw = false;
+        default_member_permissions = none set[PermissionFlags];
+        options: seq[ApplicationCommandOption] = @[];
+        integration_types = none seq[ApplicationIntegrationType];
+        contexts = none seq[InteractionContextType];
 ): Future[ApplicationCommand] =
     ## Create a guild slash command.
     ##
@@ -75,10 +73,12 @@ template registerCommand*(app: Application;
     ## as an existing command for your application will
     ## overwrite the old command.
     getClient.api.registerApplicationCommand(
-        app.id, name, description, guild_id,
-        name_localizations, description_localizations,
-        kind, dm_permission, nsfw,
-        default_member_permissions, options
+        app.id, name,
+        description, guild_id,
+        name_localizations,description_localizations,
+        kind, nsfw, default_member_permissions,
+        options, integration_types,
+        contexts
     )
 
 
@@ -95,7 +95,7 @@ template bulkRegisterCommands*(app: Application;
 template editCommand*(apc: ApplicationCommand;
         name, desc = "";
         name_localizations,description_localizations = none Table[string,string];
-        default_member_permissions = none PermissionFlags; nsfw = false;
+        default_member_permissions = none set[PermissionFlags]; nsfw = false;
         options: seq[ApplicationCommandOption] = @[]
 ): Future[ApplicationCommand] =
     ## Modify slash command for a specific application.
@@ -103,8 +103,8 @@ template editCommand*(apc: ApplicationCommand;
     ## - `name` - Optional Character length (3 - 32)
     ## - `description` - Optional Character length (1 - 100)
     getClient.api.editApplicationCommand(
-        apc.application_id, apc.id, apc.guild_id.get,
-        name, desc, name_localizations, description_localizations,
+        apc.application_id, apc.id, apc.guild_id.get(""),
+        name, desc,name_localizations, description_localizations,
         default_member_permissions, nsfw, options
     )
 
@@ -175,10 +175,11 @@ template followup*(i: Interaction;
         i.application_id, i.token, content,
         tts, files, attachments, embeds,
         allowed_mentions, components,
-        (if ephemeral: some mfEphemeral.ord else: none int),
+        (if ephemeral: {MessageFlags.mfEphemeral} else: {}),
         thread_id, thread_name, applied_tags,
         poll
     )
+
 
 template editResponse*(i: Interaction;
         content = none string;

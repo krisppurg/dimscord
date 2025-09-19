@@ -30,39 +30,23 @@ template reply*(m: Message, content = "";
         files: seq[DiscordFile] = @[];
         flags: set[MessageFlags] = {};
         stickers: seq[string] = @[];
-        allowed_mentions = none AllowedMentions;
+        allowed_mentions: Option[AllowedMentions] = none(AllowedMentions);
         nonce: Option[string] or Option[int] = none(int);
-        mention, failifnotexists, tts = false): Future[Message] =
+        mention = false; failifnotexists = false; tts = false): Future[Message] =
     ## Replies to a Message.
     ## - set `mention` to `true` in order to mention the replied message in Discord.
-    var refr = block:
-        (if mention: some m.reference else: none MessageReference)
-    getMessage(getClient.shards[0].cache.gchannel(m), "123")
-    # TEMPORARY
+    ## - `failifnotexists` can be used to set the corresponding field on the message reference
+    ##   if your `MessageReference` type exposes e.g. `fail_if_not_exists`. See the commented
+    ##   example below.
 
-    # getClient.api.sendMessage(
-    #     m.channel_id,
-    #     content=content, tts=tts, nonce=nonce,
-    #     flags=flags, files=files, embeds=embeds,
-    #     allowed_mentions=allowed_mentions, 
-    #     message_reference = refr, components=components,
-    #     attachments=attachments, stickers=stickers
-    # )
-
-template editMessage*(c: SomeChannel, m: Message;
-        content = "";
-        embeds: seq[Embed] = @[];
-        attachments: seq[Attachment] = @[];
-        components: seq[MessageComponent] = @[];
-        files: seq[DiscordFile] = @[];
-        tts = false;
-        flags = none int): Future[Message]  =
-    ## Edits a Message.
-    getClient.api.editMessage(
-        c.id, m.id,
-        content, tts, flags,
-        files, embeds, attachments,
-        components
+    let refr = if mention: some(m.reference)
+      else:
+        none(MessageReference)
+    getClient.api.sendMessage(
+        m.channel_id, content, tts, nonce,
+        flags, files, embeds, attachments,
+        allowed_mentions, refr, components,
+        stickers
     )
 
 template edit*(m: Message;
@@ -72,22 +56,18 @@ template edit*(m: Message;
         components: seq[MessageComponent] = @[];
         files: seq[DiscordFile] = @[];
         tts = false;
-        flags = none set[MessageFlags]): Future[Message]  =
+        flags: set[MessageFlags] = {}): Future[Message]  =
     ## Edits a Message.
-
-    # getMessage(getClient.shards[0].cache.gchannel(m), "123")
-    # ^^^ this is temp, it will be removed soon
-    discard await getClient.api.editMessage(
+    getClient.api.editMessage(
         m.channel_id, m.id,
-        content=content, tts=tts,
-        flags=flags,
-        files=files, embeds=embeds, attachments=attachments,
-        components=components
+        content, tts, flags,
+        files, embeds, attachments,
+        components
     )
 
 template delete*(m: Message; reason = ""): Future[void] =
     ## Deletes a discord Message.
-    getClient.api.deleteMessage(m.channel_id, m.id, reason)  
+    getClient.api.deleteMessage(m.channel_id, m.id, reason)
 
 template delete*(msgs: seq[Message]; reason = ""): Future[void] =
     ## Bulk deletes messages.

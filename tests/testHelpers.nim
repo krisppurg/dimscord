@@ -223,7 +223,7 @@ suite "Guild Helpers Tests":
       compiles(mockGuild.edit(system_channel_flags = some 0))
       compiles(mockGuild.edit(explicit_content_filter = some 0))
       compiles(mockGuild.edit(afk_timeout = some 0))
-      compiles(mockGuild.edit(features = @["test"]))
+      compiles(mockGuild.edit(features = some @["test"]))
       compiles(mockGuild.edit(premium_progress_bar_enabled = some true))
       compiles(mockGuild.edit(reason = "test reason"))
 
@@ -264,7 +264,7 @@ suite "Guild Helpers Tests":
   test "ban template":
     check:
       compiles(mockGuild.ban(mockMember))
-      compiles(mockGuild.ban(mockMember, delete_msg_days = 0))
+      compiles(mockGuild.ban(mockMember, delete_message_secs = 10))
       compiles(mockGuild.ban(mockMember, reason = "test reason"))
 
   test "getIntegrations template":
@@ -362,7 +362,7 @@ suite "Guild Helpers Tests":
       compiles(mockGuild.editRole(mockRole, name = some "test"))
       compiles(mockGuild.editRole(mockRole, icon = some "test"))
       compiles(mockGuild.editRole(mockRole, unicode_emoji = some "test"))
-      compiles(mockGuild.editRole(mockRole, permissions = some default(PermObj)))
+      compiles(mockGuild.editRole(mockRole, permissions = some PermissionFlags.fullSet))
       compiles(mockGuild.editRole(mockRole, color = some 0))
       compiles(mockGuild.editRole(mockRole, hoist = some true))
       compiles(mockGuild.editRole(mockRole, mentionable = some true))
@@ -410,21 +410,21 @@ suite "Guild Helpers Tests":
 
   test "editEvent template":
     check:
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, name = some "test"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, start_time = some "2023-01-01T00:00:00.000Z"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, end_time = some "2023-01-01T00:00:00.000Z"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, image = some "test"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, channel_id = some "test"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, end_time = some "2023-01-01T00:00:00.000Z"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, desc = some "test"))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, privacy_level = some splGuildOnly))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, entity_type = some etStageInstance))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, entity_metadata = some default(EntityMetadata)))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, status = some esScheduled))
-      compiles(mockGuild.editEvent(mockGuildScheduledEvent, reason = "test reason"))
+      compiles(mockGuildScheduledEvent.editEvent())
+      compiles(mockGuildScheduledEvent.editEvent(name = some "test"))
+      compiles(mockGuildScheduledEvent.editEvent(reason = "test reason"))
+      compiles(mockGuildScheduledEvent.editEvent(start_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuildScheduledEvent.editEvent(end_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuildScheduledEvent.editEvent(image = some "test"))
+      compiles(mockGuildScheduledEvent.editEvent(reason = "test reason"))
+      compiles(mockGuildScheduledEvent.editEvent(channel_id = some "test"))
+      compiles(mockGuildScheduledEvent.editEvent(end_time = some "2023-01-01T00:00:00.000Z"))
+      compiles(mockGuildScheduledEvent.editEvent(description = some "test"))
+      compiles(mockGuildScheduledEvent.editEvent(privacy_level = some splGuildOnly))
+      compiles(mockGuildScheduledEvent.editEvent(entity_type = some etStageInstance))
+      compiles(mockGuildScheduledEvent.editEvent(entity_metadata = some default(EntityMetadata)))
+      compiles(mockGuildScheduledEvent.editEvent(status = some esScheduled))
+      compiles(mockGuildScheduledEvent.editEvent(reason = "test reason"))
 
   test "editRule template":
     check:
@@ -465,20 +465,6 @@ suite "Message Helpers Tests":
       compiles(mockMessage.reply(mention = false))
       compiles(mockMessage.reply(failifnotexists = false))
 
-  test "editMessage template":
-    check:
-      compiles(mockSomeChannel.editMessage(mockMessage))
-      compiles(mockSomeChannel.editMessage(mockMessage, content = "updated"))
-      compiles(mockSomeChannel.editMessage(mockMessage, embeds = @[mockEmbed]))
-      compiles(
-        mockSomeChannel.editMessage(mockMessage, attachments = @[mockAttachment])
-      )
-      compiles(mockSomeChannel.editMessage(mockMessage, components = @[
-          mockComponent]))
-      compiles(mockSomeChannel.editMessage(mockMessage, files = @[mockFile]))
-      compiles(mockSomeChannel.editMessage(mockMessage, tts = false))
-      compiles(mockSomeChannel.editMessage(mockMessage, flags = mockOptionInt))
-
   test "edit message template":
     check:
       compiles(mockMessage.edit())
@@ -488,7 +474,7 @@ suite "Message Helpers Tests":
       compiles(mockMessage.edit(components = @[mockComponent]))
       compiles(mockMessage.edit(files = @[mockFile]))
       compiles(mockMessage.edit(tts = false))
-      compiles(mockMessage.edit(flags = mockOptionInt))
+      compiles(mockMessage.edit(flags = MessageFlags.fullSet))
 
   test "delete message template":
     check:
@@ -639,9 +625,8 @@ suite "User Helpers Tests":
       compiles(mockApplication.registerCommand("command_name", "command_description", name_localizations = some default(Table[string, string]), description_localizations = some default(Table[string, string])))
       compiles(mockApplication.registerCommand("command_name", "command_description", kind = ApplicationCommandType.atSlash))
       compiles(mockApplication.registerCommand("command_name", "command_description", guild_id = "guild_id"))
-      compiles(mockApplication.registerCommand("command_name", "command_description", dm_permission = true))
       compiles(mockApplication.registerCommand("command_name", "command_description", nsfw = true))
-      compiles(mockApplication.registerCommand("command_name", "command_description", default_member_permissions = some default(PermissionFlags)))
+      compiles(mockApplication.registerCommand("command_name", "command_description", default_member_permissions = some PermissionFlags.fullSet))
       compiles(mockApplication.registerCommand("command_name", "command_description", options = @[mockApplicationCommandOption]))
 
   test "followup template":
@@ -666,7 +651,7 @@ suite "User Helpers Tests":
       compiles(mockApplicationCommand.editCommand(desc = "new_desc"))
       compiles(mockApplicationCommand.editCommand(name_localizations = some default(Table[string, string])))
       compiles(mockApplicationCommand.editCommand(description_localizations = some default(Table[string, string])))
-      compiles(mockApplicationCommand.editCommand(default_member_permissions = some default(PermissionFlags)))
+      compiles(mockApplicationCommand.editCommand(default_member_permissions = some PermissionFlags.fullSet))
       compiles(mockApplicationCommand.editCommand(options = @[mockApplicationCommandOption]))
 
   test "delete command template":

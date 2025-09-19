@@ -41,16 +41,17 @@ template edit*(g: Guild;
     ##
     ## Read more at:
     ## https://discord.com/developers/docs/resources/guild#modify-guild
-    getClient.api.editGuild(
-        g.id, name, description, region, afk_channel_id, icon,
+    getClient.api.editGuild(g.id, name, description, region, afk_channel_id, icon,
         discovery_splash, owner_id, splash, banner,
-        safety_alerts_channel_id,
         system_channel_id, rules_channel_id,
+        safety_alerts_channel_id,
         preferred_locale, public_updates_channel_id,
         verification_level, default_message_notifications,
         system_channel_flags,
         explicit_content_filter, afk_timeout,
-        features, premium_progress_bar_enabled, reason
+        features,
+        premium_progress_bar_enabled,
+        reason
     )
 
 template getAuditLogs*(g: Guild;
@@ -71,7 +72,7 @@ template createRole*(g: Guild,
     getClient.api.createGuildRole(g.id,
         name, unicode_emoji, icon,
         hoist, mentionable, permissions,
-        role_colors, color, reason) 
+        role_colors, color, reason)
 
 template deleteRole*(g: Guild; r: Role): Future[void] =
     ## Deletes a guild role.
@@ -126,10 +127,10 @@ template getBans*(g: Guild): Future[seq[GuildBan]] =
     ## Gets all the guild bans.
     getClient.api.getGuildBans(g.id)
 
-template ban*(g: Guild; m: Member; delete_message_seconds: range[0..604800] = 0;
+template ban*(g: Guild; m: Member; delete_message_secs = 0;
         reason = ""): Future[void] =
     ## Creates a guild ban.
-    getClient.api.createGuildBan(g.id, m.user.id, delete_message_seconds, reason)
+    getClient.api.createGuildBan(g.id, m.user.id, delete_message_secs, reason)
 
 template bulkBan*(g: Guild;
         user_ids: seq[string];
@@ -202,24 +203,25 @@ template getScheduledEvents*(g: Guild): Future[seq[GuildScheduledEvent]] =
     ## Get all scheduled events in a guild.
     getClient.api.getScheduledEvents(g.id)
 
-template editEvent*(g: Guild; gse: GuildScheduledEvent;
+template editEvent*(gse: GuildScheduledEvent;
         name, start_time, image = none string;
-        channel_id, end_time, desc = none string;
+        channel_id, end_time, description = none string;
         privacy_level = none GuildScheduledEventPrivacyLevel;
         entity_type = none EntityType;
         entity_metadata = none EntityMetadata;
         status = none GuildScheduledEventStatus;
+        recurrence_rule = none RecurrenceRule;
         reason = ""
 ): Future[GuildScheduledEvent] =
     ## Update a scheduled event in a guild.
     ## Read more: https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event-json-params
     getClient.api.editScheduledEvent(
-        g.id, gse.id, name,
-        start_time, image,
-        channel_id, end_time, desc,
-        privacy_level, entity_type,
-        entity_metadata, status,
-        reason
+        gse.guild_id, gse.id, name,
+        start_time, image, channel_id, end_time,
+        description, privacy_level,
+        entity_type, entity_metadata,
+        status, recurrence_rule,
+        reason,
     )
 
 template delete*(gse: GuildScheduledEvent; reason = ""): Future[void] =

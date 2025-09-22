@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: iffy/install-nim@v4
+    - uses: iffy/install-nim@v5
       with:
         version: binary:stable
     - name: Install dimscord

@@ -746,21 +746,21 @@ type
         version*: int
         entitlements*: seq[Entitlement]
         authorizing_integration_owners*: Table[string, JsonNode]
-        context*: Option[ApplicationIntegrationType]
+        context*: Option[InteractionContextType]
         attachment_size_limit*: int
     ApplicationCommandInteractionData* = ref object
         ## - `options` A Table consisting of the option name and the respective option object.
+        resolved*: ResolvedData
         case interaction_type*: InteractionDataType
         of idtApplicationCommand:
             id*, name*: string
             guild_id*: Option[string]
-            resolved*: ApplicationCommandResolution
             case kind*: ApplicationCommandType
             of atSlash:
                 options*: Table[string, ApplicationCommandInteractionDataOption]
             of atUser, atMessage:
                 target_id*: string
-            of atNothing: discard
+            of atNothing, atPrimaryEntryPoint: discard
         of idtMessageComponent, idtModalSubmit:
             case component_type*: MessageComponentType:
             of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
@@ -783,17 +783,6 @@ type
         roles*: Table[string, Role]
         channels*: Table[string, ResolvedChannel]
         messages*: Table[string, Message]
-    ApplicationCommandResolution* = object
-        users*: Table[string, User]
-        attachments*: Table[string, Attachment]
-        case kind*: ApplicationCommandType
-        of atUser:
-            members*: Table[string, Member]
-            roles*: Table[string, Role]
-        of atMessage:
-            channels*: Table[string, ResolvedChannel]
-            messages*: Table[string, Message]
-        else: discard
     ApplicationCommandInteractionDataOption* = object
         name*: string
         case kind*: ApplicationCommandOptionType
@@ -935,6 +924,8 @@ type
         label*: Option[string]
         description*: Option[string]
         components*: seq[MessageComponent]
+        min_values*, max_values*: Option[int]
+        required*: Option[bool]
         case kind*: MessageComponentType
         of mctNone: discard
         of mctActionRow, mctContainer:
@@ -947,11 +938,9 @@ type
             default_values*: seq[tuple[id, kind: string]]
             options*: seq[SelectMenuOption]
             channel_types*: seq[ChannelType]
-            min_values*, max_values*: Option[int]
         of mctTextInput:
             input_style*: Option[TextInputStyle]
             value*: Option[string]
-            required*: Option[bool]
             min_length*, max_length*: Option[int]
         of mctThumbnail:
             media*: UnfurledMediaItem
@@ -971,6 +960,8 @@ type
             content*: string
         of mctLabel:
             component*: MessageComponent
+        of mctFileUpload:
+            discard
     GuildPreview* = object
         id*, name*: string
         system_channel_flags*: set[SystemChannelFlags]
@@ -1227,7 +1218,6 @@ proc dm*(c: CacheTable, obj: ref object | object | string): DMChannel =
             compiles(obj.channel_id),
             "channel_id field does not exist in " & $typeof(obj)
         )
-    
         when obj.channel_id is Option[string]: 
             assert obj.channel_id.isSome, $typeof(obj) & ".channel_id is none!"
             c.dmchannels[obj.channel_id.get]
@@ -1257,6 +1247,26 @@ proc `$`*(a: Attachment): string =
 
 proc `$`*(a: ref object): string =
     $a[]
+
+template guild*(o: (object | ref object | tuple)): Guild =
+    ## Get guild from object via cache.
+    when declared(s) and s is Shard:
+        s.cache.guild(o)
+    else:
+        {.error: "Cannot find Shard, the arg value must be referred to as 's' which represents Shard".}
+
+template gchannel*(o: (object | ref object | tuple)): GuildChannel =
+    ## Get guild channel from object via cache
+    when declared(s) and s is Shard:
+        s.cache.gchannel(o)
+    else:
+        {.error: "Cannot find Shard, the arg value must be referred to as 's' which represents Shard".}
+
+template dm*(o: (object | ref object | tuple)): DmChannel =
+    when declared(s) and s is Shard:
+        s.cache.dm(o)
+    else:
+        {.error: "Cannot find Shard, the arg value must be referred to as 's' which represents Shard".}
 
 proc getCurrentDiscordHttpError*(): DiscordHttpError =
     ## Use this proc instead of getCurrentException() for advanced details.

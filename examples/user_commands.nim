@@ -16,7 +16,7 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
                 kind: atMessage,
             )
         ],
-        guild_id = "479193574341214208"
+        guild_id = "<Guild-id>"
     )
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =

@@ -414,10 +414,11 @@ type
         acotNumber          = 10 ## A double
         acotAttachment      = 11
     ApplicationCommandType* = enum
-        atNothing  = 0 ## Should never appear
-        atSlash    = 1 ## CHAT_INPUT
-        atUser         ## USER
-        atMessage      ## MESSAGE
+        atNothing  = 0      ## Should never appear
+        atSlash    = 1      ## CHAT_INPUT
+        atUser              ## USER
+        atMessage           ## MESSAGE
+        atPrimaryEntryPoint ## PRIMARY_ENTRY_POINT
     ApplicationCommandPermissionType* = enum
         acptRole    = 1
         acptUser    = 2
@@ -502,6 +503,7 @@ type
         mctSeparator         = 14
         mctContainer         = 17
         mctLabel             = 18
+        mctFileUpload        = 19
     StickerType* = enum
         stUnknown
         stStandard = 1

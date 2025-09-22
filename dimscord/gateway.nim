@@ -724,7 +724,7 @@ proc startSession*(discord: DiscordClient,
             max_message_size = 5_000_000;
             gateway_version = 10;
             max_shards = none int; shard_id = 0;
-            cache_users, cache_guilds, guild_subscriptions = true;
+            cache_users, cache_guilds = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
     ##
@@ -751,14 +751,6 @@ proc startSession*(discord: DiscordClient,
 
     discord.largeThreshold = large_threshold
     
-    if guild_subscriptions:
-        log("Warning: guild_subscriptions is deprecated.")
-        discord.intents = discord.intents + {
-            giGuildMessageTyping,
-            giDirectMessageTyping,
-            giGuildPresences
-        }
-        discord.guildSubscriptions = true
 
     discord.max_shards = max_shards.get(-1)
     discord.gatewayVersion = gateway_version

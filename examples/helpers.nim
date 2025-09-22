@@ -1,31 +1,32 @@
-## In this example we demonstrate the use of the mainClient pragma.
-## - With this pragma you can use the helper template functions for sake of conciseness.
+## In this example we demonstrate the use of the mainClient pragma helper template functions for sake of conciseness.
 ## Additionally in this example we also demonstrate the waitFor template, which is useful.
 
 import dimscord
 import asyncdispatch, options, tables
-import strutils, sequtils, sugar, times
+import strutils, times
 
 const token {.strdefine.} = "your bot token goes here or use -d:token=yourtoken"
 
-# In order to enable helper procs, use the `mainClient` pragma to register your client.
-let discord {.mainClient.} = newDiscordClient(token)
+# If you want to assign a main client for helper procs,
+# use the `mainClient` pragma to register your client.
+# 
+let discord = newDiscordClient(token)
 
 proc messageCreate(s: Shard, m: Message) {.event(discord).} =
     let args = m.content.split(" ")
     if m.author.bot or not args[0].startsWith("$$"): return
+    if m.guild_id.isNone: return
 
     let # Simple getters
-        cmd = args[0][2..args[0].high].toLowerAscii()
-        g = s.cache.guilds[m.guild_id.get]
-        ch = g.channels[m.channel_id]
+        cmd = args[0][2..^1].toLowerAscii()
+        g = m.guild # which is same as s.cache.guilds[m.guild_id.get]
+        ch = m.gchannel
 
     case cmd
     of "highfive": # Simple reply/edit
         let msg = await m.reply("🖐", mention = true)
         await sleepAsync(1000)
-        discard await msg.edit(content="🤙")
-
+        discard await msg.edit("🤙")
     of "hello": # Basic Messaging
         let msg = await ch.send("Hey, how's your day ?")
 
@@ -54,7 +55,6 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
             discard await m.reply("You've said yes!")
         of "no":
             discard await m.reply("You've said no!")
-
     of "counter": # Basic Interaction
         let btns = newActionRow @[
             newButton(label = "+", idOrUrl = "addBtn", style = bsPrimary),

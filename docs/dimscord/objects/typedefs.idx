@@ -109,43 +109,45 @@ nim	Interaction	dimscord/objects/typedefs.html#Interaction	object Interaction		7
 nim	ApplicationCommandInteractionData	dimscord/objects/typedefs.html#ApplicationCommandInteractionData	type ApplicationCommandInteractionData		751
 nim	ResolvedChannel	dimscord/objects/typedefs.html#ResolvedChannel	object ResolvedChannel		772
 nim	ResolvedData	dimscord/objects/typedefs.html#ResolvedData	object ResolvedData		779
-nim	ApplicationCommandResolution	dimscord/objects/typedefs.html#ApplicationCommandResolution	object ApplicationCommandResolution		786
-nim	ApplicationCommandInteractionDataOption	dimscord/objects/typedefs.html#ApplicationCommandInteractionDataOption	object ApplicationCommandInteractionDataOption		797
-nim	InteractionResponse	dimscord/objects/typedefs.html#InteractionResponse	object InteractionResponse		813
-nim	InteractionCallbackDataMessage	dimscord/objects/typedefs.html#InteractionCallbackDataMessage	type InteractionCallbackDataMessage		825
-nim	InteractionCallbackDataAutocomplete	dimscord/objects/typedefs.html#InteractionCallbackDataAutocomplete	object InteractionCallbackDataAutocomplete		835
-nim	InteractionCallbackDataModal	dimscord/objects/typedefs.html#InteractionCallbackDataModal	object InteractionCallbackDataModal		837
-nim	Invite	dimscord/objects/typedefs.html#Invite	object Invite		840
-nim	InviteMetadata	dimscord/objects/typedefs.html#InviteMetadata	object InviteMetadata		851
-nim	InviteCreate	dimscord/objects/typedefs.html#InviteCreate	object InviteCreate		856
-nim	TypingStart	dimscord/objects/typedefs.html#TypingStart	object TypingStart		865
-nim	GuildMembersChunk	dimscord/objects/typedefs.html#GuildMembersChunk	object GuildMembersChunk		870
-nim	GuildBan	dimscord/objects/typedefs.html#GuildBan	object GuildBan		877
-nim	Webhook	dimscord/objects/typedefs.html#Webhook	object Webhook		880
-nim	Integration	dimscord/objects/typedefs.html#Integration	object Integration		888
-nim	SelectMenuOption	dimscord/objects/typedefs.html#SelectMenuOption	object SelectMenuOption		903
-nim	TextDisplay	dimscord/objects/typedefs.html#TextDisplay	object TextDisplay		909
-nim	UnfurledMediaItem	dimscord/objects/typedefs.html#UnfurledMediaItem	object UnfurledMediaItem		913
-nim	MediaGallery	dimscord/objects/typedefs.html#MediaGallery	object MediaGallery		918
-nim	MessageComponent	dimscord/objects/typedefs.html#MessageComponent	type MessageComponent		922
-nim	GuildPreview	dimscord/objects/typedefs.html#GuildPreview	object GuildPreview		974
-nim	VoiceRegion	dimscord/objects/typedefs.html#VoiceRegion	object VoiceRegion		981
-nim	AuditLogOptions	dimscord/objects/typedefs.html#AuditLogOptions	object AuditLogOptions		985
-nim	AuditLogChangeValue	dimscord/objects/typedefs.html#AuditLogChangeValue	object AuditLogChangeValue		993
-nim	AuditLogEntry	dimscord/objects/typedefs.html#AuditLogEntry	type AuditLogEntry		1007
-nim	AuditLog	dimscord/objects/typedefs.html#AuditLog	object AuditLog		1013
-nim	GuildWidgetJson	dimscord/objects/typedefs.html#GuildWidgetJson	object GuildWidgetJson		1022
-nim	GatewaySession	dimscord/objects/typedefs.html#GatewaySession	object GatewaySession		1035
-nim	GatewayBot	dimscord/objects/typedefs.html#GatewayBot	object GatewayBot		1038
-nim	Events	dimscord/objects/typedefs.html#Events	type Events		1042
-nim	kind	dimscord/objects/typedefs.html#kind,CacheTable,string	proc kind(c: CacheTable; channel_id: string): ChannelType		1173
-nim	guild	dimscord/objects/typedefs.html#guild,CacheTable,	proc guild(c: CacheTable; obj: ref object | object | string): Guild		1182
-nim	gchannel	dimscord/objects/typedefs.html#gchannel,CacheTable,	proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel		1205
-nim	dm	dimscord/objects/typedefs.html#dm,CacheTable,	proc dm(c: CacheTable; obj: ref object | object | string): DMChannel		1222
-nim	clear	dimscord/objects/typedefs.html#clear,CacheTable	proc clear(c: CacheTable)		1239
-nim	`$`	dimscord/objects/typedefs.html#$,Emoji	proc `$`(e: Emoji): string		1246
-nim	`$`	dimscord/objects/typedefs.html#$,Message	proc `$`(m: Message): string		1252
-nim	`$`	dimscord/objects/typedefs.html#$,Attachment	proc `$`(a: Attachment): string		1255
-nim	`$`	dimscord/objects/typedefs.html#$,ref.	proc `$`(a: ref object): string		1258
-nim	getCurrentDiscordHttpError	dimscord/objects/typedefs.html#getCurrentDiscordHttpError	proc getCurrentDiscordHttpError(): DiscordHttpError		1261
-nimgrp	$	dimscord/objects/typedefs.html#$-procs-all	proc		1246
+nim	ApplicationCommandInteractionDataOption	dimscord/objects/typedefs.html#ApplicationCommandInteractionDataOption	object ApplicationCommandInteractionDataOption		786
+nim	InteractionResponse	dimscord/objects/typedefs.html#InteractionResponse	object InteractionResponse		802
+nim	InteractionCallbackDataMessage	dimscord/objects/typedefs.html#InteractionCallbackDataMessage	type InteractionCallbackDataMessage		814
+nim	InteractionCallbackDataAutocomplete	dimscord/objects/typedefs.html#InteractionCallbackDataAutocomplete	object InteractionCallbackDataAutocomplete		824
+nim	InteractionCallbackDataModal	dimscord/objects/typedefs.html#InteractionCallbackDataModal	object InteractionCallbackDataModal		826
+nim	Invite	dimscord/objects/typedefs.html#Invite	object Invite		829
+nim	InviteMetadata	dimscord/objects/typedefs.html#InviteMetadata	object InviteMetadata		840
+nim	InviteCreate	dimscord/objects/typedefs.html#InviteCreate	object InviteCreate		845
+nim	TypingStart	dimscord/objects/typedefs.html#TypingStart	object TypingStart		854
+nim	GuildMembersChunk	dimscord/objects/typedefs.html#GuildMembersChunk	object GuildMembersChunk		859
+nim	GuildBan	dimscord/objects/typedefs.html#GuildBan	object GuildBan		866
+nim	Webhook	dimscord/objects/typedefs.html#Webhook	object Webhook		869
+nim	Integration	dimscord/objects/typedefs.html#Integration	object Integration		877
+nim	SelectMenuOption	dimscord/objects/typedefs.html#SelectMenuOption	object SelectMenuOption		892
+nim	TextDisplay	dimscord/objects/typedefs.html#TextDisplay	object TextDisplay		898
+nim	UnfurledMediaItem	dimscord/objects/typedefs.html#UnfurledMediaItem	object UnfurledMediaItem		902
+nim	MediaGallery	dimscord/objects/typedefs.html#MediaGallery	object MediaGallery		907
+nim	MessageComponent	dimscord/objects/typedefs.html#MessageComponent	type MessageComponent		911
+nim	GuildPreview	dimscord/objects/typedefs.html#GuildPreview	object GuildPreview		965
+nim	VoiceRegion	dimscord/objects/typedefs.html#VoiceRegion	object VoiceRegion		972
+nim	AuditLogOptions	dimscord/objects/typedefs.html#AuditLogOptions	object AuditLogOptions		976
+nim	AuditLogChangeValue	dimscord/objects/typedefs.html#AuditLogChangeValue	object AuditLogChangeValue		984
+nim	AuditLogEntry	dimscord/objects/typedefs.html#AuditLogEntry	type AuditLogEntry		998
+nim	AuditLog	dimscord/objects/typedefs.html#AuditLog	object AuditLog		1004
+nim	GuildWidgetJson	dimscord/objects/typedefs.html#GuildWidgetJson	object GuildWidgetJson		1013
+nim	GatewaySession	dimscord/objects/typedefs.html#GatewaySession	object GatewaySession		1026
+nim	GatewayBot	dimscord/objects/typedefs.html#GatewayBot	object GatewayBot		1029
+nim	Events	dimscord/objects/typedefs.html#Events	type Events		1033
+nim	kind	dimscord/objects/typedefs.html#kind,CacheTable,string	proc kind(c: CacheTable; channel_id: string): ChannelType		1164
+nim	guild	dimscord/objects/typedefs.html#guild,CacheTable,	proc guild(c: CacheTable; obj: ref object | object | string): Guild		1173
+nim	gchannel	dimscord/objects/typedefs.html#gchannel,CacheTable,	proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel		1196
+nim	dm	dimscord/objects/typedefs.html#dm,CacheTable,	proc dm(c: CacheTable; obj: ref object | object | string): DMChannel		1213
+nim	clear	dimscord/objects/typedefs.html#clear,CacheTable	proc clear(c: CacheTable)		1229
+nim	`$`	dimscord/objects/typedefs.html#$,Emoji	proc `$`(e: Emoji): string		1236
+nim	`$`	dimscord/objects/typedefs.html#$,Message	proc `$`(m: Message): string		1242
+nim	`$`	dimscord/objects/typedefs.html#$,Attachment	proc `$`(a: Attachment): string		1245
+nim	`$`	dimscord/objects/typedefs.html#$,ref.	proc `$`(a: ref object): string		1248
+nim	guild	dimscord/objects/typedefs.html#guild.t	template guild(o: (object | ref object | tuple)): Guild		1251
+nim	gchannel	dimscord/objects/typedefs.html#gchannel.t	template gchannel(o: (object | ref object | tuple)): GuildChannel		1258
+nim	dm	dimscord/objects/typedefs.html#dm.t	template dm(o: (object | ref object | tuple)): DMChannel		1265
+nim	getCurrentDiscordHttpError	dimscord/objects/typedefs.html#getCurrentDiscordHttpError	proc getCurrentDiscordHttpError(): DiscordHttpError		1271
+nimgrp	$	dimscord/objects/typedefs.html#$-procs-all	proc		1236

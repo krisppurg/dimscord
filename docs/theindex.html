@@ -86,9 +86,15 @@
           <li><a class="reference external"
           data-doc-search-tag="user: proc `%`(o: set[UserFlags]): JsonNode" href="dimscord/restapi/user.html#%25%2Cset%5BUserFlags%5D">user: proc `%`(o: set[UserFlags]): JsonNode</a></li>
           </ul></dd>
+<dt><a name="%60%26gt%3B%60" href="#%60%26gt%3B%60"><span>`&gt;`:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="helpers: proc `&gt;`(e: string): Emoji" href="dimscord/helpers.html#%3E%2Cstring">helpers: proc `&gt;`(e: string): Emoji</a></li>
+          </ul></dd>
 <dt><a name="%60%40%60" href="#%60%40%60"><span>`@`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="helpers: proc `@`(a: ApplicationCommand): string" href="dimscord/helpers.html#%40%2CApplicationCommand">helpers: proc `@`(a: ApplicationCommand): string</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="helpers: proc `@`(e: Emoji): string" href="dimscord/helpers.html#%40%2CEmoji">helpers: proc `@`(e: Emoji): string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="helpers: proc `@`(g: GuildChannel): string" href="dimscord/helpers.html#%40%2CGuildChannel">helpers: proc `@`(g: GuildChannel): string</a></li>
           <li><a class="reference external"
@@ -690,12 +696,6 @@
 <li><a class="reference external"
           data-doc-search-tag="constants: enum ApplicationCommandPermissionType" href="dimscord/constants.html#ApplicationCommandPermissionType">constants: enum ApplicationCommandPermissionType</a></li>
           </ul></dd>
-<dt><a name="ApplicationCommandResolution" href="#ApplicationCommandResolution"><span>ApplicationCommandResolution:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="objects: object ApplicationCommandResolution" href="dimscord/objects.html#ApplicationCommandResolution">objects: object ApplicationCommandResolution</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="typedefs: object ApplicationCommandResolution" href="dimscord/objects/typedefs.html#ApplicationCommandResolution">typedefs: object ApplicationCommandResolution</a></li>
-          </ul></dd>
 <dt><a name="ApplicationCommandType" href="#ApplicationCommandType"><span>ApplicationCommandType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: enum ApplicationCommandType" href="dimscord/constants.html#ApplicationCommandType">constants: enum ApplicationCommandType</a></li>
@@ -767,6 +767,10 @@
 <dt><a name="atPremium" href="#atPremium"><span>atPremium:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: AnimationType.atPremium" href="dimscord/constants.html#atPremium">constants: AnimationType.atPremium</a></li>
+          </ul></dd>
+<dt><a name="atPrimaryEntryPoint" href="#atPrimaryEntryPoint"><span>atPrimaryEntryPoint:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: ApplicationCommandType.atPrimaryEntryPoint" href="dimscord/constants.html#atPrimaryEntryPoint">constants: ApplicationCommandType.atPrimaryEntryPoint</a></li>
           </ul></dd>
 <dt><a name="atSlash" href="#atSlash"><span>atSlash:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -858,9 +862,7 @@
           </ul></dd>
 <dt><a name="ban" href="#ban"><span>ban:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: template ban(g: Guild; m: Member; delete_message_seconds: range[0 .. 604800] = 0;
-    reason = &quot;&quot;): Future[void]" href="dimscord/helpers.html#ban.t%2CGuild%2CMember%2Crange%5B%5D%2Cstring">helpers: template ban(g: Guild; m: Member; delete_message_seconds: range[0 .. 604800] = 0;
-    reason = &quot;&quot;): Future[void]</a></li>
+          data-doc-search-tag="helpers: template ban(g: Guild; m: Member; delete_message_secs = 0; reason = &quot;&quot;): Future[void]" href="dimscord/helpers.html#ban.t%2CGuild%2CMember%2Cint%2Cstring">helpers: template ban(g: Guild; m: Member; delete_message_secs = 0; reason = &quot;&quot;): Future[void]</a></li>
           </ul></dd>
 <dt><a name="beginGuildPrune" href="#beginGuildPrune"><span>beginGuildPrune:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1806,7 +1808,11 @@
 <li><a class="reference external"
           data-doc-search-tag="objects: proc dm(c: CacheTable; obj: ref object | object | string): DMChannel" href="dimscord/objects.html#dm%2CCacheTable%2C">objects: proc dm(c: CacheTable; obj: ref object | object | string): DMChannel</a></li>
           <li><a class="reference external"
+          data-doc-search-tag="objects: template dm(o: (object | ref object | tuple)): DMChannel" href="dimscord/objects.html#dm.t">objects: template dm(o: (object | ref object | tuple)): DMChannel</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="typedefs: proc dm(c: CacheTable; obj: ref object | object | string): DMChannel" href="dimscord/objects/typedefs.html#dm%2CCacheTable%2C">typedefs: proc dm(c: CacheTable; obj: ref object | object | string): DMChannel</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="typedefs: template dm(o: (object | ref object | tuple)): DMChannel" href="dimscord/objects/typedefs.html#dm.t">typedefs: template dm(o: (object | ref object | tuple)): DMChannel</a></li>
           </ul></dd>
 <dt><a name="DMChannel" href="#DMChannel"><span>DMChannel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1828,14 +1834,6 @@
           </ul></dd>
 <dt><a name="edit" href="#edit"><span>edit:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: proc edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]" href="dimscord/helpers.html#edit%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D">helpers: proc edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-     attachments: seq[Attachment] = @[];
-     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
-     tts = false; flags = none set[MessageFlags]): Future[Message]</a></li>
-          <li><a class="reference external"
           data-doc-search-tag="helpers: template edit(g: Guild; name, description, region, afk_channel_id, icon = none string;
      discovery_splash, owner_id, splash, banner = none string;
      system_channel_id, rules_channel_id = none string;
@@ -1875,6 +1873,14 @@
      bitrate = none range[8000 .. 128000]; user_limit = none range[0 .. 99];
      position = none int; permission_overwrites = none seq[Overwrite];
      nsfw = none bool; reason = &quot;&quot;): Future[GuildChannel]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="helpers: template edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags: set[MessageFlags] = {}): Future[Message]" href="dimscord/helpers.html#edit.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D%2Cset%5BMessageFlags%5D">helpers: template edit(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+     attachments: seq[Attachment] = @[];
+     components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
+     tts = false; flags: set[MessageFlags] = {}): Future[Message]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="helpers: template edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
     void]" href="dimscord/helpers.html#edit.t%2CWebhook%2Cstring">helpers: template edit(w: Webhook; name, avatar, channel_id = none string; reason = &quot;&quot;): Future[
@@ -1950,12 +1956,12 @@
 <li><a class="reference external"
           data-doc-search-tag="helpers: template editCommand(apc: ApplicationCommand; name, desc = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-            default_member_permissions = none PermissionFlags; nsfw = false;
-            options: seq[ApplicationCommandOption] = @[]): Future[
+            default_member_permissions = none set[PermissionFlags];
+            nsfw = false; options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]" href="dimscord/helpers.html#editCommand.t%2CApplicationCommand%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">helpers: template editCommand(apc: ApplicationCommand; name, desc = &quot;&quot;; name_localizations,
     description_localizations = none Table[string, string];
-            default_member_permissions = none PermissionFlags; nsfw = false;
-            options: seq[ApplicationCommandOption] = @[]): Future[
+            default_member_permissions = none set[PermissionFlags];
+            nsfw = false; options: seq[ApplicationCommandOption] = @[]): Future[
     ApplicationCommand]</a></li>
           </ul></dd>
 <dt><a name="editCurrentApplication" href="#editCurrentApplication"><span>editCurrentApplication:</span></a></dt><dd><ul class="simple">
@@ -2030,18 +2036,18 @@
           </ul></dd>
 <dt><a name="editEvent" href="#editEvent"><span>editEvent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: template editEvent(g: Guild; gse: GuildScheduledEvent;
-          name, start_time, image = none string;
-          channel_id, end_time, desc = none string;
+          data-doc-search-tag="helpers: template editEvent(gse: GuildScheduledEvent; name, start_time, image = none string;
+          channel_id, end_time, description = none string;
           privacy_level = none GuildScheduledEventPrivacyLevel;
           entity_type = none EntityType; entity_metadata = none EntityMetadata;
-          status = none GuildScheduledEventStatus; reason = &quot;&quot;): Future[
-    GuildScheduledEvent]" href="dimscord/helpers.html#editEvent.t%2CGuild%2CGuildScheduledEvent%2Cstring">helpers: template editEvent(g: Guild; gse: GuildScheduledEvent;
-          name, start_time, image = none string;
-          channel_id, end_time, desc = none string;
+          status = none GuildScheduledEventStatus;
+          recurrence_rule = none RecurrenceRule; reason = &quot;&quot;): Future[
+    GuildScheduledEvent]" href="dimscord/helpers.html#editEvent.t%2CGuildScheduledEvent%2Cstring">helpers: template editEvent(gse: GuildScheduledEvent; name, start_time, image = none string;
+          channel_id, end_time, description = none string;
           privacy_level = none GuildScheduledEventPrivacyLevel;
           entity_type = none EntityType; entity_metadata = none EntityMetadata;
-          status = none GuildScheduledEventStatus; reason = &quot;&quot;): Future[
+          status = none GuildScheduledEventStatus;
+          recurrence_rule = none RecurrenceRule; reason = &quot;&quot;): Future[
     GuildScheduledEvent]</a></li>
           </ul></dd>
 <dt><a name="editGuild" href="#editGuild"><span>editGuild:</span></a></dt><dd><ul class="simple">
@@ -2258,16 +2264,6 @@
           </ul></dd>
 <dt><a name="editMessage" href="#editMessage"><span>editMessage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: template editMessage(c: SomeChannel; m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-            attachments: seq[Attachment] = @[];
-            components: seq[MessageComponent] = @[];
-            files: seq[DiscordFile] = @[]; tts = false; flags = none int): Future[
-    Message]" href="dimscord/helpers.html#editMessage.t%2CSomeChannel%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D">helpers: template editMessage(c: SomeChannel; m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
-            attachments: seq[Attachment] = @[];
-            components: seq[MessageComponent] = @[];
-            files: seq[DiscordFile] = @[]; tts = false; flags = none int): Future[
-    Message]</a></li>
-          <li><a class="reference external"
           data-doc-search-tag="restapi: proc editMessage(api: RestApi; channel_id, message_id: string; content = &quot;&quot;;
             tts = false; flags: set[MessageFlags] = {};
             files: seq[DiscordFile] = @[]; embeds: seq[Embed] = @[];
@@ -3062,7 +3058,11 @@
 <li><a class="reference external"
           data-doc-search-tag="objects: proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel" href="dimscord/objects.html#gchannel%2CCacheTable%2C">objects: proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel</a></li>
           <li><a class="reference external"
+          data-doc-search-tag="objects: template gchannel(o: (object | ref object | tuple)): GuildChannel" href="dimscord/objects.html#gchannel.t">objects: template gchannel(o: (object | ref object | tuple)): GuildChannel</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="typedefs: proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel" href="dimscord/objects/typedefs.html#gchannel%2CCacheTable%2C">typedefs: proc gchannel(c: CacheTable; obj: ref object | object | string): GuildChannel</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="typedefs: template gchannel(o: (object | ref object | tuple)): GuildChannel" href="dimscord/objects/typedefs.html#gchannel.t">typedefs: template gchannel(o: (object | ref object | tuple)): GuildChannel</a></li>
           </ul></dd>
 <dt><a name="getApplicationCommand" href="#getApplicationCommand"><span>getApplicationCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3432,8 +3432,8 @@
           </ul></dd>
 <dt><a name="getMessages" href="#getMessages"><span>getMessages:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: template getMessages(ch: SomeChannel; around, before, after = &quot;&quot;;
-            limit: range[1 .. 100] = 50): Future[seq[Message]]" href="dimscord/helpers.html#getMessages.t%2CSomeChannel%2Cstring%2Cstring%2Cstring%2Crange%5B%5D">helpers: template getMessages(ch: SomeChannel; around, before, after = &quot;&quot;;
+          data-doc-search-tag="helpers: template getMessages(ch: SomeChannel; around = &quot;&quot;; before = &quot;&quot;; after = &quot;&quot;;
+            limit: range[1 .. 100] = 50): Future[seq[Message]]" href="dimscord/helpers.html#getMessages.t%2CSomeChannel%2Cstring%2Cstring%2Cstring%2Crange%5B%5D">helpers: template getMessages(ch: SomeChannel; around = &quot;&quot;; before = &quot;&quot;; after = &quot;&quot;;
             limit: range[1 .. 100] = 50): Future[seq[Message]]</a></li>
           </ul></dd>
 <dt><a name="getNitroStickerPacks" href="#getNitroStickerPacks"><span>getNitroStickerPacks:</span></a></dt><dd><ul class="simple">
@@ -3697,6 +3697,8 @@
 <dt><a name="guild" href="#guild"><span>guild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="objects: proc guild(c: CacheTable; obj: ref object | object | string): Guild" href="dimscord/objects.html#guild%2CCacheTable%2C">objects: proc guild(c: CacheTable; obj: ref object | object | string): Guild</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="objects: template guild(o: (object | ref object | tuple)): Guild" href="dimscord/objects.html#guild.t">objects: template guild(o: (object | ref object | tuple)): Guild</a></li>
           </ul></dd>
 <dt><a name="Guild" href="#Guild"><span>Guild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3705,6 +3707,8 @@
 <dt><a name="guild" href="#guild"><span>guild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="typedefs: proc guild(c: CacheTable; obj: ref object | object | string): Guild" href="dimscord/objects/typedefs.html#guild%2CCacheTable%2C">typedefs: proc guild(c: CacheTable; obj: ref object | object | string): Guild</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="typedefs: template guild(o: (object | ref object | tuple)): Guild" href="dimscord/objects/typedefs.html#guild.t">typedefs: template guild(o: (object | ref object | tuple)): Guild</a></li>
           </ul></dd>
 <dt><a name="GuildApplicationCommandPermissions" href="#GuildApplicationCommandPermissions"><span>GuildApplicationCommandPermissions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -4437,6 +4441,10 @@
 <dt><a name="mctFile" href="#mctFile"><span>mctFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="constants: MessageComponentType.mctFile" href="dimscord/constants.html#mctFile">constants: MessageComponentType.mctFile</a></li>
+          </ul></dd>
+<dt><a name="mctFileUpload" href="#mctFileUpload"><span>mctFileUpload:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="constants: MessageComponentType.mctFileUpload" href="dimscord/constants.html#mctFileUpload">constants: MessageComponentType.mctFileUpload</a></li>
           </ul></dd>
 <dt><a name="mctLabel" href="#mctLabel"><span>mctLabel:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -5744,22 +5752,24 @@
           </ul></dd>
 <dt><a name="registerCommand" href="#registerCommand"><span>registerCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="helpers: template registerCommand(app: Application; name: string; description: string;
-    name_localizations: Option[Table[string, string]] = none(
-    Table[string, string]); description_localizations: Option[
-    Table[string, string]] = none(Table[string, string]);
-                kind: ApplicationCommandType = atSlash; guild_id: string = &quot;&quot;;
-                dm_permission: bool = true; nsfw: bool = false;
-    default_member_permissions: Option[PermissionFlags] = none(PermissionFlags);
-                options: seq[ApplicationCommandOption] = @[]): Future[
-    ApplicationCommand]" href="dimscord/helpers.html#registerCommand.t%2CApplication%2Cstring%2Cstring%2COption%5BTable%5Bstring%2Cstring%5D%5D%2COption%5BTable%5Bstring%2Cstring%5D%5D%2CApplicationCommandType%2Cstring%2Cbool%2Cbool%2COption%5BPermissionFlags%5D%2Cseq%5BApplicationCommandOption%5D">helpers: template registerCommand(app: Application; name: string; description: string;
-    name_localizations: Option[Table[string, string]] = none(
-    Table[string, string]); description_localizations: Option[
-    Table[string, string]] = none(Table[string, string]);
-                kind: ApplicationCommandType = atSlash; guild_id: string = &quot;&quot;;
-                dm_permission: bool = true; nsfw: bool = false;
-    default_member_permissions: Option[PermissionFlags] = none(PermissionFlags);
-                options: seq[ApplicationCommandOption] = @[]): Future[
+          data-doc-search-tag="helpers: template registerCommand(app: Application | User | Shard | DiscordClient; name: string;
+                description = &quot;&quot;; guild_id = &quot;&quot;;
+                name_localizations = none Table[string, string];
+                description_localizations = none Table[string, string];
+                kind = atSlash; nsfw = false;
+                default_member_permissions = none set[PermissionFlags];
+                options: seq[ApplicationCommandOption] = @[];
+                integration_types = none seq[ApplicationIntegrationType];
+                contexts = none seq[InteractionContextType]): Future[
+    ApplicationCommand]" href="dimscord/helpers.html#registerCommand.t%2C%2Cstring%2Cstring%2Cstring%2Cseq%5BApplicationCommandOption%5D">helpers: template registerCommand(app: Application | User | Shard | DiscordClient; name: string;
+                description = &quot;&quot;; guild_id = &quot;&quot;;
+                name_localizations = none Table[string, string];
+                description_localizations = none Table[string, string];
+                kind = atSlash; nsfw = false;
+                default_member_permissions = none set[PermissionFlags];
+                options: seq[ApplicationCommandOption] = @[];
+                integration_types = none seq[ApplicationIntegrationType];
+                contexts = none seq[InteractionContextType]): Future[
     ApplicationCommand]</a></li>
           </ul></dd>
 <dt><a name="removeBan" href="#removeBan"><span>removeBan:</span></a></dt><dd><ul class="simple">
@@ -5832,15 +5842,15 @@
       attachments: seq[Attachment] = @[];
       components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
       flags: set[MessageFlags] = {}; stickers: seq[string] = @[];
-      allowed_mentions = none AllowedMentions;
-      nonce: Option[string] or Option[int] = none(int);
-      mention, failifnotexists, tts = false): Future[Message]" href="dimscord/helpers.html#reply.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D">helpers: template reply(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
+      allowed_mentions: Option[AllowedMentions] = none(AllowedMentions);
+      nonce: Option[string] or Option[int] = none(int); mention = false;
+      failifnotexists = false; tts = false): Future[Message]" href="dimscord/helpers.html#reply.t%2CMessage%2Cstring%2Cseq%5BEmbed%5D%2Cseq%5BAttachment%5D%2Cseq%5BMessageComponent%5D%2Cseq%5BDiscordFile%5D%2Cset%5BMessageFlags%5D%2Cseq%5Bstring%5D%2COption%5BAllowedMentions%5D">helpers: template reply(m: Message; content = &quot;&quot;; embeds: seq[Embed] = @[];
       attachments: seq[Attachment] = @[];
       components: seq[MessageComponent] = @[]; files: seq[DiscordFile] = @[];
       flags: set[MessageFlags] = {}; stickers: seq[string] = @[];
-      allowed_mentions = none AllowedMentions;
-      nonce: Option[string] or Option[int] = none(int);
-      mention, failifnotexists, tts = false): Future[Message]</a></li>
+      allowed_mentions: Option[AllowedMentions] = none(AllowedMentions);
+      nonce: Option[string] or Option[int] = none(int); mention = false;
+      failifnotexists = false; tts = false): Future[Message]</a></li>
           </ul></dd>
 <dt><a name="request" href="#request"><span>request:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -6305,14 +6315,14 @@
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
              max_shards = none int; shard_id = 0;
-             cache_users, cache_guilds, guild_subscriptions = true;
+             cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])" href="dimscord/gateway.html#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint%2Cint">gateway: proc startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent]; content_intent = true;
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
              max_shards = none int; shard_id = 0;
-             cache_users, cache_guilds, guild_subscriptions = true;
+             cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])</a></li>
           <li><a class="reference external"
@@ -6942,7 +6952,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-13 15:31:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-22 23:09:37 UTC</small>
       </div>
     </div>
   </div>

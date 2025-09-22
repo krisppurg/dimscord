@@ -54,9 +54,11 @@ template getCommand*(app: Application;
         app.id, guild_id, command_id
     )
 
-template registerCommand*(app: Application; name: string;
-        description, guild_id = "";
-        name_localizations,description_localizations=none Table[string,string];
+template registerCommand*(
+        app: Application | User | Shard | DiscordClient;
+        name: string; description = "", guild_id = "";
+        name_localizations =none Table[string,string];
+        description_localizations=none Table[string,string];
         kind = atSlash; nsfw = false;
         default_member_permissions = none set[PermissionFlags];
         options: seq[ApplicationCommandOption] = @[];
@@ -72,6 +74,16 @@ template registerCommand*(app: Application; name: string;
     ## **NOTE:** Creating a command with the same name
     ## as an existing command for your application will
     ## overwrite the old command.
+    var id = block:
+        when app is Application or app is User:
+            app.id
+        when app is Shard:
+            assert app.user != nil
+            app.user.id
+        when app is DiscordClient:
+            assert app.shards[0].user != nil
+            app.shards[0].user.id
+    
     getClient.api.registerApplicationCommand(
         app.id, name,
         description, guild_id,

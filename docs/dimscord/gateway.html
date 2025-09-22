@@ -94,14 +94,14 @@
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
              max_shards = none int; shard_id = 0;
-             cache_users, cache_guilds, guild_subscriptions = true;
+             cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])">startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent]; content_intent = true;
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
              max_shards = none int; shard_id = 0;
-             cache_users, cache_guilds, guild_subscriptions = true;
+             cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])</a></li>
 
@@ -199,8 +199,8 @@
   <dd>
     
     Gets the shard's latency ms.
-    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L830" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L830" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/krisppurg/dimscord/tree/master/dimscord/gateway.nim#L822" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/krisppurg/dimscord/edit/devel/dimscord/gateway.nim#L822" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -260,7 +260,7 @@
                   <span class="Identifier">large_message_threshold</span><span class="Other">,</span> <span class="Identifier">large_threshold</span> <span class="Other">=</span> <span class="DecNumber">50</span><span class="Other">;</span>
                   <span class="Identifier">max_message_size</span> <span class="Other">=</span> <span class="DecNumber">5000000</span><span class="Other">;</span> <span class="Identifier">gateway_version</span> <span class="Other">=</span> <span class="DecNumber">10</span><span class="Other">;</span>
                   <span class="Identifier">max_shards</span> <span class="Other">=</span> <span class="Identifier">none</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">shard_id</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span>
-                  <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span><span class="Other">,</span> <span class="Identifier">guild_subscriptions</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+                  <span class="Identifier">cache_users</span><span class="Other">,</span> <span class="Identifier">cache_guilds</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
                   <span class="Identifier">cache_guild_channels</span><span class="Other">,</span> <span class="Identifier">cache_dm_channels</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">owned</span><span class="Other">(</span>
     <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">void</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
@@ -338,7 +338,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-13 15:31:25 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-22 23:09:35 UTC</small>
       </div>
     </div>
   </div>

@@ -75,7 +75,7 @@ template delete*(msgs: seq[Message]; reason = ""): Future[void] =
     getClient.api.bulkDeleteMessages(msgs[0].channel_id, msgs)
 
 template getMessages*(ch: SomeChannel;
-        around, before, after = "";
+        around = "", before = "", after = "";
         limit: range[1..100] = 50): Future[seq[Message]] =
     ## Gets channel messages.
     getClient.api.getChannelMessages(

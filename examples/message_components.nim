@@ -38,7 +38,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
       i = iOpt.unsafeGet()
       data = i.data.unsafeGet()
     # Change the message depending on what the user used
-    let msg = if data.componentType == SelectMenu: "You selected " & data.values[0]
+    let msg = if data.componentType == mctSelectMenu: "You selected " & data.values[0]
               else: "You pressed the button"
     # Respond back to the interaction
     await discord.api.interactionResponseMessage(
@@ -53,4 +53,4 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
     echo "Ready as: " & $r.user
 
 # Connect to Discord and run the bot.
-waitFor discord.startSession()
+waitFor discord.startSession(gateway_intents={giMessageContent, giGuildMessages})

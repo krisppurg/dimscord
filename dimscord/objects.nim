@@ -415,6 +415,14 @@ proc postHook(p: var Presence) =
     if p.client_status.mobile == "":
         p.client_status.mobile = "offline"
 
+proc postHook(m: var Message) =
+    if m.member.isSome:
+        if m.member.get.user == nil and m.author != nil:
+            m.member.get.user = m.author
+            m.member.get.presence.user = m.author
+        if m.member.get.presence.guild_id == "":
+            m.member.get.presence.guild_id = m.guild_id.get
+
 proc parseHook*(s: string, i: var int, v: var OverwriteType) =
     var data: JsonNode
     parseHook(s, i, data)
@@ -437,7 +445,9 @@ proc newHook(m: var Member) =
     )
 
 proc postHook(m: var Member) =
-    m.presence.user = m.user
+    if m.user != nil: m.presence.user = m.user
+    if m.presence.guild_id == "" and m.guild_id != "":
+        m.presence.guild_id = m.guild_id
 
 proc parseHook(s: string, i: var int, v: var Table[string, Overwrite]) =
     var overwrites: seq[Overwrite]
@@ -854,39 +864,31 @@ proc parseHook(s: string, n: var int, a: var ApplicationCommandInteractionData) 
                 kind: ($data["type"]).fromJson(ApplicationCommandType)
             )
 
-            a.resolved=ApplicationCommandResolution(kind: a.kind)
-            if "resolved" in data:
-                for key, values in data["resolved"].getFields.pairs:
-                    case key:
-                    of "users":
-                        for k, v in values.pairs:
-                            a.resolved.users[k] = v.newUser
-                    of "attachments":
-                        for k, v in values.pairs:
-                            a.resolved.attachments[k] = v.newAttachment
-                    else: discard
-
-                    if a.kind == atUser:
-                        case key:
-                        of "members":
-                            for k, v in values.pairs:
-                                a.resolved.members[k] = v.newMember
-                        of "roles":
-                            for k, v in values.pairs:
-                                a.resolved.roles[k] = v.newRole
-                        else: discard
-
-                    if a.kind == atMessage:
-                        case key:
-                        of "channels":
-                            for k, v in values.pairs:
-                                a.resolved.channels[k] = ($v).fromJson(
-                                    ResolvedChannel
-                                )
-                        of "messages":
-                            for k, v in values.pairs:
-                                a.resolved.messages[k] = v.newMessage
-                        else: discard
+        a.resolved=ResolvedData()
+        if "resolved" in data:
+            for key, values in data["resolved"].getFields.pairs:
+                case key:
+                of "users":
+                    for k, v in values.pairs:
+                        a.resolved.users[k] = v.newUser
+                of "attachments":
+                    for k, v in values.pairs:
+                        a.resolved.attachments[k] = v.newAttachment
+                of "members":
+                    for k, v in values.pairs:
+                        a.resolved.members[k] = v.newMember
+                of "roles":
+                    for k, v in values.pairs:
+                        a.resolved.roles[k] = v.newRole
+                of "channels":
+                    for k, v in values.pairs:
+                        a.resolved.channels[k] = ($v).fromJson(
+                            ResolvedChannel
+                        )
+                of "messages":
+                    for k, v in values.pairs:
+                        a.resolved.messages[k] = v.newMessage
+                else: discard
 
     for k, val in data.pairs:
         case val.kind:
@@ -948,7 +950,8 @@ proc `%%*`*(a: ApplicationCommand): JsonNode =
     # This ternary is needed so that the enums can stay similar to
     # the discord api
 
-    # <TODO> PLEASE CLEAN UP THE CODE
+    # <TODO> PLEASE CLEAN UP THE CODE -> im postponing this cause ibr code cleanup is for later
+    # if anyone cares enough to read this :<
 
     let commandKind = if a.kind == atNothing: atSlash else: a.kind
     result = %*{
@@ -1074,29 +1077,28 @@ proc `%%*`*(comp: MessageComponent): JsonNode =
     # I thought I'd just keep it as it is and make a `%` that would redirect the proc.
     result = %*{"type": comp.kind.ord}
 
-    result.loadOpts(comp, spoiler, placeholder, disabled, id, label, description)
+    result.loadOpts(comp, spoiler, placeholder,
+        disabled, id, label, description,
+        custom_id, min_values, max_values, required)
+
     case comp.kind:
-    of mctNone: discard
+    of mctNone, mctFileUpload: discard
     of mctActionRow, mctContainer:
         result["components"] = %comp.components.mapIt(%%*it)
         result.loadOpts(comp, accent_color)
     of mctButton:
         result &= %*{"style": comp.style.ord}
         
-        result.loadOpts(comp, custom_id, url, sku_id)
+        result.loadOpts(comp, url, sku_id)
         if comp.emoji.isSome:
             result["emoji"]     = comp.emoji.get.toPartial
     of mctSelectMenu, mctUserSelect, mctRoleSelect, mctMentionableSelect, mctChannelSelect:
-        result &= %*{"custom_id":   comp.custom_id.get,
-                    "options":     comp.options,
+        result &= %*{"options":     comp.options,
                     "placeholder": comp.placeholder,
-                    "min_values":  comp.minValues,
-                    "max_values":  comp.maxValues,
                     "channel_types": comp.channel_types.mapIt(it.ord),
                     "default_values": comp.default_values.mapIt(%it)}
     of mctTextInput:
-        result &= %*{"custom_id":   comp.custom_id.get,
-                     "placeholder": comp.placeholder,
+        result &= %*{"placeholder": comp.placeholder,
                      "style":       ord comp.input_style.get}
 
         result.loadOpts(comp, value, required, min_length, max_length)

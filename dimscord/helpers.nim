@@ -150,19 +150,30 @@ proc `$`*(u: User): string =
 proc `@`*(u: User, nick = false): string =
     ## Mentions a user.
     let n = if nick: "!" else: ""
-    result = &"<@{n}{u.id}>"
+    &"<@{n}{u.id}>"
 
 proc `@`*(r: Role): string =
     ## Mentions a role.
-    result = &"<@&{r.id}>"
+    &"<@&{r.id}>"
 
 proc `@`*(g: GuildChannel): string =
     ## Mentions a guild channel.
-    result = &"<#{g.id}>"
+    &"<#{g.id}>"
 
 proc `@`*(a: ApplicationCommand): string =
     ## Mentions a slash command.
-    result = &"</{a.name}:{a.id}>"
+    &"</{a.name}:{a.id}>"
+
+proc `@`*(e: Emoji): string =
+    ## Mentions emoji
+    &"<{$e}>"
+
+proc `>`*(e: string): Emoji =
+    ## Converts string to Emoji
+    ## "something:123" -> `Emoji(id: "123", name: "something")`
+    var elems = e.split(":")
+    Emoji(name: some elems[0],
+          id: if elems.len > 1: some elems[1] else: none string)
 
 proc `$`*(g: GuildChannel): string =
     ## Stringifies a guild channel.

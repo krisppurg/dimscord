@@ -63,8 +63,8 @@ proc editGuildChannel*(api: RestApi, channel_id: string;
     ## Modify a guild channel.
     let payload = newJObject()
 
-    if name.isSome: assert name.get.len in 1..100
-    if topic.isSome: assert topic.get.len in 0..4096
+    if name.isSome: softassert name.get.len in 1..100
+    if topic.isSome: softassert topic.get.len in 0..4096
 
     if default_reaction_emoji.isSome:
         let dre = default_reaction_emoji.get
@@ -98,12 +98,12 @@ proc createGuildChannel*(api: RestApi, guild_id, name: string; kind = 0;
             permission_overwrites = none seq[Overwrite];
             reason = ""): Future[GuildChannel] {.async.} =
     ## Creates a channel.
-    assert name.len in 1..100
+    softassert name.len in 1..100
     if topic.isSome:
         if kind notin @[int ctGuildForum, int ctGuildMedia]:
-            assert topic.get.len in 0..1024
+            softassert topic.get.len in 0..1024
         else:
-            assert topic.get.len in 0..4096
+            softassert topic.get.len in 0..4096
 
     let payload = %*{"name": name, "type": kind}
 
@@ -306,14 +306,14 @@ proc startThreadWithoutMessage*(api: RestApi,
 ): Future[GuildChannel] {.async.} =
     ## Starts private thread.
     ## - `auto_archive_duration` Duration in mins. Can set to: 60 1440 4320 10080
-    assert name.len in 1..100
+    softassert name.len in 1..100
     let payload = %*{
         "name": name,
         "auto_archive_duration": auto_archive_duration
     }
 
     if kind.isSome:
-        assert(
+        softassert(
             int(kind.get) in 10..12,
             "Please choose a valid thread channel type."
         )
@@ -362,7 +362,7 @@ proc createStageInstance*(api: RestApi; channel_id, topic: string;
 ): Future[StageInstance] {.async.} =
     ## Create a stage instance.
     ## Requires the current user to be a moderator of the stage channel.
-    assert topic.len in 1..120
+    softassert topic.len in 1..120
     let payload = %*{
         "channel_id": channel_id,
         "topic": topic,
@@ -388,7 +388,7 @@ proc editStageInstance*(api: RestApi; channel_id, topic: string;
 ): Future[StageInstance] {.async.} =
     ## Modify a stage instance.
     ## Requires the current user to be a moderator of the stage channel. 
-    assert topic.len in 1..120
+    softassert topic.len in 1..120
     let payload = %*{"topic": topic}
     payload.loadOpt(privacy_level)
     result = (await api.request(

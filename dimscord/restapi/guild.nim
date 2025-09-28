@@ -281,7 +281,7 @@ proc editGuildMember*(api: RestApi, guild_id, user_id: string;
         reason = "") {.async.} =
     ## Modifies a guild member
     ## Note:
-    ## - `communication_disabled_until` - ISO8601 timestamp :: [<=28 days]
+    ## - `communication_disabled_until` - ISO8601 timestamp :: <=28 days
     let payload = newJObject()
 
     payload.loadOpt(nick, roles, mute, deaf,

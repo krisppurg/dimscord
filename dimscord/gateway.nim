@@ -33,7 +33,7 @@ const
 var
     backoff = false
     reconnectable = true
-    invididualShard = false
+    individualShard = false
 
 proc reset(s: Shard) {.used.} =
     s.authenticating = false
@@ -310,7 +310,7 @@ proc identify(s: Shard) {.async, used.} =
         payload["intents"] = &cast[int](s.client.intents)
 
     await s.sendSock(opIdentify, payload, ignore = true)
-    if s.client.max_shards > 1 and not invididualShard:
+    if s.client.max_shards > 1 and not individualShard:
         await sleepAsync 5000
 
 proc resume*(s: Shard) {.async.} =
@@ -724,13 +724,14 @@ proc startSession*(discord: DiscordClient,
             max_message_size = 5_000_000;
             gateway_version = 10;
             max_shards = none int; shard_id = 0;
+            split_first_shard = false;
             cache_users, cache_guilds = true;
             cache_guild_channels, cache_dm_channels = true) {.async.} =
     ## Connects the client to Discord via gateway.
     ##
     ## - `gateway_intents` Allows you to subscribe to pre-defined events.
     ## - `content_intent` Whether to use discord's priviliged message content on by default. (defaults to `true`)
-    ##
+    ## - `split_first_shard` If you wish to start shard 0 when max_shards is specified and not the other shards. 
     ## - `large_threshold` The number that would be considered a large guild (50-250).
     ## - `guild_subscriptions` **DEPRECATED** Whether or not to receive presence_update, typing_start events.
     ## - `autoreconnect` Whether the client should reconnect whenever a network error occurs.
@@ -750,7 +751,6 @@ proc startSession*(discord: DiscordClient,
         if content_intent: raise newException(Exception, "giMessageContent not in intents, if you wish to turn it off set content_intent = false in startSession")
 
     discord.largeThreshold = large_threshold
-    
 
     discord.max_shards = max_shards.get(-1)
     discord.gatewayVersion = gateway_version
@@ -797,8 +797,8 @@ proc startSession*(discord: DiscordClient,
 
     for id in 0..discord.max_shards - 1:
         var sid = id
-        if shard_id != 0:
-            invididualShard = true
+        if shard_id != 0 or split_first_shard:
+            individualShard = true
             sid = shard_id
 
         let s = discord.setupShard(sid, CacheTablePrefs(
@@ -811,13 +811,13 @@ proc startSession*(discord: DiscordClient,
         ))
         s.gatewayUrl = info.url
 
-        if id == discord.max_shards - 1 or invididualShard: # Last shard.
+        if id == discord.max_shards-1 or individualShard: # Last shard.
             await s.startSession(s.gatewayUrl, query)
         else:
             asyncCheck s.startSession(s.gatewayUrl, query)
 
         await s.waitWhenReady()
-        if invididualShard: break
+        if individualShard: break
 
 proc latency*(s: Shard): int =
     ## Gets the shard's latency ms.

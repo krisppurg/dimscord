@@ -450,7 +450,7 @@ proc createInteractionResponse*(api: RestApi,
     ## * [interactionResponseMessage] for replies to interactions
     ## * [interactionResponseAutocomplete] for autocomplete
     ## * [interactionResponseModal] for modals
-    ## * As well as the objects mentioned such as [InteractionResponse].
+    ## * As well as the objects mentioned such as `InteractionResponse`.
     var data = newJObject()
     case response.kind:
     of irtPong,

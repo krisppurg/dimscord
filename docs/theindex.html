@@ -6314,14 +6314,14 @@
              gateway_intents: set[GatewayIntent]; content_intent = true;
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
-             max_shards = none int; shard_id = 0;
+             max_shards = none int; shard_id = 0; split_first_shard = false;
              cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])" href="dimscord/gateway.html#startSession%2CDiscordClient%2Cset%5BGatewayIntent%5D%2Cint%2Cint%2Cint%2Cint%2Cint">gateway: proc startSession(discord: DiscordClient; autoreconnect = true;
              gateway_intents: set[GatewayIntent]; content_intent = true;
              large_message_threshold, large_threshold = 50;
              max_message_size = 5000000; gateway_version = 10;
-             max_shards = none int; shard_id = 0;
+             max_shards = none int; shard_id = 0; split_first_shard = false;
              cache_users, cache_guilds = true;
              cache_guild_channels, cache_dm_channels = true): owned(
     Future[void])</a></li>
@@ -6952,7 +6952,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-22 23:09:37 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2025-09-28 20:52:15 UTC</small>
       </div>
     </div>
   </div>

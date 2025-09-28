@@ -9,14 +9,17 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
         @[
             ApplicationCommand( # Just say who they high fived
                 name: "High Five",
-                kind: atUser,
+                kind: atUser, # You right click on user and you'll eventually see the option in the Apps section
+                contexts: some @[ictGuild, ictBotDm],              # Fyi: these options are very useful and you can change them based
+                integration_types: some @[aitUserInstall, aitGuildInstall], # on your preferred use-case.
             ),
             ApplicationCommand( # Echo a message back
                 name: "Echo",
-                kind: atMessage,
+                kind: atMessage, # You right click on message and you'll eventually see the option in the Apps section
+                contexts: some @[ictBotDm, ictPrivateChannel], # ictPrivateChannel if you want to annoy your friends
+                integration_types: some @[aitUserInstall], # We can take this to DMs only.
             )
-        ],
-        guild_id = "<Guild-id>"
+        ]
     )
 
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =

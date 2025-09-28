@@ -1,9 +1,6 @@
 # <img src="assets/dimscord.png" width="42px" height="32px"/>  Dimscord
 A Discord Bot & REST Library for Nim. [Discord API Channel](https://discord.gg/7jgdC9E) and [Dimscord Server for help](https://discord.gg/dimscord)
 
-## HEADS UP
-> :warning: **UPDATE**: Since v1.6.0 is broken due to stupid jsony issues, you **MUST** uninstall dimscord completely then do `nimble install dimscord@#e2f1bc6` to fix your problems. A new version is coming out soon with some new changes to be made more info will be provided in the tag with whats changed. If you have any further issues, feel free to report issue here or ask in the dimscord server.
-
 Why Dimscord?
  * It is minimalistic and efficient. 
  * Nim is a good programming language and I believe that Nim should stand a chance on having an up-to-date, substantial discord library.
@@ -25,7 +22,7 @@ Why Dimscord?
 1. Install Nim using [choosenim](https://github.com/dom96/choosenim) or [Nim's website](https://nim-lang.org/install.html)
 
 2. Install Dimscord via Nimble using `nimble install dimscord` or GitHub `git clone https://github.com/krisppurg/dimscord`
-   * You will need at least Nim 1.2.0 to install dimscord
+   * You will need at least Nim 2.0.6 to install dimscord
  
 3. Read the Wiki or Examples for referencing. Maybe even rewrite your bot if you want to switch.
  
@@ -68,7 +65,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         )
 
 # Connect to Discord and run the bot.
-waitFor discord.startSession()
+waitFor discord.startSession(gateway_intents={giMessageContent}) # Don't forget to specify the gateway_intent argument and double check your priviliged intent
 ```
 Please note that you need to define `-d:ssl` if you are importing httpclient before importing dimscord.
 You can use -d:dimscordDebug, if you want to debug.

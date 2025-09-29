@@ -65,7 +65,7 @@ proc messageCreate(s: Shard, m: Message) {.event(discord).} =
         )
 
 # Connect to Discord and run the bot.
-waitFor discord.startSession(gateway_intents={giMessageContent}) # Don't forget to specify the gateway_intent argument and double check your priviliged intent
+waitFor discord.startSession(gateway_intents={giMessageContent, giGuildMessages}) # Don't forget to specify the gateway_intent argument and double check your priviliged intent
 ```
 Please note that you need to define `-d:ssl` if you are importing httpclient before importing dimscord.
 You can use -d:dimscordDebug, if you want to debug.

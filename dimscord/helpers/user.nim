@@ -138,7 +138,7 @@ template reply*(i: Interaction;
     ## Use `followup`, `createFollowupMessage` or `edit` if you already responded.
     ## - Set `ephemeral` to true to send ephemeral responses.
     getClient.api.interactionResponseMessage(
-        i.application_id,
+        i.id,
         i.token,
         irtChannelMessageWithSource,
         newInteractionData(

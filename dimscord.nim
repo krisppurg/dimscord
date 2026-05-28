@@ -6,6 +6,8 @@
 ##   or you could replace the folder from the `.nimble/pkgs` directory.
 ## You can search for symbols by going to https://krisppurg.github.io/dimscord/theindex.html.
 ##
+## **NOTE** The minimum Nim version requirement is v2.0.6 !
+## 
 ## Reference
 ## ===================================
 ## - `objects` Includes the discord objects,

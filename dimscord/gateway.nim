@@ -359,7 +359,7 @@ proc requestGuildMembers*(s: Shard, guild_id: string;
 proc requestSounds*(s: Shard, guild_ids: seq[string]) {.async.} =
     ## Requests guild soundboards.
     if s.sockClosed or not s.ready: return
-    softassert guild_ids.len == 0, "You need to specify a guild ID."
+    softassert guild_ids.len != 0, "You need to specify a guild ID."
 
     await s.sendSock(opRequestSounds, %%{
         "guild_ids": &guild_ids,
